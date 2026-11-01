@@ -1,0 +1,11 @@
+{
+  "input_hash": "7d20f7d8264b156bc416e815b8dd35dda0b57274470b4a33af29c9f81696747d",
+  "phase": "plan",
+  "kind": "feature",
+  "last_retry_id": null,
+  "resume_phase": null,
+  "status": "blocked",
+  "reason": "model-job-failed",
+  "run_url": "https://github.com/vchs6/c2s/actions/runs/41271053033",
+  "updated_at": "2026-11-01T03:56:14.710825+00:00"
+}
