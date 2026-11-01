@@ -1,0 +1,6 @@
+[agents]
+enabled = true
+max_concurrent_threads_per_session = 5
+
+[plugins."superpowers@c2s-tools"]
+enabled = true

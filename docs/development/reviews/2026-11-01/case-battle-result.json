@@ -1,0 +1,48 @@
+{
+  "battle_id": "cross-language-cases-2026-11-01",
+  "problem": "由Rust/C++/Python真实项目形成语言无关分层语义事实领域模型",
+  "participants": [
+    "case_rust",
+    "case_cpp",
+    "case_python",
+    "case_model_challenger",
+    "case_final_reviewer"
+  ],
+  "isolation": "fork_turns=none; independent first-round contexts",
+  "rounds": [
+    {
+      "round": 1,
+      "roles": 4,
+      "mode": "独立案例与模型分析"
+    },
+    {
+      "round": 2,
+      "roles": 4,
+      "mode": "交叉事实质询、比较三/四/五层候选"
+    },
+    {
+      "round": "review",
+      "roles": 1,
+      "mode": "独立综合评审及身份规则最终纠正"
+    }
+  ],
+  "decision_status": "proposed",
+  "user_decision": null,
+  "recommendation": "五个默认组织层，类型化关系关联，非强制细化链",
+  "minority_positions": [
+    "四尺度合并结构接口与契约",
+    "三宽关系视图＋可选查询尺度"
+  ],
+  "unresolved": [
+    "项目治理自治及完整身份规则",
+    "宏展开/注解/多workspace/循环反例未验证",
+    "全仓库事实完备性未验证",
+    "真实构建/安装/运行未执行"
+  ],
+  "execution_notes": [
+    "精选20文件而非全仓库克隆",
+    "源Git blob字节核对通过",
+    "未修改旧领域模型/正式规格/代码",
+    "当前平台通用协作工具显式分派专业角色，并非Codex自动发现配置验证"
+  ]
+}

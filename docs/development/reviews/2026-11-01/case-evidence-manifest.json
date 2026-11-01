@@ -1,0 +1,185 @@
+{
+  "scope": "Selected upstream source/configuration files, not full clones; no builds executed.",
+  "files": [
+    {
+      "repo": "rust-lang/regex",
+      "path": "Cargo.toml",
+      "commit": "94ac45b2a6e7b1c30927feb5b66c5ded5b7ad447",
+      "blob": "0078c2e23be222087c7fd7fd00717e986b9debea",
+      "url": "https://github.com/rust-lang/regex/blob/94ac45b2a6e7b1c30927feb5b66c5ded5b7ad447/Cargo.toml",
+      "sha256": "e060af2cec7da6c4ea99bb51c59caa6844b0893d9961aa562845c9f672bfbcbc",
+      "bytes": 9063
+    },
+    {
+      "repo": "nlohmann/json",
+      "path": "tests/cmake_add_subdirectory/CMakeLists.txt",
+      "commit": "9c349b1d7c393c6bc6dbbe4191e332e3bb4100b8",
+      "blob": "0b82d914175261efdfe0c13a6aa354fd01356d3b",
+      "url": "https://github.com/nlohmann/json/blob/9c349b1d7c393c6bc6dbbe4191e332e3bb4100b8/tests/cmake_add_subdirectory/CMakeLists.txt",
+      "sha256": "66fa3530304282b310e4a36635ec59c361cbed29eb79b15f9190267f51372924",
+      "bytes": 701
+    },
+    {
+      "repo": "nlohmann/json",
+      "path": "tests/cmake_add_subdirectory/project/CMakeLists.txt",
+      "commit": "9c349b1d7c393c6bc6dbbe4191e332e3bb4100b8",
+      "blob": "ff8838e6d776148b2c32bebf3b44090029b1f6ba",
+      "url": "https://github.com/nlohmann/json/blob/9c349b1d7c393c6bc6dbbe4191e332e3bb4100b8/tests/cmake_add_subdirectory/project/CMakeLists.txt",
+      "sha256": "8186e240007a3ebd3133a31e7e2b3680364a47eeb2ee54f69adc4e8684bedc7f",
+      "bytes": 776
+    },
+    {
+      "repo": "pallets/click",
+      "path": "pyproject.toml",
+      "commit": "2247b35ea1c47c727d7a06e51fa280e12a863ff6",
+      "blob": "7c9a10b8760ff658ecf3bfc90a12ab138772e4eb",
+      "url": "https://github.com/pallets/click/blob/2247b35ea1c47c727d7a06e51fa280e12a863ff6/pyproject.toml",
+      "sha256": "327b296ab1fc9280c106c71efea961f71dffa5d8f69d85a88eba758e0f440636",
+      "bytes": 5324
+    },
+    {
+      "repo": "nlohmann/json",
+      "path": "tests/CMakeLists.txt",
+      "commit": "9c349b1d7c393c6bc6dbbe4191e332e3bb4100b8",
+      "blob": "f4e574fc13b85acba48126390f14d7a7d8ab4ff4",
+      "url": "https://github.com/nlohmann/json/blob/9c349b1d7c393c6bc6dbbe4191e332e3bb4100b8/tests/CMakeLists.txt",
+      "sha256": "9c2ada6df78fd88549c88e38f2ed5a8097d87a1521cbcf4ead04bd167bec13e6",
+      "bytes": 21849
+    },
+    {
+      "repo": "pallets/click",
+      "path": "examples/complex/pyproject.toml",
+      "commit": "2247b35ea1c47c727d7a06e51fa280e12a863ff6",
+      "blob": "248f1acbb6140f817983cb11c90c228f9711a36d",
+      "url": "https://github.com/pallets/click/blob/2247b35ea1c47c727d7a06e51fa280e12a863ff6/examples/complex/pyproject.toml",
+      "sha256": "d7e12fcc656a46f56fa68874987d355c09c0c3a43d7ded4404d0f34bd3715841",
+      "bytes": 325
+    },
+    {
+      "repo": "rust-lang/regex",
+      "path": "regex-cli/Cargo.toml",
+      "commit": "94ac45b2a6e7b1c30927feb5b66c5ded5b7ad447",
+      "blob": "51ac16eeaa50df6cd601d56d411122266150aa22",
+      "url": "https://github.com/rust-lang/regex/blob/94ac45b2a6e7b1c30927feb5b66c5ded5b7ad447/regex-cli/Cargo.toml",
+      "sha256": "4e155a093c5ce837f5cca7ba7c6982ebd8c28ef3351b98fec717aec80efb9c71",
+      "bytes": 1239
+    },
+    {
+      "repo": "rust-lang/regex",
+      "path": "regex-syntax/Cargo.toml",
+      "commit": "94ac45b2a6e7b1c30927feb5b66c5ded5b7ad447",
+      "blob": "fa63da971e717d8fd19fecd8a25e05a694416607",
+      "url": "https://github.com/rust-lang/regex/blob/94ac45b2a6e7b1c30927feb5b66c5ded5b7ad447/regex-syntax/Cargo.toml",
+      "sha256": "fdfdadd590cb4121437df8e9b72f3ca2e6eff812bb9436f2828c76b1810b1f6b",
+      "bytes": 2007
+    },
+    {
+      "repo": "pallets/click",
+      "path": "src/click/decorators.py",
+      "commit": "2247b35ea1c47c727d7a06e51fa280e12a863ff6",
+      "blob": "cc42e5d42c48e7bddca9346bc4dd4f240a30c2e3",
+      "url": "https://github.com/pallets/click/blob/2247b35ea1c47c727d7a06e51fa280e12a863ff6/src/click/decorators.py",
+      "sha256": "16069357615691fcdfc9c794bb515f6009eb35aad6f7a76c017bdce06dae8d55",
+      "bytes": 21680
+    },
+    {
+      "repo": "pallets/click",
+      "path": "examples/complex/complex/__init__.py",
+      "commit": "2247b35ea1c47c727d7a06e51fa280e12a863ff6",
+      "blob": "e69de29bb2d1d6434b8b29ae775ad8c2e48c5391",
+      "url": "https://github.com/pallets/click/blob/2247b35ea1c47c727d7a06e51fa280e12a863ff6/examples/complex/complex/__init__.py",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0
+    },
+    {
+      "repo": "nlohmann/json",
+      "path": "include/nlohmann/detail/input/parser.hpp",
+      "commit": "9c349b1d7c393c6bc6dbbe4191e332e3bb4100b8",
+      "blob": "5bf8f1b6b1791b9412f1d15f3dda3a5e292ad517",
+      "url": "https://github.com/nlohmann/json/blob/9c349b1d7c393c6bc6dbbe4191e332e3bb4100b8/include/nlohmann/detail/input/parser.hpp",
+      "sha256": "b4facd4c4eb402064b07f27a411adce548b5460a8e3572e1146a18cb23d5024b",
+      "bytes": 22448
+    },
+    {
+      "repo": "rust-lang/regex",
+      "path": "regex-syntax/src/ast/visitor.rs",
+      "commit": "94ac45b2a6e7b1c30927feb5b66c5ded5b7ad447",
+      "blob": "36cd713c0f3dc60d062adbf1709a3fe0120baba5",
+      "url": "https://github.com/rust-lang/regex/blob/94ac45b2a6e7b1c30927feb5b66c5ded5b7ad447/regex-syntax/src/ast/visitor.rs",
+      "sha256": "2af2efd77727803b8d15a6244af92267e96edbfc1a211bcbea2b32e1b5483918",
+      "bytes": 19004
+    },
+    {
+      "repo": "nlohmann/json",
+      "path": "CMakeLists.txt",
+      "commit": "9c349b1d7c393c6bc6dbbe4191e332e3bb4100b8",
+      "blob": "1369b973ea454923e58e17a0f77ef72cbe7b0be9",
+      "url": "https://github.com/nlohmann/json/blob/9c349b1d7c393c6bc6dbbe4191e332e3bb4100b8/CMakeLists.txt",
+      "sha256": "aeebc782870174ff2f334ab2dc11693ecc032fd31ce77c78c3d507c00f590377",
+      "bytes": 11412
+    },
+    {
+      "repo": "rust-lang/regex",
+      "path": "regex-lite/src/hir/parse.rs",
+      "commit": "94ac45b2a6e7b1c30927feb5b66c5ded5b7ad447",
+      "blob": "1983a9b89ed7f7bfca570d7f587b728e372be1b3",
+      "url": "https://github.com/rust-lang/regex/blob/94ac45b2a6e7b1c30927feb5b66c5ded5b7ad447/regex-lite/src/hir/parse.rs",
+      "sha256": "a53435d9f11672a7cc7507ac4d62d52816761afd9a5804d1996a450546c82c42",
+      "bytes": 82581
+    },
+    {
+      "repo": "rust-lang/regex",
+      "path": "regex-lite/Cargo.toml",
+      "commit": "94ac45b2a6e7b1c30927feb5b66c5ded5b7ad447",
+      "blob": "b230501b92a2e94b41c95d3aaf4e8a63cb7a6b9a",
+      "url": "https://github.com/rust-lang/regex/blob/94ac45b2a6e7b1c30927feb5b66c5ded5b7ad447/regex-lite/Cargo.toml",
+      "sha256": "0723a0f2a31737ca59f5a3645bb490f0b7e384133996bb2560a93c12fa9b64e8",
+      "bytes": 1062
+    },
+    {
+      "repo": "pallets/click",
+      "path": "src/click/parser.py",
+      "commit": "2247b35ea1c47c727d7a06e51fa280e12a863ff6",
+      "blob": "4fcbf7caa83a474cee2d3ea25da56b0399dd893a",
+      "url": "https://github.com/pallets/click/blob/2247b35ea1c47c727d7a06e51fa280e12a863ff6/src/click/parser.py",
+      "sha256": "a09f9f53fde6bf1ba022e36d1da0804d9e7a9601261d18208c9892a84818ae30",
+      "bytes": 19052
+    },
+    {
+      "repo": "pallets/click",
+      "path": "tests/test_parser.py",
+      "commit": "2247b35ea1c47c727d7a06e51fa280e12a863ff6",
+      "blob": "f2a3ad5931761ad0da0b4d3d8b7481bfd5f89ebb",
+      "url": "https://github.com/pallets/click/blob/2247b35ea1c47c727d7a06e51fa280e12a863ff6/tests/test_parser.py",
+      "sha256": "9e3a95fb896166e23bb8070de55a7d81a72a95c0b4909da659e54274b1615069",
+      "bytes": 915
+    },
+    {
+      "repo": "pallets/click",
+      "path": "examples/complex/complex/cli.py",
+      "commit": "2247b35ea1c47c727d7a06e51fa280e12a863ff6",
+      "blob": "81af075c4b99d2e9497810112cf22e1e77d70839",
+      "url": "https://github.com/pallets/click/blob/2247b35ea1c47c727d7a06e51fa280e12a863ff6/examples/complex/complex/cli.py",
+      "sha256": "2042ffdb1e77f0f937036f3f0a33c67bacbad90477873d7576cc297674a55de7",
+      "bytes": 1608
+    },
+    {
+      "repo": "pallets/click",
+      "path": "examples/complex/complex/commands/cmd_init.py",
+      "commit": "2247b35ea1c47c727d7a06e51fa280e12a863ff6",
+      "blob": "8802458a9151a8f27ebc480477f60854c91015da",
+      "url": "https://github.com/pallets/click/blob/2247b35ea1c47c727d7a06e51fa280e12a863ff6/examples/complex/complex/commands/cmd_init.py",
+      "sha256": "6068f21b5874685d6e4d467f24bc45ddf2cc28457cd27b1b2dc2aadef24ddde4",
+      "bytes": 385
+    },
+    {
+      "repo": "pallets/click",
+      "path": "tests/test_command_decorators.py",
+      "commit": "2247b35ea1c47c727d7a06e51fa280e12a863ff6",
+      "blob": "5bd268c0a60be62ed5b8d667d61ac35bc4c2a6b8",
+      "url": "https://github.com/pallets/click/blob/2247b35ea1c47c727d7a06e51fa280e12a863ff6/tests/test_command_decorators.py",
+      "sha256": "234ede359da2839923af2436056680bab68bdba622bf596452bbfbe1e1cfd6fa",
+      "bytes": 1880
+    }
+  ]
+}

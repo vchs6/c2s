@@ -1,0 +1,209 @@
+{
+  "battle_id": "semantic-model-2026-11-01",
+  "problem": "是否采用DDD组织软件语义事实；如何表达独立项目、工作空间及依赖",
+  "constraints": [
+    "语言无关",
+    "完整语义含算法伪代码",
+    "多独立项目各自有目标",
+    "工作空间组织多个项目",
+    "分层不得预设",
+    "只讨论不修改权威模型/规格"
+  ],
+  "evidence": [
+    {
+      "id": "D1",
+      "path": "deliverables/software-semantic-domain-model.md",
+      "sha256": "3ec7f1b153fa708bdc35882593824f3431753eed0fa6c1fd399315700203328c"
+    },
+    {
+      "id": "E1",
+      "url": "https://www.domainlanguage.com/wp-content/uploads/2016/05/DDD_Reference_2015-03.pdf"
+    },
+    {
+      "id": "E2",
+      "url": "https://doc.rust-lang.org/cargo/reference/workspaces.html"
+    },
+    {
+      "id": "E3",
+      "url": "https://cmake.org/cmake/help/latest/command/add_custom_target.html"
+    }
+  ],
+  "acceptance_criteria": [
+    "比较DDD与替代方案",
+    "区分归属/成员/依赖/范围",
+    "用反例验证条件依赖和多配置",
+    "保留未决选择与证据边界"
+  ],
+  "decision_status": "proposed",
+  "user_decision": null,
+  "participants": [
+    {
+      "role": "ddd_domain_review",
+      "context": "fork_turns=none"
+    },
+    {
+      "role": "ddd_semantics_review",
+      "context": "fork_turns=none"
+    },
+    {
+      "role": "ddd_engineering_review",
+      "context": "fork_turns=none"
+    },
+    {
+      "role": "ddd_contract_review",
+      "context": "fork_turns=none"
+    },
+    {
+      "role": "ddd_final_review",
+      "context": "fork_turns=none"
+    }
+  ],
+  "rounds": [
+    {
+      "role": "ddd_domain_review",
+      "round": 1,
+      "position": "DDD可以采用但非必要；实体合理性依赖身份需求，聚合及三上下文划分尚早。",
+      "evidence_refs": [
+        "D1 §2,4,5,6,7,12,15"
+      ],
+      "counterexample": "批量导入后只读查询的类型化记录无需对象级事务即可表达多项目依赖。"
+    },
+    {
+      "role": "ddd_semantics_review",
+      "round": 1,
+      "position": "类型化关系及行为结构承载语义，DDD不能限定跨项目和多配置行为；算法单projectRef有风险。",
+      "evidence_refs": [
+        "D1 §2,4,5,6,9,11,15"
+      ],
+      "counterexample": "同一声明在不同目标下为不同类型；跨项目协作算法不能被单项目归属截断。"
+    },
+    {
+      "role": "ddd_engineering_review",
+      "round": 1,
+      "position": "质疑目标单项目归属，提出workspace目标、包及产物规格/实例。",
+      "evidence_refs": [
+        "D1 §3,5,6,7"
+      ],
+      "counterexample": "假设根工作空间定义聚合测试目标；此首轮反例第二轮被收缩为候选。"
+    },
+    {
+      "role": "ddd_contract_review",
+      "round": 1,
+      "position": "DDD不能替代公共契约；解析和范围状态混杂；提出Assertion与Fact视图。",
+      "evidence_refs": [
+        "D1 §3,7,10,11,14,15,16"
+      ],
+      "counterexample": "唯一解析的范围外依赖无法由单个互斥状态同时表达。"
+    },
+    {
+      "role": "ddd_domain_review",
+      "round": 2,
+      "responses": {
+        "C01": "DDD不仅写入实现，也用于概念设计；不强制冻结聚合。",
+        "C02": "workspace命令选择成员目标不证明新目标存在。",
+        "C03": "采信视图有条件且可选，默认保留主张冲突。"
+      }
+    },
+    {
+      "role": "ddd_engineering_review",
+      "round": 2,
+      "responses": {
+        "C02": "收回workspace拥有目标已证必要；独立声明与选择器分开，owner联合类型仅候选。",
+        "C04": "包先消歧，发布坐标可作值对象，不立即增加实体。",
+        "C05": "输出规格和观察产物分开，不必新增执行历史。",
+        "C06": "共享来源，不强制合并语义主体；配置影响身份的规则待验收。"
+      }
+    },
+    {
+      "role": "ddd_semantics_review",
+      "round": 2,
+      "responses": {
+        "C01": "图/IR只指逻辑表达，不要求图数据库或新IR语言。",
+        "C06": "主体加条件可能足够；上下文限定引用与展开实例应由反例验证。",
+        "C07": "算法管理归属与参与项目分开，无自然归属不能伪造项目。",
+        "C03": "保留规范、静态可能和运行观测的模态，不自动互判真假。"
+      }
+    },
+    {
+      "role": "ddd_contract_review",
+      "round": 2,
+      "responses": {
+        "C03": "撤回强制Assertion/Fact双轨；主张、条件、证据和冲突即可。",
+        "C08": "scope相对查询/分析范围，不进入依赖身份；解析范围另外记录。",
+        "C01": "规格固定公共语义；聚合、仓储及存储引擎留设计。",
+        "C06": "内容标识检查当前来源有效性，不增加历史查询。"
+      }
+    }
+  ],
+  "disputes": [
+    {
+      "id": "C01",
+      "topic": "DDD采用边界",
+      "result": "建议用于概念和规则设计，不作为语义分层或强制对象嵌套结构"
+    },
+    {
+      "id": "C02",
+      "topic": "workspace是否拥有目标",
+      "result": "未证实为通用需求，命令选择器不算新目标；保留真实反例驱动扩展"
+    },
+    {
+      "id": "C03",
+      "topic": "主张与采信",
+      "result": "不引入强制双轨，不自动裁决"
+    },
+    {
+      "id": "C04",
+      "topic": "包是否立即实体化",
+      "result": "先区分不同含义"
+    },
+    {
+      "id": "C05",
+      "topic": "产物与执行历史",
+      "result": "区分声明/观测，不增加历史服务"
+    },
+    {
+      "id": "C06",
+      "topic": "多配置身份",
+      "result": "需要上下文可保持的引用；实例策略待定"
+    },
+    {
+      "id": "C07",
+      "topic": "跨项目算法",
+      "result": "管理归属与参与范围分离"
+    },
+    {
+      "id": "C08",
+      "topic": "解析与范围状态",
+      "result": "正交表达，范围不构成依赖身份"
+    }
+  ],
+  "unresolved": [
+    "Project与Package的精确识别边界",
+    "workspace独立目标是否存在适用的真实案例",
+    "配置和宏展开何时需要独立主体身份",
+    "跨项目算法无自然管理归属时的身份规则",
+    "聚合与限界上下文的实际一致性和治理依据",
+    "依赖解析是相对于哪个配置和可见范围"
+  ],
+  "record_kind": "主持人整理的论证摘要，不是逐字会话转储",
+  "runtime_note": "使用当前平台通用协作工具显式传入专业角色；未修改三角色配置包，也未验证Codex角色自动加载。",
+  "review": {
+    "role": "ddd_final_review",
+    "status": "proposed",
+    "recommendation": "采用DDD澄清领域概念与规则；以类型化主体/关系/条件/证据及结构化行为表达事实，不把聚合和分层当成通用语义骨架。",
+    "residual_findings": [
+      "项目身份与重叠边界仍缺判据",
+      "仅附条件不保证引用保持解释上下文",
+      "主张模态必须显式，伪代码结构完整不证明实现等价"
+    ],
+    "required_examples": [
+      "同主体多目标异型",
+      "重复宏展开",
+      "同依赖换范围",
+      "同需求多配置解析",
+      "跨项目算法"
+    ],
+    "changes_are_proposals_only": true
+  },
+  "recommendation": "采用DDD澄清领域概念与规则；以类型化主体/关系/条件/证据及结构化行为表达事实，不把聚合和分层当成通用语义骨架。"
+}

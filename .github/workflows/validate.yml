@@ -1,0 +1,21 @@
+name: Validate project baseline
+on: [push, pull_request]
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          submodules: recursive
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+      - run: npm ci
+      - run: npm run check:artifacts
+      - run: npm run validate
+        env:
+          OPENSPEC_TELEMETRY: '0'
+      - run: git diff --check

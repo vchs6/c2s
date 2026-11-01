@@ -218,3 +218,10 @@ __marimo__/
 
 # Streamlit
 .streamlit/secrets.toml
+
+# c2s development tooling and local state
+node_modules/
+.worktrees/
+.local/
+.codex/auth.json
+.codex/sessions/

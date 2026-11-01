@@ -1,0 +1,32 @@
+{
+  "name": "c2s",
+  "version": "1.0.0",
+  "description": "Development tooling for c2s semantic-fact extraction Skill",
+  "scripts": {
+    "openspec": "openspec",
+    "validate": "openspec validate --all --strict --no-interactive",
+    "codex": "codex",
+    "check:artifacts": "node scripts/verify-artifacts.mjs",
+    "setup:codex": "codex plugin marketplace add . --json && codex plugin add superpowers@c2s-tools --json"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/vchs6/c2s.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "Apache-2.0",
+  "type": "commonjs",
+  "bugs": {
+    "url": "https://github.com/vchs6/c2s/issues"
+  },
+  "homepage": "https://github.com/vchs6/c2s#readme",
+  "private": true,
+  "devDependencies": {
+    "@fission-ai/openspec": "1.16.0",
+    "@openai/codex": "0.166.0"
+  },
+  "engines": {
+    "node": "^22.13.0 || >=24.0.0"
+  }
+}

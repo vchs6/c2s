@@ -1,0 +1,33 @@
+{
+  "date": "2026-11-01",
+  "files": [
+    {
+      "original_name": "software-semantic-domain-model.md",
+      "path": "docs/domain/drafts/software-semantic-domain-model.md",
+      "source_library_id": "libfile_18cffdcdd8908191ad9e740c90037420",
+      "sha256": "3ec7f1b153fa708bdc35882593824f3431753eed0fa6c1fd399315700203328c",
+      "status": "historical-draft-or-proposal; see ADR-0001 for approved scope"
+    },
+    {
+      "original_name": "semantic-model-battle-report.md",
+      "path": "docs/development/reviews/2026-11-01/semantic-model-battle-report.md",
+      "source_library_id": "libfile_76ad74034d2c819198ad1d361c92085b",
+      "sha256": "d48f33b217aacb4884f3a7cb351c37c7d87fa901e26828f9ad9ef63c5c14311b",
+      "status": "historical-draft-or-proposal; see ADR-0001 for approved scope"
+    },
+    {
+      "original_name": "language-independent-layered-semantic-model.md",
+      "path": "docs/domain/proposals/language-independent-layered-semantic-model.md",
+      "source_library_id": "libfile_9d816d7a0350819183e09cbae005f3f9",
+      "sha256": "a7a1d78db875cf9793039bb57f21dce06ffac4673372554345806c02678cd7fa",
+      "status": "historical-draft-or-proposal; see ADR-0001 for approved scope"
+    },
+    {
+      "original_name": "battle-mode-config.zip",
+      "path": "docs/workflow/archives/battle-mode-config.zip",
+      "source_library_id": "libfile_690ba7ace04c8191b14a76ffcef37646",
+      "sha256": "6c8d1993bbe1da6b4cd5f81410dbd613fcaa917ebb812a5ef5eb79f9391a27ac",
+      "status": "historical-draft-or-proposal; see ADR-0001 for approved scope"
+    }
+  ]
+}

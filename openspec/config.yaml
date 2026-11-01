@@ -1,0 +1,26 @@
+schema: spec-driven
+context: |
+  c2s develops a language-independent software-project semantic-fact extraction Skill.
+  Artifacts use Chinese; preserve OpenSpec structural headings and SHALL/MUST.
+  Use DDD for ubiquitous language, identity and invariants; do not preselect aggregates or storage.
+  Accepted layers: E0 engineering organization, E1 build/assembly/delivery,
+  E2 program structure/interfaces, E3 operational contracts, E4 algorithms/local semantics.
+  Layers are organization scales, not a mandatory containment/refinement chain.
+  Approved scope is recorded in docs/decisions/0001-five-semantic-layers.md.
+  Imported research under docs/domain and docs/development/reviews is evidence, not automatically approved specs.
+  Coordinate actual OpenSpec instructions with installed Superpowers Skills.
+rules:
+  proposal:
+    - State scope, affected capabilities and exclusions; tooling-only changes may explicitly skip_specs.
+  design:
+    - Distinguish observed evidence, accepted decisions and proposed implementation choices.
+  tasks:
+    - Every task records upstream basis, deliverable paths, verification, pass and failure conditions.
+    - Use one authoritative task list; Superpowers plans reference it.
+operations:
+  apply:
+    guidance:
+      - Retrieve apply instructions and verify each task; artifact existence is not implementation completion.
+  archive:
+    guidance:
+      - Do not archive without an explicit user request.
