@@ -1,21 +1,28 @@
 name: Issue worker
 on:
-  issues:
-    types: [opened, edited, reopened, labeled]
-  issue_comment:
-    types: [created]
   workflow_dispatch:
-  schedule:
-    - cron: '*/15 * * * *'
+    inputs:
+      issue_number:
+        description: 'Explicit issue number; never scans the backlog'
+        required: true
+        type: string
+      operation:
+        description: 'Planning only; no product implementation'
+        required: true
+        default: plan
+        type: choice
+        options: [plan, smoke]
+      change_name:
+        description: 'Optional existing OpenSpec change name'
+        required: false
+        type: string
 concurrency:
   group: c2s-issue-worker-main
   cancel-in-progress: false
 permissions: {}
 jobs:
   prepare:
-    if: >-
-      github.event_name != 'issue_comment' ||
-      (!github.event.issue.pull_request && github.event.comment.user.type != 'Bot' && startsWith(github.event.comment.body, '/c2s '))
+    if: github.event_name == 'workflow_dispatch'
     runs-on: ubuntu-latest
     permissions:
       contents: read
@@ -37,6 +44,9 @@ jobs:
         env:
           GH_TOKEN: ${{ github.token }}
           HAS_MODEL_KEY: ${{ secrets.OPENAI_API_KEY != '' }}
+          C2S_ISSUE_NUMBER: ${{ inputs.issue_number }}
+          C2S_OPERATION: ${{ inputs.operation }}
+          C2S_CHANGE_NAME: ${{ inputs.change_name }}
       - uses: actions/upload-artifact@v4
         if: steps.queue.outputs.selected == 'true'
         with:
@@ -47,7 +57,7 @@ jobs:
           include-hidden-files: true
   model:
     needs: prepare
-    if: needs.prepare.outputs.selected == 'true' && (needs.prepare.outputs.phase == 'plan' || needs.prepare.outputs.phase == 'apply')
+    if: needs.prepare.outputs.selected == 'true' && needs.prepare.outputs.phase == 'plan'
     runs-on: ubuntu-latest
     timeout-minutes: 150
     permissions:

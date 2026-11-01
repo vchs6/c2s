@@ -2,30 +2,30 @@
 
 ## Context
 
-见proposal。仓库已有Node工具、OpenSpec与Superpowers固定源；使用GitHub Actions事件承载自动执行，网页会话不作为常驻Runner。当前存在初始化CI成功记录，未假定模型Secret存在。
+现有Issue worker有issues/issue_comment/schedule入口、全队列扫描及批准令牌到apply分支。用户明确要求关闭Issue自动工作，先修正仓库再创建规划事项。旧自动化验证只作为历史记录。
 
 ## Goals / Non-Goals
 
-**Goals:** 单仓库串行调度、内容级判重、维护者授权、两轮独立Battle、计划绑定批准、可信发布及smoke可行性测试。
-**Non-Goals:** 不构建外部常驻服务、不转移网页OAuth令牌、不创建PR/开发分支、不为缺失密钥模拟AI成功。
+**Goals:** 手动指定一个Issue，维护者校验后仅规划或无模型检查；当前Runner不执行产品开发。工作方式支持在显式启动的会话内持续规划、分开方案与开发批准，并涵盖性能/成本等非功能指标。
+
+**Non-Goals:** 不创建新的无人值守规划平台，不恢复API凭据或调用模型验证，不实施语义事实产品，不根据单Issue评论进入开发，不归档。
 
 ## Decisions
 
-- 定时15分钟补扫、事件与手动触发均读取全部open Issue，一次处理一个可执行项。GitHub concurrency可能合并pending唤醒，持久Issue列表及定时补扫避免任务依赖每个事件独立存活。
-- Python 3确定性worker负责类型、授权、指纹、批准、输出边界及状态；模型不控制token权限和最终git ref。状态写入docs/development/issues/<number>/state.json，评审记录在docs/development/reviews/issues/<number>/。
-- Battle使用5个独立Codex调用：首轮双方、第二轮双方、独立评审；它们是Actions独立会话，不依赖单次exec是否暴露子代理工具。第6个调用按评审形成报告或规划。调用通过Python编排多个独立`codex exec --ephemeral`进程，使用固定CLI、只读/工作区sandbox及独立提示上下文；不复用会话，不在单个会话模拟角色。采用CLI避免重复codex-action drop-sudo限制；进程共享检出与来源资料，不宣称操作系统级隔离。
-- 模型只在contents:read的job运行；发布job不接收模型API Key、不执行补丁中的代码。发布采用基线SHA检查和普通git push；内容过时或分支保护失败均阻塞，不force。
-- 主体Issue指纹来自number/title/body，规划批准令牌同时绑定生成工件摘要。命令仅接受维护者发布的精确/c2s approve <token>或/c2s retry。输入变化取消旧批准。
-- 失败默认不无界重试；缺密钥后配置密钥可由补扫恢复，其他失败需retry或Issue输入变化。机器人反馈不进入输入指纹。
-- smoke只运行仓库确定性验证并提交报告，状态明确smoke，不冒充AI/真实Battle。
+1. 保留workflow_dispatch而非删除整个维护工具；输入为正整数issue_number、plan/smoke操作及可选change_name。移除Issue/评论/定时入口；prepare在访问GitHub前拒绝非手动事件、非法编号或apply操作。当前用户授权的是工作流修正，非产品开发。
+2. 仅读取指定Issue，调用方及Issue作者须具备write/maintain/admin；PR、机器人或非open Issue拒绝。不读评论批准，不扫描/反馈其他Issue；再次手动plan表示明确重新规划，不自动续跑旧apply。
+3. 规划目标由手动输入或该Issue已有state.change_name确定；无既有变更时使用issue-N-planning。变更名只接受小写字母数字连字符，拒绝路径穿越。允许路径精确为该变更及本Issue评审目录；原受信脚本、规则、主规格和产品目录不可由模型规划补丁改动。
+4. model入口只接受plan，publish拒绝apply上下文且在网络/提交前失败；方案/整体规划/实施批准分别记录。保留旧纯函数及历史回归用例以验证旧输入，但入口不再使用旧自动队列/approve分流；不能将旧函数中的apply分支视为可用入口。
+5. 目录摘要检查扩展到任意已选OpenSpec变更的全部文件，新增规划文件使旧摘要失效。讨论和plan均可形成提案/规格，重大设计未定时明确阻塞，不凭空填实现任务。
+6. AGENTS与planning-mode.md规定委托决策、人工例外、议题清单、功能/非功能指标及统一开发门禁。此为会话治理，不声称当前Runner实现跨Issue自动调度；显式启动后的主代理可在授权范围连续推进。无人值守扩展若需要，另提案。
 
 ## Risks / Trade-offs
 
-- [Risk] 当前无Secret设置权限 → 配置与控制链路可测试；真实模型阶段必须按Runner结果报告未验证/阻塞。
-- [Risk] 并行人工提交或Issue编辑 → 发布前重新检查main与输入，过时拒绝。
-- [Risk] 模型改动代理/执行权限 → 发布边界拒绝自动修改workflow、脚本、代理规则和认证相关路径；此类维护需人工处理。
-- [Risk] 计划状态与Issue呈现不同步 → 仓库状态是执行依据；main拒绝提交时，以github-actions[bot]评论中带指纹的publication-failed状态作为失败守卫，后续补扫要求retry。后续补扫同步标签，失败反馈不作为成功证据。main与Issue同时不可写时只能报告Actions失败，不能保证守卫已保存。
+- [Risk] 已排队的旧版本Actions仍可能运行 → 发布前读取工作流运行状态；如果存在进行中的旧Issue worker，先停止/报告，不创建会触发旧自动入口的新Issue。
+- [Risk] 只删事件仍可因旧批准进入实现 → 手动选择器忽略评论令牌，model/publish双入口拒绝apply。
+- [Risk] 新规误作已完成自动平台 → 明确只有手动入口和会话治理；远程模型可用性未重新验证。
+- [Risk] 旧工件与当前授权冲突 → 保留历史说明并以当前AGENTS/新用户决定为准，不静默重写产品基线。
 
-## 用户新增约束与执行记录
-用户明确要求全部脚本使用Python 3。自维护worker、校验、插件安装和unittest采用Python标准库；第三方CLI继续由npm锁定。
-执行调整：使用独立ephemeral Codex CLI进程而非每角色一个Action job，保持独立会话与首轮信息隔离，减少工作流复杂度；模型与可信发布仍分job。此为实现选择，不冒称用户指定。
+## Migration Plan
+
+先添加并观察失败的入口/触发/范围回归，再实现控制修改，更新规格/规则/文档并严格验证。直接提交main，核对远程workflow只包含手动入口，确认无旧运行后才创建后续规划Issue。后续产品开发必须另行获得整体规划及实施授权；当前Runner没有apply选项。不自动archive。

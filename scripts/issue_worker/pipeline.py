@@ -26,7 +26,7 @@ def plan_digest(root, paths):
     manifest = set(paths)
     for name in paths:
         parts = Path(name).parts
-        if len(parts) >= 4 and parts[:2] == ('openspec', 'changes') and parts[2].startswith('issue-'):
+        if len(parts) >= 4 and parts[:2] == ('openspec', 'changes') :
             directory = root.joinpath(*parts[:3])
             manifest.update(str(p.relative_to(root)) for p in directory.rglob('*') if p.is_file() or p.is_symlink())
     for name in sorted(manifest):
@@ -71,8 +71,8 @@ def staged_paths(root):
     return git(root, 'diff', '--cached', '--name-only', '--no-renames', '-z').decode().strip('\0').split('\0') if git(root, 'diff', '--cached', '--name-only', '--no-renames', '-z') else []
 
 
-def check_patch(root, phase, number):
-    if not allowed_paths(staged_paths(root), phase, number):
+def check_patch(root, phase, number, change_name=None):
+    if not allowed_paths(staged_paths(root), phase, number, change_name=change_name):
         return False
     # Reject executable modes, symlinks and submodules in generated output.
     for line in git(root, 'diff', '--cached', '--raw', '--no-abbrev').decode().splitlines():
@@ -97,3 +97,43 @@ def effective_state(state, comments):
             if not state or fallback.get('updated_at', '') > state.get('updated_at', ''):
                 state = fallback
     return state
+
+
+def select_manual_issue(issue, api, root, has_key, *, actor, operation='plan', change_name=None):
+    """A manual invocation selects one item; comments never authorize implementation."""
+    if operation not in {'plan', 'smoke'}:
+        raise ValueError('manual planning-only operation required')
+    if not actor or not has_write(api.permission(actor)):
+        raise ValueError('manual invocation requires maintainer permission')
+    if ('pull_request' in issue or issue.get('state') != 'open'
+            or not human(issue.get('user', {}))
+            or not has_write(api.permission(issue['user']['login']))):
+        raise ValueError('manual issue must be open and maintainer-authorized')
+    number = issue['number']
+    if isinstance(number, bool) or not isinstance(number, int) or number <= 0:
+        raise ValueError('manual issue number must be positive')
+    prior = load_json(Path(root)/f'docs/development/issues/{number}/state.json')
+    name = change_name or (prior or {}).get('change_name') or f'issue-{number}-planning'
+    if not re.fullmatch(r'[a-z][a-z0-9-]*', name):
+        raise ValueError('invalid manual OpenSpec change name')
+    phase = 'smoke' if operation == 'smoke' else 'plan'
+    reason = None
+    if phase == 'plan' and not has_key:
+        phase, reason = 'blocked', 'missing-model-key'
+    return dict(issue=issue, kind='smoke' if operation == 'smoke' else 'plan',
+                phase=phase, reason=reason, resume_phase='plan' if reason else None,
+                input_hash=fingerprint(issue), prior=prior, retry_id=(prior or {}).get('last_retry_id'),
+                change_name=name, invocation='manual', implementation_approved=False)
+
+
+def planning_paths(root, generated, prior_paths, change_name=None):
+    paths = set(generated) | set(prior_paths)
+    if change_name:
+        if not re.fullmatch(r'[a-z][a-z0-9-]*', change_name):
+            raise ValueError('invalid planning change name')
+        root = Path(root).resolve()
+        directory = root/'openspec/changes'/change_name
+        if not directory.resolve().is_relative_to(root):
+            raise ValueError('planning directory escapes repository')
+        paths.update(str(p.relative_to(root)) for p in directory.rglob('*') if p.is_file() or p.is_symlink())
+    return sorted(paths)

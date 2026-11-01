@@ -1,44 +1,33 @@
-# Issue 自动工作
+# 手动规划维护工具
 
-Python 3脚本编排GitHub Actions，以OpenSpec和Superpowers处理Issue，合格结果直接提交main。无需PR或开发分支。脚本只依赖Python标准库；Runner使用Python 3.12。Node 22仅用于运行固定版本OpenSpec与Codex第三方CLI。上游子模块不属于自行维护的脚本。
+当前Issue只登记议题。创建、编辑、重开、标签、评论（含旧/c2s approve、retry）和定时任务均不触发工作；不扫描待办队列。推送仍可触发普通CI检查，CI不调用模型、不处理Issue。
 
-## 使用
+## 显式启动
 
-1. 在仓库Settings → Secrets and variables → Actions中设置`OPENAI_API_KEY`。使用有API调用额度的项目密钥；网页登录不能替代API凭据。密钥只注入模型job。
-2. 确认Actions开启，允许工作流的`contents:write`、`issues:write`；main分支策略允许该自动提交。脚本不会绕过保护或force push。
-3. 使用工作事项表单。只有仓库owner或write/maintain/admin成员创建的Issue进入自动执行。已有Issue无需搬迁，无类型正文默认讨论。
-4. feature/implement形成计划后，查看`docs/development/reviews/issues/<N>/`及本Issue OpenSpec change，按机器人反馈评论`/c2s approve <24位令牌>`。输入或计划变动使旧批准失效。
-5. 失败修复后评论`/c2s retry`。缺密钥会在配置后由补扫自动恢复。讨论报告保持awaiting-decision，后续实施可新建implement Issue引用报告。
+推荐在Work/Codex会话明确指定总计划或某个Issue，授权会话按规划议题依赖持续推进。若使用Actions维护工具，在Actions → Issue worker → Run workflow中输入：
 
-| 类型 | 行为 | 终态 |
-| --- | --- | --- |
-| discuss | 两轮双方独立分析＋独立评审＋综合报告 | awaiting-decision |
-| feature / implement | 同上，并形成OpenSpec proposal/specs/design/tasks | awaiting-decision；批准后apply |
-| bug | OpenSpec和Superpowers诊断、TDD修复、独立代码审查 | completed或blocked |
-| smoke | 仅运行确定性仓库校验 | completed或blocked；明确未调用模型 |
+- issue_number：一个正整数Issue编号，必填，不能all或留空。
+- operation：plan或smoke，默认plan；没有apply选项。
+- change_name：可选，复用已有OpenSpec变更的精确标识；否则使用该Issue既有state.change_name，最后才使用issue-N-planning。
 
-## 调度与真实会话
+调用者及Issue作者须有write/maintain/admin权限；PR、机器人或非open Issue不进入工作。工具仅访问指定Issue，不因评论或旧令牌授权而实施。再次手动plan表示明确重新规划，不自动恢复旧apply。OPENAI_API_KEY仅为手动plan的模型凭据，网页登录不能替代；缺密钥明确blocked，smoke不调用模型。
 
-Issue事件唤醒、手动Actions运行及每15分钟补扫读取全部open Issue，按编号处理一个可执行项。仓库级concurrency串行化main写入；GitHub可能合并pending唤醒，后续补扫继续消费持久Issue列表。定时运行由GitHub尽力调度，不承诺15分钟内必达；闲置仓库可能需要手动重新开启定时工作流。
+## 当前范围
 
-Battle由Python依次运行5个独立`codex exec --ephemeral`进程：首轮双方互不可见，第二轮交换首轮输出，第五个独立评审；第六个会话综合并写工件。它们共享检出资料，但无对话延续；不是一个提示词自演六个角色。前五个使用read-only sandbox，写工件会话使用workspace-write。apply另外启动独立代码审查。真实模型可行性须由实际Runner记录证明，smoke不能证明模型执行成功。
+手动plan先实际读取并使用brainstorming形成中立问题包，再进行独立双方首轮、交叉质询及独立综合；写工件会话读取实际OpenSpec instructions，产出提案/规格/设计及适用任务，保持产品任务未实施。缺少重大决定时列明确决策请求；不拿代理共识冒充用户确认。跨语言/跨平台及非功能指标须纳入规划。
 
-模型job不持有GitHub写凭据；发布job不接收模型密钥，不执行生成代码，用可信基线脚本验证补丁路径/文件模式、当前main及Issue指纹，再普通push。运行校验发生在模型环境，发布环境只处理数据。Codex sandbox与进程隔离不等于整个Runner或容器安全边界。
+当前Runner仅处理一次明确指定的Issue；它不是跨Issue无人值守调度器。会话内主代理可在用户授权范围连续推进，详见planning-mode.md。真实模型调用本轮未验证；本地入口/路径/门禁测试不能替代模型验证。
 
-## 状态与边界
+模型只可修改本Issue的docs/development/reviews/issues/N/及精确选定的openspec/changes/<change_name>/。不改产品src/tests/contracts、主规格、规则、workflow、发布脚本、认证或上游工具。复用变更不能改其他变更；维护者明确授权的工具修正另行处理，不由模型规划补丁自行扩权。
 
-权威状态：`docs/development/issues/<N>/state.json`。运行与讨论证据：`docs/development/reviews/issues/<N>/`；对应Issue标签为`agent:awaiting-decision`、`agent:blocked`、`agent:done`。运行中状态直接看Actions，不写入虚假的running提交；崩溃前未发布的任务可重扫。机器人反馈不进入内容指纹，发布后反馈失败由后续扫描协调。
+model入口拒绝非plan；publish入口拒绝apply，均在相关副作用前失败。方案确认、整体规划审核和开发批准分离，单Issue令牌只是规划指纹；当前Runner不接受其作为产品实施入口。包括此前Issue #3在内的方案选择继续保留，但旧令牌不能绕过当前“整体规划完成后另批开发”的门禁。
 
-自动修改范围是本Issue的评审目录和`openspec/changes/issue-<N>-*/`；apply额外允许`src/`、`tests/`、`contracts/`、`docs/domain/`。禁止脚本工作流及代理规则变更、符号链接/子模块/可执行模式、路径穿越和非Python脚本。需要工具链或公共规则更新时阻塞，转为人工维护。
+## 验证与发布
 
-main变更或Issue变更会丢弃旧候选，后续补扫重新计算。普通推送冲突/分支保护错误会使Actions失败，并在机器人Issue评论保存publication-failed守卫，后续扫描要求明确retry，避免重复模型消费。若main和Issue反馈同时不可写，无法持久保存守卫，只能依据失败的Actions日志人工处理；不声称这种双重写入故障已恢复。其他持久blocked错误需要明确retry。不会自动关闭用户Issue或archive变更。
+Python3测试、原件哈希、OpenSpec严格校验和diff检查通过后才可发布；发布检查当前Issue与main基点、精确补丁范围及文件模式，不force，不自动关闭Issue或archive。缺模型/失败明确blocked；移除自动事件后，修复问题必须再显式手动启动，不由评论或补扫自动恢复。
 
-## 本地检查
+## 历史资料
 
-```text
-python3 -m unittest discover -s tests -v
-python3 scripts/verify_artifacts.py
-npm run validate
-```
+旧Issue事件/15分钟补扫/approve→apply的说明和运行记录是历史行为。本次修正替代该入口；不改写旧报告假装它们验证了当前模式。参考docs/development/reviews/manual-planning-switch.md。
 
-远程验证记录见`docs/development/reviews/2026-11-01/issue-worker-verification.md`。测试结果必须分别报告控制链路与真实模型链路。
+当前Actions的plan用于实质性领域/架构议题，保守执行完整Battle，不声称已实现自动争议识别或最省Token路由。机械性文档修订在显式授权会话内直接处理，不反复启动Runner plan；具体讨论预算与代理调用策略纳入非功能指标议题后再优化。

@@ -26,3 +26,7 @@ DDD：统一词汇、身份、不变量与领域边界。OpenSpec：proposal/spe
 Battle协议见battle-protocol.md。历史ZIP仅供追溯，不应将其配置覆盖本项目。新增或修改产品Skill时再按skill-creator和writing-skills执行，此初始化不创建一个空壳产品Skill来冒充实现。
 
 未经明确要求不archive，不发布产品。已经授权的初始化和提交持续完成。
+
+## 当前启动与开发门禁
+
+以planning-mode.md和issue-worker.md为准：Issue、评论及定时不启动工作；会话显式授权后持续规划，当前Actions只手动指定单项plan/smoke。功能、非功能及跨语言/跨平台都要规划，整体审核及单独实施批准前不开发产品。旧自动运行记录仅作历史证据。

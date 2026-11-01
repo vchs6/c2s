@@ -58,8 +58,9 @@ class GitHub:
         body = '<!-- c2s-worker -->\n' + f"状态：**{state['status']}**；模式：{state['phase']}。\n\n原因：{state.get('reason') or '验证通过'}\n\n运行：{state['run_url']}"
         body += '\n\n<!-- c2s-state: ' + json.dumps(state, ensure_ascii=False) + ' -->'
         if state.get('approval_token'):
-            body += f"\n\n批准当前功能计划：`/c2s approve {state['approval_token']}`。讨论类仅形成报告，后续实施请新建 implement Issue。"
-        if state['status'] == 'blocked': body += '\n\n修复原因后评论 `/c2s retry`；缺密钥在配置后自动恢复。'
+            body += f"\n\n规划指纹：`{state['approval_token']}`；只用于追溯，不授权当前Runner实施。方案确认、整体规划审核与开发批准分别处理。"
+        if state['status'] == 'blocked':
+            body += '\n\n修复原因后，显式手动启动指定Issue的plan或smoke；评论与定时任务不触发恢复。'
         notes = [c for c in self.comments(number) if c['user'].get('type') == 'Bot' and c.get('body', '').startswith('<!-- c2s-worker -->')]
         if notes:
             if notes[-1]['body'] != body:

@@ -43,7 +43,8 @@ npm run openspec -- status --change initialize-sdd-ddd-workspace
 
 仓库许可证为Apache-2.0；Superpowers子模块沿用其MIT许可证。
 
-## Issue 自动工作
-使用[工作事项表单](https://github.com/vchs6/c2s/issues/new?template=agent-work.yml)创建讨论、功能规划、实施或缺陷任务。详情见[Issue Worker](docs/workflow/issue-worker.md)。仓库脚本和测试统一采用Python 3，OpenSpec及Codex仍使用固定版本CLI。
+## 规划议题与手动启动
 
-Battle形成的语义模型计划位于`openspec/changes/define-layered-semantic-fact-model/`，包含proposal、design、delta specs和tasks；领域研究原件和未批准delta不等同于主规格。该变更只选择性同步已确认要求，产品任务尚未实施，不自动归档。
+Issue仅登记议题；创建、编辑、评论、标签及定时任务不触发工作。请在会话显式指定规划目标，或在Actions手动选择单个Issue的plan/smoke；当前维护工具不提供apply，不根据评论令牌实施。见[持续规划模式](docs/workflow/planning-mode.md)与[手动工具](docs/workflow/issue-worker.md)。
+
+先完成架构、功能与非功能（含查询性能、跨语言/跨平台）的讨论、规格和整体审核，再另行明确批准产品开发。方案A已选择，但不是实施批准；Issue #3相关领域模型仍沿用现有变更，不另建重复模型。

@@ -10,11 +10,18 @@ context: |
   Imported research under docs/domain and docs/development/reviews is evidence, not automatically approved specs.
   Coordinate actual OpenSpec instructions with installed Superpowers Skills.
   All repository-owned scripts and tests MUST use Python 3; pinned third-party CLIs remain upstream tools.
+  Current mode: explicit manual start, continuous planning within authorized session, product implementation disabled.
+  Issues/comments/labels/schedules MUST NOT start work. Current maintenance Runner permits plan/smoke only.
+  Separate scheme confirmation, whole-plan review and explicit product implementation approval.
+  Cover functional and nonfunctional requirements, including query performance/cost/scaling and cross-language/cross-platform matrices.
+  Token consumption is an explicit goal for both planning and Skill runtime; plan metering, reuse, bounded retries and evidence-based budgets without inventing measured savings.
+  Source language, Skill host platform and analyzed-project target platform are separate dimensions; do not claim universal support.
 rules:
   proposal:
     - State scope, affected capabilities and exclusions; tooling-only changes may explicitly skip_specs.
   design:
-    - Distinguish observed evidence, accepted decisions and proposed implementation choices.
+    - Distinguish observed evidence, accepted decisions, delegated agent decisions and proposed implementation choices.
+    - Include workload/scale/environment-bound nonfunctional goals and language/host/target support boundaries.
   tasks:
     - Every task records upstream basis, deliverable paths, verification, pass and failure conditions.
     - Use one authoritative task list; Superpowers plans reference it.

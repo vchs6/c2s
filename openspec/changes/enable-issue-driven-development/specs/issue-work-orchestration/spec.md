@@ -2,66 +2,66 @@
 
 ## Purpose
 
-为c2s提供受维护者授权、可恢复并有实际验证记录的Issue自动工作能力，协调OpenSpec与Superpowers完成讨论、规划及实施，明确自动执行与用户批准的边界，并直接提交合格结果到main。
+管理语义事实提取Skill的规划事项，以手动指定工作范围、持续讨论与可追溯规格形成替代Issue事件自动执行，并分离方案确认、整体规划审核和产品开发批准，保证创建或编辑Issue不会触发模型工作。
 
 ## ADDED Requirements
 
-### Requirement: 持久待办与事件补扫
-系统 SHALL 在Issue新建、编辑、重开、标签及有效人工命令后唤醒，并通过定时与手动补扫处理已有未完成Issue；原始事件只作为唤醒信号。
+### Requirement: Issue被动登记与显式手动启动
 
-#### Scenario: 持久待办与事件补扫的验收
-- **WHEN** 多个事件被合并或既有Issue没有新事件
-- **THEN** 扫描未完成事项，不以单次事件丢失作为完成。
+系统 SHALL 将Issue、评论和标签作为工作记录，不因新建、编辑、重开、标签、评论、推送或定时扫描启动Issue工作。维护工具只接受手动指定的单个有效Issue；未指定或编号无效 MUST 在访问服务前拒绝。
 
-### Requirement: 维护者授权与输入隔离
-系统 MUST 仅处理仓库owner或具有write/maintain/admin权限的人员创建的Issue；批准和重试命令也必须检查权限；PR评论、机器人评论和陌生用户不能授权执行。
+#### Scenario: 创建规划Issue
+- **WHEN** 用户创建、编辑Issue或发表评论批准令牌
+- **THEN** 不触发Issue模型任务，也不扫描其他待办
 
-#### Scenario: 维护者授权与输入隔离的验收
-- **WHEN** 公共仓库出现未授权Issue或机器人反馈
-- **THEN** 跳过模型和main写入，不由Issue正文扩大权限。
+#### Scenario: 非手动事件或缺少编号
+- **WHEN** 非手动事件到达准备入口，或未提供正整数Issue编号
+- **THEN** 在访问API和模型前拒绝该请求
 
-### Requirement: 工作类型分流
-系统 SHALL 区分discuss、feature、implement、bug、smoke；未知类型按discuss处理。discuss形成报告，feature/implement先规划，bug执行明确修复；smoke仅验证控制链路。
+### Requirement: 手动范围与维护者授权
 
-#### Scenario: 工作类型分流的验收
-- **WHEN** 示例Issue声明为smoke
-- **THEN** 运行确定性验证并明确标记未调用模型，不伪称Battle或产品修复。
+系统 SHALL 校验启动者和Issue作者的维护权限，拒绝PR、机器人与已关闭事项；只读取指定Issue。复用变更须显式限定目标，规划写入 MUST 限定为本事项评审目录及所选变更，不能借Issue正文扩大权限。
 
-### Requirement: 独立Battle与批准边界
-系统 SHALL 对讨论和功能规划通过独立Codex会话执行双方首轮、交叉第二轮、独立评审，再形成报告/工件；规划不能直接变更产品实现。
+#### Scenario: 未授权启动或其他变更路径
+- **WHEN** 无写权限用户启动，或规划补丁修改未选择的变更
+- **THEN** 拒绝执行或发布，不扩展到其他事项、规则或产品目录
 
-#### Scenario: 独立Battle与批准边界的验收
-- **WHEN** 功能规划完成但尚未批准
-- **THEN** 保留awaiting-decision和与当前输入及规划工件哈希关联的批准令牌。
+### Requirement: 当前维护工具仅执行规划或无模型检查
 
-### Requirement: 批准绑定当前工件
-系统 MUST 仅在维护者评论/c2s approve加当前令牌且输入、规划工件未变化时开始实施；旧批准不得复用。
+系统 SHALL 仅提供plan及无模型smoke操作。既有Issue类型、方案选择及评论批准令牌 MUST NOT 使当前维护工具进入apply；model和publish入口须在产生模型、网络写入或提交副作用前拒绝实施上下文。
 
-#### Scenario: 批准绑定当前工件的验收
-- **WHEN** Issue正文或规划文件发生变化
-- **THEN** 使旧批准失效并重新规划，不执行旧计划。
+#### Scenario: 已有批准令牌
+- **WHEN** 手动启动plan且该Issue已有旧实施批准令牌，或被标为implement/bug
+- **THEN** 仍只规划，不执行产品代码或开发任务
 
-### Requirement: 幂等与恢复
-系统 SHALL 使用内容指纹而非机器人引起的updated_at判重；完成指纹不重复执行；显式retry可恢复失败；取消前未发布的工作可重扫。
+#### Scenario: 直接传入apply上下文
+- **WHEN** 模型或发布入口收到apply上下文
+- **THEN** 在相关副作用前拒绝，不尝试实施或发布
 
-#### Scenario: 幂等与恢复的验收
-- **WHEN** 同一Issue重复label事件或机器人评论
-- **THEN** 不重复模型调用与提交。
+### Requirement: 持续规划与决策权限分离
 
-### Requirement: 验证与发布
-系统 MUST 在执行环境验证生成结果，检查输出边界和补丁；发布job只使用可信基线代码处理补丁，直接提交main且不force，不创建分支或PR，不自动archive。
+显式授权的规划会话 SHALL 按依赖推进功能及非功能议题，形成提案、规格与必要规划；阻塞议题不阻断无依赖的工作。系统 MUST 区分用户确认、授权范围内代理决定和候选；改变确认行为、超出范围或无法以证据裁决的重要取舍须请求人工决定。
 
-#### Scenario: 验证与发布的验收
-- **WHEN** 远程main变化、Issue输入变化或验证失败
-- **THEN** 不把旧补丁发布为完成，记录阻塞并允许恢复。
+#### Scenario: 一个议题等待裁决
+- **WHEN** 某议题出现需要用户决定的取舍，其他议题不依赖此决定
+- **THEN** 记录具体决策请求和影响，继续推进其他授权议题，不将代理共识冒充用户确认
 
-### Requirement: 缺少凭据的可观察阻塞
-系统 SHALL 在模型密钥缺失时保留blocked原因和Issue反馈，且不启动模型；控制链路测试与模型测试结果必须分开。
+### Requirement: 非功能指标与独立开发门禁
 
-#### Scenario: 缺少凭据的可观察阻塞的验收
-- **WHEN** OPENAI_API_KEY没有配置
-- **THEN** 任务为blocked/missing-model-key，不能报告已完成真实模型工作。
+规划 SHALL 覆盖查询性能、规划与运行Token消耗及构造成本、存储效率、一致性、扩展性、可观测与可维护性，以及源语言/混合语言、Skill运行平台和项目目标平台的支持边界；指标关联工作负载、规模、环境、目标及验证方法，不凭空冻结数值。方案确认、整体规划审核与实施批准 MUST 分离，讨论和审核通过不能自行开始产品开发或归档。
 
-#### Scenario: 主分支拒绝发布
-- **WHEN** main保护或推送错误拒绝状态提交但Issue仍可写
-- **THEN** 以受信任机器人评论保存当前指纹的publication-failed守卫，阻止自动重复模型消费并要求retry；双重写入均失败时以Actions失败明确报告持久化限制
+#### Scenario: 方案获确认但整体规划未完成
+- **WHEN** 用户确认一项技术方案
+- **THEN** 记录方案决定并继续规划，不能因确认而开发；产品实施仍需后续整体审核及明确授权
+
+### Requirement: 规划摘要与验证结果可追溯
+
+系统 SHALL 绑定当前输入和所选变更的全部规划文件；新增、删除或修改规划文件须使旧摘要失效。系统 MUST 运行适用验证，分开报告工具链检查、模型调用及产品测试，不把无模型smoke或OpenSpec工件存在当作产品完成。
+
+#### Scenario: 已有变更新增文件
+- **WHEN** 为复用的非issue前缀变更新增规格
+- **THEN** 规划摘要改变，旧批准不能继续使用
+
+#### Scenario: 模型密钥缺失
+- **WHEN** 手动plan缺少模型密钥
+- **THEN** 记录blocked/missing-model-key，不模拟Battle；smoke可独立验证控制链路但不称模型成功

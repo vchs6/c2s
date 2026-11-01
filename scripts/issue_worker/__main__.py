@@ -1,9 +1,10 @@
-"""Usage: python3 -m scripts.issue_worker prepare|model|publish."""
+"""Manual planning entry; Issue events and approval comments never start work."""
 import os
+import re
 import sys
 from pathlib import Path
 from .github import GitHub
-from .pipeline import git, load_json, save_json, select_issue
+from .pipeline import git, load_json, save_json, select_manual_issue
 
 
 def main():
@@ -12,31 +13,34 @@ def main():
         from .runner import run
         run()
         return
-    api = GitHub()
     if command == 'prepare':
-        issues = api.pages('/issues?state=open&sort=created&direction=asc')
-        # Reconcile feedback after a successful state commit even if prior label/comment API failed.
-        for issue in issues:
-            state = load_json(Path(f"docs/development/issues/{issue['number']}/state.json"))
-            if state and 'pull_request' not in issue:
-                from .core import fingerprint
-                if state['input_hash'] == fingerprint(issue):
-                    from .pipeline import effective_state
-                    latest = effective_state(state, api.comments(issue['number']))
-                    api.feedback(issue['number'], latest)
-        context = select_issue(issues, api, Path.cwd(), os.environ.get('HAS_MODEL_KEY') == 'true')
-        if context:
-            context['base_sha'] = git(Path.cwd(), 'rev-parse', 'HEAD').decode().strip()
-            save_json('.issue-runtime/control/context.json', context)
+        if os.environ.get('GITHUB_EVENT_NAME') != 'workflow_dispatch':
+            raise ValueError('manual workflow_dispatch required')
+        number = os.environ.get('C2S_ISSUE_NUMBER', '')
+        operation = os.environ.get('C2S_OPERATION', 'plan')
+        change_name = os.environ.get('C2S_CHANGE_NAME') or None
+        if not re.fullmatch(r'[1-9][0-9]*', number):
+            raise ValueError('manual positive issue number required')
+        if operation not in {'plan', 'smoke'}:
+            raise ValueError('manual planning-only operation required')
+        if change_name and not re.fullmatch(r'[a-z][a-z0-9-]*', change_name):
+            raise ValueError('invalid manual OpenSpec change name')
+        api = GitHub()
+        issue = api.request(f'/issues/{int(number)}')
+        context = select_manual_issue(issue, api, Path.cwd(), os.environ.get('HAS_MODEL_KEY') == 'true',
+            actor=os.environ.get('GITHUB_ACTOR'), operation=operation, change_name=change_name)
+        context['base_sha'] = git(Path.cwd(), 'rev-parse', 'HEAD').decode().strip()
+        save_json('.issue-runtime/control/context.json', context)
         with open(os.environ['GITHUB_OUTPUT'], 'a') as output:
-            output.write('selected=' + ('true' if context else 'false') + '\n')
-            output.write('phase=' + (context['phase'] if context else 'none') + '\n')
-            output.write('base_sha=' + (context['base_sha'] if context else '') + '\n')
+            output.write('selected=true\n')
+            output.write('phase=' + context['phase'] + '\n')
+            output.write('base_sha=' + context['base_sha'] + '\n')
     elif command == 'publish':
         from .publish import publish
-        publish(api, load_json('.issue-runtime/control/context.json'), os.environ.get('MODEL_OK') == 'true')
+        publish(GitHub(), load_json('.issue-runtime/control/context.json'), os.environ.get('MODEL_OK') == 'true')
     else:
         raise SystemExit('Expected prepare, model or publish')
 
 
-if __name__ == '__main__': main()
+if __name__ == '__main__':
+    main()
