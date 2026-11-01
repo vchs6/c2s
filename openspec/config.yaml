@@ -14,7 +14,8 @@ context: |
   Issues/comments/labels/schedules MUST NOT start work. Current maintenance Runner permits plan/smoke only.
   Separate scheme confirmation, whole-plan review and explicit product implementation approval.
   Cover functional and nonfunctional requirements, including query performance/cost/scaling and cross-language/cross-platform matrices.
-  Token consumption is an explicit goal for both planning and Skill runtime; plan metering, reuse, bounded retries and evidence-based budgets without inventing measured savings.
+  Minimize actual LLM input/output tokens needed to extract and maintain layered semantic facts while preserving required semantics, correctness and evidence; metering/budgets alone do not satisfy this goal.
+  Compare deterministic processing, cross-layer reuse, incremental work and minimal model context; do not claim measured savings without evidence.
   Source language, Skill host platform and analyzed-project target platform are separate dimensions; do not claim universal support.
 rules:
   proposal:
