@@ -1,0 +1,196 @@
+{
+  "battle_id": "issue-5-planning-2026-11-01",
+  "problem": "质量与支持范围及Token评价",
+  "constraints_ref": "docs/planning/program-2026-11-01/context.md",
+  "rounds": {
+    "1": {
+      "proposer": {
+        "role": "battle_proposer",
+        "claims": [
+          {
+            "id": "P1",
+            "statement": "代表场景覆盖首次/已有/重复/变化/跨项目/失败；替代全组合矩阵覆盖强但组合膨胀。",
+            "evidence_refs": [
+              "issue-input.json",
+              "problem-package.md"
+            ],
+            "falsifier": "遗漏场景有独有失效"
+          },
+          {
+            "id": "P2",
+            "statement": "首结果带范围/缺口，完整响应按请求；固定输入质量平台比较全过程Token和延迟，不能将空结果或缓存成本转移当收益。",
+            "evidence_refs": [
+              "AGENTS.md",
+              "context.md"
+            ],
+            "falsifier": "质量降低或漏计构造成本"
+          },
+          {
+            "id": "P3",
+            "statement": "语言/混合、host、target分列并验证组合，首期范围及数值目标交用户。",
+            "evidence_refs": [
+              "context.md"
+            ],
+            "falsifier": "维度支持被误读全部组合支持"
+          }
+        ],
+        "unknowns": [
+          "支持组合/版本、负载规模、数值目标未授权；未测量"
+        ]
+      },
+      "challenger": {
+        "role": "battle_challenger",
+        "claims": [
+          {
+            "id": "H1",
+            "statement": "快返空壳/缺证据/不支持会美化延迟；成功须满足语义与证据，失败/部分另报且计请求总体。",
+            "evidence_refs": [
+              "AGENTS.md",
+              "problem-package.md"
+            ],
+            "falsifier": "统一统计能识别缺口且不美化"
+          },
+          {
+            "id": "H2",
+            "statement": "单语言成功不证明混合跨边界支持，须组合证据与退化；首期不推定。",
+            "evidence_refs": [
+              "issue-input.json"
+            ],
+            "falsifier": "已有可靠组合证据"
+          },
+          {
+            "id": "H3",
+            "statement": "热缓存零调用不证明首次降耗；同质量对照直接模型、确定性转换、局部补足，复用核有效性。",
+            "evidence_refs": [
+              "AGENTS.md",
+              "context.md"
+            ],
+            "falsifier": "实测无降耗或丢语义"
+          }
+        ],
+        "unknowns": [
+          "质量基准/规模/支持范围/来源变化策略未定；未测量"
+        ]
+      }
+    },
+    "2": {
+      "proposer": {
+        "role": "battle_proposer",
+        "responses": [
+          {
+            "id": "C01",
+            "action": "revise",
+            "reason": "代表场景补风险映射、覆盖遗漏及待测，不外推未知组合"
+          },
+          {
+            "id": "C02",
+            "action": "accept",
+            "reason": "总体分母包括全部请求；首结果披露缺口非完整成功，成功须满足语义证据"
+          },
+          {
+            "id": "C03",
+            "action": "accept",
+            "reason": "矩阵维度可定义，首期语言/版本/混合及host/target承诺交用户"
+          },
+          {
+            "id": "C04",
+            "action": "revise",
+            "reason": "固定输入请求质量，冷/热/变化对照；有效性参数化，不暗定更新策略"
+          }
+        ]
+      },
+      "challenger": {
+        "role": "battle_challenger",
+        "responses": [
+          {
+            "id": "C01",
+            "action": "revise",
+            "reason": "代表风险样本补混合边界/退化，未知组合不外推"
+          },
+          {
+            "id": "C02",
+            "action": "revise",
+            "reason": "缺口披露不等成功，总体含失败部分；成功延迟附成功率"
+          },
+          {
+            "id": "C03",
+            "action": "accept",
+            "reason": "代理可定义度量维度，具体支持/目标仍交用户"
+          },
+          {
+            "id": "C04",
+            "action": "revise",
+            "reason": "固定质量分冷/热/变化；复用有效性不替用户选变化策略"
+          }
+        ]
+      }
+    },
+    "3": {
+      "reviewer": {
+        "role": "battle_reviewer",
+        "round": 3,
+        "position": "建议候选评价框架，不按多数票",
+        "responses": [
+          {
+            "id": "C01",
+            "action": "revise",
+            "reason": "代表样本附风险/遗漏，单语言不能推断混合边界"
+          },
+          {
+            "id": "C02",
+            "action": "revise",
+            "reason": "首个有效结果/完成/成功分开；失败在总体，成功延迟附成功率"
+          },
+          {
+            "id": "C03",
+            "action": "accept",
+            "reason": "维度可定义，host成功不证明target正确"
+          },
+          {
+            "id": "C04",
+            "action": "revise",
+            "reason": "固定质量证据分冷热变化，陈旧零Token不算收益"
+          }
+        ],
+        "unknowns": [
+          "支持/规模/质量成本目标待用户",
+          "来源变化策略未定",
+          "无实测"
+        ]
+      }
+    }
+  },
+  "disputes": [
+    {
+      "id": "C01",
+      "question": "代表场景如何覆盖风险，不用全组合宣称普遍支持？"
+    },
+    {
+      "id": "C02",
+      "question": "成功/部分/失败、首结果/完整结果及总体分母如何防伪快？"
+    },
+    {
+      "id": "C03",
+      "question": "语言/host/target和混合组合哪些必须用户确认？"
+    },
+    {
+      "id": "C04",
+      "question": "冷/热/变化Token对照如何固定质量并核复用有效性？"
+    }
+  ],
+  "decision_status": "proposed",
+  "user_decision": null,
+  "record_kind": "主代理按真实独立答复整理的论证摘要，非逐字转储",
+  "participants": [
+    "battle_proposer",
+    "battle_challenger",
+    "battle_reviewer"
+  ],
+  "constraints": "共享context中的已确认边界",
+  "recommendation": "采用有风险映射的代表负载与同质量评价框架为候选；不承诺未测组合和数值",
+  "unresolved": [
+    "D01 支持组合与负载",
+    "D02 数值目标与质量基准",
+    "D03 来源变化策略"
+  ]
+}

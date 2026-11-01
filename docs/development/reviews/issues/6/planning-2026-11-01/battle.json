@@ -1,0 +1,175 @@
+{
+  "battle_id": "issue-6-planning-2026-11-01",
+  "problem": "架构职责与共享契约",
+  "constraints_ref": "docs/planning/program-2026-11-01/context.md",
+  "participants": [
+    "battle_proposer",
+    "battle_challenger",
+    "battle_reviewer"
+  ],
+  "rounds": {
+    "1": {
+      "proposer": {
+        "position": "查询驱动模块化流水线；集中契约；确定性转换和局部模型",
+        "claims": [
+          {
+            "id": "P1",
+            "statement": "身份条件状态集中，适配器提交主张证据不裁真",
+            "evidence_refs": [
+              "semantic-fact-model",
+              "模型A design §4"
+            ],
+            "falsifier": "同操作适配产生不同分层身份"
+          },
+          {
+            "id": "P2",
+            "statement": "复用先核有效性；局部上下文防遗漏宏/混合边界",
+            "evidence_refs": [
+              "AGENTS.md"
+            ],
+            "falsifier": "跨文件语义遗漏仍完整"
+          },
+          {
+            "id": "P3",
+            "statement": "每次全量模型与提前全仓替代均有成本/按需问题，无性能结论",
+            "evidence_refs": [
+              "issue-input.json"
+            ],
+            "falsifier": "流水线协调成本超过同质量替代"
+          }
+        ]
+      },
+      "challenger": {
+        "position": "职责集中定义执行可替换，部署存储不先定",
+        "claims": [
+          {
+            "id": "H1",
+            "statement": "单协调器或流水线都须共享身份状态，不按五层拆五套",
+            "evidence_refs": [
+              "semantic-fact-model"
+            ],
+            "falsifier": "不同组件身份或冲突结论不同"
+          },
+          {
+            "id": "H2",
+            "statement": "事实/来源观察/投影分开，命中非有效，不默覆盖",
+            "evidence_refs": [
+              "context.md"
+            ],
+            "falsifier": "变化后盲用旧事实"
+          },
+          {
+            "id": "H3",
+            "statement": "内部必要获取与响应分离，扩取记录理由",
+            "evidence_refs": [
+              "semantic-fact-query",
+              "AGENTS.md"
+            ],
+            "falsifier": "顶层查询反复全仓或漏必要条件"
+          }
+        ]
+      }
+    },
+    "2": {
+      "proposer": {
+        "role": "battle_proposer",
+        "round": 2,
+        "responses": [
+          {
+            "id": "C01",
+            "action": "accept",
+            "reason": "逻辑职责可由单协调器执行"
+          },
+          {
+            "id": "C02",
+            "action": "revise",
+            "reason": "命中有效性分开；变化不默认覆盖"
+          },
+          {
+            "id": "C03",
+            "action": "accept",
+            "reason": "扩取有理由边界缺口，禁止无理由全仓"
+          }
+        ],
+        "unknowns": [
+          "核验能力",
+          "扩取停止",
+          "无成本测量"
+        ]
+      },
+      "challenger": {
+        "role": "battle_challenger",
+        "round": 2,
+        "responses": [
+          {
+            "id": "C01",
+            "action": "accept",
+            "reason": "职责非独立服务"
+          },
+          {
+            "id": "C02",
+            "action": "revise",
+            "reason": "核验unchecked/失效，写政策参数化"
+          },
+          {
+            "id": "C03",
+            "action": "missing-evidence",
+            "reason": "无测量，不能排除预索引；具体语义按需，允许必要有界扩取"
+          }
+        ],
+        "unknowns": [
+          "核验失败边界",
+          "混合闭包停止",
+          "比较负载"
+        ]
+      }
+    },
+    "3": {
+      "reviewer": {
+        "role": "battle_reviewer",
+        "position": "可供下游规划，不可冻结",
+        "responses": [
+          {
+            "id": "C01",
+            "action": "revise",
+            "reason": "职责分离可；端口/#8算法/#12调度任务边界明确"
+          },
+          {
+            "id": "C02",
+            "action": "revise",
+            "reason": "补未核验/失败/变化消费，不默认覆盖"
+          },
+          {
+            "id": "C03",
+            "action": "revise",
+            "reason": "允许轻量索引；#8定义停止和不完备缺口"
+          }
+        ]
+      }
+    }
+  },
+  "disputes": [
+    {
+      "id": "C01",
+      "question": "逻辑流水线与单协调器如何避免部署预选和职责重复"
+    },
+    {
+      "id": "C02",
+      "question": "命中有效性与变化策略如何分离"
+    },
+    {
+      "id": "C03",
+      "question": "内部扩取与最小响应、Token如何兼容"
+    }
+  ],
+  "decision_status": "proposed",
+  "user_decision": null,
+  "record_kind": "真实答复的主代理结构化摘要，非逐字转储",
+  "recommendation": "候选逻辑职责、共享契约，补来源核验及任务归属",
+  "unresolved": [
+    "D01",
+    "D02",
+    "D03",
+    "具体契约实现未批准"
+  ]
+}
