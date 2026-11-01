@@ -86,6 +86,19 @@ class ManualPlanningTests(unittest.TestCase):
         self.assertTrue(core.allowed_paths(['openspec/changes/existing-model/specs/a/spec.md'], 'plan', 7, change_name='existing-model'))
         self.assertFalse(core.allowed_paths(['openspec/changes/another-model/spec.md'], 'plan', 7, change_name='existing-model'))
 
+    def test_planning_completeness_honors_explicit_skip_specs(self):
+        complete = getattr(pipeline, 'planning_complete', None)
+        self.assertTrue(callable(complete), 'OpenSpec planning completion helper must exist')
+        with tempfile.TemporaryDirectory() as folder:
+            change = Path(folder)
+            for name in ('proposal.md', 'design.md', 'tasks.md'):
+                (change/name).write_text('planning artifact')
+            self.assertFalse(complete(change))
+            (change/'.openspec.yaml').write_text('schema: spec-driven\nskip_specs: true\n')
+            self.assertTrue(complete(change))
+            (change/'proposal.md').unlink()
+            self.assertFalse(complete(change))
+
     def test_selected_unchanged_change_is_in_manifest(self):
         selected = getattr(pipeline, 'planning_paths', None)
         self.assertTrue(callable(selected), 'selected-change manifest collector must exist')

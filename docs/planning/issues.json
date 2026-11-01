@@ -1,0 +1,175 @@
+{
+  "mode": "explicit-start-continuous-planning",
+  "automatic_issue_execution": false,
+  "product_implementation_approved": false,
+  "issues_started": false,
+  "workflow_switch_commit": "2445cbdc84aca87085bef9a2280ca2c9d7528e04",
+  "token_objective_commit": "7553b2f73e6c9f6e46420aa083e5b2d55918080c",
+  "existing_domain_model_issue": 3,
+  "selected_domain_scheme": "A",
+  "global_objectives": [
+    "query-performance-and-quality",
+    "cross-language-and-mixed-language",
+    "skill-host-versus-project-target-platforms",
+    "minimize-actual-llm-tokens-for-layered-fact-extraction"
+  ],
+  "issues": [
+    {
+      "sequence": 0,
+      "number": 4,
+      "title": "[规划总计划] 语义事实提取 Skill：全议题规划、整体审核与开发门禁",
+      "url": "https://github.com/vchs6/c2s/issues/4",
+      "depends_on": [
+        3
+      ]
+    },
+    {
+      "sequence": 1,
+      "key": "quality",
+      "number": 5,
+      "title": "[规划01] 查询工作负载、非功能指标、跨语言/跨平台与Token最小化评价",
+      "url": "https://github.com/vchs6/c2s/issues/5",
+      "parent": 4,
+      "depends_on": [
+        3
+      ],
+      "proposed_change": "define-semantic-analysis-quality-goals",
+      "status": "open-not-started"
+    },
+    {
+      "sequence": 2,
+      "key": "architecture",
+      "number": 6,
+      "title": "[规划02] 语义事实提取Skill总体架构、组件职责与共享契约",
+      "url": "https://github.com/vchs6/c2s/issues/6",
+      "parent": 4,
+      "depends_on": [
+        3,
+        5
+      ],
+      "proposed_change": "design-semantic-fact-skill-architecture",
+      "status": "open-not-started"
+    },
+    {
+      "sequence": 3,
+      "key": "query",
+      "number": 7,
+      "title": "[规划03] 查询请求、顶层最小响应与状态/错误公共契约",
+      "url": "https://github.com/vchs6/c2s/issues/7",
+      "parent": 4,
+      "depends_on": [
+        3,
+        5,
+        6
+      ],
+      "proposed_change": "define-semantic-fact-query-contracts",
+      "status": "open-not-started"
+    },
+    {
+      "sequence": 4,
+      "key": "lazy",
+      "number": 8,
+      "title": "[规划04] 按查询触发的分层语义事实延迟构造",
+      "url": "https://github.com/vchs6/c2s/issues/8",
+      "parent": 4,
+      "depends_on": [
+        3,
+        6,
+        7
+      ],
+      "proposed_change": "design-lazy-semantic-fact-construction",
+      "status": "open-not-started"
+    },
+    {
+      "sequence": 5,
+      "key": "storage",
+      "number": 9,
+      "title": "[规划05] 语义事实增量存储、身份去重与幂等",
+      "url": "https://github.com/vchs6/c2s/issues/9",
+      "parent": 4,
+      "depends_on": [
+        3,
+        6,
+        7,
+        8
+      ],
+      "proposed_change": "design-incremental-semantic-fact-storage",
+      "status": "open-not-started"
+    },
+    {
+      "sequence": 6,
+      "key": "acquisition",
+      "number": 10,
+      "title": "[规划06] 获取工具、能力矩阵与跨语言/跨平台适配",
+      "url": "https://github.com/vchs6/c2s/issues/10",
+      "parent": 4,
+      "depends_on": [
+        3,
+        5,
+        6,
+        8
+      ],
+      "proposed_change": "survey-semantic-acquisition-capabilities",
+      "status": "open-not-started"
+    },
+    {
+      "sequence": 7,
+      "key": "tokens",
+      "number": 11,
+      "title": "[规划07] 最小化提取分层语义事实所需的实际LLM Token消耗",
+      "url": "https://github.com/vchs6/c2s/issues/11",
+      "parent": 4,
+      "depends_on": [
+        3,
+        5,
+        6,
+        7,
+        8,
+        9,
+        10
+      ],
+      "proposed_change": "minimize-semantic-extraction-tokens",
+      "status": "open-not-started"
+    },
+    {
+      "sequence": 8,
+      "key": "coordination",
+      "number": 12,
+      "title": "[规划08] 跨能力一致性、并发、失败恢复与可观测性",
+      "url": "https://github.com/vchs6/c2s/issues/12",
+      "parent": 4,
+      "depends_on": [
+        3,
+        6,
+        7,
+        8,
+        9,
+        10,
+        11
+      ],
+      "proposed_change": "design-semantic-fact-coordination",
+      "status": "open-not-started"
+    },
+    {
+      "sequence": 9,
+      "key": "readiness",
+      "number": 13,
+      "title": "[规划09] 整体规格一致性、验收矩阵与开发就绪审核",
+      "url": "https://github.com/vchs6/c2s/issues/13",
+      "parent": 4,
+      "depends_on": [
+        3,
+        5,
+        6,
+        7,
+        8,
+        9,
+        10,
+        11,
+        12
+      ],
+      "proposed_change": "review-semantic-planning-readiness",
+      "status": "open-not-started"
+    }
+  ]
+}

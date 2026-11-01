@@ -48,3 +48,5 @@ npm run openspec -- status --change initialize-sdd-ddd-workspace
 Issue仅登记议题；创建、编辑、评论、标签及定时任务不触发工作。请在会话显式指定规划目标，或在Actions手动选择单个Issue的plan/smoke；当前维护工具不提供apply，不根据评论令牌实施。见[持续规划模式](docs/workflow/planning-mode.md)与[手动工具](docs/workflow/issue-worker.md)。
 
 先完成架构、功能与非功能（含查询性能、跨语言/跨平台）的讨论、规格和整体审核，再另行明确批准产品开发。方案A已选择，但不是实施批准；Issue #3相关领域模型仍沿用现有变更，不另建重复模型。
+
+规划议题见[总计划 #4](https://github.com/vchs6/c2s/issues/4)与[仓库台账](docs/planning/agenda.md)；本次只创建事项，不自动启动讨论。

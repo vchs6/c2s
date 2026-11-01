@@ -17,7 +17,7 @@
 
 遵循已读取的brainstorming（具体关闭行为已有用户授权）、writing-plans/executing-plans（唯一tasks）、test-driven-development及verification-before-completion；先观察新7组测试失败（首次13失败/1错误，旧入口在拒绝前先读取密钥；隔离测试凭据和模型后为14个明确失败），再实现；未调用模型、未访问凭据。独立只读reviewer指出报告单独变更时的摘要覆盖问题，补第8个回归，先观察失败再修正。没有启动新领域Battle或产品实现。
 
-最终本地结果：npm test共30项通过；npm run validate共5项通过/0失败；npm run check:artifacts四原件哈希及Superpowers固定源通过；git diff --check通过。发布测试包含临时本地bare仓库真实push，不等于GitHub模型端到端。源码/产品contracts、语言获取器和产品测试未实现，两份语义主规格与研究原件不变。
+最终本地结果：npm test共31项通过；npm run validate共5项通过/0失败；npm run check:artifacts四原件哈希及Superpowers固定源通过；git diff --check通过。发布测试包含临时本地bare仓库真实push，不等于GitHub模型端到端。源码/产品contracts、语言获取器和产品测试未实现，两份语义主规格与研究原件不变。
 
 ## 独立复核
 
@@ -28,3 +28,11 @@ Important：所选已有change未必进入plan_digest，已通过planning_paths�
 ## 发布与Issue顺序检查
 
 发布前通过GitHub读取issue-worker各状态in_progress/queued/waiting/pending/requested，均无活动运行；最近30个Actions记录中的7个旧Issue worker均已结束。先发布并核对远程workflow只保留手动入口，再创建新规划事项；完成后的实际链接和顺序见docs/planning/agenda.md。本文件首版提交时尚未创建后续Issue，不把计划动作写成已完成。
+
+## 后续实际完成
+
+远程先发布2445cbdc84aca87085bef9a2280ca2c9d7528e04，GitHub读回确认worker只保留workflow_dispatch及必填单Issue输入，无apply分支。随后发布7553b2f73e6c9f6e46420aa083e5b2d55918080c，按用户最新说明明确“最小化分层事实提取实际LLM Token”，不以计量或限额替代运行降耗。
+
+此后才顺序创建总计划#4、子议题#5–#13，并更新#4实际链接/依赖。#11单列实际提取Token最小化方案，其他议题贯穿相同目标；跨语言/混合语言与host/target平台矩阵覆盖在质量、架构及适配等事项中。创建后Actions读回仍仅历史7个已完成Issue worker，无新Issue事件启动的运行。当前议题均未启动、不实施产品、不归档。完整实际台账在docs/planning/agenda.md及issues.json。
+
+为仅承担编排的总计划补充OpenSpec skip_specs:true兼容检查：先观察第9个新回归失败，再修正完整性检查，仍要求proposal/design/tasks存在；不为通过维护工具检查虚构产品规格。最终全量31项通过。

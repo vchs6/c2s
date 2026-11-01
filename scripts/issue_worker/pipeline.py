@@ -137,3 +137,14 @@ def planning_paths(root, generated, prior_paths, change_name=None):
             raise ValueError('planning directory escapes repository')
         paths.update(str(p.relative_to(root)) for p in directory.rglob('*') if p.is_file() or p.is_symlink())
     return sorted(paths)
+
+
+def planning_complete(directory):
+    """Honor canonical OpenSpec skip_specs without inventing a product capability."""
+    directory = Path(directory)
+    if not all((directory/name).is_file() for name in ('proposal.md', 'design.md', 'tasks.md')):
+        return False
+    if any((directory/'specs').rglob('spec.md')):
+        return True
+    marker = directory/'.openspec.yaml'
+    return marker.is_file() and bool(re.search(r'^skip_specs:[ \t]+true[ \t]*(?:#.*)?$', marker.read_text(), re.M))

@@ -4,7 +4,7 @@ import os
 import subprocess
 from pathlib import Path
 from .core import approval_token, fingerprint, validate_result
-from .pipeline import check_patch, git, load_json, plan_digest, planning_paths, save_json, staged_paths
+from .pipeline import check_patch, git, load_json, plan_digest, planning_paths, planning_complete, save_json, staged_paths
 
 
 def verify_candidate(folder, context):
@@ -56,7 +56,7 @@ def _publish(api, context, model_ok):
     # A feature plan must contain the complete planning contract, not just a report.
     if verdict['status'] == 'awaiting-decision' and context['kind'] in {'plan', 'feature', 'implement'}:
         proposals = [root/'openspec/changes'/context['change_name']/'proposal.md'] if context.get('change_name') else list(root.glob(f'openspec/changes/issue-{number}-*/proposal.md'))
-        complete = any(p.is_file() and (p.parent/'design.md').is_file() and (p.parent/'tasks.md').is_file() and list((p.parent/'specs').rglob('spec.md')) for p in proposals)
+        complete = any(planning_complete(p.parent) for p in proposals)
         if not complete:
             git(root, 'reset', '--hard', context['base_sha'])
             generated = []
