@@ -15,7 +15,7 @@
   - 通过：类型化上下文、当前SHA校验、普通main提交；失败：force、PR、伪造Battle或运行补丁中的发布脚本。
 
 ## 3. 运行验证与记录
-- [ ] 3.1 更新规则和使用说明，严格校验、独立复核，提交main并创建一次明确的smoke Issue验证实际触发/状态/提交；检查模型凭据可用性。
+- [x] 3.1 更新规则和使用说明，严格校验、独立复核，提交main并创建一次明确的smoke Issue验证实际触发/状态/提交；检查模型凭据可用性。
   - 上游依据：用户配置并测试可行性的要求。
   - 交付物：docs/development中的流程、测试记录和远程run/commit链接。
   - 验证：npm test、npm run validate、check:artifacts、git diff --check及真实Actions日志。
@@ -24,3 +24,10 @@
 ## Workflow follow-up
 - 缺少仓库OPENAI_API_KEY时，真实模型链路保持blocked，用户配置Secret后恢复验证；不能传输网页OAuth令牌。
 - 不创建PR或开发分支，不自动archive。
+
+## 4. 外部凭据恢复后的实际模型验收
+- [ ] 4.1 配置仓库OPENAI_API_KEY后，验证真实独立Battle及计划批准/apply端到端。
+  - 上游依据：真实模型可行性不能由smoke或纯规则测试证明。
+  - 交付物：docs/development/reviews中的实际会话、计划与实施验收记录。
+  - 验证：Issue #2恢复后检查实际模型会话及报告，再以明确测试任务验证批准与apply。
+  - 通过：真实模型调用、当前令牌批准及验证提交均有证据；失败/当前阻塞：仓库缺OPENAI_API_KEY，暂未调用模型。

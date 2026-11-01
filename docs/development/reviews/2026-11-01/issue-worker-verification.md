@@ -13,7 +13,15 @@ Python unittest 22项通过；包含内容指纹、维护者授权、旧批准�
 
 ## 远程验证
 
-待实际Actions运行后填写。smoke只证明控制链路；模型链路必须单独记录，缺密钥则blocked，不能宣称真实Battle已成功。
+- 配置提交：`36ba4050f96f2e31dc83a84bbfc4ab30bc06223e`，直接main。
+- 基线CI：[41268550468](https://github.com/vchs6/c2s/actions/runs/41268550468)，success。
+- smoke [Issue #1](https://github.com/vchs6/c2s/issues/1)触发[41268564276](https://github.com/vchs6/c2s/actions/runs/41268564276)，prepare/publish成功，model跳过。四项校验全部code=0；smoke.json明确model_called=false；状态completed，机器人标签/反馈成功。
+- smoke自动提交：`0faf2d016ca81fb16b87693250db352fd8e73074`，main写入状态和报告。
+- 模型探针[Issue #2](https://github.com/vchs6/c2s/issues/2)触发[41268598288](https://github.com/vchs6/c2s/actions/runs/41268598288)，工作流success，任务明确blocked/missing-model-key，model跳过；未发生真实模型调用。
+- 阻塞记录自动提交：`b7dadacb196cd551e2d61ae1d10b602804a43991`。第二次扫描没有重做已完成的smoke，证明完成指纹跳过。
+- 公开main远程树及Issue机器人评论已重新读取核对，不以本地测试代替远程验证。
+
+结论：Issue事件→队列→工件→验证→直接main提交→反馈的控制链路实际可行。仓库缺少OPENAI_API_KEY，真实Battle/规划/批准/apply端到端尚未验证。需仓库维护者在Actions Secrets中配置API密钥，之后Issue #2可由补扫恢复；不能通过网页OAuth替代。若不再需要探针，可手动关闭该Issue。
 
 ## 领域模型工件
 

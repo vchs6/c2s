@@ -11,3 +11,5 @@ Ruling: Battle采用同一模型job中独立ephemeral CLI进程，仍保持独�
 任务1.1完成：Python调度规则RED→GREEN。任务2.1完成：22项测试全部通过，包含真实临时git推送、拒绝推送守卫、越界重命名及计划新增文件失效。
 独立复核发现的阻断项已在同一修复轮解决：隐藏工件上传、缺密钥批准恢复、重命名源路径、计划完整目录摘要、发布失败Issue守卫。相应回归测试先失败后通过（上传选项为配置静态检查）。 staged diff检查已更正为--cached。
 Ruling: main与Issue反馈同时不可写时无法持久保存失败守卫；Actions失败保留证据并需人工处理，不能称自动恢复。
+
+任务3.1完成：远程基线CI与smoke链路成功；模型探针明确missing-model-key并提交阻塞状态，未声称真实Battle通过。任务4.1等待仓库维护者配置API密钥；无可用凭据时不能执行。证据见docs/development/reviews/2026-11-01/issue-worker-verification.md。

@@ -9,6 +9,7 @@ context: |
   Approved scope is recorded in docs/decisions/0001-five-semantic-layers.md.
   Imported research under docs/domain and docs/development/reviews is evidence, not automatically approved specs.
   Coordinate actual OpenSpec instructions with installed Superpowers Skills.
+  All repository-owned scripts and tests MUST use Python 3; pinned third-party CLIs remain upstream tools.
 rules:
   proposal:
     - State scope, affected capabilities and exclusions; tooling-only changes may explicitly skip_specs.
