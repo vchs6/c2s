@@ -1,0 +1,46 @@
+{
+  "mode": "deterministic-smoke",
+  "model_called": false,
+  "validations": [
+    {
+      "command": [
+        "python3",
+        "-m",
+        "unittest",
+        "discover",
+        "-s",
+        "tests",
+        "-v"
+      ],
+      "code": 0,
+      "output": "test_failed_publish_guard_survives_unwritable_main (test_issue_pipeline.PipelineTests.test_failed_publish_guard_survives_unwritable_main) ... ok\ntest_new_file_in_planned_change_invalidates_digest (test_issue_pipeline.PipelineTests.test_new_file_in_planned_change_invalidates_digest) ... ok\ntest_plan_digest_detects_missing_and_edited_artifacts (test_issue_pipeline.PipelineTests.test_plan_digest_detects_missing_and_edited_artifacts) ... ok\ntest_real_git_patch_detects_symlink_and_forbidden_files (test_issue_pipeline.PipelineTests.test_real_git_patch_detects_symlink_and_forbidden_files) ... ok\ntest_rename_cannot_remove_trusted_source (test_issue_pipeline.PipelineTests.test_rename_cannot_remove_trusted_source) ... ok\ntest_scan_skips_pr_bot_and_readonly_and_keeps_backlog (test_issue_pipeline.PipelineTests.test_scan_skips_pr_bot_and_readonly_and_keeps_backlog) ... ok\ntest_unauthorized_comment_cannot_approve (test_issue_pipeline.PipelineTests.test_unauthorized_comment_cannot_approve) ... ok\ntest_push_failure_records_issue_guard (test_issue_publish.PublicationIntegrationTests.test_push_failure_records_issue_guard) ... ok\ntest_successful_plan_uses_real_git_push (test_issue_publish.PublicationIntegrationTests.test_successful_plan_uses_real_git_push) ... ok\ntest_apply_requires_independent_review (test_issue_publish.PublisherTests.test_apply_requires_independent_review) ... ok\ntest_failure_never_accepts_patch (test_issue_publish.PublisherTests.test_failure_never_accepts_patch) ... ok\ntest_missing_agent_output_blocks (test_issue_publish.PublisherTests.test_missing_agent_output_blocks) ... ok\ntest_authorization (test_issue_worker.SchedulingTests.test_authorization) ... ok\ntest_completed_and_retry (test_issue_worker.SchedulingTests.test_completed_and_retry) ... ok\ntest_current_approval_only (test_issue_worker.SchedulingTests.test_current_approval_only) ... ok\ntest_explicit_type_only (test_issue_worker.SchedulingTests.test_explicit_type_only) ... ok\ntest_fingerprint_ignores_feedback_but_not_body (test_issue_worker.SchedulingTests.test_fingerprint_ignores_feedback_but_not_body) ... ok\ntest_key_restores_and_smoke_needs_no_key (test_issue_worker.SchedulingTests.test_key_restores_and_smoke_needs_no_key) ... ok\ntest_missing_key_resume_revalidates_plan (test_issue_worker.SchedulingTests.test_missing_key_resume_revalidates_plan) ... ok\ntest_paths_enforce_phase_and_trusted_boundary (test_issue_worker.SchedulingTests.test_paths_enforce_phase_and_trusted_boundary) ... ok\ntest_plan_and_missing_key (test_issue_worker.SchedulingTests.test_plan_and_missing_key) ... ok\ntest_result_cannot_self_certify (test_issue_worker.SchedulingTests.test_result_cannot_self_certify) ... ok\n\n----------------------------------------------------------------------\nRan 22 tests in 0.192s\n\nOK\n"
+    },
+    {
+      "command": [
+        "python3",
+        "scripts/verify_artifacts.py"
+      ],
+      "code": 0,
+      "output": "PASS: 4 artifact hashes; workflow files; Superpowers 7.0.1.\n"
+    },
+    {
+      "command": [
+        "npm",
+        "run",
+        "validate"
+      ],
+      "code": 0,
+      "output": "\n> c2s@1.0.0 validate\n> openspec validate --all --strict --no-interactive\n\n✓ change/define-layered-semantic-fact-model\n✓ change/enable-issue-driven-development\n✓ change/initialize-sdd-ddd-workspace\nTotals: 3 passed, 0 failed (3 items)\n  ℹ [INFO] file: skip_specs is set in .openspec.yaml: change declares no spec-level behavior changes, zero deltas accepted\n"
+    },
+    {
+      "command": [
+        "git",
+        "diff",
+        "--cached",
+        "--check"
+      ],
+      "code": 0,
+      "output": ""
+    }
+  ]
+}

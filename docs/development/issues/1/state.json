@@ -1,0 +1,11 @@
+{
+  "input_hash": "e58075dd31933727e95a74ddaceeb357cca0b22d98e803e8f7c183b69ac0c6a0",
+  "phase": "smoke",
+  "kind": "smoke",
+  "last_retry_id": null,
+  "resume_phase": null,
+  "status": "completed",
+  "reason": null,
+  "run_url": "https://github.com/vchs6/c2s/actions/runs/41268564276",
+  "updated_at": "2026-11-01T03:17:41.506853+00:00"
+}
