@@ -7,10 +7,10 @@
   "status": "awaiting-decision",
   "reason": null,
   "run_url": "https://github.com/vchs6/c2s/tree/main/docs/development/reviews/issues/3/stage-one-2026-11-01",
-  "updated_at": "2026-11-01T05:59:01.824797+00:00",
+  "updated_at": "2026-11-01T07:38:24.925634+00:00",
   "execution_channel": "manual-chatgpt-work",
   "change_name": "define-layered-semantic-fact-model",
-  "base_sha": "18370af506d2153d0dae66a4d9536499a2b08114",
+  "base_sha": "b4c4140c7ea2b14cc46ff21776e02ea8e20cdd27",
   "plan_paths": [
     "AGENTS.md",
     "docs/decisions/0001-five-semantic-layers.md",
@@ -32,6 +32,7 @@
     "docs/development/reviews/issues/3/stage-one-2026-11-01/round1-proposer.json",
     "docs/development/reviews/issues/3/stage-one-2026-11-01/round2-challenger.json",
     "docs/development/reviews/issues/3/stage-one-2026-11-01/round2-proposer.json",
+    "docs/development/reviews/issues/3/stage-one-2026-11-01/scheme-decision.md",
     "docs/development/reviews/issues/3/stage-one-2026-11-01/tooling-evidence.json",
     "docs/development/reviews/issues/3/stage-one-2026-11-01/validation.md",
     "docs/domain/proposals/language-independent-layered-semantic-model.md",
@@ -49,12 +50,16 @@
     "openspec/specs/semantic-fact-model/spec.md",
     "openspec/specs/semantic-fact-query/spec.md"
   ],
-  "plan_digest": "91c6f2a3caa655eb02053b10d9a940636b0ab011be6d1e74ff1595bd72295732",
-  "approval_token": "7220590a68b93b3f78f90b89",
-  "scheme_decision": null,
+  "plan_digest": "82b794f3aaeeb221153b021ca1c7a9aa1b77be54293ce41b25da08ebe79dab98",
+  "approval_token": "e9dbf3a2220e1b5b0fb4519c",
+  "scheme_decision": "A",
   "implementation_approved": false,
   "automatic_apply_supported": false,
   "previous_status": "blocked",
   "previous_reason": "model-job-failed",
-  "previous_run_url": "https://github.com/vchs6/c2s/actions/runs/41274054781"
+  "previous_run_url": "https://github.com/vchs6/c2s/actions/runs/41274054781",
+  "awaiting": "implementation-approval",
+  "selected_against_commit": "b4c4140c7ea2b14cc46ff21776e02ea8e20cdd27",
+  "supersedes_approval_token": "7220590a68b93b3f78f90b89",
+  "scheme_decision_record": "docs/development/reviews/issues/3/stage-one-2026-11-01/scheme-decision.md"
 }

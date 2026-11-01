@@ -4,7 +4,7 @@
 
 **Goal:** 形成语言无关领域模型公共契约及可验证的目录、引用、不变量与算法投影基础。
 
-**Architecture:** 推荐A采用类型/谓词目录、JSON Schema结构层和Python跨事实校验；来源覆盖与算法投影分开验收。方案尚未由用户选择，任务是A的条件化候选计划，不能据文件存在进入实施。
+**Architecture:** 推荐A采用类型/谓词目录、JSON Schema结构层和Python跨事实校验；来源覆盖与算法投影分开验收。用户已选择A，任务仍须获得单独实施批准，不能据方案选择或文件存在进入实施。
 
 **Tech Stack:** 阶段二候选Python 3、jsonschema==4.26.0、JSON Schema 2020-12；本轮不安装。固定OpenSpec与上游Superpowers沿用仓库配置。
 
@@ -16,7 +16,7 @@
 - 默认顶层最小响应及明确要求才展开保持不变。本Issue仅提供模型引用及静态形状例，不实现查询Skill。
 - 所有自维护脚本及测试用Python 3；不修改上游依赖源码，不提交node_modules或认证资料。
 - 不伪造宏展开、目标、观测或真实案例；synthetic与人工来源清单须标识。
-- 状态awaiting-decision；必须先确认方案并批准当前令牌，才可取apply指令执行阶段二。不自动archive。
+- 状态awaiting-decision（A已选、等待实施批准）；必须明确批准当前令牌，才可取apply指令执行阶段二。不自动archive。
 
 ## Review Focus
 
@@ -117,10 +117,10 @@
 
 - [x] 6.2 协调候选proposal/specs/design/tasks并完成可实施性审阅。依赖：6.1。上游依据：Issue一至六及固定主规格；交付：本目录四工件、review-map.md及独立builder-check记录。验证：逐Issue/Requirement/任务/路径/通过失败映射；按A条件计划自审接口一致性和Review Focus。通过：无隐藏重大假设，A/B和待裁决项明确，原10项产品任务未勾选，主规格不变；失败：越界产品实现、另建重复变更或未确认方案冒充已选。
 
-- [x] 6.3 严格校验并绑定输入及规划工件生成实施批准令牌。依赖：6.2。上游依据：Issue四.阶段一/验收与仓库fingerprint/plan_digest/approval_token规则。交付：同评审目录validation.md、approval.json及docs/development/issues/3/state.json。验证：npm run validate、npm run check:artifacts、git diff --check、主规格/导入哈希及路径审计，复算Issue指纹和工件摘要；令牌可检测输入或规划变化。通过：awaiting-decision、scheme_decision=null、implementation_approved=false，校验记录实际成功；失败：旧令牌复用、循环哈希或伪造实施完成。
+- [x] 6.3 严格校验并绑定输入及规划工件生成实施批准令牌。依赖：6.2。上游依据：Issue四.阶段一/验收与仓库fingerprint/plan_digest/approval_token规则。交付：同评审目录validation.md、approval.json及docs/development/issues/3/state.json。验证：npm run validate、npm run check:artifacts、git diff --check、主规格/导入哈希及路径审计，复算Issue指纹和工件摘要；令牌可检测输入或规划变化。通过：awaiting-decision、implementation_approved=false，方案状态按实际用户决定记录（阶段一初始null，后续选择见scheme-decision.md），校验记录实际成功；失败：旧令牌复用、循环哈希或伪造实施完成。
 
 ## Workflow follow-up
 
-- 本轮提交候选规划后等待用户选择A/B及明确实施批准；方案确认不等于实施批准。
+- 用户已选择A（见评审目录scheme-decision.md），继续等待明确实施批准；方案确认不等于实施批准。
 - 当前自动Runner不支持本既有变更的路由/路径，不建议直接在Issue评论批准后期待自动apply。可在Work用绑定令牌明确批准手动阶段二；若要Runner自动承接，须另行授权修复，不能用重复issue-3-*模型绕过。
 - 不自动archive；真实来源补证不能抹去synthetic/未获取记录，不因产品尚未实施重开已确认需求。

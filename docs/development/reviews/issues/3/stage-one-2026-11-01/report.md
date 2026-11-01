@@ -2,6 +2,8 @@
 
 日期：2026-11-01。状态：**awaiting-decision**；user_decision=null；implementation_approved=false。基点：18370af506d2153d0dae66a4d9536499a2b08114。
 
+后续更新：用户已选择方案A，准确范围见scheme-decision.md；实施未批准。下文为阶段一提交时的报告快照，原始Battle的user_decision=null保留原貌，不改写历史评审。
+
 ## 工作结果
 
 继续既有define-layered-semantic-fact-model，完善proposal、两份领域/算法delta、design、唯一tasks及review-map。模型delta共14项Requirement（含原3项已确认约束），算法delta8项；新增具体方案均待用户选择。两份正式主规格及ADR保持原文，未把代理意见提升为基线。22项领域/算法Requirement均有上游与任务/候选验收映射。

@@ -60,3 +60,9 @@ PASS: 4 artifact hashes; workflow files; Superpowers 7.0.1.
 重要限制：现有plan_digest仅自动枚举issue-*变更目录，故手动批准前还必须对approval.json的inventory_scopes重新枚举全部文件（排除approval.json），与inventory_paths逐项比较；任何新增/删除文件均使此候选批准过期，不能只调用旧digest。当前自动Runner不能路由该既有变更，未修改其脚本/权限，不能通过评论令牌期待自动实施。
 
 本轮GitHub读取确认Issue正文和远程main未变；发布时仍使用基点期望值检查，若冲突则停止发布并重核。最终状态与token见approval.json和docs/development/issues/3/state.json，不在本文件内嵌token，避免循环。
+
+## 后续方案选择更新（2026-11-01）
+
+用户明确选择A，已增加scheme-decision.md并协调proposal/design/tasks/review-map及报告快照说明；scheme_decision现为A，implementation_approved仍为false，awaiting-decision仅等待实施批准。原两轮Battle及reviewer记录不改写。语句级事实规模专项讨论按用户要求暂缓，未开展新Battle，也未新增逐语句规则。
+
+本次实际重跑npm run validate（5通过/0失败）、npm run check:artifacts（4原件哈希通过）及git diff --check（通过）。原10项产品任务仍未完成，无主规格/产品/脚本修改，未执行apply或archive。由于确认记录及规划说明变化，旧批准令牌失效，重新绑定输入、目录清单和工件内容；未确认实施时choose_work仍不进入apply。

@@ -8,9 +8,9 @@ Issue #3需要将已有语言无关领域模型候选完善为可评审、可实
 
 - 在现有变更继续阶段一：按brainstorming澄清边界、比较A/B方案，实际进行独立双方两轮Battle及独立综合评审。
 - 在已确认约束下补齐工程单元/工作空间/目标、身份与配置、类型化事实/谓词/引用、来源/覆盖/状态及算法/伪代码候选规格。
-- 推荐A：JSON目录、结构Schema与分阶段Python校验，明确有限条件判定、组成引用边界、来源到body及body到伪代码分别验收；保留B等替代与异议。
-- 更新design及唯一tasks.md，提供Issue范围—Requirement—任务—路径—验收映射，所有新方案为awaiting-decision，不将Battle共识当作用户确认。
-- 保留当前正式主规格与导入原件，绑定当前Issue输入及规划工件生成批准令牌；本次仅提交候选规划，等待用户选择方案和批准实施。
+- 用户已选择A（见scheme-decision.md）：JSON目录、结构Schema与分阶段Python校验，明确有限条件判定、组成引用边界、来源到body及body到伪代码分别验收；保留B等替代与异议。
+- 更新design及唯一tasks.md，提供Issue范围—Requirement—任务—路径—验收映射，方案A已由用户选择、实施仍为awaiting-decision；不将Battle共识当作用户确认。
+- 保留当前正式主规格与导入原件，绑定当前Issue输入及规划工件生成批准令牌；本次仅提交候选规划，方案选择已记录，继续等待用户明确批准实施。
 
 ## Capabilities
 

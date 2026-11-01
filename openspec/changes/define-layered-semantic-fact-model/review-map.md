@@ -53,4 +53,4 @@
 - builder-check补充目录信任边界：推荐A首版固定发行包，元目录/目录引用/已知规则/版本组合先验；同版篡改拒绝，运行时自定义扩展不承诺。1.2增加catalog.schema/manifest及test_catalog_input_rejected。
 - C04新增明确有限条件片段及4096预算；这是代理实现选择，用户尚未确认。
 
-A/B及上述具体候选在design.md明示，状态user_decision=null、implementation_approved=false。选择B或改公共行为须先改候选工件并重算令牌。未改变主规格，无需重开既有需求；新反例若要求修改已确认行为，另列修订依据，经用户确认后处理。
+用户已选择A，依据见评审目录scheme-decision.md；未将其扩大为所有字段的额外逐项主规格批准，implementation_approved=false。选择B或改公共行为须先改候选工件并重算令牌。未改变主规格，无需重开既有需求；新反例若要求修改已确认行为，另列修订依据，经用户确认后处理。

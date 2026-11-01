@@ -1,14 +1,14 @@
 {
   "issue_number": 3,
   "status": "awaiting-decision",
-  "scheme_decision": null,
+  "scheme_decision": "A",
   "recommended_scheme": "A",
   "implementation_approved": false,
   "execution_channel": "manual-chatgpt-work",
-  "base_sha": "18370af506d2153d0dae66a4d9536499a2b08114",
+  "base_sha": "b4c4140c7ea2b14cc46ff21776e02ea8e20cdd27",
   "input_hash": "306901f2a642985bbcbdc6d38aaab138a7b3bf26bf4d73f8d1974dfe88fb9390",
-  "plan_digest": "91c6f2a3caa655eb02053b10d9a940636b0ab011be6d1e74ff1595bd72295732",
-  "approval_token": "7220590a68b93b3f78f90b89",
+  "plan_digest": "82b794f3aaeeb221153b021ca1c7a9aa1b77be54293ce41b25da08ebe79dab98",
+  "approval_token": "e9dbf3a2220e1b5b0fb4519c",
   "plan_paths": [
     "AGENTS.md",
     "docs/decisions/0001-five-semantic-layers.md",
@@ -30,6 +30,7 @@
     "docs/development/reviews/issues/3/stage-one-2026-11-01/round1-proposer.json",
     "docs/development/reviews/issues/3/stage-one-2026-11-01/round2-challenger.json",
     "docs/development/reviews/issues/3/stage-one-2026-11-01/round2-proposer.json",
+    "docs/development/reviews/issues/3/stage-one-2026-11-01/scheme-decision.md",
     "docs/development/reviews/issues/3/stage-one-2026-11-01/tooling-evidence.json",
     "docs/development/reviews/issues/3/stage-one-2026-11-01/validation.md",
     "docs/domain/proposals/language-independent-layered-semantic-model.md",
@@ -65,6 +66,7 @@
     "docs/development/reviews/issues/3/stage-one-2026-11-01/round1-proposer.json",
     "docs/development/reviews/issues/3/stage-one-2026-11-01/round2-challenger.json",
     "docs/development/reviews/issues/3/stage-one-2026-11-01/round2-proposer.json",
+    "docs/development/reviews/issues/3/stage-one-2026-11-01/scheme-decision.md",
     "docs/development/reviews/issues/3/stage-one-2026-11-01/tooling-evidence.json",
     "docs/development/reviews/issues/3/stage-one-2026-11-01/validation.md",
     "openspec/changes/define-layered-semantic-fact-model/.openspec.yaml",
@@ -79,6 +81,9 @@
   "inventory_exclusions": [
     "docs/development/reviews/issues/3/stage-one-2026-11-01/approval.json"
   ],
-  "token_scope": "确认推荐A及手动Work阶段二须分别明确；本令牌不是批准、不是Runner权限扩展。",
-  "expiry_rule": "Issue number/title/body、任一plan_paths内容、inventory中新增/删除文件或方案范围改变则重新规划/校验并重算。"
+  "token_scope": "用户已选择A；本令牌仅用于手动Work阶段二的明确实施批准，不是批准本身或Runner权限扩展。",
+  "expiry_rule": "Issue number/title/body、任一plan_paths内容、inventory中新增/删除文件或方案范围改变则重新规划/校验并重算。",
+  "selected_against_commit": "b4c4140c7ea2b14cc46ff21776e02ea8e20cdd27",
+  "awaiting": "implementation-approval",
+  "supersedes_approval_token": "7220590a68b93b3f78f90b89"
 }
