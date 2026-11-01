@@ -1,0 +1,86 @@
+{
+  "role": "battle_proposer",
+  "round": 1,
+  "position": "推荐版本化JSON目录、类型化事实包与分阶段Python校验；所有新增方案待用户裁决。",
+  "claims": [
+    {
+      "id": "P01",
+      "statement": "主体注册记录承载身份，引用校验id/kind/上下文。D跨配置仍为同一主体，类型带条件；生成主体按变换应用和局部区分符登记；连续性未知保留歧义。",
+      "evidence_refs": [
+        "openspec/specs/semantic-fact-model/spec.md#单一主体身份与跨层引用",
+        "docs/domain/proposals/language-independent-layered-semantic-model.md#6"
+      ],
+      "assumptions": [
+        "首版允许显式身份登记/映射，不承诺自动连续性识别。"
+      ],
+      "falsifier": "T1/T2引用无法唯一解释，或重命名迫使复制主体。"
+    },
+    {
+      "id": "P02",
+      "statement": "目录规定主层、角色类型基数、组成与关联方向，组成不授权展开；需求/解析/范围位置分开，成员不推出依赖，配方不造目标。",
+      "evidence_refs": [
+        "openspec/specs/semantic-fact-query/spec.md#默认顶层最小事实集",
+        "docs/domain/proposals/language-independent-layered-semantic-model.md#7–9"
+      ],
+      "assumptions": [
+        "首批有限目录，扩展补齐语义约束。"
+      ],
+      "falsifier": "合法项目载荷要求依赖递归展开，或outside变unresolved。"
+    },
+    {
+      "id": "P03",
+      "statement": "展示边界、获取状态、主张结论分开；不存在须范围化否定和覆盖依据；歧义冲突可并存，模态不等于工具或可信度。",
+      "evidence_refs": [
+        "openspec/specs/semantic-fact-query/spec.md#未展开与获取状态可区分",
+        "docs/domain/proposals/language-independent-layered-semantic-model.md#14"
+      ],
+      "assumptions": [
+        "只规划状态基础，不实现查询契约。"
+      ],
+      "falsifier": "空集合可无覆盖报不存在，或不能表达已获取未展开。"
+    },
+    {
+      "id": "P04",
+      "statement": "独立算法描述、步骤和类型边，body单源投影，保留失败/效果/偏序/UNKNOWN；替代人工文本加映射较快但防漂移靠人工。",
+      "evidence_refs": [
+        "openspec/changes/define-layered-semantic-fact-model/specs/algorithm-description/spec.md",
+        "docs/domain/proposals/language-independent-layered-semantic-model.md#12"
+      ],
+      "assumptions": [
+        "算法delta待裁决。"
+      ],
+      "falsifier": "遗漏C++回调返回、Python零规格或Rust失败出口。"
+    },
+    {
+      "id": "P05",
+      "statement": "Schema校结构，目录校词汇角色，跨事实校引用条件覆盖；替代逐谓词判别联合Schema利于静态检查但扩展成本高。",
+      "evidence_refs": [
+        "openspec/changes/define-layered-semantic-fact-model/design.md#1,4"
+      ],
+      "assumptions": [
+        "交换格式不决定存储/产品语言。"
+      ],
+      "falsifier": "错误角色或任意Record通过校验。"
+    },
+    {
+      "id": "P06",
+      "statement": "阶段二按身份目录→工程覆盖→算法投影验收，每任务绑定获批Requirement、正反例和Python测试，真实证据不足标synthetic。",
+      "evidence_refs": [
+        "openspec/changes/define-layered-semantic-fact-model/tasks.md",
+        "openspec/config.yaml"
+      ],
+      "assumptions": [
+        "裁决Q01–Q05后再实施。"
+      ],
+      "falsifier": "未批准候选当生效依据，或只验JSON成功。"
+    }
+  ],
+  "responses": [],
+  "unknowns": [
+    "身份连续性映射来源",
+    "首批组成清单和共享组成",
+    "状态矩阵/条件运算符/版本",
+    "复杂宏等真实证据不足"
+  ],
+  "record_kind": "主代理按实际独立子代理答复整理，保留论点，非逐字转储"
+}

@@ -1,0 +1,87 @@
+{
+  "role": "battle_challenger",
+  "round": 1,
+  "position": "接受固定基线及类型化方向；现候选缺可执行判据，先补反例与不变量再冻结。",
+  "claims": [
+    {
+      "id": "H01",
+      "statement": "部分上下文重叠、引用缺配置、不可满足配置缺判据；保留D身份，明确合并适用性和多匹配诊断。",
+      "evidence_refs": [
+        "openspec/specs/semantic-fact-model/spec.md#单一主体身份与跨层引用",
+        "docs/development/discussions/2026-11-01-specification-baseline/discussion.md#Q01"
+      ],
+      "assumptions": [
+        "上下文可不完整。"
+      ],
+      "falsifier": "重叠/缺失/不可满足例均能唯一解释或明确诊断。"
+    },
+    {
+      "id": "H02",
+      "statement": "项目边界可未决却要求ownershipScope和目标唯一归属可能迫使猜项目；需区分来源声明身份与候选项目映射及未决引用合法性。",
+      "evidence_refs": [
+        "docs/domain/proposals/language-independent-layered-semantic-model.md#5.1",
+        "openspec/changes/define-layered-semantic-fact-model/design.md#2,3"
+      ],
+      "assumptions": [
+        "边界未决也需交换。"
+      ],
+      "falsifier": "嵌入工程和歧义例无需造项目或丢目标。"
+    },
+    {
+      "id": "H03",
+      "statement": "关系分名不足：签名/Sequence/body可内嵌完整图绕过非递归边界；需组成独立引用、值内嵌边界和谓词展开属性及载荷形状反例。",
+      "evidence_refs": [
+        "openspec/specs/semantic-fact-query/spec.md#默认顶层最小事实集",
+        "openspec/changes/define-layered-semantic-fact-model/design.md#4,6"
+      ],
+      "assumptions": [
+        "公共载荷支撑查询结果基础。"
+      ],
+      "falsifier": "循环关联/嵌套算法/复杂签名默认载荷不偷渡展开。"
+    },
+    {
+      "id": "H04",
+      "statement": "三值求值非可满足性证明，x=1和x=2各未知但合取不可满足；循环区分确定可行/不可行/未判定，限定判定片段。",
+      "evidence_refs": [
+        "openspec/changes/define-layered-semantic-fact-model/design.md#4",
+        "openspec/changes/define-layered-semantic-fact-model/tasks.md#2.3"
+      ],
+      "assumptions": [
+        "条件共享变量。"
+      ],
+      "falsifier": "互斥、相关及SourceCondition循环正确分级。"
+    },
+    {
+      "id": "H05",
+      "statement": "body到文本映射完整不证明来源到body保留了异常/资源；分开验来源覆盖与投影，替代受限结构+opaque区域避免承诺全语言。",
+      "evidence_refs": [
+        "openspec/changes/define-layered-semantic-fact-model/specs/algorithm-description/spec.md#伪代码是可追溯投影",
+        "docs/domain/proposals/language-independent-layered-semantic-model.md#12"
+      ],
+      "assumptions": [
+        "允许有界摘要。"
+      ],
+      "falsifier": "漏错误出口/回调效果但映射有效的body被覆盖检查发现。"
+    },
+    {
+      "id": "H06",
+      "statement": "哈希和20文件不证明否定；Coverage需命题、上下文和闭合检查依据；呈现/获取分开，歧义冲突附主张关系。",
+      "evidence_refs": [
+        "openspec/specs/semantic-fact-query/spec.md#未展开与获取状态可区分",
+        "docs/development/reviews/2026-11-01/case-evidence-manifest.json"
+      ],
+      "assumptions": [
+        "空集合不推出否定。"
+      ],
+      "falsifier": "未读输入/动态调用缺口/已获取未展示不能误报不存在。"
+    }
+  ],
+  "responses": [],
+  "unknowns": [
+    "上下文完整判据",
+    "边界未决ownershipScope",
+    "可内嵌值与独立组成边界",
+    "条件可判定片段/来源覆盖能力"
+  ],
+  "record_kind": "主代理按实际独立子代理答复整理，非逐字转储"
+}

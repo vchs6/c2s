@@ -2,136 +2,145 @@
 
 ## Context
 
-动机见`proposal.md`。本轮将已确认需求选择性同步为主规格，产品仍未实现。确认边界以ADR-0002为准；下表和原设计中的候选均不得自动提升为基线。
+Issue #3阶段一：评审与候选规划；状态 **awaiting-decision**。读取基点为`18370af506d2153d0dae66a4d9536499a2b08114`。动机及范围见proposal.md；固定约束为ADR-0001/0002与两份主规格，均不修改。现有公共目录、Schema、契约校验器及产品测试尚未实现。
 
-| 状态 | 依据 | 可使用的结论 |
-| --- | --- | --- |
-| 已接受 | `docs/decisions/0001-five-semantic-layers.md` | E0–E4五层为组织尺度，主体单身份，跨层类型引用；DDD用于统一语言、身份与不变量 |
-| 已观察的研究证据 | 候选定义§§1、13、17，R1–R6/C1–C5/P1–P9固定来源 | 读取20份文件并核对Git blob；包括根包/workspace、INTERFACE/ALIAS、配方/入口、状态效果及三项局部算法 |
-| 候选与限制 | 首次Battle报告§§5–9；候选定义§§14–16 | 未执行全量获取、metadata、构建、安装、宏展开、测试或形式等价验证；多workspace、循环、复杂宏和Java注解缺真实验收 |
-| 本变更提议 | 候选事实模型记录、候选算法delta及本设计 | 目录格式、交换记录、校验阶段、交付路径和反例集；不是ADR已批准全部细节的声明 |
-| 本轮确认基线 | ADR-0002及两份正式主规格 | 用户已确认的模型组织与查询响应约束；尚未实现 |
-
-本次能力边界包括事实模型、查询响应与候选算法描述。导入原件保持不变；主规格只包含ADR-0002确认矩阵映射的Requirement，不包含详细候选。规格生效与实现完成分开记录。
+本轮已实际进行独立proposer/challenger首轮、第二轮交叉质询与新上下文reviewer综合；中立包、双方论证与评审记录在`docs/development/reviews/issues/3/stage-one-2026-11-01/`。记录是实际答复的结构化摘要，不是逐字转储，不声称操作系统隔离。来源案例仍仅是先前20文件选样；没有新增宏展开、构建、运行或全仓库验证。
 
 ## Goals / Non-Goals
 
-**Goals:** 本轮实现确认依据到正式规格的可追溯映射，并明确后续设计的约束。可交换机器定义、结构/跨事实校验与算法投影仍是下一阶段候选目标。
+**Goals:** 提供领域概念、身份、关系、不变量和可验证公共交换契约的完整候选设计，并将Issue范围落实到唯一tasks.md。各层含义与候选边界见下表；它们不是DDD架构层。
 
-**Non-Goals:** 不预选聚合、限界上下文、仓储、数据库、获取器或产品语言；不造完整新编程语言；不证明任意语言/任意项目语义完备；不实现执行历史服务。Python3仅约束后续验证脚本，不据此决定产品实现语言。
+| 层 | 语义问题 | 候选事实边界 |
+| --- | --- | --- |
+| E0 工程组织与协作 | 哪些工程单元、如何组织 | 项目边界评估、项目/工作空间/集合及成员；不以目录证明工程归属 |
+| E1 构建装配与交付 | 依赖、配置、装配与暴露 | 目标/配方/发行/入口、需求/解析、声明输出及有证产物；声明不冒充运行 |
+| E2 程序结构与接口 | 主体及访问结构 | 模块/类型/操作/签名/访问约束；签名不推纯性 |
+| E3 操作行为契约 | 前提下可观察结果 | 结果/错误、状态/资源/外部效果、协议与偏序；要求不等于观测 |
+| E4 实现算法与局部语义 | 哪些步骤形成行为 | 描述目的、body/区域/步骤、控制/数据/调用/捕获；局部描述不等价于完整项目 |
+
+**Non-Goals:** 不实现查询Skill、获取器、存储、构建执行器或形式等价证明；不决定DDD聚合、事务、数据库或产品实现语言；不因五层均有数据宣称语义完整。本轮不创建下述产品文件、不安装候选依赖、不运行产品测试，不同步新增候选到主规格，不归档。
+
+## Approaches
+
+| 方案 | 内容与取舍 | 决策状态 |
+| --- | --- | --- |
+| A（推荐） | 版本化类型/谓词目录 + 通用结构Schema + 目录/引用/不变量分阶段Python校验；受限算法body单源投影，opaque保留边界。目录集中，扩展一致；代价是需要目录驱动校验和人工来源清单 | 代理推荐，用户尚未选择 |
+| B（可行替代） | 逐谓词判别联合Schema + 跨事实校验；算法用人工文本及独立步骤/来源映射。静态工具检查更直接、初始文本表达快；扩展需改更多Schema，文本漂移需人工审查 | 保留；如选择B，须修改当前算法delta的单源投影要求并重算批准令牌 |
+
+两者都遵守已确认基线，不以无类型三元组作为唯一替代来排除B。以下是**A的可执行候选设计**，不是已批准决定。用户可以先确认方案而不授权实施；只有批准绑定当前输入及规划摘要的实施令牌，才能进入阶段二。任何改变范围或行为的修订均需重新规划和批准。
 
 ## Decisions
 
-### 0. 本轮选择性同步与候选隔离
+### 1. 统一语言与身份：C01、C02
 
-用户已明确授权固化已有确认，采用同一活动变更中选择性同步的文档处理方式（代理执行选择，不是新增产品决策）。全量复制delta会越过确认边界；等待产品实现才写主规格又违背本轮授权。仅同步semantic-fact-model与semantic-fact-query的确认部分，保留algorithm-description候选。
+独立引用的对象登记为Subject；按内容判等的标量、参数模式和条件等为值。不是每条记录都成DDD实体/聚合根。IdentityDomain表示显式登记的身份命名域，可为来源声明域、工程域或描述域；它不是文件目录，也不自动表示Project。Subject身份为`{authority, domainId, localId}`，三项均显式登记，kind单列校验，层号不入身份。名称、路径、行号、提交、摘要只定位证据，不能单独构成身份。相同身份记录不得出现互斥kind。
 
-唯一计划为tasks.md；本轮任务只产生规格、证据及必要规划，既有产品任务均保持未完成。无第二份Superpowers待办。
+Project表示有边界依据的软件工程单元；PackageSpecification表示发行/解析单元；NativeWorkspace表示原生协调声明；CoordinationGroup表示显式协作集合；AnalysisScope表示本次选择。它们互不替代。SourceDeclaration记录已见声明；ProjectBoundaryAssessment记录声明/工程单元到候选Project的映射：resolved恰一确认引用、ambiguous至少两个候选、unresolved无确认引用。候选映射带证据，不能当已确认所有权。
 
-以下决策1–7全部是**拟议实现选择，待相关方案确认，不能作为用户批准凭据**。原事实模型候选Requirement正文已保留在`docs/development/discussions/2026-11-01-specification-baseline/semantic-fact-model-candidates.md`，其完整方案尚未批准。未决设计问题集中在同目录discussion.md；这些选择不阻塞本次已确认基线的文档同步。
+SubjectRef为`{identity, kind, contextRef?}`，不再把尚未确认的项目ownershipScope强制填入引用。身份域与`projectMapping`独立；来源域不能用于要求Project的谓词角色。映射变为resolved后只补关系，不重键或复制既有主体。匿名/重载/生成实例使用显式引入或变换应用登记及局部区分符；无法确定连续性就保留歧义，不承诺自动重命名识别。
 
-### 1. 公共目录与事实载荷分离
+上下文是已登记单值键的部分赋值；同键矛盾值为`CTX_CONTRADICTION`错误，缺键合法但解释可能未定。指称依赖上下文时保留限定引用，事实值依赖上下文时记录条件化主张，不复制D。首版比较仅针对同主体、同谓词、相同角色与目录声明的可比较claimMode；不同模态不默认互相否定。
 
-提议以版本化JSON目录和JSON Schema承载公共定义，结构校验与跨事实规则分阶段运行。替代方案是无类型三元组或在每条事实自填层号；它们无法约束角色、跨层重复与同名关系歧义。JSON只是交换格式，不决定存储形态。
-
-未来路径及职责：
-
-| 交付路径 | 职责 |
+| 情形 | 输出语义 |
 | --- | --- |
-| `contracts/semantic-model/types.json` | 主体/值类型、身份要素、可用上下文键及类型规则 |
-| `contracts/semantic-model/predicates.json` | 语义和来源谓词的含义、角色类型、基数、不变量与主层 |
-| `contracts/semantic-model/fact.schema.json` | SubjectRef、TypedValue、Condition、Fact、Evidence、Coverage结构 |
-| `contracts/semantic-model/algorithm.schema.json` | OperationContract、AlgorithmDescription、BehaviorRegion、Step及类型边 |
-| `contracts/semantic-model/rules.md` | 身份连续性、条件解释、模态比较、跨事实与投影规则 |
-| `tests/semantic-model/fixtures/` | 正反例、固定来源定位与预期诊断，不提交外部源码副本 |
-| `tests/semantic-model/test_contracts.py` | Python3结构、目录、引用及跨事实验收 |
-| `tests/semantic-model/test_algorithms.py` | Python3算法与伪代码投影验收 |
-| `docs/domain/semantic-model-contract.md` | 公共使用与覆盖边界，引用规格而不重写导入原件 |
+| 缺配置，互斥T1/T2分别允许不同值 | 解释歧义/未定，不算事实冲突 |
+| 同确定适用上下文，单值属性出现不兼容主张 | 保留双方及`CONFLICTING_CLAIMS`；不静默删一方 |
+| 多值谓词有不同值，或相同值多证据 | 合法并存，不自动冲突 |
+| 条件重叠无法判定 | `POTENTIAL_CONFLICT`缺口，不声称已证冲突 |
+| 零适用主张 | `NO_APPLICABLE_CLAIM`；不足以推出不存在或不适用 |
 
-这些文件目前未创建。验证脚本未来通过`python3 -m unittest discover -s tests/semantic-model -p 'test_*.py'`运行；本轮不能把该预定命令写成已通过。
+### 2. 目录、组成与引用：C03
 
-### 2. DDD统一语言与身份规则
+Semantic谓词有一个primaryLayer；Provenance谓词无主层，来源与覆盖横贯各层。条目定义predicateId、含义、角色方向/类型、每事实基数、跨主张可比较性/单值性、约束及relationKind。relationKind取attribute、composition、association；不由层号或图可达性推导。
 
-Project表示带边界依据的工程单元，PackageSpecification表示发行/解析规格，模块名属于程序结构。先定义可观察身份和不变量，不把每种记录都当实体或聚合根。替代的“仓库就是项目、目录就是成员”会误合并Click示例与CMake独立集成工程。
+首批组成角色：`program.contains(container, declaration)`、`behavior.has_body(description, body)`、`behavior.region_member(region, step)`；算法步骤以`{algorithmIdentity, stepId}`独立定位，局部stepId唯一。workspace_member、group_member、project_mapping、dependency、alias_of、entry_binds、implements、calls、captures、generated_from均是关联，不据此转移所有权。共享组成不推出聚合或唯一管理归属；方向和适用kind由目录约束。
 
-提议的身份要素由类型目录约束：Project使用显式项目标识及边界依据；原生workspace使用其声明身份与所属工程上下文；目标使用项目域和目标定义身份；声明使用项目域、声明种类及工具可确认的声明身份；算法有独立描述身份，管理归属可未决。名称/位置是定位线索，不能单独证明身份连续性。匿名和生成主体使用引入/变换应用身份及局部区分符；重载需要签名/声明区分信息。此处不固定全局URI编码或散列算法。
+完整SemanticFactSet可含subjects、facts、evidence、coverage、algorithms与独立body/region/step记录；其存在不授权响应整包返回。顶层载荷只作为模型形状fixture，不定义完整请求/结果协议，也不开发查询遍历或深度逻辑。内嵌白名单为Scalar、Enum、QualifiedName（字符串序列）、Parameter（index/name/typeRef/mode）、Signature（参数值序列、返回typeRef）、已登记Condition。TypeRef引用类型主体或目录原始类型标记，不内嵌主体定义；其他对象通过引用表达。Sequence逐元素、DefinedRecord逐字段递归检查白名单，禁止Fact/Subject定义/完整body藏入值。
 
-移动、重命名或版本变化不自动改身份，也不自动合并：只有规则和来源支持连续性才关联，否则保留歧义记录。来源版本与内容标识只固定证据。上下文键需有类型，至少包括平台、目标、构建选项、特性、语言模式、解释阶段及外部约束。指称不同用限定引用；值不同用带条件事实；无法唯一指称必须报歧义。
+首批谓词沿用导入候选§9及原design清单的语义，并补上述组成角色、项目评估及状态类型；每一条均须在predicates.json展开，不能把表格缩写当ID。字段语法不得先于其类型、角色和不变量定义。
 
-### 3. 工程关系及依赖图不混用
+### 3. 工程与依赖：C02、C04
 
-项目可独立存在；NativeWorkspace按工具规则记录原始成员及包→项目映射；CoordinationGroup表示分析者指定协作。AnalysisScope只是本次选取。目标保留项目管理归属，workspace命令若只是选择器不变成目标。真正无法按现有规则归属的独立定义单元先报告缺口，不伪造项目，也不在缺证时扩展所有权联合类型。
+原生目标、配方、发行规格、输出规格、入口、任务及产物观测分别记录。目标声明的项目映射可以未决；确认管理归属必须有明确Project证据，不能强造项目满足约束。别名解引用到同一目标，不复制实现；workspace命令若仅是成员选择器不造目标。项目/包/目标关系分别保留原生声明与映射，多个workspace依各工具实际规则，不预设普遍多重成员。
 
-DependencyRequirement持有消费方、需求类型、阶段、约束与条件；DependencyResolution持有需求引用、提供方/候选、解析配置、可见范围、状态与证据。查询位置独立计算，不进入需求身份。保留path与version；CMake ALIAS归一不制造第二条库边；测试先后不是链接；调用不自动成为构建依赖。循环保留原图，判定需同时满足边条件与对应工程规则。替代的单一resolved/outside/unknown枚举会丢失已知范围外提供方。
+DependencyRequirement记录消费方、用途、阶段、路径/版本及条件；DependencyResolution记录需求引用、提供方或候选、配置、解析可见范围、状态与证据。resolved恰一提供方，ambiguous至少两个，unresolved无确认绑定。相对AnalysisScope的位置inside/outside/unknown单独表达，不入需求身份。内部引用要求在包内登记；范围外引用须显式external标记、完整身份及来源/未核验说明，不伪造本地定义，也不把非法内部悬空引用伪装成外部。
 
-### 4. 抽象事实语法与校验
+首版可满足性片段：完整声明域的Boolean/Enum键，eq/neq、True/False、All/Any/Not。按共享键枚举赋值，候选上限为**4096种组合**，包括4096，超过则`CONDITION_BUDGET_EXCEEDED`未判定。上限是本轮代理提出的实现限额，待方案确认，不是用户既有要求。对未登记域、SourceCondition、无限域、不支持运算保留原式并报未判定，首版不尝试从部分未知式给确定结论。
 
-以下是拟实现的公共语法，而非声称已有Schema：
+条件求值使用三值真值表（空All=True，空Any=False）；可满足性独立输出sat（附见证）、unsat（已支持完整域穷尽）、undetermined（片段/限额原因）。某环所有边条件的合取sat才报可同时激活；原图不删边，工程违规另需规则，不把项目汇总环等同目标构建环。
 
-```text
-SubjectRef = {id, kind, ownershipScope, interpretationContext?}
-TypedValue = Scalar | Enum | SubjectRef | Sequence | DefinedRecord | Expression
-Condition = True | False | Unknown(reasonRef) | Compare(operator, typedOperands)
-          | All(Condition*) | Any(Condition*) | Not(Condition)
-          | SourceCondition(sourceRef, interpretationGapRef)
-Fact = {factId, predicateId, arguments:[{role,value:TypedValue}]+,
-        applicability:Condition, claimMode, evidenceRefs:[EvidenceId]+, derivation?}
-Predicate = {predicateId, catalog:Semantic|Provenance, meaning,
-             argumentRoles, argumentTypes, cardinalityRules, constraints, primaryLayer?}
-Evidence = {evidenceId, sourceRef, contentIdentity, locator, method,
-            role:Supports|Refutes|Limits, premiseFactRefs?}
-Coverage = {scopeRef, subjectKinds, predicateFamilies, contextRef,
-            inspectedInputs, excludedInputs, acquisitionState, gaps}
-```
+### 4. 状态、证据与否定：C06
 
-`?`为可选，`+`至少一项，`*`零或多项。DefinedRecord必须由目录定义字段。claimMode为declaration/specification/static_may/static_must/observation/interpretation；它不是可信度排序。SourceCondition不能变成静默True；True/False仅在前提充分时使用，Unknown不等于False。条件求值采用三值语义：Not Unknown仍未知，All有False则False、全True才True，其余未知；Any有True则True、全False才False，其余未知；空All=True，空Any=False。比较操作必须有定义过的操作符及兼容类型，无法解释时产出缺口。
+事实保留predicateId、角色值、条件、claimMode、evidenceRefs及可选derivation。claimMode为declaration/specification/static_may/static_must/observation/interpretation；不按它们排序裁真。证据记录来源、内容标识、定位、方法及Supports/Refutes/Limits角色；推导引用规则及前提，引用缺失是契约错误。来源核验状态由调用方提供可选观察数据；无数据时报unchecked，不执行获取器或网络抓取。
 
-校验顺序为：载荷结构→目录存在及版本→角色和值类型/基数→主体与上下文引用→跨事实不变量→来源内容有效性和推导前提→覆盖/模态诊断。错误至少定位记录、角色/字段、规则及原因；对结构合法但未知语义保留缺口。校验通过只证明契约一致性，不证明来源真值。若来源不可取得，报告未核验而不是伪称内容匹配。
+| 维度 | 候选取值/规则 |
+| --- | --- |
+| 呈现边界（形状例） | ref_only / expanded；不据此更改获取状态，不实现响应协议 |
+| 获取状态 | obtained / not_acquired / unsupported / not_applicable；not_applicable须适用性依据 |
+| 主张极性与诊断 | positive / negative；ambiguous、conflict、potential_conflict关联主张及条件，非获取枚举 |
+| 覆盖 | 绑定对象/谓词族/上下文，记录checked/excluded inputs、缺口与实际方法 |
 
-### 5. 首批谓词目录及层查询
+合法组合：obtained+ref_only；not_acquired或unsupported可含被引用身份但不能捏造所指事实；negative必须有独立否定依据，不以ref_only、空字段或缺定义推出。歧义与冲突可以分别出现在同一包，不能由单一success枚举吞并。
 
-正式目录应把下表每个谓词展开为独立条目，表内`A/B`是多个条目的简写，不能作为字面predicateId。参数名称引用types目录中的主体或值类型；来源定位与推导属于横贯元数据。
+否定闭合检查首批只接受`enumerated_input_membership`（明示完整有限输入清单内是否存在某成员）和`registered_catalog_membership`（指定版本目录内是否存在某条目）。检查记录必须含有界命题、scope/context、完整输入ID列表、逐项结果、方法、人工审定状态及未解决缺口为空。不能据此推出不存在动态调用、宏效果或全项目行为。校验器只检查依据结构/引用/条件一致，不能证明来源实际穷尽；未审定或能力不足保留缺口，不替人裁真。哈希仅核对字节一致。
 
-| 主层 | 谓词及角色 | 关键不变量 |
-| --- | --- | --- |
-| E0 | `engineering.defines_project(declaration, project)`；`engineering.workspace_member(workspace, member, sourceMapping)`；`engineering.group_member(coordinationGroup, project)` | 边界依据明确；原生成员种类保留；成员不推出依赖 |
-| E1 | `build.declares_target(project, target)`；`build.declares_recipe(project, recipe)`；`build.alias_of(alias, target)` | 目标归属明确；无目标不造目标；别名不造实现 |
-| E1 | `build.requires(consumer, requirement)`；`build.resolves_to(requirement, provider, context)`；`build.provides_usage(target, usageRequirement)` | 用途/阶段/条件明确；解析附范围与依据 |
-| E1 | `build.declares_output(producer, outputSpec)`；`build.observed_artifact(outputSpec, observation)`；`build.entry_binds(entryName, subjectOrResolver)`；`build.precedes(task, task, orchestrationContext)` | 声明不推出观察；入口目标和先后不混同 |
-| E2 | `program.contains(container, declaration)`；`program.has_signature(operation, signature)`；`program.accessible_under(declaration, accessConstraint)` | 不任意传递；签名不推出效果 |
-| E3 | `contract.precondition(operationOrAlgorithm, condition)`；`contract.outcome(operationOrAlgorithm, outcome)`；`contract.effect(operationOrAlgorithm, effect)`；`contract.ordering(participants, orderingConstraint)` | 前提/结果/效果/观察范围和模态明确；支持偏序 |
-| E4 | `behavior.implemented_by(operationOrContract, body)`；`behavior.calls(callSite, callableOrCandidates)`；`behavior.binds(introduction, binding, initializer)`；`behavior.captures(closure, bindingOrLocation, mode)` | 实现关联不证明等价；绑定和运行对象区分 |
-| E4 | `behavior.reads(step, location)`；`behavior.writes(step, location)`；`behavior.control_edge(step, step, edgeKind)`；`behavior.data_edge(step, step, edgeKind)` | 位置/别名和边种类明确；引用局部域有效 |
-| E4 | `behavior.algorithm_described_by(implementationRefs, algorithmDescription)`；`behavior.projects_to_pseudocode(algorithmBody, pseudocodeView)` | 目的、步骤映射、省略项明确 |
-| 无主层 | `provenance.generated_from(generatedSubject, application, sourceRefs)` | Provenance目录，多对多来源，不虚设“可信度层” |
+### 5. 算法、语言机制与两段验收：C05
 
-候选方案中跨层关系仍只有一条事实，层查询拟取目录主层。主体可关联跨层事实；内部检索范围尚未确定，响应仅按semantic-fact-query主规格规定的请求及展开边界返回。通用refines的语义仍待定义。
+AlgorithmDescription保持独立描述身份，purpose取normative/current_implementation/abstract；含问题范围、输入输出、契约、实现引用、上下文、来源及省略边界。管理归属与参与项目分开，可跨项目，不为无自然管理项目造workspace。OperationContract的前提/结果/错误/状态与资源效果/交互/时序及观察边界独立于签名。
 
-### 6. 契约、算法和伪代码单源投影
+首版结构种类：sequence、bind、assign、compute、select、loop、call、return、raise、handle、resource、concurrent、synchronize、opaque。Region和Step独立记录与引用，控制边注明目标，数据边类型明确。compute保留类型/数值规则/求值次序；缺证用未知字段，不默认数学整数、左到右或串行。opaque必须携来源、影响范围、未知项和保留的输入输出/外部效果边界；它是受限契约的显式缺口，不是完整解释器或全语言支持承诺。
 
-OperationContract记录输入域、前置、outcome、effect、交互、资源/时序/并发约束及观察边界。AlgorithmDescription包含描述目的、上下文、契约引用、body、实现关联、证据和抽象边界。body由BehaviorRegion与局部唯一Step构成；每Step记录种类、类型化参数、嵌套区域、控制/数据引用及来源。绑定与赋值、异常与结果错误、条件分支与循环出口、资源操作与普通调用分开。并发保留偏序。
+宏/生成记录定义、应用、输入与多对多生成来源；未展开只记应用及缺口，不能造AST。注解/属性记录附着、阶段及已证处理效果；Click装饰器按运行调用/对象替换及callback区分。闭包定义、可调用值、捕获位置/方式和生命周期分开；let/if let绑定有模式/初始化/作用域/路径可用性，不等于赋值；语言差异无法统一时保留扩展或opaque，不只存语法名字。
 
-伪代码由body投影并返回步骤到输出段落的映射；投影规则只改变可读性，不增加未证行为。未展开子过程显示引用，UNKNOWN显示原因，省略资源/外部效果必须显式列出。独立维护自由文本伪代码存在与body漂移的风险，因此代理推荐body单源投影；该实现选择尚未裁决。验收以R5栈遍历、C5 SAX结束处理、P7参数分配为固定源码摘要，核对回调错误传播、parse_error结果、零规格及多通配行为；不执行上游源码也不声称等价。
+验收分开：
 
-### 7. 语言机制按语义拆分
+1. 来源→body：R5、C5、P7各人工审定固定定位清单，逐项记录关键分支/失败/效果/回调/未展开过程；每项映射Step、effect或显式gap。未审定不能通过。删除Rust失败传播、C++parse_error结果、Python零规格/第二通配错误的反例，应被该清单发现，即使body内部及文本映射仍完整。清单自身正确性仍需独立审查，不作自动等价证明。
+2. body→伪代码：按规则生成文本与步骤段落映射，保留分支/循环/错误/效果/opaque及省略项。映射有效不能替代上项；局部摘要不声称完整项目算法。
 
-宏记录TransformationApplication及输入/生成主体映射；无展开证据只记应用。元数据附着及已证处理效果分开，cfg条件不泛化为Java注解语义。闭包定义、可调用值、捕获对象/位置及方式分开；未知布局、生命周期不猜测。let表示绑定引入及作用域/路径可用性，不把关键字实体化。Click装饰器按调用→对象构造/返回替换→callback→名称绑定拆解，不与静态注解或原函数身份混合。
+### 6. 技术、接口与交付：C07
 
-对尚无样本的复杂宏、Java注解、多workspace和条件循环建立“规则反例”fixture并明确synthetic；后续取得真实来源才能升级证据级别。合成用例能验证契约，不证明获取器已支持该语言机制。
+推荐JSON Schema 2020-12做结构层，版本化types/predicates目录与Python做角色/引用/不变量层。拟新增开发依赖`jsonschema==4.26.0`（官方release v4.26.0已核对，见评审资料），本轮运行环境未安装，也未执行安装或验证。阶段二生成`requirements-semantic-model.txt`并安装；所有自维护代码用Python3，Node/OpenSpec依赖和产品语言不变。Schema引用仅使用随包登记的本地资源，不自动联网解析未知$ref；不支持目录/载荷版本为明确错误，不承诺旧版本迁移或历史查询。
+
+| 未来路径 | 职责 |
+| --- | --- |
+| contracts/semantic-model/types.json、predicates.json | 类型、身份域/上下文、谓词、组成与内嵌值目录，version=1.0.0 |
+| contracts/semantic-model/fact.schema.json | SemanticFactSet、引用、条件、证据、覆盖和状态结构 |
+| contracts/semantic-model/algorithm.schema.json | 契约、算法、body/region/step及来源/投影映射结构 |
+| contracts/semantic-model/rules.md | 公共语义、诊断、条件/身份/否定/投影规则 |
+| src/c2s_semantic_contract/validation.py | 纯数据契约校验，不执行工具或查询 |
+| src/c2s_semantic_contract/projection.py | 算法body可读投影及来源/投影清单检查 |
+| src/c2s_semantic_contract/__init__.py | 只导出下述接口 |
+| tests/semantic-model/test_contracts.py、test_algorithms.py、fixtures/ | 正反例、来源清单与静态顶层形状例 |
+| docs/domain/semantic-model-contract.md | 最终获批领域模型及公共契约说明，按五层和统一语言组织 |
+| requirements-semantic-model.txt | 校验开发依赖固定项，不改变package版本 |
+
+#### 6.1 首版目录包与自校验（builder-check修订）
+
+推荐A首版是**封闭发行目录包**，不支持调用方在同版本任意增删类型、谓词或约束。`catalogs`参数只可传入随交付物固定的types/predicates记录；预期manifest从受信任的本地交付物读取，不采纳调用方自报的manifest作为授权依据。`catalog.schema.json`先校验传入目录自身的结构，随后检查目录类型/角色引用、Semantic主层、版本组合和ruleId是否受支持，再核对固定发行包的规范JSON摘要。未知ruleId报RULE_UNSUPPORTED；同版本目录内容不同报CATALOG_BUNDLE_MISMATCH，不静默接受或执行目录内代码。目录错误使依赖的事实/算法阶段not_run。
+
+新增未来交付：`contracts/semantic-model/catalog.schema.json`（元目录Schema）、`catalog-manifest.json`（目录/Schema摘要和ruleSetId=semantic-model-1.0.0）。规范JSON为UTF-8、键排序、无多余空白、ensure_ascii=false；摘要用SHA-256。manifest是交付一致性检查，不是事实真值或输入来源的信任证明。全部目录及载荷version为1.0.0；发布后改变公共含义必须另立版本/变更，不能同版替换，不因此承诺迁移服务。
+
+首批constraintId只允许固定Python规则注册表：KIND_MATCH、ROLE_CARDINALITY、INTERNAL_REF_EXISTS、DOMAIN_UNIQUE、CONTEXT_KEYS_SINGLE_VALUED、PROJECT_MAPPING_CARDINALITY、LAYER_CLASSIFICATION、INLINE_WHITELIST、STATE_COMBINATION、CLOSED_NEGATIVE_BASIS、ALGORITHM_STEP_REFS、CONDITION_SUPPORTED_FRAGMENT。允许表外规则只可通过后续获批变更、实现及测试新增；本版不提供通用规则语言或目录内eval。运行时可扩展目录是另一个可行方向，但需要元约束语言和兼容规则，首版不承诺，保留待后续提案。
+
+候选接口（输入/输出均为已定义公共数据记录）：
+
+- `validate_model(document: dict, catalogs: dict, source_observations: dict | None = None) -> dict`：返回`{valid, stages, diagnostics, consistency}`。stages各为pass/fail/partial/not_run；diagnostic有stage、recordRef、fieldPath、ruleCode、severity、relatedRefs、message。valid仅表示无契约error，显式语义缺口/未核验单列；结构错误后依赖阶段not_run，不能称通过。
+- 同时适用的矛盾主张不从包中删除；若主张载荷均合法则valid可为true，consistency=conflicting，diagnostic severity=conflict并列双方。身份重复、类型/内部引用错误等为error使valid=false；结构合法不等于语义完整或真值一致。
+- `project_algorithm(document: dict, algorithm_ref: dict) -> dict`：返回`{text, stepMappings, gaps}`，只投影指定算法body，不是查询入口。
+- `check_source_coverage(document: dict, checklist: dict) -> dict`：返回`{reviewed, uncoveredItems, declaredGaps}`，只核人工清单与body的对应，不自行读取源码推断完整行为。
 
 ## Risks / Trade-offs
 
-- [五层目录被误当本体层级] → 层不进入身份；跨层引用和无workspace场景作为反例。
-- [位置/提交被用作稳定身份] → 类型目录规定身份要素，移动/重载/多上下文例覆盖歧义诊断。
-- [目录无限扩张或任意Record逃逸] → 每次扩展提供类型、角色和规则；不声称首批词汇已穷尽全部语言。
-- [三值条件不足以证明可满足性] → 不能判定时报告未知；不把未知循环当不可发生。
-- [规范、解释与运行观测混同] → 模态与方法分别记录，冲突保留，覆盖报告列明未运行事项。
-- [伪代码丢失语言行为] → 求值/数值/错误/资源/并发规则有证据或UNKNOWN，投影断言与步骤映射同时验收。
+- [Risk] 来源域被偷换成Project → 角色类型反例与映射前后身份保持验收。
+- [Risk] 内嵌值偷渡递归展开 → 白名单递归检查与顶层静态形状反例；查询运行仍另行验收。
+- [Risk] 有限条件判定冒充一般SAT → 固定片段/4096限额及undetermined，不虚报循环违规。
+- [Risk] valid被当作真值或完整性 → 分开error、conflict、gap、unchecked、not_run与人工来源验收。
+- [Risk] 旧自动Runner只允许issue-3-*路径 → 本轮按用户明确授权的人工Work会话修改既有变更，绝不另建重复模型。当前Runner不能直接承接该既有变更；不修改脚本/权限来绕过。后续可在Work显式批准后手动apply；若要求自动Runner实施，须先另行授权修复路由。
 
 ## Migration Plan
 
-本轮按tasks.md的0组完成确认分类、delta整理、选择性主规格同步及严格验证。未部署产品，不存在数据迁移。通过Git提交保留基线来源和候选正文，纠正错误须提出可追溯修订而非静默覆盖。后续实现先解决讨论记录中的设计问题、取得相应批准并重新读取apply指令；未获明确归档请求不archive。候选格式的版本化和兼容处理尚未确认，不据本段增加兼容义务。
+本轮仅交付候选proposal/specs/design/tasks、Battle/映射/校验及绑定输入/工件摘要的批准令牌，状态awaiting-decision。正式主规格与导入原件字节不变。方案选择与实施批准分别记录；仅确认A不自动实施。选择B或改字段/条件/范围时重算令牌，不复用旧批准。阶段二获得明确批准后才读取apply指令并按tasks推进；本轮不调用产品实施技能或安装其依赖，不归档。
 
 ## Open Questions
 
-本轮规格固化的路径和执行方式已确定，无阻塞本轮的设计问题。可能改变未来公共契约或任务分解的问题不在此假装“可安全延后实施”：已移至`docs/development/discussions/2026-11-01-specification-baseline/discussion.md`，后续实施前必须解决。ID具体编码也留待后续实现设计，不改变本轮的单身份约束。
+暂无对推荐A隐藏的实现阻塞假设；上述身份/内嵌/状态/有限条件/算法/技术选择均已提出具体候选，**仍待用户裁决，绝非已通过决定**。Q01–Q05的裁决入口及替代见本目录review-map.md与评审报告。构造命名和函数内部组织可由实施者在已批准行为下决定；任何改变候选公共行为的选择不得自行归入“小实现细节”。

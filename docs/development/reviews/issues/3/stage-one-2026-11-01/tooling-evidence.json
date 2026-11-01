@@ -1,0 +1,9 @@
+{
+  "source": "https://api.github.com/repos/python-jsonschema/jsonschema/releases/latest",
+  "resolved_release": "https://github.com/python-jsonschema/jsonschema/releases/tag/v4.26.0",
+  "tag": "v4.26.0",
+  "prerelease": false,
+  "observed_at_date": "2026-11-01",
+  "local_import": "jsonschema unavailable in current runtime",
+  "scope": "Only release existence verified; dependency not installed or product-tested; JSON Schema backend remains proposed."
+}

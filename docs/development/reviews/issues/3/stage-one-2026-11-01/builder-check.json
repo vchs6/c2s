@@ -1,0 +1,20 @@
+{
+  "role": "builder_check",
+  "method": "fresh independent read-only review per brainstorming builder-check-prompt",
+  "findings": [
+    {
+      "severity": "high",
+      "question": "目录参数是固定可信包还是同版本可自定义？目录自身结构/引用/约束如何校验？",
+      "evidence_refs": [
+        "design §2/6",
+        "tasks 1.1/1.2/2.1"
+      ],
+      "reason": "影响规则绑定和可扩展架构",
+      "resolution": "作为推荐A的显式候选选择，限定首版固定发行包；design §6.1定义元Schema、manifest、known rule registry、版本/摘要及not_run；tasks1.2补test_catalog_input_rejected",
+      "status": "addressed_in_candidate_plan_not_user_approved"
+    }
+  ],
+  "other_assessment": "归属未决、冲突与error、独立来源清单和查询边界已清楚；未见其他重要工程未答问题。",
+  "user_decision": null,
+  "implementation_approved": false
+}

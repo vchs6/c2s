@@ -1,0 +1,81 @@
+{
+  "role": "battle_challenger",
+  "round": 2,
+  "position": "接受方向，要求可验证边界；保留受限算法构造+opaque的少数意见，投影成功不代来源覆盖。",
+  "claims": [],
+  "responses": [
+    {
+      "dispute_id": "C01",
+      "action": "revise",
+      "reason": "接受显式登记；引用上下文联合事实条件，零匹配区分不适用/未知，多项兼容并存，重叠互斥报冲突，不可满足配置另诊断，不任取类型。",
+      "evidence_refs": [
+        "P01",
+        "design.md#2,4"
+      ]
+    },
+    {
+      "dispute_id": "C02",
+      "action": "revise",
+      "reason": "声明先身份，候选项目映射附证据；ownershipScope可显式未决，不冒充确认归属，合并前不推所有权。",
+      "evidence_refs": [
+        "P02",
+        "候选定义#5.1,6"
+      ]
+    },
+    {
+      "dispute_id": "C03",
+      "action": "revise",
+      "reason": "组成不授权展开；独立主体引用，值有限注册且不内嵌事实包；步骤独立定位，body引用边界；共享组成不推唯一归属；嵌套/循环反例。",
+      "evidence_refs": [
+        "P02",
+        "semantic-fact-query主规格"
+      ]
+    },
+    {
+      "dispute_id": "C04",
+      "action": "revise",
+      "reason": "只保证布尔/有限枚举等值片段，其他保留原式未判定；循环须同时可满足，三值求值不作证明。",
+      "evidence_refs": [
+        "P05",
+        "design.md#4",
+        "tasks.md#2.3"
+      ]
+    },
+    {
+      "dispute_id": "C05",
+      "action": "revise",
+      "reason": "来源到body人工审定分支/失败/效果/省略清单，body到文本检映射；删除失败出口应前者失败；opaque保留影响未知，不承诺自动等价。",
+      "evidence_refs": [
+        "P04",
+        "tasks.md#4.3"
+      ]
+    },
+    {
+      "dispute_id": "C06",
+      "action": "accept",
+      "reason": "三轴绑定对象/谓词族/上下文，已获取未展开合法；否定有界命题+闭合检查，哈希只核字节，缺输入/能力只报缺口。",
+      "evidence_refs": [
+        "P03",
+        "semantic-fact-query主规格",
+        "候选定义#14"
+      ]
+    },
+    {
+      "dispute_id": "C07",
+      "action": "revise",
+      "reason": "推荐JSON目录和Python分阶段，先固定包/目录版本/定位诊断，再结构→引用→不变量；未知与错误分开；格式/上下文/算法构造待裁决。",
+      "evidence_refs": [
+        "P05,P06",
+        "design.md#1,4",
+        "ADR-0002"
+      ]
+    }
+  ],
+  "unknowns": [
+    "项目映射及未决ownership结构",
+    "内嵌值和组成清单",
+    "有限条件/opaque待方案确认",
+    "来源清单人工审定；未运行产品验证"
+  ],
+  "record_kind": "按实际第二轮答复整理，非逐字转储"
+}

@@ -1,0 +1,226 @@
+[
+  {
+    "capability": "semantic-fact-model",
+    "requirement": "五层语义组织",
+    "basis": "B01/B03",
+    "tasks": [
+      "1.2"
+    ],
+    "verification": "test_catalog_roles_and_layers",
+    "status": "baseline_constraint"
+  },
+  {
+    "capability": "semantic-fact-model",
+    "requirement": "分层不强制包含或细化",
+    "basis": "B02/B03",
+    "tasks": [
+      "1.2",
+      "2.2"
+    ],
+    "verification": "test_cross_layer_entry_binding",
+    "status": "baseline_constraint"
+  },
+  {
+    "capability": "semantic-fact-model",
+    "requirement": "单一主体身份与跨层引用",
+    "basis": "B02",
+    "tasks": [
+      "1.1"
+    ],
+    "verification": "test_same_declaration_two_contexts",
+    "status": "baseline_constraint"
+  },
+  {
+    "capability": "semantic-fact-model",
+    "requirement": "显式工程边界与组织关系",
+    "basis": "Issue二.1/二.3; C02",
+    "tasks": [
+      "1.1",
+      "2.2"
+    ],
+    "verification": "test_undecided_project_mapping",
+    "status": "candidate"
+  },
+  {
+    "capability": "semantic-fact-model",
+    "requirement": "目标配方别名与交付边界",
+    "basis": "Issue二.3; C02",
+    "tasks": [
+      "2.2"
+    ],
+    "verification": "test_alias_recipe_observation",
+    "status": "candidate"
+  },
+  {
+    "capability": "semantic-fact-model",
+    "requirement": "需求解析与范围位置正交",
+    "basis": "Issue二.3; C04",
+    "tasks": [
+      "2.3"
+    ],
+    "verification": "test_dependency_scope_orthogonal",
+    "status": "candidate"
+  },
+  {
+    "capability": "semantic-fact-model",
+    "requirement": "稳定身份与上下文保持引用",
+    "basis": "Issue二.1/二.2/六; C01/C02",
+    "tasks": [
+      "1.1"
+    ],
+    "verification": "test_context_overlap_cases",
+    "status": "candidate"
+  },
+  {
+    "capability": "semantic-fact-model",
+    "requirement": "类型化事实与分阶段校验",
+    "basis": "Issue二.5; C07",
+    "tasks": [
+      "2.1"
+    ],
+    "verification": "test_invalid_role_and_internal_ref",
+    "status": "candidate"
+  },
+  {
+    "capability": "semantic-fact-model",
+    "requirement": "可查询的类型与谓词目录",
+    "basis": "Issue二.5; C03/C07",
+    "tasks": [
+      "1.2"
+    ],
+    "verification": "test_catalog_roles_and_layers",
+    "status": "candidate"
+  },
+  {
+    "capability": "semantic-fact-model",
+    "requirement": "组成关联与引用边界",
+    "basis": "Issue三; C03",
+    "tasks": [
+      "1.2",
+      "2.1",
+      "4.1"
+    ],
+    "verification": "test_nested_payload_rejected",
+    "status": "candidate"
+  },
+  {
+    "capability": "semantic-fact-model",
+    "requirement": "主张模态证据与推导可追溯",
+    "basis": "Issue二.6; C06",
+    "tasks": [
+      "3.1"
+    ],
+    "verification": "test_modes_not_truth_rank",
+    "status": "candidate"
+  },
+  {
+    "capability": "semantic-fact-model",
+    "requirement": "覆盖与否定的边界",
+    "basis": "Issue二.6; C06",
+    "tasks": [
+      "3.1"
+    ],
+    "verification": "test_negative_requires_closed_scope",
+    "status": "candidate"
+  },
+  {
+    "capability": "semantic-fact-model",
+    "requirement": "状态维度独立表达",
+    "basis": "B06/Issue二.6; C06",
+    "tasks": [
+      "3.1"
+    ],
+    "verification": "test_acquired_ref_only",
+    "status": "candidate"
+  },
+  {
+    "capability": "semantic-fact-model",
+    "requirement": "条件可满足性与循环诊断",
+    "basis": "Issue二.3; C04",
+    "tasks": [
+      "2.3"
+    ],
+    "verification": "test_cycle_satisfiability",
+    "status": "candidate"
+  },
+  {
+    "capability": "algorithm-description",
+    "requirement": "操作契约独立表达",
+    "basis": "Issue二.4; C05",
+    "tasks": [
+      "4.1"
+    ],
+    "verification": "test_numeric_resource_concurrency_unknown",
+    "status": "candidate"
+  },
+  {
+    "capability": "algorithm-description",
+    "requirement": "算法描述身份目的与实现关联",
+    "basis": "Issue二.4; C01/C05",
+    "tasks": [
+      "4.1"
+    ],
+    "verification": "test_algorithm_multi_project",
+    "status": "candidate"
+  },
+  {
+    "capability": "algorithm-description",
+    "requirement": "结构化行为体与引用完整性",
+    "basis": "Issue二.4; C03/C05",
+    "tasks": [
+      "4.1"
+    ],
+    "verification": "test_algorithm_kinds_and_refs",
+    "status": "candidate"
+  },
+  {
+    "capability": "algorithm-description",
+    "requirement": "求值错误资源与并发语义保持",
+    "basis": "Issue二.4; C05",
+    "tasks": [
+      "4.1"
+    ],
+    "verification": "test_numeric_resource_concurrency_unknown",
+    "status": "candidate"
+  },
+  {
+    "capability": "algorithm-description",
+    "requirement": "宏生成与注解的分阶段来源",
+    "basis": "Issue二.4; C05",
+    "tasks": [
+      "4.2"
+    ],
+    "verification": "test_macro_unexpanded_and_repeated",
+    "status": "candidate"
+  },
+  {
+    "capability": "algorithm-description",
+    "requirement": "匿名操作闭包与绑定语义",
+    "basis": "Issue二.4; C05",
+    "tasks": [
+      "4.2"
+    ],
+    "verification": "test_closure_and_conditional_binding",
+    "status": "candidate"
+  },
+  {
+    "capability": "algorithm-description",
+    "requirement": "伪代码是可追溯投影",
+    "basis": "Issue二.4; C05",
+    "tasks": [
+      "4.3"
+    ],
+    "verification": "test_projection_preserves_behavior",
+    "status": "candidate"
+  },
+  {
+    "capability": "algorithm-description",
+    "requirement": "来源行为覆盖与投影分别验证",
+    "basis": "Issue二.4/六; C05",
+    "tasks": [
+      "4.3"
+    ],
+    "verification": "test_deleted_failure_exit_detected",
+    "status": "candidate"
+  }
+]

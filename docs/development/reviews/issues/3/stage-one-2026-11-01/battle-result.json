@@ -1,0 +1,140 @@
+{
+  "battle_id": "issue-3-domain-planning-2026-11-01",
+  "problem": "在既有确认基线下完善语言无关领域模型与公共契约候选规划",
+  "constraints": [
+    "只阶段一",
+    "主规格与导入原件不变",
+    "继续既有变更",
+    "不实现产品不归档",
+    "main提交获本轮明确授权"
+  ],
+  "participants": [
+    {
+      "role": "battle_proposer",
+      "context": "fresh independent context",
+      "rounds": [
+        1,
+        2
+      ]
+    },
+    {
+      "role": "battle_challenger",
+      "context": "fresh independent context",
+      "rounds": [
+        1,
+        2
+      ]
+    },
+    {
+      "role": "battle_reviewer",
+      "context": "new independent context",
+      "rounds": [
+        "review"
+      ]
+    }
+  ],
+  "rounds": [
+    {
+      "round": 1,
+      "records": [
+        "round1-proposer.json",
+        "round1-challenger.json"
+      ],
+      "visibility": "首轮互不读取结论，仅共享中立包与仓库证据"
+    },
+    {
+      "round": 2,
+      "records": [
+        "round2-proposer.json",
+        "round2-challenger.json"
+      ],
+      "visibility": "互传首轮及C01–C07，逐争议交叉质询"
+    },
+    {
+      "round": "review",
+      "records": [
+        "reviewer.json"
+      ],
+      "visibility": "新建独立上下文读取全部论据及证据"
+    }
+  ],
+  "disputes": [
+    {
+      "id": "C01",
+      "claims": [
+        "P01",
+        "H01"
+      ],
+      "question": "身份与不完整/重叠/矛盾配置的可执行判据是什么？"
+    },
+    {
+      "id": "C02",
+      "claims": [
+        "P02",
+        "H02"
+      ],
+      "question": "工程边界未决时如何合法交换声明，不强迫确定项目？"
+    },
+    {
+      "id": "C03",
+      "claims": [
+        "P02",
+        "H03"
+      ],
+      "question": "组成、关联及内嵌值如何避免以载荷嵌套绕过默认不展开？"
+    },
+    {
+      "id": "C04",
+      "claims": [
+        "P05",
+        "H04"
+      ],
+      "question": "三值条件和可满足性/循环判定的首版支持片段与未知边界是什么？"
+    },
+    {
+      "id": "C05",
+      "claims": [
+        "P04",
+        "H05"
+      ],
+      "question": "怎样分别验来源到body与body到伪代码，不假称行为等价？"
+    },
+    {
+      "id": "C06",
+      "claims": [
+        "P03",
+        "H06"
+      ],
+      "question": "状态组合及否定覆盖如何明确，避免空集合和哈希裁真？"
+    },
+    {
+      "id": "C07",
+      "claims": [
+        "P05",
+        "P06"
+      ],
+      "question": "公共契约/分阶段验收是否有具体可执行接口与替代，哪些仍需用户裁决？"
+    }
+  ],
+  "recommendation": "推荐A，依据各争议边界修改候选设计；不是用户决策。",
+  "unresolved": [
+    "身份/上下文/项目映射",
+    "组成和内嵌值/状态/闭合种类",
+    "有限条件与上限",
+    "算法构造/opaque/来源清单/投影",
+    "技术/版本/诊断接口",
+    "方案确认与实施批准分离"
+  ],
+  "minority_positions": [
+    "保留受限算法构造+opaque建议，未确定完整构造集。",
+    "人工文本+映射是有效替代，如采用需改候选算法要求。",
+    "逐谓词联合Schema是有效替代，不把无类型三元组当唯一反选。",
+    "拒绝把多种不同值一概称歧义。"
+  ],
+  "decision_status": "proposed",
+  "workflow_status": "awaiting-decision",
+  "user_decision": null,
+  "implementation_approved": false,
+  "record_kind": "实际工具启动的独立代理答复，由主代理结构化整理；非逐字转储，不含宿主会话数据，不声称OS隔离。",
+  "evidence_boundary": "仅核对已有仓库材料与固定来源研究摘要，未运行产品或新增上游案例验证。"
+}
