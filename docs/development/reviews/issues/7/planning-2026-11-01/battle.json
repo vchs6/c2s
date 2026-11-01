@@ -1,0 +1,174 @@
+{
+  "battle_id": "issue-7-planning-2026-11-01",
+  "problem": "请求响应范围与状态",
+  "constraints_ref": "docs/planning/program-2026-11-01/context.md",
+  "participants": [
+    "battle_proposer",
+    "battle_challenger",
+    "battle_reviewer"
+  ],
+  "rounds": {
+    "1": {
+      "proposer": {
+        "position": "结构化规范核心，可选自然语言解释；投影与构造分离",
+        "claims": [
+          {
+            "id": "P01",
+            "statement": "请求含项目选择主体/事实/关系上下文展开；歧义不扩大；替代仅结构入口",
+            "evidence_refs": [
+              "semantic-fact-query",
+              "issue-input.json"
+            ],
+            "falsifier": "展开操作变无限遍历"
+          },
+          {
+            "id": "P02",
+            "statement": "三范围分开，引用模型A身份与内嵌白名单",
+            "evidence_refs": [
+              "模型A design §2"
+            ],
+            "falsifier": "签名请求夹带完整类型算法"
+          },
+          {
+            "id": "P03",
+            "statement": "逐项呈现/获取/诊断/覆盖，汇总另列；不存在有界证据",
+            "evidence_refs": [
+              "query主规格",
+              "模型A §4"
+            ],
+            "falsifier": "空结果或零适用变不存在"
+          }
+        ]
+      },
+      "challenger": {
+        "position": "支持范围分离，补解析覆盖与深度计数",
+        "claims": [
+          {
+            "id": "H01",
+            "statement": "同名/重载/配置多命中不任选不全返；结构核心或先解释均保留歧义",
+            "evidence_refs": [
+              "模型A §1"
+            ],
+            "falsifier": "合法请求已唯一"
+          },
+          {
+            "id": "H02",
+            "statement": "A成功B不支持不能总体success吞并；逐项或缺口分表",
+            "evidence_refs": [
+              "query主规格"
+            ],
+            "falsifier": "全部状态已可表达"
+          },
+          {
+            "id": "H03",
+            "statement": "展开定义边方向计数与环停止；证据诊断不夹带全定义",
+            "evidence_refs": [
+              "query主规格",
+              "模型A §2"
+            ],
+            "falsifier": "所有图无环且不可内嵌"
+          }
+        ],
+        "unknowns": [
+          "最小谓词集如何确定",
+          "歧义时局部执行",
+          "变化有效性"
+        ]
+      }
+    },
+    "2": {
+      "proposer": {
+        "responses": [
+          {
+            "id": "C01",
+            "action": "revise",
+            "reason": "独立不依赖歧义项可执行，相关阻塞总体部分"
+          },
+          {
+            "id": "C02",
+            "action": "accept",
+            "reason": "逐项状态覆盖诊断，有界否定"
+          },
+          {
+            "id": "C03",
+            "action": "revise",
+            "reason": "按类型请求列投影，根0授权边1，循环仅引用"
+          }
+        ],
+        "unknowns": [
+          "最小谓词表",
+          "循环是否影响显式路径"
+        ]
+      },
+      "challenger": {
+        "responses": [
+          {
+            "id": "C01",
+            "action": "revise",
+            "reason": "不猜共同项目配置"
+          },
+          {
+            "id": "C02",
+            "action": "accept",
+            "reason": "否定命题范围上下文证据"
+          },
+          {
+            "id": "C03",
+            "action": "revise",
+            "reason": "版本化投影；根0边1；共享节点不同路径不可全局吞并"
+          }
+        ],
+        "unknowns": [
+          "最小谓词集",
+          "共享路径深度/授权分别计算"
+        ]
+      }
+    },
+    "3": {
+      "reviewer": {
+        "role": "battle_reviewer",
+        "responses": [
+          {
+            "id": "C01",
+            "action": "revise",
+            "reason": "补共同配置缺失及独立/歧义依赖共存具体例"
+          },
+          {
+            "id": "C02",
+            "action": "revise",
+            "reason": "补未展开已获取/不适用/冲突/超时组合和汇总"
+          },
+          {
+            "id": "C03",
+            "action": "revise",
+            "reason": "最小投影待定；循环不得截断显式有限路径，多路径深度≥2例不足"
+          }
+        ]
+      }
+    }
+  },
+  "disputes": [
+    {
+      "id": "C01",
+      "question": "规范请求及歧义能否局部执行"
+    },
+    {
+      "id": "C02",
+      "question": "多维状态与有界否定如何避免假完整"
+    },
+    {
+      "id": "C03",
+      "question": "顶层最小集和展开边方向深度环如何定"
+    }
+  ],
+  "decision_status": "proposed",
+  "user_decision": null,
+  "record_kind": "真实角色答复的主代理结构化摘要，非逐字转储",
+  "recommendation": "候选规范核心与逐项结果；补具体语义例和定义输出/遍历分离",
+  "unresolved": [
+    "类型默认投影表与#3目录共同冻结",
+    "D01",
+    "D02",
+    "D03"
+  ]
+}

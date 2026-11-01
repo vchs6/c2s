@@ -8,11 +8,11 @@
 
 - [x] 1.2 完成Issue #6头脑风暴、真实讨论与提案。依据：Issue正文及其上游；交付：相应openspec/changes与docs/development/reviews/issues/6/planning-2026-11-01/；检查：独立记录、逐工件instructions及严格validate；通过：有范围/证据/替代/Scenario和待决项；失败：缺讨论、越界实施或将候选当用户确认。
 
-- [ ] 1.3 完成Issue #7头脑风暴、真实讨论与提案。依据：Issue正文及其上游；交付：相应openspec/changes与docs/development/reviews/issues/7/planning-2026-11-01/；检查：独立记录、逐工件instructions及严格validate；通过：有范围/证据/替代/Scenario和待决项；失败：缺讨论、越界实施或将候选当用户确认。
+- [x] 1.3 完成Issue #7头脑风暴、真实讨论与提案。依据：Issue正文及其上游；交付：相应openspec/changes与docs/development/reviews/issues/7/planning-2026-11-01/；检查：独立记录、逐工件instructions及严格validate；通过：有范围/证据/替代/Scenario和待决项；失败：缺讨论、越界实施或将候选当用户确认。
 
-- [ ] 1.4 完成Issue #8头脑风暴、真实讨论与提案。依据：Issue正文及其上游；交付：相应openspec/changes与docs/development/reviews/issues/8/planning-2026-11-01/；检查：独立记录、逐工件instructions及严格validate；通过：有范围/证据/替代/Scenario和待决项；失败：缺讨论、越界实施或将候选当用户确认。
+- [x] 1.4 完成Issue #8头脑风暴、真实讨论与提案。依据：Issue正文及其上游；交付：相应openspec/changes与docs/development/reviews/issues/8/planning-2026-11-01/；检查：独立记录、逐工件instructions及严格validate；通过：有范围/证据/替代/Scenario和待决项；失败：缺讨论、越界实施或将候选当用户确认。
 
-- [ ] 1.5 完成Issue #9头脑风暴、真实讨论与提案。依据：Issue正文及其上游；交付：相应openspec/changes与docs/development/reviews/issues/9/planning-2026-11-01/；检查：独立记录、逐工件instructions及严格validate；通过：有范围/证据/替代/Scenario和待决项；失败：缺讨论、越界实施或将候选当用户确认。
+- [x] 1.5 完成Issue #9头脑风暴、真实讨论与提案。依据：Issue正文及其上游；交付：相应openspec/changes与docs/development/reviews/issues/9/planning-2026-11-01/；检查：独立记录、逐工件instructions及严格validate；通过：有范围/证据/替代/Scenario和待决项；失败：缺讨论、越界实施或将候选当用户确认。
 
 - [ ] 1.6 完成Issue #10头脑风暴、真实讨论与提案。依据：Issue正文及其上游；交付：相应openspec/changes与docs/development/reviews/issues/10/planning-2026-11-01/；检查：独立记录、逐工件instructions及严格validate；通过：有范围/证据/替代/Scenario和待决项；失败：缺讨论、越界实施或将候选当用户确认。
 

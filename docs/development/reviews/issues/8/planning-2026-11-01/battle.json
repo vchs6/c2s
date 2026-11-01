@@ -1,0 +1,169 @@
+{
+  "battle_id": "issue-8-planning-2026-11-01",
+  "problem": "延迟构造依赖和索引复用边界",
+  "constraints_ref": "docs/planning/program-2026-11-01/context.md",
+  "participants": [
+    "battle_proposer",
+    "battle_challenger",
+    "battle_reviewer"
+  ],
+  "rounds": {
+    "1": {
+      "proposer": {
+        "position": "缺口驱动、有界依赖",
+        "claims": [
+          {
+            "id": "P1",
+            "statement": "概览/操作/算法只补必要缺口，循环去重不明部分",
+            "evidence_refs": [
+              "upstream #7"
+            ],
+            "falsifier": "有界依赖不够必要语义"
+          },
+          {
+            "id": "P2",
+            "statement": "定位索引；复用核身份来源版本工具平台；取消后已核验可复用",
+            "evidence_refs": [
+              "issue-input.json"
+            ],
+            "falsifier": "同源码不同target语义不同"
+          },
+          {
+            "id": "P3",
+            "statement": "每次局部重提替代简单但重复；闭包预取可能全仓",
+            "evidence_refs": [
+              "AGENTS"
+            ],
+            "falsifier": "核验比重提昂贵"
+          }
+        ]
+      },
+      "challenger": {
+        "position": "响应深度不是内部依赖上限",
+        "claims": [
+          {
+            "id": "H01",
+            "statement": "递归跨语言循环需缺口图和显式未决，限额不等完成",
+            "evidence_refs": [
+              "upstream #7",
+              "input"
+            ],
+            "falsifier": "所有支持查询无递归"
+          },
+          {
+            "id": "H02",
+            "statement": "索引预推调用契约即具体语义；复用核配置覆盖能力",
+            "evidence_refs": [
+              "context",
+              "upstream #6"
+            ],
+            "falsifier": "索引纯定位且条件充分"
+          },
+          {
+            "id": "H03",
+            "statement": "订阅取消与共享任务取消分离，不伤其他查询",
+            "evidence_refs": [
+              "input"
+            ],
+            "falsifier": "明确禁止共享执行"
+          }
+        ]
+      }
+    },
+    "2": {
+      "proposer": {
+        "responses": [
+          {
+            "id": "C01",
+            "action": "revise",
+            "reason": "响应深度只返，依赖不完备未决"
+          },
+          {
+            "id": "C02",
+            "action": "accept",
+            "reason": "索引不推契约，复用核配置覆盖能力版本"
+          },
+          {
+            "id": "C03",
+            "action": "accept",
+            "reason": "取消先退订，其他订阅继续，失败不污染"
+          }
+        ],
+        "unknowns": [
+          "预算",
+          "最后订阅取消",
+          "覆盖版本"
+        ]
+      },
+      "challenger": {
+        "responses": [
+          {
+            "id": "C01",
+            "action": "revise",
+            "reason": "循环去重不证明完成"
+          },
+          {
+            "id": "C02",
+            "action": "accept",
+            "reason": "相同源码不同target可能不同，核验昂贵可比较局部重提"
+          },
+          {
+            "id": "C03",
+            "action": "revise",
+            "reason": "取消后仅独立核验且满足发布条件结果可复用，单订阅取消不伤其他"
+          }
+        ],
+        "unknowns": [
+          "变化发布政策",
+          "循环支持",
+          "桥接能力"
+        ]
+      }
+    },
+    "3": {
+      "reviewer": {
+        "role": "battle_reviewer",
+        "responses": [
+          {
+            "id": "C01",
+            "action": "revise",
+            "reason": "补循环未满足/限额scenario，不吞不同上下文"
+          },
+          {
+            "id": "C02",
+            "action": "revise",
+            "reason": "复用充分条件并列，核验成本与重提对照"
+          },
+          {
+            "id": "C03",
+            "action": "revise",
+            "reason": "取消失败scenario、最后退订交接，发布未定不可复用"
+          }
+        ]
+      }
+    }
+  },
+  "disputes": [
+    {
+      "id": "C01",
+      "question": "响应深度与内部依赖/循环停止如何分开"
+    },
+    {
+      "id": "C02",
+      "question": "定位索引与复用充分条件"
+    },
+    {
+      "id": "C03",
+      "question": "取消/失败与共享执行的职责"
+    }
+  ],
+  "decision_status": "proposed",
+  "user_decision": null,
+  "record_kind": "真实答复的主代理摘要，非逐字转储",
+  "recommendation": "候选缺口驱动，补边界及失败场景后可下游规划",
+  "unresolved": [
+    "D01–D03",
+    "#9/#10/#12契约冻结",
+    "最后订阅退出政策"
+  ]
+}

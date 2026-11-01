@@ -64,7 +64,7 @@
         6
       ],
       "proposed_change": "define-semantic-fact-query-contracts",
-      "status": "open-not-started"
+      "status": "proposal-reviewed-awaiting-overall-decisions"
     },
     {
       "sequence": 4,
@@ -79,7 +79,7 @@
         7
       ],
       "proposed_change": "design-lazy-semantic-fact-construction",
-      "status": "open-not-started"
+      "status": "proposal-reviewed-awaiting-overall-decisions"
     },
     {
       "sequence": 5,
@@ -95,7 +95,7 @@
         8
       ],
       "proposed_change": "design-incremental-semantic-fact-storage",
-      "status": "open-not-started"
+      "status": "proposal-reviewed-awaiting-overall-decisions"
     },
     {
       "sequence": 6,

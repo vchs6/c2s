@@ -1,0 +1,57 @@
+[
+  {
+    "id": "T1",
+    "source": "tree-sitter/tree-sitter",
+    "path": "README.md",
+    "claim": "增量具体语法树，可编辑后更新；不证明跨语言绑定、行为契约或运行观察",
+    "status": "documented_not_executed",
+    "url": "https://github.com/tree-sitter/tree-sitter/blob/master/README.md",
+    "retrieved_date": "2026-11-01",
+    "method": "GitHub fetch_file，静态官方文档",
+    "blob_sha": "b347c880c2aa27f05a205994b159ac31512ee68b"
+  },
+  {
+    "id": "T2",
+    "source": "rust-lang/rust-analyzer",
+    "path": "README.md",
+    "claim": "Rust语言服务器提供定义/引用等IDE能力；不能从README推出全部宏/构建或混合边界支持",
+    "status": "documented_not_executed",
+    "url": "https://github.com/rust-lang/rust-analyzer/blob/master/README.md",
+    "retrieved_date": "2026-11-01",
+    "method": "GitHub fetch_file，静态官方文档",
+    "blob_sha": "06d63a2d23a73398c6c3a58381c15cac5dfc59f9"
+  },
+  {
+    "id": "T3",
+    "source": "python/cpython",
+    "path": "Doc/library/ast.rst",
+    "claim": "AST parse及节点定位；抽象语法随Python版本变化，列为UTF-8字节偏移，不能直接当字符列；不证明动态绑定完整",
+    "status": "documented_not_executed",
+    "url": "https://github.com/python/cpython/blob/main/Doc/library/ast.rst",
+    "retrieved_date": "2026-11-01",
+    "method": "GitHub fetch_file，静态官方文档",
+    "blob_sha": "d3456a486e76df4b41688eae6285e66106789d43"
+  },
+  {
+    "id": "T4",
+    "source": "rust-lang/cargo",
+    "path": "doc/book/src/commands/cargo-metadata.md",
+    "blob_sha": "f59b4304a75d01c33ade57a466fe7c3fe1e11201",
+    "claim": "JSON提供工作空间成员与解析依赖；格式版本与不透明标识需尊重，不能由成员推工程边界或实际构建产物",
+    "status": "documented_not_executed",
+    "url": "https://github.com/rust-lang/cargo/blob/master/doc/book/src/commands/cargo-metadata.md",
+    "retrieved_date": "2026-11-01",
+    "method": "GitHub fetch_file，静态官方文档"
+  },
+  {
+    "id": "T5",
+    "source": "llvm/llvm-project",
+    "path": "clang/docs/LibTooling.md",
+    "blob_sha": "c8e11b60be2a31edc1410e3d5a971cb420b2defc",
+    "claim": "基于Clang的工具和FrontendAction需要确定编译参数/CompilationDatabase；文档不证明本Skill跨host/target能力",
+    "status": "documented_not_executed",
+    "url": "https://github.com/llvm/llvm-project/blob/main/clang/docs/LibTooling.md",
+    "retrieved_date": "2026-11-01",
+    "method": "GitHub fetch_file，静态官方文档"
+  }
+]

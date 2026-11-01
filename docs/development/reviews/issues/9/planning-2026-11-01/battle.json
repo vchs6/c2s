@@ -1,0 +1,168 @@
+{
+  "battle_id": "issue-9-planning-2026-11-01",
+  "problem": "增量判重与来源变化政策",
+  "constraints_ref": "docs/planning/program-2026-11-01/context.md",
+  "participants": [
+    "battle_proposer",
+    "battle_challenger",
+    "battle_reviewer"
+  ],
+  "rounds": {
+    "1": {
+      "proposer": {
+        "position": "主体身份条件判重、幂等、引用闭包发布",
+        "claims": [
+          {
+            "id": "P1",
+            "statement": "确定性比较来源条件；相同源码变化不already-exists，同名配置不合并",
+            "evidence_refs": [
+              "Issue9",
+              "upstream #8"
+            ],
+            "assumptions": [
+              "公共身份判等"
+            ],
+            "falsifier": "配置或补证误合并"
+          },
+          {
+            "id": "P2",
+            "statement": "事务批写或暂存清单发布取舍；D03拒变/条件替换并失效依赖/追加修订各有成本",
+            "evidence_refs": [
+              "Issue9"
+            ],
+            "assumptions": [
+              "无后端已选"
+            ],
+            "falsifier": "发布出现悬空引用"
+          }
+        ],
+        "unknowns": [
+          "D03更新删除",
+          "补证边界",
+          "并发失败"
+        ]
+      },
+      "challenger": {
+        "position": "去重有效性分离，D03阻塞变化发布非共同规划",
+        "claims": [
+          {
+            "id": "H1",
+            "statement": "同主体同内容新证据或target不同不应整体跳过",
+            "evidence_refs": [
+              "Issue9",
+              "lazy design"
+            ],
+            "falsifier": "严格等价全部条件证据"
+          },
+          {
+            "id": "H2",
+            "statement": "半写引用失败与同ID异载荷、循环共同发布需处理",
+            "evidence_refs": [
+              "Issue9"
+            ],
+            "falsifier": "原子发布契约已保证"
+          },
+          {
+            "id": "H3",
+            "statement": "平台大小写Unicode不当规范化会重键身份",
+            "evidence_refs": [
+              "AGENTS"
+            ],
+            "falsifier": "定位转换不改变身份"
+          }
+        ],
+        "unknowns": [
+          "拒变或用户批准条件替换；无需历史",
+          "幂等保留窗口",
+          "补证规则",
+          "原子范围"
+        ]
+      }
+    },
+    "2": {
+      "proposer": {
+        "responses": [
+          {
+            "id": "C01",
+            "action": "revise",
+            "reason": "内容证据条件分别比，补证非变化，路径不重键"
+          },
+          {
+            "id": "C02",
+            "action": "revise",
+            "reason": "同ID异载荷拒绝；循环共同发布失败不可见；窗口外语义去重"
+          },
+          {
+            "id": "C03",
+            "action": "defer",
+            "reason": "三政策真实替代，D03仅阻塞相关设计"
+          }
+        ]
+      },
+      "challenger": {
+        "responses": [
+          {
+            "id": "C01",
+            "action": "accept",
+            "reason": "新增独立证据补证；撤证或改主张属变化；不同条件不吞"
+          },
+          {
+            "id": "C02",
+            "action": "revise",
+            "reason": "循环共同发布不要求全仓事务；窗口外语义去重"
+          },
+          {
+            "id": "C03",
+            "action": "defer",
+            "reason": "补证也须合并规则，历史额外成本未批准"
+          }
+        ]
+      }
+    },
+    "3": {
+      "reviewer": {
+        "role": "battle_reviewer",
+        "responses": [
+          {
+            "id": "C01",
+            "action": "revise",
+            "reason": "补独立证据/合并和配置能力覆盖判等场景"
+          },
+          {
+            "id": "C02",
+            "action": "revise",
+            "reason": "补ID碰撞/循环失败/并发例及窗口边界"
+          },
+          {
+            "id": "C03",
+            "action": "revise",
+            "reason": "B严格新增不能暗持久化失效更新"
+          }
+        ]
+      }
+    }
+  },
+  "disputes": [
+    {
+      "id": "C01",
+      "question": "相同/补证/条件差异/变化如何判别"
+    },
+    {
+      "id": "C02",
+      "question": "幂等碰撞、失败、循环引用发布边界"
+    },
+    {
+      "id": "C03",
+      "question": "D03可行政策与不能默选的界限"
+    }
+  ],
+  "decision_status": "proposed",
+  "user_decision": null,
+  "record_kind": "真实答复结构化摘要，非逐字转储",
+  "recommendation": "候选去重幂等，补证合并/原子单元先冻结；B仅响应失效不写更新",
+  "unresolved": [
+    "D03",
+    "原子单元/后端",
+    "补证规则和幂等窗口待冻结"
+  ]
+}
