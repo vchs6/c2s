@@ -1,0 +1,27 @@
+{
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "status",
+    "summary",
+    "reason"
+  ],
+  "properties": {
+    "status": {
+      "enum": [
+        "awaiting-decision",
+        "completed",
+        "blocked"
+      ]
+    },
+    "summary": {
+      "type": "string"
+    },
+    "reason": {
+      "type": [
+        "string",
+        "null"
+      ]
+    }
+  }
+}

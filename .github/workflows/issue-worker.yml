@@ -1,0 +1,119 @@
+name: Issue worker
+on:
+  issues:
+    types: [opened, edited, reopened, labeled]
+  issue_comment:
+    types: [created]
+  workflow_dispatch:
+  schedule:
+    - cron: '*/15 * * * *'
+concurrency:
+  group: c2s-issue-worker-main
+  cancel-in-progress: false
+permissions: {}
+jobs:
+  prepare:
+    if: >-
+      github.event_name != 'issue_comment' ||
+      (!github.event.issue.pull_request && github.event.comment.user.type != 'Bot' && startsWith(github.event.comment.body, '/c2s '))
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      issues: write
+    outputs:
+      selected: ${{ steps.queue.outputs.selected }}
+      phase: ${{ steps.queue.outputs.phase }}
+      base_sha: ${{ steps.queue.outputs.base_sha }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: main
+          persist-credentials: false
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - id: queue
+        run: python3 -m scripts.issue_worker prepare
+        env:
+          GH_TOKEN: ${{ github.token }}
+          HAS_MODEL_KEY: ${{ secrets.OPENAI_API_KEY != '' }}
+      - uses: actions/upload-artifact@v4
+        if: steps.queue.outputs.selected == 'true'
+        with:
+          name: issue-control
+          path: .issue-runtime/control/
+          if-no-files-found: error
+          retention-days: 14
+          include-hidden-files: true
+  model:
+    needs: prepare
+    if: needs.prepare.outputs.selected == 'true' && (needs.prepare.outputs.phase == 'plan' || needs.prepare.outputs.phase == 'apply')
+    runs-on: ubuntu-latest
+    timeout-minutes: 150
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ needs.prepare.outputs.base_sha }}
+          submodules: recursive
+          persist-credentials: false
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+      - run: npm ci
+      - run: npm run setup:codex
+      - uses: actions/download-artifact@v4
+        with:
+          name: issue-control
+          path: .issue-runtime/control/
+      - run: python3 -m scripts.issue_worker model
+        env:
+          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+          OPENSPEC_TELEMETRY: '0'
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: issue-agent
+          path: .issue-runtime/agent/
+          retention-days: 14
+          include-hidden-files: true
+          if-no-files-found: ignore
+  publish:
+    needs: [prepare, model]
+    if: always() && needs.prepare.result == 'success' && needs.prepare.outputs.selected == 'true'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      issues: write
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ needs.prepare.outputs.base_sha }}
+          submodules: recursive
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+      - run: npm ci
+      - uses: actions/download-artifact@v4
+        with:
+          name: issue-control
+          path: .issue-runtime/control/
+      - uses: actions/download-artifact@v4
+        if: needs.model.result == 'success'
+        with:
+          name: issue-agent
+          path: .issue-runtime/agent/
+      - run: python3 -m scripts.issue_worker publish
+        env:
+          GH_TOKEN: ${{ github.token }}
+          MODEL_OK: ${{ needs.model.result == 'success' }}
+          OPENSPEC_TELEMETRY: '0'

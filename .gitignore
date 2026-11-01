@@ -225,3 +225,6 @@ node_modules/
 .local/
 .codex/auth.json
 .codex/sessions/
+
+# Issue worker transient artifacts
+.issue-runtime/

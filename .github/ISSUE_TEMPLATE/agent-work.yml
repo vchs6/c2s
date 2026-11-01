@@ -1,0 +1,17 @@
+name: c2s 工作事项
+description: 自动讨论、规划或执行（仅维护者可授权）
+body:
+  - type: dropdown
+    id: kind
+    attributes:
+      label: 工作类型
+      options: [discuss, feature, implement, bug, smoke]
+    validations:
+      required: true
+  - type: textarea
+    id: task
+    attributes:
+      label: 工作内容
+      description: 问题、范围、预期结果与验收条件；feature/implement先生成计划，批准后实施。
+    validations:
+      required: true

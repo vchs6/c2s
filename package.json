@@ -6,8 +6,9 @@
     "openspec": "openspec",
     "validate": "openspec validate --all --strict --no-interactive",
     "codex": "codex",
-    "check:artifacts": "node scripts/verify-artifacts.mjs",
-    "setup:codex": "codex plugin marketplace add . --json && codex plugin add superpowers@c2s-tools --json"
+    "check:artifacts": "python3 scripts/verify_artifacts.py",
+    "setup:codex": "python3 scripts/setup_codex.py",
+    "test": "python3 -m unittest discover -s tests -v"
   },
   "repository": {
     "type": "git",

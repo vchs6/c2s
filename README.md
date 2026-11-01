@@ -42,3 +42,8 @@ npm run openspec -- status --change initialize-sdd-ddd-workspace
 - `tools/superpowers/`：官方Superpowers源子模块，不在此实现产品。
 
 仓库许可证为Apache-2.0；Superpowers子模块沿用其MIT许可证。
+
+## Issue 自动工作
+使用[工作事项表单](https://github.com/vchs6/c2s/issues/new?template=agent-work.yml)创建讨论、功能规划、实施或缺陷任务。详情见[Issue Worker](docs/workflow/issue-worker.md)。仓库脚本和测试统一采用Python 3，OpenSpec及Codex仍使用固定版本CLI。
+
+Battle形成的语义模型计划位于`openspec/changes/define-layered-semantic-fact-model/`，包含proposal、design、delta specs和tasks；领域研究原件不等同于已生效的主规格。
