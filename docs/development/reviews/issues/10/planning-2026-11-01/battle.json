@@ -1,0 +1,190 @@
+{
+  "battle_id": "issue-10-planning-2026-11-01",
+  "problem": "需求驱动获取与适配能力",
+  "constraints_ref": "docs/planning/program-2026-11-01/context.md",
+  "participants": [
+    "battle_proposer",
+    "battle_challenger",
+    "battle_reviewer"
+  ],
+  "rounds": {
+    "1": {
+      "proposer": {
+        "position": "按缺口选能力，确定性转换再局部模型",
+        "claims": [
+          {
+            "id": "P1",
+            "statement": "T1语法/T2Rust定义引用/T3Python节点/T4成员依赖/T5编译参数结构；保原ID位置配置证据，非完整语义",
+            "evidence_refs": [
+              "tool-evidence.json T1–T5"
+            ],
+            "falsifier": "转换错绑漏边UTF-8错位"
+          },
+          {
+            "id": "P2",
+            "statement": "轻量解析加模型vs编译器/语言服务转换；共享增量成果，模型待核验主张",
+            "evidence_refs": [
+              "context",
+              "upstream"
+            ],
+            "falsifier": "固定质量总Token无下降"
+          }
+        ],
+        "unknowns": [
+          "D01工具未选",
+          "宏生成动态FFI和缺配置未知"
+        ],
+        "role": "battle_proposer",
+        "round": 1,
+        "responses": []
+      },
+      "challenger": {
+        "position": "文档非已验证支持，语言host-target逐组合",
+        "claims": [
+          {
+            "id": "H1",
+            "statement": "UTF-8字节列/身份版本转换，否则中文错绑",
+            "evidence_refs": [
+              "T3"
+            ],
+            "falsifier": "定位转换证明正确"
+          },
+          {
+            "id": "H2",
+            "statement": "宏条件生成配置target不同，同文件缓存不足；FFI同名不证实际调用",
+            "evidence_refs": [
+              "tool-evidence.json",
+              "context"
+            ],
+            "falsifier": "有配置和桥接实证"
+          },
+          {
+            "id": "H3",
+            "statement": "大小写链接WSL行尾保原映射，不粗暴统一；缺证模型不猜闭合",
+            "evidence_refs": [
+              "AGENTS",
+              "Issue10"
+            ],
+            "falsifier": "组合验证保持语义来源"
+          }
+        ],
+        "alternatives": "结构定位+编译语义+元数据 vs 范围解析+局部模型",
+        "role": "battle_challenger",
+        "round": 1,
+        "responses": [],
+        "unknowns": [
+          "未决事项见本记录unresolved及共享决策请求；摘要未独立展开者不推定已解决"
+        ]
+      }
+    },
+    "2": {
+      "proposer": {
+        "responses": [
+          {
+            "id": "C01",
+            "action": "revise",
+            "reason": "固定版本组合定位身份事实验证后才升级支持"
+          },
+          {
+            "id": "C02",
+            "action": "accept",
+            "reason": "配置target生成隔离，宏动态FFI未知不补闭合"
+          },
+          {
+            "id": "C03",
+            "action": "defer",
+            "reason": "两案等质量全链路对照计转换失败核验成本，未测无收益"
+          }
+        ],
+        "role": "battle_proposer",
+        "round": 2,
+        "claims": [],
+        "unknowns": [
+          "未决事项见本记录unresolved及共享决策请求；摘要未独立展开者不推定已解决"
+        ],
+        "position": "真实答复摘要见claims/responses，不表示用户批准"
+      },
+      "challenger": {
+        "responses": [
+          {
+            "id": "C01",
+            "action": "accept",
+            "reason": "文档只候选，组合运行和转换证据齐备才支持"
+          },
+          {
+            "id": "C02",
+            "action": "revise",
+            "reason": "保原映射，配置host-target参与核验"
+          },
+          {
+            "id": "C03",
+            "action": "accept",
+            "reason": "固定质量平台总Token重复上下文，模型主张待核验"
+          }
+        ],
+        "role": "battle_challenger",
+        "round": 2,
+        "claims": [],
+        "unknowns": [
+          "未决事项见本记录unresolved及共享决策请求；摘要未独立展开者不推定已解决"
+        ],
+        "position": "真实答复摘要见claims/responses，不表示用户批准"
+      }
+    },
+    "3": {
+      "reviewer": {
+        "role": "battle_reviewer",
+        "responses": [
+          {
+            "id": "C01",
+            "action": "revise",
+            "reason": "逐事实需求列字段/精度覆盖/失败；E3E4无证明确unknown"
+          },
+          {
+            "id": "C02",
+            "action": "revise",
+            "reason": "补参数组合行、本地远程差异和退化例"
+          },
+          {
+            "id": "C03",
+            "action": "revise",
+            "reason": "任务补共享增量/重复上下文/等质量Token对照归属"
+          }
+        ],
+        "round": 3,
+        "claims": [],
+        "unknowns": [
+          "未决事项见本记录unresolved及共享决策请求；摘要未独立展开者不推定已解决"
+        ],
+        "position": "真实答复摘要见claims/responses，不表示用户批准"
+      }
+    }
+  },
+  "disputes": [
+    {
+      "id": "C01",
+      "question": "文档到事实转换与支持升级证据"
+    },
+    {
+      "id": "C02",
+      "question": "宏生成动态FFI和平台定位的未定边界"
+    },
+    {
+      "id": "C03",
+      "question": "确定性工具组合与局部模型的等质量对照"
+    }
+  ],
+  "decision_status": "proposed",
+  "user_decision": null,
+  "record_kind": "真实答复的主代理摘要，非逐字转储",
+  "recommendation": "补R01–06映射及组合退化，候选供后续；不冻结适配器",
+  "unresolved": [
+    "D01",
+    "具体接口版本/转换字段证据",
+    "E3/E4能力未知"
+  ],
+  "constraints": {
+    "reference": "docs/planning/program-2026-11-01/context.md",
+    "status": "用户已确认约束见引用，新机制候选"
+  }
+}

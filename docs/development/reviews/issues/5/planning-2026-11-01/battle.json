@@ -36,7 +36,10 @@
         ],
         "unknowns": [
           "支持组合/版本、负载规模、数值目标未授权；未测量"
-        ]
+        ],
+        "round": 1,
+        "responses": [],
+        "position": "真实答复摘要见claims/responses，不表示用户批准"
       },
       "challenger": {
         "role": "battle_challenger",
@@ -70,7 +73,10 @@
         ],
         "unknowns": [
           "质量基准/规模/支持范围/来源变化策略未定；未测量"
-        ]
+        ],
+        "round": 1,
+        "responses": [],
+        "position": "真实答复摘要见claims/responses，不表示用户批准"
       }
     },
     "2": {
@@ -97,7 +103,13 @@
             "action": "revise",
             "reason": "固定输入请求质量，冷/热/变化对照；有效性参数化，不暗定更新策略"
           }
-        ]
+        ],
+        "round": 2,
+        "claims": [],
+        "unknowns": [
+          "未决事项见本记录unresolved及共享决策请求；摘要未独立展开者不推定已解决"
+        ],
+        "position": "真实答复摘要见claims/responses，不表示用户批准"
       },
       "challenger": {
         "role": "battle_challenger",
@@ -122,7 +134,13 @@
             "action": "revise",
             "reason": "固定质量分冷/热/变化；复用有效性不替用户选变化策略"
           }
-        ]
+        ],
+        "round": 2,
+        "claims": [],
+        "unknowns": [
+          "未决事项见本记录unresolved及共享决策请求；摘要未独立展开者不推定已解决"
+        ],
+        "position": "真实答复摘要见claims/responses，不表示用户批准"
       }
     },
     "3": {
@@ -156,7 +174,8 @@
           "支持/规模/质量成本目标待用户",
           "来源变化策略未定",
           "无实测"
-        ]
+        ],
+        "claims": []
       }
     }
   },

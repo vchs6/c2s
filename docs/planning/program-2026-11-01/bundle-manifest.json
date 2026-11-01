@@ -1,0 +1,561 @@
+{
+  "format": 1,
+  "snapshot_date": "2026-11-01",
+  "freeze_status": "not-frozen",
+  "development_ready": false,
+  "implementation_approved": false,
+  "user_decision": null,
+  "pending_decisions": [
+    "D01",
+    "D02",
+    "D03"
+  ],
+  "base_revision": "d40cb6c4bfdf5567ee3ca1dde82b31dd58528d8a",
+  "historical_issue3_tokens_authorize_implementation": false,
+  "digest_algorithm": "SHA-256 over sorted path + TAB + file SHA-256 + LF UTF-8",
+  "bundle_sha256": "bdd32b51898730a10a2e4ce5e0792e85176bda9981f8f771265b6e3dfd5c1607",
+  "exclusions": [
+    "manifest itself",
+    "validation execution logs/reports",
+    "Issue reply receipts",
+    "checkpoint history"
+  ],
+  "files": [
+    {
+      "path": "AGENTS.md",
+      "sha256": "b7ebc4fe750dd03e82a53533eba9755a369a2e0a5b6d5fe947578aa07e1a95e3"
+    },
+    {
+      "path": "docs/decisions/0001-five-semantic-layers.md",
+      "sha256": "df056064dfbd5eab86ef60cc00587adbd470f00867531639d3e81ad9fb5b33d7"
+    },
+    {
+      "path": "docs/decisions/0002-confirmed-specification-baseline.md",
+      "sha256": "5d0a32574ccafe335d4359c9675bd02b459c1538f4e04fc2cca6e11fd25b775f"
+    },
+    {
+      "path": "docs/development/discussions/2026-11-01-specification-baseline/semantic-fact-model-candidates.md",
+      "sha256": "97285d276b8308d0cca2968d26193446c955825a85ab9a9dd5f5521dcd22239c"
+    },
+    {
+      "path": "docs/development/reviews/2026-11-01/case-battle-result.json",
+      "sha256": "713291a09bea5fc62888291035f102a763b1c5b7b8f719e3324a24374c94ea4e"
+    },
+    {
+      "path": "docs/development/reviews/2026-11-01/case-evidence-manifest.json",
+      "sha256": "4e26666d36780bae9f1caaa9c8be26afc0ffc98fb963530644216f9cfb6e28e5"
+    },
+    {
+      "path": "docs/development/reviews/2026-11-01/model-battle-result.json",
+      "sha256": "54c753b31fc0678394bde98c1180009c4b951a36e92f0b27408a92510496fa59"
+    },
+    {
+      "path": "docs/development/reviews/issues/10/planning-2026-11-01/battle.json",
+      "sha256": "d4983583aba42228f513e46e858aecb589602b4811113587c6f9dfea2242c21c"
+    },
+    {
+      "path": "docs/development/reviews/issues/10/planning-2026-11-01/issue-input.json",
+      "sha256": "bef30c3c631c9884be22280e49282dc3f5b3c3caefea9ed83cd1de27a45115d2"
+    },
+    {
+      "path": "docs/development/reviews/issues/10/planning-2026-11-01/problem-package.md",
+      "sha256": "e949deff23398dacccd68f48fc7472f123879b000725e0253a88a5a687eee0c7"
+    },
+    {
+      "path": "docs/development/reviews/issues/10/planning-2026-11-01/review.md",
+      "sha256": "33e58e94b95c00994cbd1addf6ccb53a93253117b95ac1674784de81e395251d"
+    },
+    {
+      "path": "docs/development/reviews/issues/10/planning-2026-11-01/tool-evidence.json",
+      "sha256": "60f4d3b00d308088c5e2741786c0c821205da5610b05587a2bfde13cf2383ac9"
+    },
+    {
+      "path": "docs/development/reviews/issues/11/planning-2026-11-01/battle.json",
+      "sha256": "9c39cf5cb9fa1d0a896c06eb39f75275d6dac6532ce9340013bbdbdab6769b8f"
+    },
+    {
+      "path": "docs/development/reviews/issues/11/planning-2026-11-01/issue-input.json",
+      "sha256": "116c41a9a709f4ee058a027882a07c4b0d1055d855e33a1319f37d5457f10eb1"
+    },
+    {
+      "path": "docs/development/reviews/issues/11/planning-2026-11-01/problem-package.md",
+      "sha256": "026e9825444805ccc30725cd7ae70863d531296670658a362436c5b933875dfe"
+    },
+    {
+      "path": "docs/development/reviews/issues/11/planning-2026-11-01/review.md",
+      "sha256": "433fc3d3f6fac37faa3b0b810f571676e10b87aade7944e87defb1cc04b3ada6"
+    },
+    {
+      "path": "docs/development/reviews/issues/12/planning-2026-11-01/battle.json",
+      "sha256": "cbcc1652e78ed2e10df66836ae8b976ba08b95343bf6429b59d242aae44ea86a"
+    },
+    {
+      "path": "docs/development/reviews/issues/12/planning-2026-11-01/issue-input.json",
+      "sha256": "8bfb326d9b2eff4f4e117e5684f2902dba815a5f97ee246105ffc0267b0e83f0"
+    },
+    {
+      "path": "docs/development/reviews/issues/12/planning-2026-11-01/problem-package.md",
+      "sha256": "b341ed19435395ca5d276be7223fc096008f287ec4ec5866eba6af427c3b5d7a"
+    },
+    {
+      "path": "docs/development/reviews/issues/12/planning-2026-11-01/review.md",
+      "sha256": "4181a64e35ba72fb9a1a07a052b4cdc6ea4bc6b86b397616be22e97df2d5381c"
+    },
+    {
+      "path": "docs/development/reviews/issues/13/planning-2026-11-01/battle.json",
+      "sha256": "81223e899ec2ee417f1eb4a647e88c2b65dc1f7eefca295e1a980cad50eb7774"
+    },
+    {
+      "path": "docs/development/reviews/issues/13/planning-2026-11-01/issue-input.json",
+      "sha256": "6000787ab933ad4582fbedc9fdfe814eb424f70476e842073dfed2bdb2c4d948"
+    },
+    {
+      "path": "docs/development/reviews/issues/13/planning-2026-11-01/problem-package.md",
+      "sha256": "6af6d6a9e01334cb954702c3eb3f9c4ee32e217ac5b201b42570803578ae47c8"
+    },
+    {
+      "path": "docs/development/reviews/issues/13/planning-2026-11-01/review.md",
+      "sha256": "1027ade33711babd7fa0ce28ca7df0a8737083f348645ccdfb1fe3f4ce35101b"
+    },
+    {
+      "path": "docs/development/reviews/issues/13/planning-2026-11-01/upstream-instructions.json",
+      "sha256": "cf67309a1965e7e1184f69849385628b1c39bd6a5263cdacecfeaaff8162c0af"
+    },
+    {
+      "path": "docs/development/reviews/issues/3/stage-one-2026-11-01/authorization.md",
+      "sha256": "9dc4d2b1d97926b6b62c5803cf67d5f9d3950a511a45aae651f18ed5cf5baa2f"
+    },
+    {
+      "path": "docs/development/reviews/issues/3/stage-one-2026-11-01/battle-result.json",
+      "sha256": "aa99c7cdfdb8a4b2685875e0163c6bb8c7a3888f3f78bfaeffe55675667e0465"
+    },
+    {
+      "path": "docs/development/reviews/issues/3/stage-one-2026-11-01/builder-check.json",
+      "sha256": "df076d5e797456e34ab45b1ae6b069c7de1b5d08b1e42fe42e789c37c2308ed7"
+    },
+    {
+      "path": "docs/development/reviews/issues/3/stage-one-2026-11-01/disputes.json",
+      "sha256": "0383f906a6f2e2e544046ef5b59ff0f3ae78623fdbaca28a843bb971e5eb9dcb"
+    },
+    {
+      "path": "docs/development/reviews/issues/3/stage-one-2026-11-01/issue-input.json",
+      "sha256": "29f135d621c723756e57c19a49f53817d584b783d3e19b2ae92351a0ef645652"
+    },
+    {
+      "path": "docs/development/reviews/issues/3/stage-one-2026-11-01/problem-package.md",
+      "sha256": "1bcdc217d25446dc5b67f1454bbe97c403ec98de9e3a0b97cc2e454af2262114"
+    },
+    {
+      "path": "docs/development/reviews/issues/3/stage-one-2026-11-01/report.md",
+      "sha256": "929ebf5884926e59371c6c8fe904137f46ef8ca11c0833dfdb16b057cc1ff642"
+    },
+    {
+      "path": "docs/development/reviews/issues/3/stage-one-2026-11-01/requirements-map.json",
+      "sha256": "f4ba06aece222d29de2398459a7991570781248174899f39293633bd5e264314"
+    },
+    {
+      "path": "docs/development/reviews/issues/3/stage-one-2026-11-01/reviewer.json",
+      "sha256": "1de920c6e320a9c764c016ee38fa1358b2b47e143266e9c1e15a718ce5bda69a"
+    },
+    {
+      "path": "docs/development/reviews/issues/3/stage-one-2026-11-01/round1-challenger.json",
+      "sha256": "d4edadffcd0d50fe74cf3eadf4210e4c2ed7e0fe35a33fa3a2f0faac9f0eccbd"
+    },
+    {
+      "path": "docs/development/reviews/issues/3/stage-one-2026-11-01/round1-proposer.json",
+      "sha256": "dd221c71b9c6315600c164ac1b3c5390f91a2df8fabed594d61649da05e4d56c"
+    },
+    {
+      "path": "docs/development/reviews/issues/3/stage-one-2026-11-01/round2-challenger.json",
+      "sha256": "9029c26a06d11b70f43d3c77fc929941bcf2cc454a6c829be3f9c92b9e23cf44"
+    },
+    {
+      "path": "docs/development/reviews/issues/3/stage-one-2026-11-01/round2-proposer.json",
+      "sha256": "1d1629607f573d0221c6cfeae3c2b006b3a70f740b08bff23a5b550a1bbb0737"
+    },
+    {
+      "path": "docs/development/reviews/issues/3/stage-one-2026-11-01/scheme-decision.md",
+      "sha256": "952a8be3aa227cf9cc972d0f5e8010537e69b6aa57e7dd1c9e3bf1e7b3804375"
+    },
+    {
+      "path": "docs/development/reviews/issues/3/stage-one-2026-11-01/tooling-evidence.json",
+      "sha256": "146a5fc3a0bf1ffcc9b97550452fc1a407a46e83a8b4164ebd8564678c6ca323"
+    },
+    {
+      "path": "docs/development/reviews/issues/3/stage-one-2026-11-01/validation.md",
+      "sha256": "fb7b25f5afa9f6242516c4cb28f60975019ae113206a2f24633bd84a785660d9"
+    },
+    {
+      "path": "docs/development/reviews/issues/4/planning-2026-11-01/issue-input.json",
+      "sha256": "131285394de4208ea44c0b288ba063fa39d78470e988df63e1c20b58807cbd89"
+    },
+    {
+      "path": "docs/development/reviews/issues/5/planning-2026-11-01/battle.json",
+      "sha256": "553da515a208a29cde64c6d66a2d1e2e7760ccc1027ed6dcddea2c082c11bed2"
+    },
+    {
+      "path": "docs/development/reviews/issues/5/planning-2026-11-01/builder-check.md",
+      "sha256": "271198e1912a3464e82a6ceab9a9f76caa313c8382846038258e6d93f852f791"
+    },
+    {
+      "path": "docs/development/reviews/issues/5/planning-2026-11-01/issue-input.json",
+      "sha256": "6e900d3ac538f92b2e99c1e3aadfe47aa72f185fb6313f8b6cf09e706054b9b1"
+    },
+    {
+      "path": "docs/development/reviews/issues/5/planning-2026-11-01/problem-package.md",
+      "sha256": "7ac671250564dd6e99c0c7b1e6117c3cc1e3a4421f3cef155949e864e07b5a5b"
+    },
+    {
+      "path": "docs/development/reviews/issues/5/planning-2026-11-01/review.md",
+      "sha256": "4d3d32c74d0bf3fc621c3dde7f7e7b89a0bed50137464a065c46b1006fdfb2d5"
+    },
+    {
+      "path": "docs/development/reviews/issues/6/planning-2026-11-01/battle.json",
+      "sha256": "f48e31a2f5b673a5fec1f162f4fee7bd1e0981b505f17ee6c20524643e373d9d"
+    },
+    {
+      "path": "docs/development/reviews/issues/6/planning-2026-11-01/issue-input.json",
+      "sha256": "3a3a3dfff94614c45b5a9f84d46be03c4b1e9c8d646d3179cc15dd4739e40855"
+    },
+    {
+      "path": "docs/development/reviews/issues/6/planning-2026-11-01/problem-package.md",
+      "sha256": "7430a4d4c169d8cf8bfd37aba37a75915d793fb4291245153f7fd764296a17f9"
+    },
+    {
+      "path": "docs/development/reviews/issues/6/planning-2026-11-01/review.md",
+      "sha256": "cff6c73e3bf20dcafec9c3be3d9025fb3b227772dbe5f1bcc3529cf16cb7564e"
+    },
+    {
+      "path": "docs/development/reviews/issues/7/planning-2026-11-01/battle.json",
+      "sha256": "14c9794ea7fa55687703bbc2643aa3f119ce8d2ac5c44df3f753ddb012517048"
+    },
+    {
+      "path": "docs/development/reviews/issues/7/planning-2026-11-01/issue-input.json",
+      "sha256": "0f33a20f13dd6ef810c1e480627e73eb12aa1f8815a6582339f227e42d88e73f"
+    },
+    {
+      "path": "docs/development/reviews/issues/7/planning-2026-11-01/problem-package.md",
+      "sha256": "a2dfc5c06280e5c90bc745ea5d053b1e609a6a1949d4b0fc7e592fe058b1520a"
+    },
+    {
+      "path": "docs/development/reviews/issues/7/planning-2026-11-01/review.md",
+      "sha256": "4d07e6d682254a5d31966818f912d1218ae55f7a3c6e8118801a7361b0a02ea8"
+    },
+    {
+      "path": "docs/development/reviews/issues/8/planning-2026-11-01/battle.json",
+      "sha256": "b2dc2f53fb2fb7fb4ddb82ecd380609976f3a1ce2b2fba30ee9e4bf7c87ef2aa"
+    },
+    {
+      "path": "docs/development/reviews/issues/8/planning-2026-11-01/issue-input.json",
+      "sha256": "1fd9c992f6d33a213fef3a4666907f2c81fdcbf2196aea784ccb44bfea430620"
+    },
+    {
+      "path": "docs/development/reviews/issues/8/planning-2026-11-01/problem-package.md",
+      "sha256": "064150e972c2cfd5815b69bc951e248ea6532c44a8781b9ec3b256fcb45748dc"
+    },
+    {
+      "path": "docs/development/reviews/issues/8/planning-2026-11-01/review.md",
+      "sha256": "a3c3d94b718dd2fc8b1c9c4f1c52291a62396eb0abb959259d541c6cbc19e2e0"
+    },
+    {
+      "path": "docs/development/reviews/issues/9/planning-2026-11-01/battle.json",
+      "sha256": "73b9ddc0b3dd2fc1009a6c5de5b2235cc1b12423084d05266cc84ba5a4a52c60"
+    },
+    {
+      "path": "docs/development/reviews/issues/9/planning-2026-11-01/issue-input.json",
+      "sha256": "41ed3c5c29bf6a826f1e16e00490198375cb3dd41c8f36f345b2acb5cb7b1c26"
+    },
+    {
+      "path": "docs/development/reviews/issues/9/planning-2026-11-01/problem-package.md",
+      "sha256": "562b3ece3e77b01e47daed05a3d672e472fb87ec06f2b8f39c9b0971c549398d"
+    },
+    {
+      "path": "docs/development/reviews/issues/9/planning-2026-11-01/review.md",
+      "sha256": "54bb05a94341f97f6c763cb9c5c85f8ba6f03e062f0884f5f6d28194d61e3cb5"
+    },
+    {
+      "path": "docs/domain/proposals/language-independent-layered-semantic-model.md",
+      "sha256": "a7a1d78db875cf9793039bb57f21dce06ffac4673372554345806c02678cd7fa"
+    },
+    {
+      "path": "docs/planning/agenda.md",
+      "sha256": "a81066b8386526f9af54624a72790887a58cd41dfd82cdcb17f0fa4aea13c8a3"
+    },
+    {
+      "path": "docs/planning/issues.json",
+      "sha256": "c6059f7bd82807a2b4ceecd2918c6febae81f28d631baa452cce778fee18d742"
+    },
+    {
+      "path": "docs/planning/program-2026-11-01/acceptance-matrix.md",
+      "sha256": "d67a4dce806561179501ab30338b07e69e01fe88054c75e4e2cf71f5e7f2baaa"
+    },
+    {
+      "path": "docs/planning/program-2026-11-01/context.md",
+      "sha256": "6877c63ffc00c4b70f36a7e53b866546b31eda7c269051b6abce1bf8486a1968"
+    },
+    {
+      "path": "docs/planning/program-2026-11-01/decision-requests.md",
+      "sha256": "49408ef8007ce1e2a8c4f79da9d6c33302b61ad93f6867b33cef8f660472934c"
+    },
+    {
+      "path": "docs/planning/program-2026-11-01/overall-review.md",
+      "sha256": "9a77d5d6fd3e2d9a6129427b75a7a3a1e43ae355e2c9de1f909494b5cc2ad99c"
+    },
+    {
+      "path": "docs/planning/program-2026-11-01/upstream.md",
+      "sha256": "a7f65dc70b1315da301f54f51e3342aad16ca1524a56ce023a6332bb127c6d6e"
+    },
+    {
+      "path": "docs/session/artifact-manifest.json",
+      "sha256": "ba6b02d04999b0fd8cd9f072d60b6dcdaee06ac3f364133aafcb7af224aa150d"
+    },
+    {
+      "path": "docs/workflow/battle-protocol.md",
+      "sha256": "02e69755b8d195ce27e01546eeac2040aa3a6e1b18c0df7831033f599929ceff"
+    },
+    {
+      "path": "docs/workflow/planning-mode.md",
+      "sha256": "898be7c741368297ff5eba2c5c6b97a25100d1b9191048474284f948e963a008"
+    },
+    {
+      "path": "openspec/changes/define-layered-semantic-fact-model/.openspec.yaml",
+      "sha256": "108f7b3dae33488206672f31b510275110c0194c93062eb1970e19ca60c08722"
+    },
+    {
+      "path": "openspec/changes/define-layered-semantic-fact-model/design.md",
+      "sha256": "92ab812471e77353eade965cdf96dfe809ba3b3bef91c14e2270c93149824614"
+    },
+    {
+      "path": "openspec/changes/define-layered-semantic-fact-model/proposal.md",
+      "sha256": "2d131cb1e564ff1919aed2a087e5a4fd86872f211730b991f8e85564711e8790"
+    },
+    {
+      "path": "openspec/changes/define-layered-semantic-fact-model/review-map.md",
+      "sha256": "19791bf11bfd7b87d4e991162fbc9a2cc6e8dee08ad22925e0527ec3843e71ca"
+    },
+    {
+      "path": "openspec/changes/define-layered-semantic-fact-model/specs/algorithm-description/spec.md",
+      "sha256": "eb50c0b86717b96da64412eacfdd1d28d6e708460489fcc7d8862de86f73983e"
+    },
+    {
+      "path": "openspec/changes/define-layered-semantic-fact-model/specs/semantic-fact-model/spec.md",
+      "sha256": "c6090bea03383c8cfb6682a940e6a14e254eccd3b6e17dc4729174ed1eb4fed0"
+    },
+    {
+      "path": "openspec/changes/define-layered-semantic-fact-model/specs/semantic-fact-query/spec.md",
+      "sha256": "3e2430e022e4d976746838a3637a1e989792e0b6e22f211b0a31967c8b362977"
+    },
+    {
+      "path": "openspec/changes/define-layered-semantic-fact-model/tasks.md",
+      "sha256": "b8a9ccb1a7feffebfffa7210128150e2fbea35ce44e6f2d5e780b6375adba8cc"
+    },
+    {
+      "path": "openspec/changes/define-semantic-analysis-quality-goals/.openspec.yaml",
+      "sha256": "108f7b3dae33488206672f31b510275110c0194c93062eb1970e19ca60c08722"
+    },
+    {
+      "path": "openspec/changes/define-semantic-analysis-quality-goals/design.md",
+      "sha256": "8306f4ff9acb0775710e3d4761f7789117d3c10b840c06102be84af3d45fb193"
+    },
+    {
+      "path": "openspec/changes/define-semantic-analysis-quality-goals/proposal.md",
+      "sha256": "16562874103f2541d851286009b6fc4c4ef0c309b5842babd37755b2a37eb74b"
+    },
+    {
+      "path": "openspec/changes/define-semantic-analysis-quality-goals/specs/semantic-analysis-quality/spec.md",
+      "sha256": "29b47b6cbddb2ca04e3224c43bb0454c257931b05cb21fe3c56fad07f2cd658d"
+    },
+    {
+      "path": "openspec/changes/define-semantic-analysis-quality-goals/tasks.md",
+      "sha256": "4652a70281d84bdd51f6188c251a01e5d211e0b211c17a0f153815afbcc651a7"
+    },
+    {
+      "path": "openspec/changes/define-semantic-fact-query-contracts/.openspec.yaml",
+      "sha256": "108f7b3dae33488206672f31b510275110c0194c93062eb1970e19ca60c08722"
+    },
+    {
+      "path": "openspec/changes/define-semantic-fact-query-contracts/design.md",
+      "sha256": "23c16815ff4f9678af71211cd8aecde39631ae4498da4ba0f0536b164798c7b7"
+    },
+    {
+      "path": "openspec/changes/define-semantic-fact-query-contracts/proposal.md",
+      "sha256": "e09118bef80f2209cc04905df3aac57989193bc40b807bab8375921f05a2eb4d"
+    },
+    {
+      "path": "openspec/changes/define-semantic-fact-query-contracts/specs/semantic-fact-query/spec.md",
+      "sha256": "c472339219e703c1e066f6db2963c8baf758100d416e01351df3ecba6e722289"
+    },
+    {
+      "path": "openspec/changes/define-semantic-fact-query-contracts/tasks.md",
+      "sha256": "11cf05dda4766dfb9c65e71def55f2b26458e789c883743529f833bd7265f545"
+    },
+    {
+      "path": "openspec/changes/design-incremental-semantic-fact-storage/.openspec.yaml",
+      "sha256": "108f7b3dae33488206672f31b510275110c0194c93062eb1970e19ca60c08722"
+    },
+    {
+      "path": "openspec/changes/design-incremental-semantic-fact-storage/design.md",
+      "sha256": "2aca694598a201ccf3c789d0012943643c710845b0031cc7e3852d53132731f4"
+    },
+    {
+      "path": "openspec/changes/design-incremental-semantic-fact-storage/proposal.md",
+      "sha256": "641df49ea253c649c1c97ef5c1208df9e5882bc55ccf6525712ad0e658f8d679"
+    },
+    {
+      "path": "openspec/changes/design-incremental-semantic-fact-storage/specs/incremental-semantic-fact-storage/spec.md",
+      "sha256": "4bad223f49de9423a50f5195600d0e1d63690cf62fc374b851c15924f3452706"
+    },
+    {
+      "path": "openspec/changes/design-incremental-semantic-fact-storage/tasks.md",
+      "sha256": "6a86b0a1951e06322002abc027c8df586c147e2de65dde99bf6d7fd8ba7d2cdc"
+    },
+    {
+      "path": "openspec/changes/design-lazy-semantic-fact-construction/.openspec.yaml",
+      "sha256": "108f7b3dae33488206672f31b510275110c0194c93062eb1970e19ca60c08722"
+    },
+    {
+      "path": "openspec/changes/design-lazy-semantic-fact-construction/design.md",
+      "sha256": "d06680caebd75564f919bdb04499dc7a5a19074a7b491c5554c54669af9ad416"
+    },
+    {
+      "path": "openspec/changes/design-lazy-semantic-fact-construction/proposal.md",
+      "sha256": "1140fd539ececab7304cccfc55c440dbc71ed28046e76e257c8836c0bba086be"
+    },
+    {
+      "path": "openspec/changes/design-lazy-semantic-fact-construction/specs/lazy-semantic-fact-construction/spec.md",
+      "sha256": "80a96d52dcc6f23ddac011e534af28d510ea83d10a181584333d25d7a3bb95f0"
+    },
+    {
+      "path": "openspec/changes/design-lazy-semantic-fact-construction/tasks.md",
+      "sha256": "6ab60afaded3d0a47b4d211f634402d61722ba9038b6423596c984cb64753abd"
+    },
+    {
+      "path": "openspec/changes/design-semantic-fact-coordination/.openspec.yaml",
+      "sha256": "108f7b3dae33488206672f31b510275110c0194c93062eb1970e19ca60c08722"
+    },
+    {
+      "path": "openspec/changes/design-semantic-fact-coordination/design.md",
+      "sha256": "af0b9e0f3d500c774a8c8e4306c560e69fc213d8e9029e5ff2b5e1ecb66e893b"
+    },
+    {
+      "path": "openspec/changes/design-semantic-fact-coordination/proposal.md",
+      "sha256": "e571cd992f547a42932ef09459ca21dc059d76d75de899b3862365f21fd0224f"
+    },
+    {
+      "path": "openspec/changes/design-semantic-fact-coordination/specs/semantic-fact-coordination/spec.md",
+      "sha256": "e28eeae0172671028f0bf964a577f931a2ba3cf56a21e5a8594ff4d48e6b653e"
+    },
+    {
+      "path": "openspec/changes/design-semantic-fact-coordination/tasks.md",
+      "sha256": "0085616cc4f23262bf376d5f71798921cea1b000aeb2f226d61f9bc3d8b1b21b"
+    },
+    {
+      "path": "openspec/changes/design-semantic-fact-skill-architecture/.openspec.yaml",
+      "sha256": "108f7b3dae33488206672f31b510275110c0194c93062eb1970e19ca60c08722"
+    },
+    {
+      "path": "openspec/changes/design-semantic-fact-skill-architecture/design.md",
+      "sha256": "b99575cd62980126a042a525740ce5b02eea3489a815acae4690f8163d1a06ac"
+    },
+    {
+      "path": "openspec/changes/design-semantic-fact-skill-architecture/proposal.md",
+      "sha256": "7446dd6384c75f9464a41b452e07a5c1e5f9d0e30b1f44e19d3175d445e6294f"
+    },
+    {
+      "path": "openspec/changes/design-semantic-fact-skill-architecture/specs/semantic-fact-orchestration/spec.md",
+      "sha256": "62b8ee5e75cee7fa4aee1ce6005460b085ddcc3d8692fa9b0785ed72be709178"
+    },
+    {
+      "path": "openspec/changes/design-semantic-fact-skill-architecture/tasks.md",
+      "sha256": "3ff95fe87131f9dd607bed9165299e22fc8bc65f4d465e93569ef2da0358f06c"
+    },
+    {
+      "path": "openspec/changes/minimize-semantic-extraction-tokens/.openspec.yaml",
+      "sha256": "108f7b3dae33488206672f31b510275110c0194c93062eb1970e19ca60c08722"
+    },
+    {
+      "path": "openspec/changes/minimize-semantic-extraction-tokens/design.md",
+      "sha256": "5e0c8c811be870b176d40bcd0726917287b19733000f8a2537e9e1d583fad192"
+    },
+    {
+      "path": "openspec/changes/minimize-semantic-extraction-tokens/proposal.md",
+      "sha256": "cb36913d499ca57a462189eaa50c9c94dad642b37a1aa4bd378a9ce76b2049b7"
+    },
+    {
+      "path": "openspec/changes/minimize-semantic-extraction-tokens/specs/token-efficient-semantic-extraction/spec.md",
+      "sha256": "7797f9f69a220470ae24af3ce522b890568441a7749fdecf27941f69b4ec3aa8"
+    },
+    {
+      "path": "openspec/changes/minimize-semantic-extraction-tokens/tasks.md",
+      "sha256": "95e6a639d39f8a571e838832c07fe1da370ebd75ec34562d0b9aa889aa7db105"
+    },
+    {
+      "path": "openspec/changes/plan-semantic-fact-skill/.openspec.yaml",
+      "sha256": "5a0b6de5057a9c60b61af7a6848d84f77180becd7647934989bf1c8a2b692329"
+    },
+    {
+      "path": "openspec/changes/plan-semantic-fact-skill/design.md",
+      "sha256": "7b62241fe9d402dcce33931b9a588f928bcb2e6ee2f76367ef909d9d873600ff"
+    },
+    {
+      "path": "openspec/changes/plan-semantic-fact-skill/proposal.md",
+      "sha256": "7657fdeba47dc80455080bdc743d96b503b1a90082a2527045bb6c6d7c08d0ba"
+    },
+    {
+      "path": "openspec/changes/plan-semantic-fact-skill/tasks.md",
+      "sha256": "a2f72167c0feef4c00d7e67a00a3c1b23c5a03f0df24fd2b4b9f0b11a0a288cd"
+    },
+    {
+      "path": "openspec/changes/review-semantic-planning-readiness/.openspec.yaml",
+      "sha256": "5a0b6de5057a9c60b61af7a6848d84f77180becd7647934989bf1c8a2b692329"
+    },
+    {
+      "path": "openspec/changes/review-semantic-planning-readiness/design.md",
+      "sha256": "c4605f49afc4d193fdb76e4e25d16c251e797559f0771f2d89c992273cfabdc1"
+    },
+    {
+      "path": "openspec/changes/review-semantic-planning-readiness/proposal.md",
+      "sha256": "e0a750a8bc5b5a53924ac06d367451704840b47b391cdcb5c91162aae1505ada"
+    },
+    {
+      "path": "openspec/changes/review-semantic-planning-readiness/tasks.md",
+      "sha256": "339f119aa36c8a39a562544872084e86b104cd0e530eef64b8d7c3555fd67e3e"
+    },
+    {
+      "path": "openspec/changes/survey-semantic-acquisition-capabilities/.openspec.yaml",
+      "sha256": "108f7b3dae33488206672f31b510275110c0194c93062eb1970e19ca60c08722"
+    },
+    {
+      "path": "openspec/changes/survey-semantic-acquisition-capabilities/design.md",
+      "sha256": "c2ca62cf1026cd0d450d4ae60db0cae4634cf3d4160472eecd4355c8effef2fd"
+    },
+    {
+      "path": "openspec/changes/survey-semantic-acquisition-capabilities/proposal.md",
+      "sha256": "37a4c7f8916b483872cf9be684213fa9cc186285fa22b8bbc40af1b89529c9f8"
+    },
+    {
+      "path": "openspec/changes/survey-semantic-acquisition-capabilities/specs/semantic-acquisition-capabilities/spec.md",
+      "sha256": "38540bc446d2d793a70f4cf25ee4e2299655e570b0f8879826a6f5b72085dfbd"
+    },
+    {
+      "path": "openspec/changes/survey-semantic-acquisition-capabilities/tasks.md",
+      "sha256": "9e4d29412091c768cd3662805b8bd2053d28650a91d01c0cc1cb65d732ed847c"
+    },
+    {
+      "path": "openspec/config.yaml",
+      "sha256": "1a8dc0d514994f76a2b6c714ffecbf1e6fc77485b3596ab1212c4e442fefee39"
+    },
+    {
+      "path": "openspec/specs/.gitkeep",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "openspec/specs/semantic-fact-model/spec.md",
+      "sha256": "59383a874afaf10b01ee2f60f8bafa043e489068b5130f75db7eaf0dfcfe860b"
+    },
+    {
+      "path": "openspec/specs/semantic-fact-query/spec.md",
+      "sha256": "610a6e269df04c374a7dcfa887c166c98980d626053a293c0e026ccbcee45f24"
+    }
+  ]
+}

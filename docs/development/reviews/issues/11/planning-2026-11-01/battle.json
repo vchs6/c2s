@@ -1,0 +1,199 @@
+{
+  "battle_id": "issue-11-planning-2026-11-01",
+  "problem": "实际LLM工作最小化",
+  "constraints_ref": "docs/planning/program-2026-11-01/context.md",
+  "participants": [
+    "battle_proposer",
+    "battle_challenger",
+    "battle_reviewer"
+  ],
+  "rounds": {
+    "1": {
+      "proposer": {
+        "position": "确定性直转+共享有效证据+依赖局部增取混合方案",
+        "claims": [
+          {
+            "id": "P1",
+            "statement": "直转省重复读源码和重述结构，工具缺口动态/FFI不猜",
+            "evidence_refs": [
+              "AGENTS",
+              "upstream #10"
+            ],
+            "falsifier": "字段映射损质量"
+          },
+          {
+            "id": "P2",
+            "statement": "跨层有效复用省重复解析推理，变配置撤证失效",
+            "evidence_refs": [
+              "upstream #8/#9"
+            ],
+            "falsifier": "来源配置能力覆盖不符仍复用"
+          },
+          {
+            "id": "P3",
+            "statement": "局部上下文保条件否定边界，宏隐式依赖需增取",
+            "evidence_refs": [
+              "Issue11"
+            ],
+            "falsifier": "切片漏必要语义"
+          }
+        ],
+        "alternatives": "全模型按需简单但重复，全确定性只适合已证字段",
+        "unknowns": [
+          "质量目标",
+          "变化政策",
+          "无实测"
+        ],
+        "role": "battle_proposer",
+        "round": 1,
+        "responses": []
+      },
+      "challenger": {
+        "position": "同质量必要上下文直模应作真实对照",
+        "claims": [
+          {
+            "id": "H1",
+            "statement": "结构不能替行为，未知减少是假收益",
+            "evidence_refs": [
+              "Issue11",
+              "upstream #10"
+            ],
+            "falsifier": "必要语义证据均保持"
+          },
+          {
+            "id": "H2",
+            "statement": "局部漏配置动态混合，命中须核来源能力覆盖",
+            "evidence_refs": [
+              "upstream #8"
+            ],
+            "falsifier": "依赖完整且有效"
+          },
+          {
+            "id": "H3",
+            "statement": "定位依赖归并修复重试全计，不能用冗长全仓提示做稻草基线",
+            "evidence_refs": [
+              "AGENTS",
+              "upstream #5"
+            ],
+            "falsifier": "固定质量合理基线仍收益"
+          }
+        ],
+        "alternatives": "必要上下文直模、直转局模、共享增量三组",
+        "unknowns": [
+          "质量延迟Token重大取舍用户"
+        ],
+        "role": "battle_challenger",
+        "round": 1,
+        "responses": []
+      }
+    },
+    "2": {
+      "proposer": {
+        "responses": [
+          {
+            "id": "C01",
+            "action": "revise",
+            "reason": "直转限已证字段，行为语义仍必要，新增未知非收益"
+          },
+          {
+            "id": "C02",
+            "action": "accept",
+            "reason": "核来源配置能力覆盖，增取不足保缺口"
+          },
+          {
+            "id": "C03",
+            "action": "revise",
+            "reason": "必要上下文直模/直转局模/共享增量三组，全成本，非冗长基线"
+          }
+        ],
+        "role": "battle_proposer",
+        "round": 2,
+        "claims": [],
+        "unknowns": [
+          "未决事项见本记录unresolved及共享决策请求；摘要未独立展开者不推定已解决"
+        ],
+        "position": "真实答复摘要见claims/responses，不表示用户批准"
+      },
+      "challenger": {
+        "responses": [
+          {
+            "id": "C01",
+            "action": "revise",
+            "reason": "结构unknown不替任务所需行为语义"
+          },
+          {
+            "id": "C02",
+            "action": "revise",
+            "reason": "依赖增取不足仍未决"
+          },
+          {
+            "id": "C03",
+            "action": "revise",
+            "reason": "三组合理对照含失效修复和重试"
+          }
+        ],
+        "role": "battle_challenger",
+        "round": 2,
+        "claims": [],
+        "unknowns": [
+          "未决事项见本记录unresolved及共享决策请求；摘要未独立展开者不推定已解决"
+        ],
+        "position": "真实答复摘要见claims/responses，不表示用户批准"
+      }
+    },
+    "3": {
+      "reviewer": {
+        "role": "battle_reviewer",
+        "responses": [
+          {
+            "id": "C01",
+            "action": "accept",
+            "reason": "限已证结构字段，必要行为仍补"
+          },
+          {
+            "id": "C02",
+            "action": "accept",
+            "reason": "复用差量保持条件证据失效；重试全计"
+          },
+          {
+            "id": "C03",
+            "action": "revise",
+            "reason": "design整包模型不能替代B直转局模，三组须明确避免归因混杂"
+          }
+        ],
+        "round": 3,
+        "claims": [],
+        "unknowns": [
+          "未决事项见本记录unresolved及共享决策请求；摘要未独立展开者不推定已解决"
+        ],
+        "position": "真实答复摘要见claims/responses，不表示用户批准"
+      }
+    }
+  },
+  "disputes": [
+    {
+      "id": "C01",
+      "question": "结构直转与必要行为语义的等价边界"
+    },
+    {
+      "id": "C02",
+      "question": "局部/增量缺依赖和有效性失效如何保持质量"
+    },
+    {
+      "id": "C03",
+      "question": "合理基线与全成本对照防止伪收益"
+    }
+  ],
+  "decision_status": "proposed",
+  "user_decision": null,
+  "record_kind": "真实答复的主代理摘要，非逐字转储",
+  "recommendation": "候选混合减量，修正A/B/C同质量对照；无收益实测",
+  "unresolved": [
+    "D01–D03",
+    "工具与模型质量实证"
+  ],
+  "constraints": {
+    "reference": "docs/planning/program-2026-11-01/context.md",
+    "status": "用户已确认约束见引用，新机制候选"
+  }
+}

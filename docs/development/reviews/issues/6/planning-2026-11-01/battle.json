@@ -37,6 +37,12 @@
             ],
             "falsifier": "流水线协调成本超过同质量替代"
           }
+        ],
+        "role": "battle_proposer",
+        "round": 1,
+        "responses": [],
+        "unknowns": [
+          "未决事项见本记录unresolved及共享决策请求；摘要未独立展开者不推定已解决"
         ]
       },
       "challenger": {
@@ -67,6 +73,12 @@
             ],
             "falsifier": "顶层查询反复全仓或漏必要条件"
           }
+        ],
+        "role": "battle_challenger",
+        "round": 1,
+        "responses": [],
+        "unknowns": [
+          "未决事项见本记录unresolved及共享决策请求；摘要未独立展开者不推定已解决"
         ]
       }
     },
@@ -95,7 +107,9 @@
           "核验能力",
           "扩取停止",
           "无成本测量"
-        ]
+        ],
+        "claims": [],
+        "position": "真实答复摘要见claims/responses，不表示用户批准"
       },
       "challenger": {
         "role": "battle_challenger",
@@ -121,7 +135,9 @@
           "核验失败边界",
           "混合闭包停止",
           "比较负载"
-        ]
+        ],
+        "claims": [],
+        "position": "真实答复摘要见claims/responses，不表示用户批准"
       }
     },
     "3": {
@@ -144,6 +160,11 @@
             "action": "revise",
             "reason": "允许轻量索引；#8定义停止和不完备缺口"
           }
+        ],
+        "round": 3,
+        "claims": [],
+        "unknowns": [
+          "未决事项见本记录unresolved及共享决策请求；摘要未独立展开者不推定已解决"
         ]
       }
     }
@@ -171,5 +192,9 @@
     "D02",
     "D03",
     "具体契约实现未批准"
-  ]
+  ],
+  "constraints": {
+    "reference": "docs/planning/program-2026-11-01/context.md",
+    "status": "用户已确认约束见引用，新机制候选"
+  }
 }

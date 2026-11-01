@@ -1,0 +1,193 @@
+{
+  "battle_id": "issue-12-planning-2026-11-01",
+  "problem": "共享执行、来源一致性与失败恢复",
+  "constraints_ref": "docs/planning/program-2026-11-01/context.md",
+  "participants": [
+    "battle_proposer",
+    "battle_challenger",
+    "battle_reviewer"
+  ],
+  "rounds": {
+    "1": {
+      "proposer": {
+        "position": "来源配置能力范围等价子项共享、订阅独立",
+        "claims": [
+          {
+            "id": "P1",
+            "statement": "#12核验依赖提交前重验，#9自洽单元原子发布，#7区分构造/保存/有效性",
+            "evidence_refs": [
+              "upstream #8/#9"
+            ],
+            "falsifier": "变来源仍发布或取消伤他人"
+          },
+          {
+            "id": "P2",
+            "statement": "保存失败保有界暂存，查回执来源仍有效仅重存；变化重规划D03相关阻塞",
+            "evidence_refs": [
+              "Issue12"
+            ],
+            "falsifier": "保存失败强制重跑模型或提交重复"
+          },
+          {
+            "id": "P3",
+            "statement": "独立执行简单重复多，共享执行省重复但取消权限失效成本高，观测关联ID阶段Token",
+            "evidence_refs": [
+              "upstream #11"
+            ],
+            "falsifier": "平台差异/重试成本被掩盖"
+          }
+        ],
+        "role": "battle_proposer",
+        "round": 1,
+        "responses": [],
+        "unknowns": [
+          "未决事项见本记录unresolved及共享决策请求；摘要未独立展开者不推定已解决"
+        ]
+      },
+      "challenger": {
+        "position": "按子缺口共享，不能全请求合并",
+        "claims": [
+          {
+            "id": "H1",
+            "statement": "投影预算不同不只主体合并；全退订和新订阅竞态需代际",
+            "evidence_refs": [
+              "Issue12"
+            ],
+            "falsifier": "竞态无误取消"
+          },
+          {
+            "id": "H2",
+            "statement": "重验仍有TOCTOU，需不可变输入/条件提交或仅声明观察点不承诺绝对当前",
+            "evidence_refs": [
+              "upstream #9"
+            ],
+            "falsifier": "完整跨源原子机制证实"
+          },
+          {
+            "id": "H3",
+            "statement": "提交超时可能成功，先查幂等；构造未存分开，循环单元不拆；共享调用Token计一次受益另计",
+            "evidence_refs": [
+              "upstream #5/#9/#11"
+            ],
+            "falsifier": "重复计量或半发布"
+          }
+        ],
+        "role": "battle_challenger",
+        "round": 1,
+        "responses": [],
+        "unknowns": [
+          "未决事项见本记录unresolved及共享决策请求；摘要未独立展开者不推定已解决"
+        ]
+      }
+    },
+    "2": {
+      "proposer": {
+        "responses": [
+          {
+            "id": "C01",
+            "action": "revise",
+            "reason": "等价子缺口与工作代际，预算权限逐订阅"
+          },
+          {
+            "id": "C02",
+            "action": "revise",
+            "reason": "重验仅观察点，无原子机制不承诺绝对最新"
+          },
+          {
+            "id": "C03",
+            "action": "accept",
+            "reason": "先查回执同ID重试，循环不拆，共享Token计一次"
+          }
+        ],
+        "role": "battle_proposer",
+        "round": 2,
+        "claims": [],
+        "unknowns": [
+          "未决事项见本记录unresolved及共享决策请求；摘要未独立展开者不推定已解决"
+        ],
+        "position": "真实答复摘要见claims/responses，不表示用户批准"
+      },
+      "challenger": {
+        "responses": [
+          {
+            "id": "C01",
+            "action": "revise",
+            "reason": "全退订取消后新订阅新代际，不伤新任务"
+          },
+          {
+            "id": "C02",
+            "action": "revise",
+            "reason": "无快照/条件提交不保证绝对最新，D03未定"
+          },
+          {
+            "id": "C03",
+            "action": "revise",
+            "reason": "来源仍有效才重存，受益分列，循环整体发布"
+          }
+        ],
+        "role": "battle_challenger",
+        "round": 2,
+        "claims": [],
+        "unknowns": [
+          "未决事项见本记录unresolved及共享决策请求；摘要未独立展开者不推定已解决"
+        ],
+        "position": "真实答复摘要见claims/responses，不表示用户批准"
+      }
+    },
+    "3": {
+      "reviewer": {
+        "role": "battle_reviewer",
+        "responses": [
+          {
+            "id": "C01",
+            "action": "revise",
+            "reason": "补代际取消/晚到不污染Scenario"
+          },
+          {
+            "id": "C02",
+            "action": "revise",
+            "reason": "已变拒绝与无原子仅观察点条件化一致，补降级"
+          },
+          {
+            "id": "C03",
+            "action": "revise",
+            "reason": "共享Token单计入spec；#12管暂存清理/#9回执，时长待定"
+          }
+        ],
+        "round": 3,
+        "claims": [],
+        "unknowns": [
+          "未决事项见本记录unresolved及共享决策请求；摘要未独立展开者不推定已解决"
+        ],
+        "position": "真实答复摘要见claims/responses，不表示用户批准"
+      }
+    }
+  },
+  "disputes": [
+    {
+      "id": "C01",
+      "question": "共享键/订阅取消和新订阅竞态"
+    },
+    {
+      "id": "C02",
+      "question": "来源重验后的TOCTOU和可承诺一致性"
+    },
+    {
+      "id": "C03",
+      "question": "提交结果未知/恢复/共享成本归因"
+    }
+  ],
+  "decision_status": "proposed",
+  "user_decision": null,
+  "record_kind": "真实答复的主代理结构化摘要，非逐字转储",
+  "recommendation": "修正条件化一致承诺和职责，补代际/共享成本要求后供整体审核",
+  "unresolved": [
+    "D01–D03",
+    "后端原子能力/暂存保留时长",
+    "无实测"
+  ],
+  "constraints": {
+    "reference": "docs/planning/program-2026-11-01/context.md",
+    "status": "用户已确认约束见引用，新机制候选"
+  }
+}

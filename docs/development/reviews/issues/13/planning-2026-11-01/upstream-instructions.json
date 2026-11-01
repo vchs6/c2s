@@ -1,0 +1,42 @@
+[
+  {
+    "command": [
+      "npm",
+      "run",
+      "openspec",
+      "--",
+      "instructions",
+      "tasks",
+      "--change",
+      "define-layered-semantic-fact-model",
+      "--json"
+    ],
+    "exit_code": 0,
+    "instruction_sha256": "a1f0191dd45c4bf8f08662bfb9f27c3467d23fe6966aa050de55b18343e87a3d",
+    "rules": [
+      "Every task records upstream basis, deliverable paths, verification, pass and failure conditions.",
+      "Use one authoritative task list; Superpowers plans reference it."
+    ],
+    "scope": "只修正历史单Issue批准门禁，不改产品规格/已选A"
+  },
+  {
+    "command": [
+      "npm",
+      "run",
+      "openspec",
+      "--",
+      "instructions",
+      "design",
+      "--change",
+      "define-layered-semantic-fact-model",
+      "--json"
+    ],
+    "exit_code": 0,
+    "instruction_sha256": "5922b22cb9f4763a7f77391ed9a44b3eb25aaecd9d2d37a7fb64b2c169308847",
+    "rules": [
+      "Distinguish observed evidence, accepted decisions, delegated agent decisions and proposed implementation choices.",
+      "Include workload/scale/environment-bound nonfunctional goals and language/host/target support boundaries."
+    ],
+    "scope": "只修正历史单Issue批准门禁，不改产品规格/已选A"
+  }
+]

@@ -1,0 +1,187 @@
+{
+  "battle_id": "issue-13-planning-2026-11-01",
+  "problem": "整体规格与计划一致性、冻结门禁",
+  "constraints_ref": "docs/planning/program-2026-11-01/context.md",
+  "participants": [
+    "battle_proposer",
+    "battle_challenger",
+    "battle_reviewer"
+  ],
+  "rounds": {
+    "1": {
+      "proposer": {
+        "role": "battle_proposer",
+        "position": "可审查快照，不能冻结或开发就绪",
+        "claims": [
+          {
+            "id": "P1",
+            "statement": "#3旧令牌手动阶段二入口与整体冻结另批准并存，需明确旧令牌不单独放行",
+            "evidence_refs": [
+              "模型A tasks Workflow follow-up",
+              "overall-review"
+            ],
+            "falsifier": "已明确优先规则使旧入口失效"
+          },
+          {
+            "id": "P2",
+            "statement": "#12管临时清理但tasks缺清理交付/通过失败",
+            "evidence_refs": [
+              "coordination design/tasks"
+            ],
+            "falsifier": "有可定位清理验收"
+          }
+        ],
+        "alternatives": "参数无关契约继续收敛 vs 全裁决后统一细化，前者避免停滞",
+        "unknowns": [
+          "D01–03",
+          "投影公共类型/工具/后端待冻"
+        ],
+        "round": 1,
+        "responses": []
+      },
+      "challenger": {
+        "role": "battle_challenger",
+        "position": "候选成立不能冻结",
+        "claims": [
+          {
+            "id": "H1",
+            "statement": "#7语义证据成功与#12保存失败总体不成功统计歧义，需两维和#5口径",
+            "evidence_refs": [
+              "query design",
+              "coordination design"
+            ],
+            "falsifier": "已有共享两维汇总规则"
+          },
+          {
+            "id": "H2",
+            "statement": "矩阵#12新增三要求和#3逐项review-map映射需补",
+            "evidence_refs": [
+              "acceptance-matrix",
+              "coordination spec"
+            ],
+            "falsifier": "新矩阵逐项并连唯一tasks"
+          }
+        ],
+        "unknowns": [
+          "D01–03和接口",
+          "无Token/平台实测"
+        ],
+        "round": 1,
+        "responses": []
+      }
+    },
+    "2": {
+      "proposer": {
+        "role": "battle_proposer",
+        "responses": [
+          {
+            "id": "C01",
+            "action": "accept",
+            "reason": "#3 tasks/design整体新门禁优先，撤回P1"
+          },
+          {
+            "id": "C02",
+            "action": "revise",
+            "reason": "两维design统一，spec补完整回答保存失败Scenario防单success"
+          },
+          {
+            "id": "C03",
+            "action": "accept",
+            "reason": "矩阵#3继承/#12七要求和暂存任务已补，生命周期待冻"
+          }
+        ],
+        "round": 2,
+        "claims": [],
+        "unknowns": [
+          "未决事项见本记录unresolved及共享决策请求；摘要未独立展开者不推定已解决"
+        ],
+        "position": "真实答复摘要见claims/responses，不表示用户批准"
+      },
+      "challenger": {
+        "role": "battle_challenger",
+        "responses": [
+          {
+            "id": "C01",
+            "action": "accept",
+            "reason": "旧令牌明确不能放行"
+          },
+          {
+            "id": "C02",
+            "action": "accept",
+            "reason": "三design同分母两维统计"
+          },
+          {
+            "id": "C03",
+            "action": "accept",
+            "reason": "matrix新要求/#3逐项与清理任务齐备"
+          }
+        ],
+        "position": "可审查候选，重大未决不冻结",
+        "round": 2,
+        "claims": [],
+        "unknowns": [
+          "未决事项见本记录unresolved及共享决策请求；摘要未独立展开者不推定已解决"
+        ]
+      }
+    },
+    "3": {
+      "reviewer": {
+        "role": "battle_reviewer",
+        "position": "修订后可审查候选，不等冻结或开发就绪",
+        "responses": [
+          {
+            "id": "C01",
+            "action": "revise",
+            "reason": "主门禁一致；#3 review-map初始未选方案标历史，A现已选"
+          },
+          {
+            "id": "C02",
+            "action": "revise",
+            "reason": "两维和Scenario齐；#5 spec明确语义统计和操作维度"
+          },
+          {
+            "id": "C03",
+            "action": "revise",
+            "reason": "矩阵/清理归属齐；补过早清理破坏恢复与旧代污染失败条件"
+          }
+        ],
+        "unknowns": [
+          "D01–03",
+          "公共类型/投影",
+          "工具API/后端单元/恢复参数",
+          "无实测"
+        ],
+        "round": 3,
+        "claims": []
+      }
+    }
+  },
+  "disputes": [
+    {
+      "id": "C01",
+      "question": "#3历史批准令牌与整体门禁优先"
+    },
+    {
+      "id": "C02",
+      "question": "语义成功/存储成功与#5统一统计"
+    },
+    {
+      "id": "C03",
+      "question": "验收矩阵全覆盖及临时清理任务归属"
+    }
+  ],
+  "decision_status": "proposed",
+  "user_decision": null,
+  "record_kind": "实际独立答复的主代理结构化摘要，非逐字转储",
+  "recommendation": "纳入末次三点细化，可提交审查候选；不冻结/不开发",
+  "unresolved": [
+    "D01",
+    "D02",
+    "D03",
+    "技术冻结清单见overall-review"
+  ],
+  "constraints": {
+    "reference": "docs/planning/program-2026-11-01/context.md",
+    "status": "用户已确认约束见引用，新机制候选"
+  }
+}

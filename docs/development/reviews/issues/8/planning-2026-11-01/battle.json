@@ -36,6 +36,12 @@
             ],
             "falsifier": "核验比重提昂贵"
           }
+        ],
+        "role": "battle_proposer",
+        "round": 1,
+        "responses": [],
+        "unknowns": [
+          "未决事项见本记录unresolved及共享决策请求；摘要未独立展开者不推定已解决"
         ]
       },
       "challenger": {
@@ -67,6 +73,12 @@
             ],
             "falsifier": "明确禁止共享执行"
           }
+        ],
+        "role": "battle_challenger",
+        "round": 1,
+        "responses": [],
+        "unknowns": [
+          "未决事项见本记录unresolved及共享决策请求；摘要未独立展开者不推定已解决"
         ]
       }
     },
@@ -93,7 +105,11 @@
           "预算",
           "最后订阅取消",
           "覆盖版本"
-        ]
+        ],
+        "role": "battle_proposer",
+        "round": 2,
+        "claims": [],
+        "position": "真实答复摘要见claims/responses，不表示用户批准"
       },
       "challenger": {
         "responses": [
@@ -117,7 +133,11 @@
           "变化发布政策",
           "循环支持",
           "桥接能力"
-        ]
+        ],
+        "role": "battle_challenger",
+        "round": 2,
+        "claims": [],
+        "position": "真实答复摘要见claims/responses，不表示用户批准"
       }
     },
     "3": {
@@ -139,7 +159,13 @@
             "action": "revise",
             "reason": "取消失败scenario、最后退订交接，发布未定不可复用"
           }
-        ]
+        ],
+        "round": 3,
+        "claims": [],
+        "unknowns": [
+          "未决事项见本记录unresolved及共享决策请求；摘要未独立展开者不推定已解决"
+        ],
+        "position": "真实答复摘要见claims/responses，不表示用户批准"
       }
     }
   },
@@ -165,5 +191,9 @@
     "D01–D03",
     "#9/#10/#12契约冻结",
     "最后订阅退出政策"
-  ]
+  ],
+  "constraints": {
+    "reference": "docs/planning/program-2026-11-01/context.md",
+    "status": "用户已确认约束见引用，新机制候选"
+  }
 }

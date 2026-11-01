@@ -40,7 +40,10 @@
           "D03更新删除",
           "补证边界",
           "并发失败"
-        ]
+        ],
+        "role": "battle_proposer",
+        "round": 1,
+        "responses": []
       },
       "challenger": {
         "position": "去重有效性分离，D03阻塞变化发布非共同规划",
@@ -76,7 +79,10 @@
           "幂等保留窗口",
           "补证规则",
           "原子范围"
-        ]
+        ],
+        "role": "battle_challenger",
+        "round": 1,
+        "responses": []
       }
     },
     "2": {
@@ -97,7 +103,14 @@
             "action": "defer",
             "reason": "三政策真实替代，D03仅阻塞相关设计"
           }
-        ]
+        ],
+        "role": "battle_proposer",
+        "round": 2,
+        "claims": [],
+        "unknowns": [
+          "未决事项见本记录unresolved及共享决策请求；摘要未独立展开者不推定已解决"
+        ],
+        "position": "真实答复摘要见claims/responses，不表示用户批准"
       },
       "challenger": {
         "responses": [
@@ -116,7 +129,14 @@
             "action": "defer",
             "reason": "补证也须合并规则，历史额外成本未批准"
           }
-        ]
+        ],
+        "role": "battle_challenger",
+        "round": 2,
+        "claims": [],
+        "unknowns": [
+          "未决事项见本记录unresolved及共享决策请求；摘要未独立展开者不推定已解决"
+        ],
+        "position": "真实答复摘要见claims/responses，不表示用户批准"
       }
     },
     "3": {
@@ -138,7 +158,13 @@
             "action": "revise",
             "reason": "B严格新增不能暗持久化失效更新"
           }
-        ]
+        ],
+        "round": 3,
+        "claims": [],
+        "unknowns": [
+          "未决事项见本记录unresolved及共享决策请求；摘要未独立展开者不推定已解决"
+        ],
+        "position": "真实答复摘要见claims/responses，不表示用户批准"
       }
     }
   },
@@ -164,5 +190,9 @@
     "D03",
     "原子单元/后端",
     "补证规则和幂等窗口待冻结"
-  ]
+  ],
+  "constraints": {
+    "reference": "docs/planning/program-2026-11-01/context.md",
+    "status": "用户已确认约束见引用，新机制候选"
+  }
 }

@@ -38,6 +38,12 @@
             ],
             "falsifier": "空结果或零适用变不存在"
           }
+        ],
+        "role": "battle_proposer",
+        "round": 1,
+        "responses": [],
+        "unknowns": [
+          "未决事项见本记录unresolved及共享决策请求；摘要未独立展开者不推定已解决"
         ]
       },
       "challenger": {
@@ -73,7 +79,10 @@
           "最小谓词集如何确定",
           "歧义时局部执行",
           "变化有效性"
-        ]
+        ],
+        "role": "battle_challenger",
+        "round": 1,
+        "responses": []
       }
     },
     "2": {
@@ -98,7 +107,11 @@
         "unknowns": [
           "最小谓词表",
           "循环是否影响显式路径"
-        ]
+        ],
+        "role": "battle_proposer",
+        "round": 2,
+        "claims": [],
+        "position": "真实答复摘要见claims/responses，不表示用户批准"
       },
       "challenger": {
         "responses": [
@@ -121,7 +134,11 @@
         "unknowns": [
           "最小谓词集",
           "共享路径深度/授权分别计算"
-        ]
+        ],
+        "role": "battle_challenger",
+        "round": 2,
+        "claims": [],
+        "position": "真实答复摘要见claims/responses，不表示用户批准"
       }
     },
     "3": {
@@ -143,7 +160,13 @@
             "action": "revise",
             "reason": "最小投影待定；循环不得截断显式有限路径，多路径深度≥2例不足"
           }
-        ]
+        ],
+        "round": 3,
+        "claims": [],
+        "unknowns": [
+          "未决事项见本记录unresolved及共享决策请求；摘要未独立展开者不推定已解决"
+        ],
+        "position": "真实答复摘要见claims/responses，不表示用户批准"
       }
     }
   },
@@ -170,5 +193,9 @@
     "D01",
     "D02",
     "D03"
-  ]
+  ],
+  "constraints": {
+    "reference": "docs/planning/program-2026-11-01/context.md",
+    "status": "用户已确认约束见引用，新机制候选"
+  }
 }

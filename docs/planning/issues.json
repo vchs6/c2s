@@ -22,7 +22,8 @@
       "depends_on": [
         3
       ],
-      "status": "planning-in-progress"
+      "status": "planning-reviewed-awaiting-user-decisions",
+      "review_path": "docs/development/reviews/issues/4/planning-2026-11-01/"
     },
     {
       "sequence": 1,
@@ -35,7 +36,8 @@
         3
       ],
       "proposed_change": "define-semantic-analysis-quality-goals",
-      "status": "proposal-reviewed-awaiting-overall-decisions"
+      "status": "planning-reviewed-awaiting-user-decisions",
+      "review_path": "docs/development/reviews/issues/5/planning-2026-11-01/"
     },
     {
       "sequence": 2,
@@ -49,7 +51,8 @@
         5
       ],
       "proposed_change": "design-semantic-fact-skill-architecture",
-      "status": "proposal-reviewed-awaiting-overall-decisions"
+      "status": "planning-reviewed-awaiting-user-decisions",
+      "review_path": "docs/development/reviews/issues/6/planning-2026-11-01/"
     },
     {
       "sequence": 3,
@@ -64,7 +67,8 @@
         6
       ],
       "proposed_change": "define-semantic-fact-query-contracts",
-      "status": "proposal-reviewed-awaiting-overall-decisions"
+      "status": "planning-reviewed-awaiting-user-decisions",
+      "review_path": "docs/development/reviews/issues/7/planning-2026-11-01/"
     },
     {
       "sequence": 4,
@@ -79,7 +83,8 @@
         7
       ],
       "proposed_change": "design-lazy-semantic-fact-construction",
-      "status": "proposal-reviewed-awaiting-overall-decisions"
+      "status": "planning-reviewed-awaiting-user-decisions",
+      "review_path": "docs/development/reviews/issues/8/planning-2026-11-01/"
     },
     {
       "sequence": 5,
@@ -95,7 +100,8 @@
         8
       ],
       "proposed_change": "design-incremental-semantic-fact-storage",
-      "status": "proposal-reviewed-awaiting-overall-decisions"
+      "status": "planning-reviewed-awaiting-user-decisions",
+      "review_path": "docs/development/reviews/issues/9/planning-2026-11-01/"
     },
     {
       "sequence": 6,
@@ -111,7 +117,8 @@
         8
       ],
       "proposed_change": "survey-semantic-acquisition-capabilities",
-      "status": "open-not-started"
+      "status": "planning-reviewed-awaiting-user-decisions",
+      "review_path": "docs/development/reviews/issues/10/planning-2026-11-01/"
     },
     {
       "sequence": 7,
@@ -130,7 +137,8 @@
         10
       ],
       "proposed_change": "minimize-semantic-extraction-tokens",
-      "status": "open-not-started"
+      "status": "planning-reviewed-awaiting-user-decisions",
+      "review_path": "docs/development/reviews/issues/11/planning-2026-11-01/"
     },
     {
       "sequence": 8,
@@ -149,7 +157,8 @@
         11
       ],
       "proposed_change": "design-semantic-fact-coordination",
-      "status": "open-not-started"
+      "status": "planning-reviewed-awaiting-user-decisions",
+      "review_path": "docs/development/reviews/issues/12/planning-2026-11-01/"
     },
     {
       "sequence": 9,
@@ -170,7 +179,11 @@
         12
       ],
       "proposed_change": "review-semantic-planning-readiness",
-      "status": "open-not-started"
+      "status": "planning-reviewed-awaiting-user-decisions",
+      "review_path": "docs/development/reviews/issues/13/planning-2026-11-01/"
     }
-  ]
+  ],
+  "planning_discussion_complete": true,
+  "freeze_status": "not-frozen",
+  "development_ready": false
 }
