@@ -16,7 +16,7 @@
 | 私有验收账户配置 | 用户提供bootstrap成功及变量/权限读回回执；连接器独立核实验收库private。云端CLI未登录不影响现有连接器写workflow；模型认证与角色边界仍待实际运行 | 交付3.2/3.2.1、ci-setup-2026-11-02/account-receipt.json |
 | 模型Secret/API认证 | 私有run41422600087实测Secret可见、GET /v1/models HTTP200；未做推理/账单可用测试 | 交付3.2.1、ci-setup-2026-11-02/credential-probe.json |
 | 模型推理可用性 | blocked：短推理HTTP429，官方code=credit_balance_exhausted；Secret/API认证有效，仅当前API路径需账户侧恢复额度或改选受支持的Codex订阅执行入口；订阅备选尚未部署，停止进一步API尝试，usage未知不记0 | 交付3.2.3、ci-setup-2026-11-02/inference-probe.json |
-| Codex订阅执行备选 | 当前CLI实读已以ChatGPT登录；一次read-only/ephemeral订阅调用60秒超时，尚未证明推理/角色工具或私有CI接通 | ci-setup-2026-11-02/subscription-login-check.json |
+| Codex订阅执行备选 | CLI已以ChatGPT登录，模型目录200/WS101；保留受管配置并排除输入/可选MCP后仍停thread/start/session_init，具体子步骤未明、resolved=false；推理/正式角色交接未通过 | ci-setup-2026-11-02/subscription-timeout-diagnosis.json |
 | 产品编码/隐藏测试 | 未开始；未写suite；没有虚报产品验收或后台执行 | 所有产品tasks未完成 |
 
 ## 当前可继续和不能放行的工作

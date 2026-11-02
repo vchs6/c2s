@@ -1,0 +1,87 @@
+{
+  "scope": "current-cloud-nested-Codex-CLI-subscription-diagnosis",
+  "codex_version": "0.166.0",
+  "resolved": false,
+  "auth_mode": "Chatgpt",
+  "api_key_environment_present": false,
+  "doctor": {
+    "config_load": "ok with optional warnings",
+    "auth_credentials": "configured",
+    "installation": "consistent",
+    "background_server": "not running",
+    "provider_route_probe": {
+      "reachable": true,
+      "http_status": 400,
+      "interpretation": "warning, not inference success"
+    },
+    "responses_websocket_handshake": 101,
+    "dns_local_lookup": "failed but managed-proxy websocket handshake succeeded",
+    "optional_mcp_issue": "cua_repl lacks required bearer-token environment"
+  },
+  "observed_runtime": {
+    "models_get_status": 200,
+    "models_request_duration_ms": 592,
+    "last_completed_steps": [
+      "model catalog retrieval/cache",
+      "session_init starts",
+      "shell snapshot creation"
+    ],
+    "pending_rpc": "thread/start",
+    "pending_span": "session_init",
+    "cli_thread_started_event_seen": false,
+    "generation_request_observed": false
+  },
+  "probes": [
+    {
+      "settings": "earlier ignore-user-config probe",
+      "result": "timeout; excluded configured endpoint, not suitable as sole network diagnosis"
+    },
+    {
+      "settings": "TTY input",
+      "result": "still pending; later cancelled"
+    },
+    {
+      "settings": "no-daemon and explicit model",
+      "result": "still pending; later cancelled"
+    },
+    {
+      "settings": "preserve configured endpoint and disable unused cua_repl only for probe",
+      "result": "still pending; later cancelled"
+    },
+    {
+      "settings": "explicit stdin pipe plus EOF, read-only, ephemeral, preserved config, explicit model, disabled unbounded reconnect and unused cua_repl",
+      "result": "40 second timeout; no CLI thread-started event"
+    },
+    {
+      "settings": "also disable apps for no-tool probe, MCP count=0",
+      "result": "model catalog200; session_init still pending; cancelled"
+    }
+  ],
+  "not_proven": [
+    "exact pending initialization sub-step",
+    "general subscription model availability",
+    "successful standalone generation",
+    "five-role production tool/handoff integration"
+  ],
+  "actions": [
+    "preserve managed service routing; do not disable proxy/TLS/sandbox controls",
+    "no new login, credential extraction, billing changes or automatic retries for this symptom",
+    "verify same minimal call on an independent trusted execution host; adopt only after actual success",
+    "if reproduced there, provide scoped redacted startup trace to platform maintainer"
+  ],
+  "skills_used": [
+    {
+      "name": "superpowers:systematic-debugging",
+      "purpose": "bounded hypotheses and startup-stage evidence"
+    },
+    {
+      "name": "OpenAI Docs",
+      "purpose": "official CLI/doctor/auth/network diagnostic guidance"
+    }
+  ],
+  "sources": [
+    "https://learn.chatgpt.com/docs/cli/reference",
+    "https://learn.chatgpt.com/docs/reference/troubleshooting",
+    "https://learn.chatgpt.com/docs/auth"
+  ]
+}

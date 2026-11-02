@@ -9,7 +9,7 @@
   "base_revision": "d40cb6c4bfdf5567ee3ca1dde82b31dd58528d8a",
   "historical_issue3_tokens_authorize_implementation": false,
   "digest_algorithm": "SHA-256 over sorted path + TAB + file SHA-256 + LF UTF-8",
-  "bundle_sha256": "ea84b560161bedde93de65d47d2b75414fea9493674a12ad7515181d19cf3e74",
+  "bundle_sha256": "dbf9c7e2251e99b8949eacafae0e16d33bf47214f8255a3e7d964f73073f0ad1",
   "exclusions": [
     "manifest itself",
     "validation execution logs/reports",
@@ -483,7 +483,7 @@
     },
     {
       "path": "docs/planning/program-2026-11-01/readiness.md",
-      "sha256": "d5294e196b42597c6d01c72660f56265609b97a033048bd465700be32e878583"
+      "sha256": "b1107b104de892b21842c742814ec2978e7e7d77e52a98d1b3171e17b5ef3d29"
     },
     {
       "path": "docs/planning/program-2026-11-01/upstream.md",
@@ -507,7 +507,7 @@
     },
     {
       "path": "docs/workflow/ci-setup.md",
-      "sha256": "ec8e0c72a8cca319e4ceb1a042c3b6f5a907c66ddd38a3f4ffd30e1e78c89d99"
+      "sha256": "d7ca34b9688e311370a3751f29345c444bb95f9584a91a8f2d3dd424b968de02"
     },
     {
       "path": "docs/workflow/ci.md",
@@ -826,7 +826,7 @@
       "sha256": "c99ce4a146fb98e10dc04d8cc34fc3dd0b32f3c83c582ac571e4bacd264b942a"
     }
   ],
-  "supersedes_bundle_sha256": "7d5d845f46409835a82eb618cd6dc052bdaf6581a0d28a96a9a97222fd9d6aba",
+  "supersedes_bundle_sha256": "ea84b560161bedde93de65d47d2b75414fea9493674a12ad7515181d19cf3e74",
   "confirmed_initial_source_languages": [
     "Rust",
     "Python"

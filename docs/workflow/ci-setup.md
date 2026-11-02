@@ -64,3 +64,9 @@ python3 scripts/configure_ci.py --apply --set-model-key
 当前云端CLI0.166.0实际login status为Logged in using ChatGPT；移除仅子进程的API-key环境并以read-only/ephemeral运行仅回复OK的60秒健康检查超时，故只证明已登录，不证明可完成推理或已建立角色隔离。证据subscription-login-check.json；不修改/导出认证文件，不将宿主会话复制进CI。
 
 本项目建议的备选是Codex订阅登录承担模型工作、GitHub CI继续做确定性检查；若确需私有CI账户认证，须按官方受信私有环境指南管理安全凭据与刷新，并实际验证角色边界，不能向公开/开源workflow放账户认证缓存。当前该迁移未部署。官方依据https://learn.chatgpt.com/docs/auth及https://learn.chatgpt.com/docs/non-interactive-mode。
+
+## 订阅CLI超时诊断接续
+
+2026-11-02已使用systematic-debugging及OpenAI Docs做有界复现。早期--ignore-user-config探针会忽略当前受管服务入口，不作为唯一网络判断；后续保留配置、read-only/ephemeral、明确输入EOF/模型，且仅为无工具健康检查禁用缺令牌的可选cua_repl及apps、关闭无界连接重试，仍未输出CLI thread.started。受管代理下模型目录实际HTTP200、Responses WS握手101；本地DNS失败不能据此推导代理转发失败。INFO启动轨迹停留thread/start/session_init，尚未定位具体未返回子步骤，未观察到生成请求；不是已证明的模型生成慢或订阅额度不足。
+
+当前resolved=false。未增加超时掩盖问题，未修改全局配置/代理/证书/安全策略，未重登/导出认证、未继续无界重试。应在实际独立受信执行端先运行`codex doctor --network-only --summary`及最小`codex exec --json --sandbox read-only "只回复OK，不读取文件或执行命令"`，按其真实日志核对；若成功才采用该端，若同样卡初始化再交平台维护方核查。不要将当前云端特有cua_repl警告套用到用户本地，也不把订阅登录成功当完整流水线通过。脱敏证据见subscription-timeout-diagnosis.json，原始运行日志/认证不提交。
