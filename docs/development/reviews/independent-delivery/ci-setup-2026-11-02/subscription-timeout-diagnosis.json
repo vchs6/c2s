@@ -95,7 +95,8 @@
     "underlying reason sandbox helper/bubblewrap lifecycle fails to complete",
     "general subscription model availability",
     "successful standalone generation",
-    "five-role production tool/handoff integration"
+    "five-role production tool/handoff integration",
+    "Whether the standalone NETLINK_ROUTE denial is the exact cause of the Codex launcher hang, rather than a separate nested-sandbox incompatibility"
   ],
   "actions": [
     "preserve managed service routing; do not disable proxy/TLS/sandbox controls",
@@ -138,5 +139,43 @@
       "scope": "ignored .local/codex-0.161 compatibility probe",
       "result": "same startup timeout; production dependency unchanged"
     }
-  ]
+  ],
+  "cloud_followup": {
+    "user_direction": "Continue fixing the current cloud environment; migration or user-local changes are not prerequisites.",
+    "codex_sandbox_recheck": {
+      "status": "timeout",
+      "exit_code": -15,
+      "seconds": 15.0,
+      "stdout_bytes": 0,
+      "stderr_bytes": 0
+    },
+    "standalone_restricted_bwrap": {
+      "status": "exited",
+      "exit_code": 1,
+      "seconds": 0.0,
+      "stderr": "bwrap: loopback: Failed to create NETLINK_ROUTE socket: Operation not permitted\n"
+    },
+    "bwrap_version": "0.9.0",
+    "standalone_reproduction_command": [
+      "/usr/bin/bwrap",
+      "--unshare-user",
+      "--unshare-pid",
+      "--unshare-net",
+      "--ro-bind",
+      "/",
+      "/",
+      "--proc",
+      "/proc",
+      "--dev",
+      "/dev",
+      "--die-with-parent",
+      "--new-session",
+      "--",
+      "/bin/true"
+    ],
+    "interpretation": "Standalone network-isolated bubblewrap fails closed during loopback setup with NETLINK_ROUTE socket EPERM; Codex sandbox entry still times out without stderr. This is a concrete environment incompatibility, but the standalone reproduction does not yet prove why Codex does not return the error.",
+    "safety": "No policy, sandbox, proxy, TLS or credential controls were relaxed; no escalation attempted.",
+    "runtime_repair_interface_found": false,
+    "resolved": false
+  }
 }
