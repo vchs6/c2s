@@ -1,0 +1,262 @@
+{
+  "user_quote": "每次分析过程中，项目不会发生任何变更",
+  "authority": "explicit-user-confirmation",
+  "decision_ref": "docs/decisions/0006-stable-project-during-analysis.md",
+  "resolved": "within-analysis-source-change-precondition",
+  "not_inferred": [
+    "cross-analysis-permanent-immutability",
+    "A/B/C-update-choice",
+    "project-lock-or-watch-service",
+    "product-implementation-approval"
+  ],
+  "instructions": [
+    {
+      "change": "define-semantic-analysis-quality-goals",
+      "artifact": "proposal",
+      "status_exit_code": 0,
+      "instructions_exit_code": 0,
+      "instruction_sha256": "95d81697f14c97175ce653339a2d712c6323b65f22f7221a843bc68c23f48125",
+      "rules": [
+        "State scope, affected capabilities and exclusions; tooling-only changes may explicitly skip_specs."
+      ]
+    },
+    {
+      "change": "define-semantic-analysis-quality-goals",
+      "artifact": "specs",
+      "status_exit_code": 0,
+      "instructions_exit_code": 0,
+      "instruction_sha256": "c437af75feb4604417cc54f23351982320f63049b6569b5f44f32e3a1796d389",
+      "rules": null
+    },
+    {
+      "change": "define-semantic-analysis-quality-goals",
+      "artifact": "design",
+      "status_exit_code": 0,
+      "instructions_exit_code": 0,
+      "instruction_sha256": "5922b22cb9f4763a7f77391ed9a44b3eb25aaecd9d2d37a7fb64b2c169308847",
+      "rules": [
+        "Distinguish observed evidence, accepted decisions, delegated agent decisions and proposed implementation choices.",
+        "Include workload/scale/environment-bound nonfunctional goals and language/host/target support boundaries."
+      ]
+    },
+    {
+      "change": "define-semantic-analysis-quality-goals",
+      "artifact": "tasks",
+      "status_exit_code": 0,
+      "instructions_exit_code": 0,
+      "instruction_sha256": "a1f0191dd45c4bf8f08662bfb9f27c3467d23fe6966aa050de55b18343e87a3d",
+      "rules": [
+        "Every task records upstream basis, deliverable paths, verification, pass and failure conditions.",
+        "Use one authoritative task list; Superpowers plans reference it."
+      ]
+    },
+    {
+      "change": "design-semantic-fact-skill-architecture",
+      "artifact": "design",
+      "status_exit_code": 0,
+      "instructions_exit_code": 0,
+      "instruction_sha256": "5922b22cb9f4763a7f77391ed9a44b3eb25aaecd9d2d37a7fb64b2c169308847",
+      "rules": [
+        "Distinguish observed evidence, accepted decisions, delegated agent decisions and proposed implementation choices.",
+        "Include workload/scale/environment-bound nonfunctional goals and language/host/target support boundaries."
+      ]
+    },
+    {
+      "change": "design-lazy-semantic-fact-construction",
+      "artifact": "design",
+      "status_exit_code": 0,
+      "instructions_exit_code": 0,
+      "instruction_sha256": "5922b22cb9f4763a7f77391ed9a44b3eb25aaecd9d2d37a7fb64b2c169308847",
+      "rules": [
+        "Distinguish observed evidence, accepted decisions, delegated agent decisions and proposed implementation choices.",
+        "Include workload/scale/environment-bound nonfunctional goals and language/host/target support boundaries."
+      ]
+    },
+    {
+      "change": "design-lazy-semantic-fact-construction",
+      "artifact": "tasks",
+      "status_exit_code": 0,
+      "instructions_exit_code": 0,
+      "instruction_sha256": "a1f0191dd45c4bf8f08662bfb9f27c3467d23fe6966aa050de55b18343e87a3d",
+      "rules": [
+        "Every task records upstream basis, deliverable paths, verification, pass and failure conditions.",
+        "Use one authoritative task list; Superpowers plans reference it."
+      ]
+    },
+    {
+      "change": "design-incremental-semantic-fact-storage",
+      "artifact": "proposal",
+      "status_exit_code": 0,
+      "instructions_exit_code": 0,
+      "instruction_sha256": "95d81697f14c97175ce653339a2d712c6323b65f22f7221a843bc68c23f48125",
+      "rules": [
+        "State scope, affected capabilities and exclusions; tooling-only changes may explicitly skip_specs."
+      ]
+    },
+    {
+      "change": "design-incremental-semantic-fact-storage",
+      "artifact": "specs",
+      "status_exit_code": 0,
+      "instructions_exit_code": 0,
+      "instruction_sha256": "c437af75feb4604417cc54f23351982320f63049b6569b5f44f32e3a1796d389",
+      "rules": null
+    },
+    {
+      "change": "design-incremental-semantic-fact-storage",
+      "artifact": "design",
+      "status_exit_code": 0,
+      "instructions_exit_code": 0,
+      "instruction_sha256": "5922b22cb9f4763a7f77391ed9a44b3eb25aaecd9d2d37a7fb64b2c169308847",
+      "rules": [
+        "Distinguish observed evidence, accepted decisions, delegated agent decisions and proposed implementation choices.",
+        "Include workload/scale/environment-bound nonfunctional goals and language/host/target support boundaries."
+      ]
+    },
+    {
+      "change": "design-incremental-semantic-fact-storage",
+      "artifact": "tasks",
+      "status_exit_code": 0,
+      "instructions_exit_code": 0,
+      "instruction_sha256": "a1f0191dd45c4bf8f08662bfb9f27c3467d23fe6966aa050de55b18343e87a3d",
+      "rules": [
+        "Every task records upstream basis, deliverable paths, verification, pass and failure conditions.",
+        "Use one authoritative task list; Superpowers plans reference it."
+      ]
+    },
+    {
+      "change": "minimize-semantic-extraction-tokens",
+      "artifact": "specs",
+      "status_exit_code": 0,
+      "instructions_exit_code": 0,
+      "instruction_sha256": "c437af75feb4604417cc54f23351982320f63049b6569b5f44f32e3a1796d389",
+      "rules": null
+    },
+    {
+      "change": "minimize-semantic-extraction-tokens",
+      "artifact": "design",
+      "status_exit_code": 0,
+      "instructions_exit_code": 0,
+      "instruction_sha256": "5922b22cb9f4763a7f77391ed9a44b3eb25aaecd9d2d37a7fb64b2c169308847",
+      "rules": [
+        "Distinguish observed evidence, accepted decisions, delegated agent decisions and proposed implementation choices.",
+        "Include workload/scale/environment-bound nonfunctional goals and language/host/target support boundaries."
+      ]
+    },
+    {
+      "change": "minimize-semantic-extraction-tokens",
+      "artifact": "tasks",
+      "status_exit_code": 0,
+      "instructions_exit_code": 0,
+      "instruction_sha256": "a1f0191dd45c4bf8f08662bfb9f27c3467d23fe6966aa050de55b18343e87a3d",
+      "rules": [
+        "Every task records upstream basis, deliverable paths, verification, pass and failure conditions.",
+        "Use one authoritative task list; Superpowers plans reference it."
+      ]
+    },
+    {
+      "change": "design-semantic-fact-coordination",
+      "artifact": "proposal",
+      "status_exit_code": 0,
+      "instructions_exit_code": 0,
+      "instruction_sha256": "95d81697f14c97175ce653339a2d712c6323b65f22f7221a843bc68c23f48125",
+      "rules": [
+        "State scope, affected capabilities and exclusions; tooling-only changes may explicitly skip_specs."
+      ]
+    },
+    {
+      "change": "design-semantic-fact-coordination",
+      "artifact": "specs",
+      "status_exit_code": 0,
+      "instructions_exit_code": 0,
+      "instruction_sha256": "c437af75feb4604417cc54f23351982320f63049b6569b5f44f32e3a1796d389",
+      "rules": null
+    },
+    {
+      "change": "design-semantic-fact-coordination",
+      "artifact": "design",
+      "status_exit_code": 0,
+      "instructions_exit_code": 0,
+      "instruction_sha256": "5922b22cb9f4763a7f77391ed9a44b3eb25aaecd9d2d37a7fb64b2c169308847",
+      "rules": [
+        "Distinguish observed evidence, accepted decisions, delegated agent decisions and proposed implementation choices.",
+        "Include workload/scale/environment-bound nonfunctional goals and language/host/target support boundaries."
+      ]
+    },
+    {
+      "change": "design-semantic-fact-coordination",
+      "artifact": "tasks",
+      "status_exit_code": 0,
+      "instructions_exit_code": 0,
+      "instruction_sha256": "a1f0191dd45c4bf8f08662bfb9f27c3467d23fe6966aa050de55b18343e87a3d",
+      "rules": [
+        "Every task records upstream basis, deliverable paths, verification, pass and failure conditions.",
+        "Use one authoritative task list; Superpowers plans reference it."
+      ]
+    },
+    {
+      "change": "review-semantic-planning-readiness",
+      "artifact": "design",
+      "status_exit_code": 0,
+      "instructions_exit_code": 0,
+      "instruction_sha256": "5922b22cb9f4763a7f77391ed9a44b3eb25aaecd9d2d37a7fb64b2c169308847",
+      "rules": [
+        "Distinguish observed evidence, accepted decisions, delegated agent decisions and proposed implementation choices.",
+        "Include workload/scale/environment-bound nonfunctional goals and language/host/target support boundaries."
+      ]
+    },
+    {
+      "change": "design-semantic-fact-skill-architecture",
+      "artifact": "proposal",
+      "instructions_exit_code": 0,
+      "instruction_sha256": "95d81697f14c97175ce653339a2d712c6323b65f22f7221a843bc68c23f48125",
+      "rules": [
+        "State scope, affected capabilities and exclusions; tooling-only changes may explicitly skip_specs."
+      ]
+    },
+    {
+      "change": "design-lazy-semantic-fact-construction",
+      "artifact": "proposal",
+      "instructions_exit_code": 0,
+      "instruction_sha256": "95d81697f14c97175ce653339a2d712c6323b65f22f7221a843bc68c23f48125",
+      "rules": [
+        "State scope, affected capabilities and exclusions; tooling-only changes may explicitly skip_specs."
+      ]
+    },
+    {
+      "change": "minimize-semantic-extraction-tokens",
+      "artifact": "proposal",
+      "instructions_exit_code": 0,
+      "instruction_sha256": "95d81697f14c97175ce653339a2d712c6323b65f22f7221a843bc68c23f48125",
+      "rules": [
+        "State scope, affected capabilities and exclusions; tooling-only changes may explicitly skip_specs."
+      ]
+    },
+    {
+      "change": "review-semantic-planning-readiness",
+      "artifact": "proposal",
+      "instructions_exit_code": 0,
+      "instruction_sha256": "95d81697f14c97175ce653339a2d712c6323b65f22f7221a843bc68c23f48125",
+      "rules": [
+        "State scope, affected capabilities and exclusions; tooling-only changes may explicitly skip_specs."
+      ]
+    },
+    {
+      "change": "define-semantic-fact-query-contracts",
+      "artifact": "proposal",
+      "instructions_exit_code": 0,
+      "instruction_sha256": "95d81697f14c97175ce653339a2d712c6323b65f22f7221a843bc68c23f48125",
+      "rules": [
+        "State scope, affected capabilities and exclusions; tooling-only changes may explicitly skip_specs."
+      ]
+    },
+    {
+      "change": "survey-semantic-acquisition-capabilities",
+      "artifact": "proposal",
+      "instructions_exit_code": 0,
+      "instruction_sha256": "95d81697f14c97175ce653339a2d712c6323b65f22f7221a843bc68c23f48125",
+      "rules": [
+        "State scope, affected capabilities and exclusions; tooling-only changes may explicitly skip_specs."
+      ]
+    }
+  ]
+}

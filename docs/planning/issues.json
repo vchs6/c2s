@@ -201,5 +201,12 @@
     "status": "deferred-to-project-analysis-tests",
     "blocks_current_planning_freeze": false,
     "decision_ref": "docs/decisions/0005-defer-workload-scope-to-measurements.md"
-  }
+  },
+  "stable_project_during_each_analysis": {
+    "confirmed": true,
+    "decision_ref": "docs/decisions/0006-stable-project-during-analysis.md",
+    "cross_analysis_immutability_confirmed": false
+  },
+  "d03_status": "resolved-for-intra-analysis",
+  "cross_analysis_update_policy": "not-selected"
 }

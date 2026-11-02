@@ -13,7 +13,7 @@
 ## Capabilities
 
 ### New Capabilities
-- `semantic-analysis-scope`: 用户已确认的首期Rust/Python范围、host／项目平台定义及负载范围实测后确定策略；仅明确确认项同步基线。
+- `semantic-analysis-scope`: 用户已确认的首期Rust/Python范围、host／项目平台定义、负载范围实测后确定策略与单次分析项目不变前提；仅明确确认项同步基线。
 - `semantic-analysis-quality`: 质量、性能和成本的可比评价及证据边界。
 
 ### Modified Capabilities

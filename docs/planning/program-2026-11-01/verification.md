@@ -7,3 +7,9 @@
 manifest逐文件复算与集合摘要通过；格式与算法写入文件，freeze_status=not-frozen、implementation_approved=false。D01–D03及技术冻结清单未解，不能开发。#3仅修正旧批准门禁和review-map历史状态，不改已选A或产品规格。
 
 以上不证明产品实现、性能、语言/平台支持或Token收益；没有运行产品测试、基准、获取器，没有安装产品依赖，没有apply或archive。独立复核最后建议已纳入：历史A选型状态、语义/持久化两维、暂存清理失败条件。
+
+## 2026-11-02 固定输入确认增补
+
+OpenSpec全库严格校验16项通过，0失败；check:artifacts通过4份原件哈希/维护结构/固定Superpowers检查；git diff --check通过。正式scope与delta要求逐字一致。候选集合145文件及摘要复算通过：f1d1db6e581ef4686f46d552f910c5cceb1623fc72513d6f6f3743af65e2003a。
+
+独立只读builder check指出两处沿用源码变化口径，修正后复核通过。当前38项delta Requirement均有Scenario并映射唯一tasks；#3原22项映射继承。D03只在同次分析边界内收敛，不推断跨次永远不变，不选更新A/B/C；并发幂等/引用自洽与模型证据检查保留。产品任务未勾选，未运行产品测试/分析，未安装产品依赖、未apply/归档。
