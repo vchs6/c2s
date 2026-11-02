@@ -15,3 +15,5 @@
 状态：development_authorized=true；readiness_complete=false；isolation_ready=false；implementation_started=false。交付2.1–2.3及#10未完整通过的原任务不勾选。当前需要真实隔离执行设施及受控交接，不能用重复批准代替能力。
 
 集合manifest更新并复算；本报告与publication-receipts.json排除摘要。发布读回回执在实际完成后另存。
+
+发布59dbafb46f6d6d1b4dd6bd9b5dc332d1873e3f15及Issue #4/#10/#13回复已读回；本地暂存树等于远程树后同步。远程公开CI运行41387797926，head为该提交，completed/success；这是既有baseline验证，不是私有验收设施。回执单独保存。

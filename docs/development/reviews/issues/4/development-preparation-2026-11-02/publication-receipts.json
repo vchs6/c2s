@@ -1,0 +1,37 @@
+{
+  "preparation_commit": "59dbafb46f6d6d1b4dd6bd9b5dc332d1873e3f15",
+  "tree_sha": "59518a2b3d860d36f2300b146698448af4f38fda",
+  "main_readback_verified": true,
+  "local_tree_equal_to_remote": true,
+  "ci": {
+    "run_id": 41387797926,
+    "url": "https://github.com/vchs6/c2s/actions/runs/41387797926",
+    "head_sha": "59dbafb46f6d6d1b4dd6bd9b5dc332d1873e3f15",
+    "status": "completed",
+    "conclusion": "success",
+    "event": "push",
+    "workflow": "Validate project baseline"
+  },
+  "issue_replies": [
+    {
+      "issue": 4,
+      "id": 6568958224,
+      "readback_verified": true
+    },
+    {
+      "issue": 10,
+      "id": 6568958999,
+      "readback_verified": true
+    },
+    {
+      "issue": 13,
+      "id": 6568959897,
+      "readback_verified": true
+    }
+  ],
+  "development_authorized": true,
+  "readiness_complete": false,
+  "isolation_ready": false,
+  "implementation_started": false,
+  "note": "回执单独文档提交，排除集合摘要；没有关闭Issue/归档/后台开发。"
+}
