@@ -1,0 +1,23 @@
+{
+  "planning_commit": "d614a1e79cfbb1d158a8a01bd5e83a108aeb7071",
+  "tree_sha": "ed6f0caae978fdc7119327bf1c65443350b89b25",
+  "main_readback_verified": true,
+  "local_tree_equal_to_remote": true,
+  "issue_replies": [
+    {
+      "issue": 4,
+      "comment_id": 6568261856,
+      "url": "https://github.com/vchs6/c2s/issues/4#issuecomment-6568261856",
+      "readback_verified": true
+    },
+    {
+      "issue": 13,
+      "comment_id": 6568262659,
+      "url": "https://github.com/vchs6/c2s/issues/13#issuecomment-6568262659",
+      "readback_verified": true
+    }
+  ],
+  "implementation_approved": false,
+  "isolation_ready": false,
+  "note": "此回执随单独文档提交保存，排除于集合摘要；回复链接绑定实际规划提交。"
+}

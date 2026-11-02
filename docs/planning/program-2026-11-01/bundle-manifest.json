@@ -9,7 +9,7 @@
   "base_revision": "d40cb6c4bfdf5567ee3ca1dde82b31dd58528d8a",
   "historical_issue3_tokens_authorize_implementation": false,
   "digest_algorithm": "SHA-256 over sorted path + TAB + file SHA-256 + LF UTF-8",
-  "bundle_sha256": "fc2004155f8fc1e8a5ce86cae7bf05a054082e1a07cc792611e038e8b41b155d",
+  "bundle_sha256": "e4a6abcb0cb8a2a62b1a589e2b23bf42cec0bed0ac78a00862f95bf6e27b2e84",
   "exclusions": [
     "manifest itself",
     "validation execution logs/reports",
@@ -407,7 +407,7 @@
     },
     {
       "path": "openspec/changes/define-independent-ddd-delivery/tasks.md",
-      "sha256": "9ca3b67b1e05ebcfa76fb0079bf22024a7edf514617dc268760be30cca01f0b9"
+      "sha256": "703050fc12c270b918e67fbd5a56f7fec7575ef222d426afb22901079b52d001"
     },
     {
       "path": "openspec/changes/define-layered-semantic-fact-model/.openspec.yaml",

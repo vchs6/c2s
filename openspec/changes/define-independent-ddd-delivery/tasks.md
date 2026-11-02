@@ -22,7 +22,7 @@
 
 - [x] 1.1 固化需求、流程设计与里程碑索引。依据：本能力四项Requirement、版本约束及ADR-0008。交付：本change proposal/specs/design、两份主规格、ADR-0008、`docs/planning/program-2026-11-01/milestones.md`、既有tasks角色修订及协作规则。验证：真实双方两轮Battle及新reviewer，逐要求/里程碑/任务引用自审。通过：用户确认/代理设计/候选清楚，既有产品待办均未勾选，索引无第二套产品计划；失败：越界实现、角色冒充权限或重开已确认需求。
 
-- [ ] 1.2 核验并发布规划证据。依赖：1.1。依据：verification-before-completion及#4/#13整体一致性。交付：本评审目录`validation.md`、`tool-evidence.json`、更新集合manifest及Issue #4/#13回复。验证：`npm run validate`全库严格校验、`npm run check:artifacts`、`git diff --check`、摘要重算及路径/任务状态审计；发布后读回main及回复。通过：实际证据对应版本，设计not-frozen、implementation_approved=false、isolation_ready=false；失败：未检查即声称完成、过期摘要或把规格校验当运行测试。
+- [x] 1.2 核验并发布规划证据。依赖：1.1。依据：verification-before-completion及#4/#13整体一致性。交付：本评审目录`validation.md`、`tool-evidence.json`、更新集合manifest及Issue #4/#13回复。验证：`npm run validate`全库严格校验、`npm run check:artifacts`、`git diff --check`、摘要重算及路径/任务状态审计；发布后读回main及回复。通过：实际证据对应版本，设计not-frozen、implementation_approved=false、isolation_ready=false；失败：未检查即声称完成、过期摘要或把规格校验当运行测试。
 
 ## 2. 后续就绪门禁（本轮不执行）
 

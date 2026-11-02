@@ -18,3 +18,5 @@
 OpenSpec status的isComplete只表示规划工件存在，不表示产品完成；本change后续2.1–2.3未完成。整体design not-frozen，implementation_approved=false，isolation_ready=false。未编写隐藏suite、未执行产品或真实项目测试、未测性能/Token收益，未部署后台执行器。候选0.1.0未发布。
 
 集合摘要在bundle-manifest.json；本验证报告与发布回执排除在摘要外以避免自引用。发布及Issue读回结果记录于publication-receipts.json，未读回前不视为发布完成。
+
+规划已发布至d614a1e79cfbb1d158a8a01bd5e83a108aeb7071，远程main和Issue #4/#13回复均已读回，33文件本地暂存树与远程树相同后同步本地。回执另存；治理1.2此后勾选，仅代表规划核验/发布，不代表未来2组或产品完成。
