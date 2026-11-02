@@ -24,7 +24,7 @@
 
 - [x] 0.2 收敛候选组合并回补上游设计。依赖：0.1。依据：本变更design的三种组合及固定主规格。交付：本变更proposal/specs/design/tasks、#6架构/#8构造/#11Token设计接续、M0里程碑/整体状态及本评审目录battle.json/builder-check.md。验证：实际双方两轮讨论和新reviewer，逐C01–C04核对、Skill可作来源但无固定调用序列、枚举/检索与索引/具体事实区分。通过：既有确认需求不改，真实验证前不冻结组合，产品任务1.1/2.1未勾选、产品待办无重复；失败：只准Skill导航、全仓预构造冒索引、过早宣布设计可编码。
 
-- [ ] 0.3 验证并发布本轮文档结果。依赖：0.2。依据：仓库严格验证和Issue结果回复要求。交付：本评审目录instructions.json/validation.md、集合manifest及Issue #10回复。验证：`npm run validate`、`npm run check:artifacts`、`git diff --check`、主规格/产品路径审计和集合摘要重算；发布后读回main及回复。通过：实际检查可追溯、实施/隔离状态不虚报；失败：旧摘要、未读回声称发布、工具格式检查冒实际组合验证。
+- [x] 0.3 验证并发布本轮文档结果。依赖：0.2。依据：仓库严格验证和Issue结果回复要求。交付：本评审目录instructions.json/validation.md、集合manifest及Issue #10回复。验证：`npm run validate`、`npm run check:artifacts`、`git diff --check`、主规格/产品路径审计和集合摘要重算；发布后读回main及回复。通过：实际检查可追溯、实施/隔离状态不虚报；失败：旧摘要、未读回声称发布、工具格式检查冒实际组合验证。
 
 1/2组仍为产品实施任务，所选路径须消费3组实际试验证据并完成M0接口细化后才能执行；3组不重复实现产品适配。无需为无关候选全部安装/运行。
 

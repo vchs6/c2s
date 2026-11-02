@@ -1,0 +1,15 @@
+{
+  "planning_commit": "ab4bfdd5a62d275c917522be7642d034c0cc1ba4",
+  "tree_sha": "e764194132c89039a5a5b891d9cf281748a95b15",
+  "main_readback_verified": true,
+  "local_tree_equal_to_remote": true,
+  "issue_reply": {
+    "issue": 10,
+    "comment_id": 6568648890,
+    "url": "https://github.com/vchs6/c2s/issues/10#issuecomment-6568648890",
+    "readback_verified": true
+  },
+  "runtime_validation": "not-run",
+  "implementation_approved": false,
+  "note": "本回执独立文档提交，不进入集合摘要；未关闭Issue或归档。"
+}

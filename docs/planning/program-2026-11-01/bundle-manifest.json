@@ -9,7 +9,7 @@
   "base_revision": "d40cb6c4bfdf5567ee3ca1dde82b31dd58528d8a",
   "historical_issue3_tokens_authorize_implementation": false,
   "digest_algorithm": "SHA-256 over sorted path + TAB + file SHA-256 + LF UTF-8",
-  "bundle_sha256": "5447a988bbdc5201e0e015149ace92d7df2da9397ee3a3869ad83b03210d6eaa",
+  "bundle_sha256": "76c75a3bbd099f56db77799151376ec758ceeaa3fa788ddd05fad602a02c77bb",
   "exclusions": [
     "manifest itself",
     "validation execution logs/reports",
@@ -663,7 +663,7 @@
     },
     {
       "path": "openspec/changes/survey-semantic-acquisition-capabilities/tasks.md",
-      "sha256": "27df54bda43a21d9c0f019dc257d6de40104efb0f8f08fa44f782a69dc3d5555"
+      "sha256": "729b63a94e0bec64dc28b4753439870428138eb985f26351529144120772fa39"
     },
     {
       "path": "openspec/config.yaml",
