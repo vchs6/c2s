@@ -11,3 +11,5 @@ M1项目发现切片的26单owner记录/25稳定子ID已在九change精化，独
 待加固的非阻塞项：源token诊断对配置目标的404应进一步防错配；禁止写探测可收窄OSError。当前以用户bootstrap读回+独立私有库元数据及合法读写/宿主完整性控制作此次有限证据，不把这两点隐藏成完整安全证明。
 
 本地最终校验：OpenSpec严格21/21，维护测试31/31，4项原件及workflow/Superpowers检查PASS，AST/YAML/diff检查通过。没有产品发行/版本提升或归档。
+
+云端订阅排查接续：已排除远程环境选择、插件单因素及会话存储单因素；CLI0.166.0与0.161.0同样未进入thread.started。无需模型的受限沙箱/bin/true也超时，问题已收窄至云端嵌套沙箱启动/辅助进程生命周期，底层原因未证实。用户本地OK回合无需重做；云端问题未修复，development_ready仍false。详见本目录subscription-timeout-diagnosis.json。

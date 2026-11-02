@@ -69,4 +69,6 @@ python3 scripts/configure_ci.py --apply --set-model-key
 
 2026-11-02已使用systematic-debugging及OpenAI Docs做有界复现。早期--ignore-user-config探针会忽略当前受管服务入口，不作为唯一网络判断；后续保留配置、read-only/ephemeral、明确输入EOF/模型，且仅为无工具健康检查禁用缺令牌的可选cua_repl及apps、关闭无界连接重试，仍未输出CLI thread.started。受管代理下模型目录实际HTTP200、Responses WS握手101；本地DNS失败不能据此推导代理转发失败。INFO启动轨迹停留thread/start/session_init，尚未定位具体未返回子步骤，未观察到生成请求；不是已证明的模型生成慢或订阅额度不足。
 
-当前resolved=false。未增加超时掩盖问题，未修改全局配置/代理/证书/安全策略，未重登/导出认证、未继续无界重试。应在实际独立受信执行端先运行`codex doctor --network-only --summary`及最小`codex exec --json --sandbox read-only "只回复OK，不读取文件或执行命令"`，按其真实日志核对；若成功才采用该端，若同样卡初始化再交平台维护方核查。不要将当前云端特有cua_repl警告套用到用户本地，也不把订阅登录成功当完整流水线通过。脱敏证据见subscription-timeout-diagnosis.json，原始运行日志/认证不提交。
+当前resolved=false。2026-11-02接续已验证本会话使用local环境（remote=false）；125秒有界等待仍无thread.started，临时禁插件、内存存储及独立安装官方CLI0.161.0对照均未恢复。更小复现`codex sandbox -c sandbox_mode='"read-only"' -- /bin/true`无需模型/认证，15秒仍无输出并超时。活跃探针期间观察到文件读取辅助进程等待、bwrap子进程呈僵尸态；底层生命周期故障原因尚未证实，不冒称已找到内核缺陷或完整根因。
+
+用户本地ChatGPT登录及OK完整回合已成功；这是另一执行环境的证据，不应再要求用户修本地或重配密钥。当前处理对象是云端嵌套沙箱启动。保留全部安全/代理/证书/认证配置；不以放宽隔离、延长超时或重复登录修复。先恢复云端受限沙箱最小命令正常退出，再验证thread.started/turn.completed及角色交接。当前工具未提供受管云端运行时修复/重启接口，不能把准备门禁标为通过。脱敏证据见subscription-timeout-diagnosis.json；临时安装和原始日志均不提交，未修改产品依赖或正式规格。

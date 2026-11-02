@@ -29,7 +29,12 @@
     "pending_rpc": "thread/start",
     "pending_span": "session_init",
     "cli_thread_started_event_seen": false,
-    "generation_request_observed": false
+    "generation_request_observed": false,
+    "execution_environment": {
+      "id": "local",
+      "remote": false
+    },
+    "sandbox_helper_observation": "During a live probe, multiple codex-run-as-fs-helper launchers waited while their bubblewrap children appeared as zombies. This narrows the symptom; it does not establish the underlying kernel/runtime cause."
   },
   "probes": [
     {
@@ -55,10 +60,39 @@
     {
       "settings": "also disable apps for no-tool probe, MCP count=0",
       "result": "model catalog200; session_init still pending; cancelled"
+    },
+    {
+      "settings": "preserved config and skills, extended bounded wait",
+      "status": "deadline",
+      "exit_code": -15,
+      "elapsed_seconds": 125.01,
+      "stdout_bytes": 0,
+      "stderr_bytes": 1125
+    },
+    {
+      "settings": "disable plugins only for diagnostic comparison",
+      "status": "deadline",
+      "exit_code": -15,
+      "elapsed_seconds": 45.01,
+      "stdout_bytes": 0
+    },
+    {
+      "settings": "experimental in-memory store only for diagnostic comparison",
+      "status": "deadline",
+      "exit_code": -15,
+      "elapsed_seconds": 60.0,
+      "stdout_bytes": 0
+    },
+    {
+      "settings": "isolated official CLI 0.161.0 compatibility comparison",
+      "status": "deadline",
+      "exit_code": 0,
+      "elapsed_seconds": 60.01,
+      "stdout_bytes": 0
     }
   ],
   "not_proven": [
-    "exact pending initialization sub-step",
+    "underlying reason sandbox helper/bubblewrap lifecycle fails to complete",
     "general subscription model availability",
     "successful standalone generation",
     "five-role production tool/handoff integration"
@@ -66,8 +100,9 @@
   "actions": [
     "preserve managed service routing; do not disable proxy/TLS/sandbox controls",
     "no new login, credential extraction, billing changes or automatic retries for this symptom",
-    "verify same minimal call on an independent trusted execution host; adopt only after actual success",
-    "if reproduced there, provide scoped redacted startup trace to platform maintainer"
+    "Do not ask the user to repair their local CLI: their supplied ChatGPT-authenticated OK completion is already successful and concerns a different environment.",
+    "Cloud sandbox-only /bin/true must exit successfully before retrying the model probe; do not extend deadlines or relax isolation as a fix.",
+    "Current tools do not expose managed cloud-runtime repair or restart; platform repair is required if this minimal reproduction persists. Do not claim repaired or readiness passed."
   ],
   "skills_used": [
     {
@@ -82,6 +117,26 @@
   "sources": [
     "https://learn.chatgpt.com/docs/cli/reference",
     "https://learn.chatgpt.com/docs/reference/troubleshooting",
-    "https://learn.chatgpt.com/docs/auth"
+    "https://learn.chatgpt.com/docs/auth",
+    "https://github.com/openai/codex/blob/rust-v0.166.0/codex-rs/core/src/session/session.rs",
+    "https://github.com/openai/codex/blob/rust-v0.166.0/codex-rs/linux-sandbox/src/linux_run_main.rs"
+  ],
+  "sandbox_minimal_reproduction": {
+    "status": "deadline",
+    "exit_code": -15,
+    "seconds": 15.0,
+    "command": "codex sandbox -c sandbox_mode=\"read-only\" -- /bin/true",
+    "stdout_bytes": 0,
+    "stderr_bytes": 0,
+    "inference_or_credentials_required": false
+  },
+  "tool_installations": [
+    {
+      "name": "@openai/codex",
+      "version": "0.161.0",
+      "source": "official npm package",
+      "scope": "ignored .local/codex-0.161 compatibility probe",
+      "result": "same startup timeout; production dependency unchanged"
+    }
   ]
 }
