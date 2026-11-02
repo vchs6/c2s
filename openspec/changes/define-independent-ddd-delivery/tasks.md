@@ -40,7 +40,7 @@
 
 ## 3. CI配置接续（用户已明确要求配置，账户能力不足时如实阻塞）
 
-- [ ] 3.1 交付仓库侧CI容器边界检查和安全账户配置入口。依据：用户要求完成GitHub托管Runner/私有验收仓库/凭据配置，ADR-0008/0009及本设计隔离约束。交付：`.github/workflows/isolation-readiness.yml`、`scripts/configure_ci.py`、`docs/workflow/ci-setup.md`。接口：脚本默认dry-run，--apply需本地gh已认证；创建/核实私有验收仓库、设置仓库变量和最小Actions默认权限，API密钥只通过安全输入及stdin交gh，不输出/提交凭据。CI仅执行公开合成标记的容器访问检查（非隐藏验收），不加载私有suite/调用模型；允许push仅在该workflow变更时运行此基础设施诊断，不触发产品开发或Issue扫描。验证：独立实现/代码审阅、脚本help/dry-run/无凭据拒绝、既有维护检查及实际GitHub托管CI结果。通过：候选容器只挂公共目录、无网络/凭据/Docker管理接口，宿主私有标记不可读，宿主可合法读取；报告镜像摘要及探测结果且development_ready=false。失败：把标记诊断冒完整五角色就绪、账户配置未执行却称完成、泄漏密钥或默认live修改。
+- [x] 3.1 交付仓库侧CI容器边界检查和安全账户配置入口。依据：用户要求完成GitHub托管Runner/私有验收仓库/凭据配置，ADR-0008/0009及本设计隔离约束。交付：`.github/workflows/isolation-readiness.yml`、`scripts/configure_ci.py`、`docs/workflow/ci-setup.md`。接口：脚本默认dry-run，--apply需本地gh已认证；创建/核实私有验收仓库、设置仓库变量和最小Actions默认权限，API密钥只通过安全输入及stdin交gh，不输出/提交凭据。CI仅执行公开合成标记的容器访问检查（非隐藏验收），不加载私有suite/调用模型；允许push仅在该workflow变更时运行此基础设施诊断，不触发产品开发或Issue扫描。验证：独立实现/代码审阅、脚本help/dry-run/无凭据拒绝、既有维护检查及实际GitHub托管CI结果。通过：候选容器只挂公共目录、无网络/凭据/Docker管理接口，宿主私有标记不可读，宿主可合法读取；报告镜像摘要及探测结果且development_ready=false。失败：把标记诊断冒完整五角色就绪、账户配置未执行却称完成、泄漏密钥或默认live修改。实际证据：`docs/development/reviews/independent-delivery/ci-setup-2026-11-02/validation.json`，候选6283a23的托管probe及维护CI均success；3.2及整体就绪仍未完成。
 
 - [ ] 3.2 完成账户端配置及完整角色边界验证。依赖：3.1及有权限的GitHub账户管理入口、实际模型凭据。交付：私有验收仓库、Secrets/变量/权限、受控交接入口和本地脱敏配置回执。验证：私有性确证，编码身份不能读验收仓库/日志/制品或改验收workflow，candidate进程不能读suite，五角色及独立运行证据对应。通过：实际运行的合法交接及访问拒绝证据齐全才更新2.2；失败：仅脚本/YAML存在或只通过公开容器probe即放行。当前连接器不提供建仓/Secrets操作，未有实际账户入口时保持blocked；不得将用户开发授权误报为缺批准。
 

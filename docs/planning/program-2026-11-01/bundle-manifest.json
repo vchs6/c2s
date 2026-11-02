@@ -9,7 +9,7 @@
   "base_revision": "d40cb6c4bfdf5567ee3ca1dde82b31dd58528d8a",
   "historical_issue3_tokens_authorize_implementation": false,
   "digest_algorithm": "SHA-256 over sorted path + TAB + file SHA-256 + LF UTF-8",
-  "bundle_sha256": "d28bbc49acaa7f795d7fa15febb13bdedb8fafb019f7740b5d3885356c138820",
+  "bundle_sha256": "3b7f5fa33af6481bd098f63f3937249726c0b63e24ec9bb56201ad495b05d0f7",
   "exclusions": [
     "manifest itself",
     "validation execution logs/reports",
@@ -435,7 +435,7 @@
     },
     {
       "path": "docs/planning/program-2026-11-01/readiness.md",
-      "sha256": "ae423ff262a4967eb794b45a8743e6b29e9c3a5120f02cd7e6bcb5e65faf16c2"
+      "sha256": "44cdefc23e4a06dcf467b8f3659356d0b2f0fa2eeea374c87860ac4a4d2821db"
     },
     {
       "path": "docs/planning/program-2026-11-01/upstream.md",
@@ -503,7 +503,7 @@
     },
     {
       "path": "openspec/changes/define-independent-ddd-delivery/tasks.md",
-      "sha256": "ef038c9b2715347ae1aa1ad0a38a018c81077435009b7c167d8c286bf33af365"
+      "sha256": "f5bb788a8342e2bf32631393e0076296ece11ee96c70f8d8b9b81421a940df2f"
     },
     {
       "path": "openspec/changes/define-layered-semantic-fact-model/.openspec.yaml",
@@ -778,7 +778,7 @@
       "sha256": "7f20c956f552df23b83c87534c6d8e9cab1dd7c3ac6aa83d9d2c8dff75ccec91"
     }
   ],
-  "supersedes_bundle_sha256": "340fbf845bdb164059a230240d0f894d8a8cbc8e14309ff082f50dbe42660870",
+  "supersedes_bundle_sha256": "d28bbc49acaa7f795d7fa15febb13bdedb8fafb019f7740b5d3885356c138820",
   "confirmed_initial_source_languages": [
     "Rust",
     "Python"

@@ -1,0 +1,62 @@
+{
+  "date": "2026-11-02",
+  "candidate_commit": "6283a233cf50b9b89a04df5f2ecfe94bf12cf448",
+  "scope": "public-infrastructure-preparation",
+  "development_ready": false,
+  "implementation_started": false,
+  "account_bootstrap_applied": false,
+  "account_blocker": "authentication_required",
+  "model_credentials_changed": false,
+  "independent_review": "ci_config_reviewer: final scoped review found no remaining material issue; no live account mutations",
+  "checks": {
+    "openspec_strict": {
+      "passed": 21,
+      "failed": 0
+    },
+    "maintenance_tests": {
+      "passed": 31,
+      "failed": 0
+    },
+    "artifact_check": "passed",
+    "diff_check": "passed",
+    "script_syntax": "passed",
+    "dry_run": "planned, no mutations",
+    "unauthenticated_apply": {
+      "exit": 1,
+      "status": "blocked",
+      "error": "authentication_required",
+      "completed_steps": []
+    }
+  },
+  "runs": [
+    {
+      "id": 41394514759,
+      "name": "Public container boundary probe",
+      "conclusion": "success",
+      "url": "https://github.com/vchs6/c2s/actions/runs/41394514759"
+    },
+    {
+      "id": 41394514768,
+      "name": "Validate project baseline",
+      "conclusion": "success",
+      "url": "https://github.com/vchs6/c2s/actions/runs/41394514768"
+    }
+  ],
+  "probe": {
+    "job_id": 125112845948,
+    "candidate_read_denied": true,
+    "host_read": true,
+    "public_mount_read": true,
+    "status": "probe_passed",
+    "image_digest": "python@sha256:aa943ce411423c7582288f18707ff66eddcbaeb510502d747a72aeb34f30d159",
+    "development_ready": false,
+    "artifact_id": 13118746359,
+    "artifact_zip_sha256": "23ae7c36e244d17a38f9ebbe05d017195d2f6bab4baeaa705c61cf6b4f241e77"
+  },
+  "limitations": [
+    "public synthetic marker only, not private acceptance",
+    "five-role account/API/artifact boundaries not verified",
+    "private acceptance repository and Secrets not configured by this run",
+    "product contracts and handoff readiness still pending"
+  ]
+}

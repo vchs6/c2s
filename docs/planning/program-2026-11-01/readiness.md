@@ -12,7 +12,8 @@
 | 部分获取能力运行 | AST和语法树解析、CRG建图及结构查询、Cargo no-deps metadata已运行；CRG覆盖受限 | #10 3.2，不能勾全项完成 |
 | 工具组合/公共接口冻结 | 尚未完成，不能将原生对照当普遍真值或部分工具试验当完整链路 | #10 3.3、交付2.1 |
 | 角色权限隔离 | blocked：当前UID映射仅一个用户，setpriv/unshare/bwrap失败，Landlock不可用；无容器运行器 | 交付2.2 |
-| 独立CI/私有验收设施 | 尚未部署；现有连接器无创建私有验收存储、密钥或独立runner的管理接口 | 交付2.2/2.3 |
+| CI配置与公开容器probe | 仓库侧已部署，6283a23的托管probe与维护CI均success；仅公开marker访问范围，不是完整角色隔离 | 交付3.1、ci-setup-2026-11-02/validation.json |
+| 私有验收账户配置 | blocked：安全bootstrap入口和官方gh已就绪，实际apply返回authentication_required；未建私有库/设置Secrets，等待账户所有者官方登录 | 交付3.2、2.2/2.3 |
 | 产品编码/隐藏测试 | 未开始；未写suite；没有虚报产品验收或后台执行 | 所有产品tasks未完成 |
 
 ## 当前可继续和不能放行的工作
