@@ -1,0 +1,222 @@
+{
+  "scope": "公开工具接口探索，不是隐藏验收或产品测试",
+  "host": "Linux x86_64",
+  "product_target_validation": "未验证跨target",
+  "llm_input_output_tokens": "未执行LLM调用，不作端到端Token节省声明",
+  "versions": {
+    "tree-sitter": "0.26.0",
+    "tree-sitter-python": "0.25.0",
+    "tree-sitter-rust": "0.24.2",
+    "code-review-graph": "2.3.9",
+    "jsonschema": "4.26.0"
+  },
+  "cases": [
+    {
+      "name": "click",
+      "commit": "2247b35ea1c47c727d7a06e51fa280e12a863ff6",
+      "tracked_files_checked": 178,
+      "tracked_blob_mismatches": [],
+      "worktree_status": "",
+      "native_source_files": 91,
+      "native_parse_errors": [],
+      "python_ast_definitions": 2078,
+      "crg_stats": {
+        "total_nodes": 1763,
+        "total_edges": 13092,
+        "nodes_by_kind": {
+          "Class": 159,
+          "File": 92,
+          "Function": 889,
+          "Test": 623
+        },
+        "edges_by_kind": {
+          "CALLS": 7024,
+          "CONTAINS": 2078,
+          "IMPORTS_FROM": 696,
+          "INHERITS": 116,
+          "REFERENCES": 195,
+          "TESTED_BY": 2983
+        },
+        "languages": [
+          "bash",
+          "python"
+        ],
+        "files_count": 92,
+        "last_updated": "2026-11-01T21:07:19"
+      },
+      "crg_node_columns": [
+        "id",
+        "kind",
+        "name",
+        "qualified_name",
+        "file_path",
+        "line_start",
+        "line_end",
+        "language",
+        "parent_name",
+        "params",
+        "return_type",
+        "modifiers",
+        "is_test",
+        "file_hash",
+        "extra",
+        "symbol",
+        "docstring",
+        "name_tokens",
+        "updated_at",
+        "signature",
+        "community_id"
+      ],
+      "graph_location": "外置于.local/graph/click",
+      "embedding_model_enabled": false,
+      "query_exploration": [
+        {
+          "detail_level": "minimal",
+          "elapsed_ms": 3.138,
+          "result_keys": [
+            "status",
+            "pattern",
+            "target",
+            "description",
+            "summary",
+            "result_count",
+            "results_omitted",
+            "results"
+          ],
+          "status": "ok",
+          "result_count": 23,
+          "results_omitted": 18,
+          "visible_results": 5
+        },
+        {
+          "detail_level": "standard",
+          "elapsed_ms": 2.174,
+          "result_keys": [
+            "status",
+            "pattern",
+            "target",
+            "description",
+            "summary",
+            "result_count",
+            "results_omitted",
+            "results",
+            "edges"
+          ],
+          "status": "ok",
+          "result_count": 23,
+          "results_omitted": 0,
+          "visible_results": 23
+        }
+      ],
+      "result_interpretation": "原生解析和图候选计数不同，不当正确率或全目录证明"
+    },
+    {
+      "name": "regex",
+      "commit": "94ac45b2a6e7b1c30927feb5b66c5ded5b7ad447",
+      "tracked_files_checked": 451,
+      "tracked_blob_mismatches": [],
+      "worktree_status": "",
+      "native_source_files": 227,
+      "native_parse_errors": [],
+      "python_ast_definitions": null,
+      "crg_stats": {
+        "total_nodes": 1606,
+        "total_edges": 10123,
+        "nodes_by_kind": {
+          "Class": 150,
+          "File": 49,
+          "Function": 1297,
+          "Test": 110
+        },
+        "edges_by_kind": {
+          "CALLS": 7569,
+          "CONTAINS": 1563,
+          "IMPLEMENTS": 89,
+          "IMPORTS_FROM": 366,
+          "REFERENCES": 47,
+          "TESTED_BY": 489
+        },
+        "languages": [
+          "bash",
+          "rust"
+        ],
+        "files_count": 49,
+        "last_updated": "2026-11-01T21:07:21"
+      },
+      "crg_node_columns": [
+        "id",
+        "kind",
+        "name",
+        "qualified_name",
+        "file_path",
+        "line_start",
+        "line_end",
+        "language",
+        "parent_name",
+        "params",
+        "return_type",
+        "modifiers",
+        "is_test",
+        "file_hash",
+        "extra",
+        "symbol",
+        "docstring",
+        "name_tokens",
+        "updated_at",
+        "signature",
+        "community_id"
+      ],
+      "graph_location": "外置于.local/graph/regex",
+      "embedding_model_enabled": false,
+      "query_exploration": [
+        {
+          "detail_level": "minimal",
+          "elapsed_ms": 4.826,
+          "result_keys": [
+            "status",
+            "pattern",
+            "target",
+            "description",
+            "summary",
+            "result_count",
+            "results_omitted",
+            "results",
+            "confidence"
+          ],
+          "status": "ok",
+          "result_count": 0,
+          "results_omitted": 0,
+          "visible_results": 0
+        },
+        {
+          "detail_level": "standard",
+          "elapsed_ms": 3.8,
+          "result_keys": [
+            "status",
+            "pattern",
+            "target",
+            "description",
+            "summary",
+            "result_count",
+            "results_omitted",
+            "results",
+            "edges",
+            "confidence"
+          ],
+          "status": "ok",
+          "result_count": 0,
+          "results_omitted": 0,
+          "visible_results": 0
+        }
+      ]
+    }
+  ],
+  "cargo_metadata": {
+    "status": "executed",
+    "format_version": 1,
+    "packages": 7,
+    "workspace_members": 7,
+    "resolve_is_none": true,
+    "limitation": "--no-deps --offline，仅声明/成员；没有依赖解析或构建观测"
+  }
+}

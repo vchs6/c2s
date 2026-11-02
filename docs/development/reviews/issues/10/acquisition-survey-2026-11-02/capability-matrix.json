@@ -3,8 +3,8 @@
   "scope": "document-and-selected-interface-source-survey",
   "user_authorization": "本轮可以：沿用已有变更先行文档调研；不安装/运行候选，不实现产品",
   "source_manifest": "sources.json",
-  "runtime_validation": "not-run",
-  "product_implementation_approved": false,
+  "runtime_validation": "partial-public-tool-experiments",
+  "product_implementation_approved": true,
   "evidence_levels": {
     "documented-not-executed": "官方文档或Skill文件已读，未执行",
     "source-inspected-not-executed": "选定接口源码已读，未运行",
@@ -93,9 +93,9 @@
       ],
       "license_document": "README MIT",
       "proposed_validation_stage": 1,
-      "status": "candidate-not-selected",
-      "runtime_validation": "not-run",
-      "host_target_validation": "unknown",
+      "status": "trial-executed-not-product-selected",
+      "runtime_validation": "partial-on-fixed-regex-click-Linux",
+      "host_target_validation": "Linux-host-only; cross-target-unknown",
       "complete_enumeration_validation": "unknown",
       "index_content_mapping": "unknown",
       "actual_token_savings": "unknown"
@@ -271,9 +271,9 @@
         "target参数及配置"
       ],
       "proposed_validation_stage": 0,
-      "status": "candidate-not-selected",
-      "runtime_validation": "not-run",
-      "host_target_validation": "unknown",
+      "status": "trial-executed-not-product-selected",
+      "runtime_validation": "partial-on-fixed-regex-click-Linux",
+      "host_target_validation": "Linux-host-only; cross-target-unknown",
       "complete_enumeration_validation": "unknown",
       "index_content_mapping": "unknown",
       "actual_token_savings": "unknown"
@@ -299,9 +299,9 @@
         "运行期装饰器"
       ],
       "proposed_validation_stage": 0,
-      "status": "candidate-not-selected",
-      "runtime_validation": "not-run",
-      "host_target_validation": "unknown",
+      "status": "trial-executed-not-product-selected",
+      "runtime_validation": "partial-on-fixed-regex-click-Linux",
+      "host_target_validation": "Linux-host-only; cross-target-unknown",
       "complete_enumeration_validation": "unknown",
       "index_content_mapping": "unknown",
       "actual_token_savings": "unknown"
@@ -327,9 +327,9 @@
         "语法版本"
       ],
       "proposed_validation_stage": "as-needed",
-      "status": "candidate-not-selected",
-      "runtime_validation": "not-run",
-      "host_target_validation": "unknown",
+      "status": "trial-executed-not-product-selected",
+      "runtime_validation": "partial-on-fixed-regex-click-Linux",
+      "host_target_validation": "Linux-host-only; cross-target-unknown",
       "complete_enumeration_validation": "unknown",
       "index_content_mapping": "unknown",
       "actual_token_savings": "unknown"
@@ -375,5 +375,8 @@
     "不以原生对照当普遍领域真值",
     "E3/E4精确来源映射未验证",
     "Skill候选均未安装执行"
-  ]
+  ],
+  "implementation_started": false,
+  "latest_experiment_evidence": "experiment-results.json",
+  "source_document_survey_scope_preserved": true
 }

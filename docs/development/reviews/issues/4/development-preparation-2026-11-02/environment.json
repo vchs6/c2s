@@ -1,0 +1,44 @@
+{
+  "python": "3.12.14",
+  "node": "24.22.1",
+  "cargo_version": "cargo 1.99.1 (5f94df478 2026-08-27)",
+  "cargo_exit_code": 0,
+  "installed_python_environment": ".local/analysis-venv",
+  "installed_rust_home": ".local/rustup",
+  "codex_login_available": true,
+  "additional_personal_skills_registered": false,
+  "secrets_printed": false,
+  "isolation_checks": [
+    {
+      "name": "uid_map",
+      "result": "0 0 1; 仅单UID"
+    },
+    {
+      "name": "setpriv to UID19101",
+      "exit": "failed",
+      "reason": "setresuid Invalid argument"
+    },
+    {
+      "name": "unshare user namespace",
+      "exit": "failed",
+      "reason": "uid_map Operation not permitted"
+    },
+    {
+      "name": "bwrap user/pid namespace",
+      "exit": "failed",
+      "reason": "namespace path unavailable"
+    },
+    {
+      "name": "Landlock ABI query",
+      "result": -1,
+      "errno": 38,
+      "meaning": "ENOSYS"
+    }
+  ],
+  "container_runtime_available": false,
+  "isolated_private_runner_management_available": false,
+  "isolation_ready": false,
+  "development_authorized": true,
+  "readiness_complete": false,
+  "implementation_started": false
+}

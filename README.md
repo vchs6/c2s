@@ -1,6 +1,6 @@
 # c2s — Code to Semantics
 
-按DDD和规格驱动开发的软件项目语义事实提取Skill项目。当前已完成开发工作区初始化、会话资料迁移与已确认规格基线固化，尚未实现提取Skill。
+按DDD和规格驱动开发的软件项目语义事实提取Skill项目。已取得准备后连续开发的授权（ADR-0009），正在完成准备，尚未实现提取Skill；真实隔离门禁未通过，状态见[readiness](docs/planning/program-2026-11-01/readiness.md)。
 
 已确认五层方向见[ADR-0001](docs/decisions/0001-five-semantic-layers.md)。已确认主规格见[事实模型](openspec/specs/semantic-fact-model/spec.md)和[查询响应](openspec/specs/semantic-fact-query/spec.md)，批准范围见[ADR-0002](docs/decisions/0002-confirmed-specification-baseline.md)。完整候选定义、证据和旧稿见[会话资料索引](docs/session/README.md)，不能将其全部视为已生效规格。
 
@@ -54,3 +54,5 @@ Issue仅登记议题；创建、编辑、评论、标签及定时任务不触发
 先完成架构、功能与非功能（含查询性能、跨语言/跨平台）的讨论、规格和整体审核，再另行明确批准产品开发。方案A已选择，但不是实施批准；Issue #3相关领域模型仍沿用现有变更，不另建重复模型。
 
 规划议题见[总计划 #4](https://github.com/vchs6/c2s/issues/4)与[仓库台账](docs/planning/agenda.md)；本次只创建事项，不自动启动讨论。
+
+当前规范按需阅读：领域基础见docs/domain/foundation.md，项目约束见docs/project/constraints.md，代理治理/决策/任务/仓库管理/CI分别在docs/workflow下；AGENTS仅作入口。

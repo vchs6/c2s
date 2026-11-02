@@ -3,13 +3,13 @@
   "snapshot_date": "2026-11-02",
   "freeze_status": "not-frozen",
   "development_ready": false,
-  "implementation_approved": false,
+  "implementation_approved": true,
   "user_decision": null,
   "pending_decisions": [],
   "base_revision": "d40cb6c4bfdf5567ee3ca1dde82b31dd58528d8a",
   "historical_issue3_tokens_authorize_implementation": false,
   "digest_algorithm": "SHA-256 over sorted path + TAB + file SHA-256 + LF UTF-8",
-  "bundle_sha256": "76c75a3bbd099f56db77799151376ec758ceeaa3fa788ddd05fad602a02c77bb",
+  "bundle_sha256": "340fbf845bdb164059a230240d0f894d8a8cbc8e14309ff082f50dbe42660870",
   "exclusions": [
     "manifest itself",
     "validation execution logs/reports",
@@ -19,11 +19,11 @@
   "files": [
     {
       "path": "AGENTS.md",
-      "sha256": "d6249af4b7420724aaec8f8a588eea7865a57fe6e55e6c2da3a79f004180eb27"
+      "sha256": "ca265fc00e302ef0154775551574be329b9bf9a598da979b01d38bbb888f649e"
     },
     {
       "path": "README.md",
-      "sha256": "921ba13d5144deed2436169dfa9fe2f8854321ef4959e5d4fa6b2b32123fc4cc"
+      "sha256": "f0d250fc8c1e0a752710ccf4e7220d0b49b0833de1c6ac015c7602fafa1d5fab"
     },
     {
       "path": "docs/decisions/0001-five-semantic-layers.md",
@@ -58,6 +58,10 @@
       "sha256": "dc0a0fd462e74dee4a2bbe4adbf679bb641c7b540a73246723a56d97a6ffb948"
     },
     {
+      "path": "docs/decisions/0009-continuous-development-authorization.md",
+      "sha256": "cd89adec9fa7982493705200cc87a6d31dd855b6da9b28e41cf351c54a956c5b"
+    },
+    {
       "path": "docs/development/discussions/2026-11-01-specification-baseline/semantic-fact-model-candidates.md",
       "sha256": "97285d276b8308d0cca2968d26193446c955825a85ab9a9dd5f5521dcd22239c"
     },
@@ -83,7 +87,11 @@
     },
     {
       "path": "docs/development/reviews/issues/10/acquisition-survey-2026-11-02/capability-matrix.json",
-      "sha256": "630c3642f594fe35985b3ae8ce696047c8eebf0cdf3ae07ff1353c1f9dfccf9a"
+      "sha256": "bd540544578b461122a92006ea90862dea02079725cbe6ce74e45c93f74bc8d3"
+    },
+    {
+      "path": "docs/development/reviews/issues/10/acquisition-survey-2026-11-02/experiment-results.json",
+      "sha256": "182dd37c90957f14ee174d660acf873e17dcbaebda5008eee0bcc0edd8159425"
     },
     {
       "path": "docs/development/reviews/issues/10/acquisition-survey-2026-11-02/instructions.json",
@@ -95,7 +103,7 @@
     },
     {
       "path": "docs/development/reviews/issues/10/acquisition-survey-2026-11-02/report.md",
-      "sha256": "ee1f4fa14033f26fd67913fcee09ca727feb00b83669176893779f4bc150fb10"
+      "sha256": "86ce30960dadf94704a8246c71fe1c2b8e17d27d2834cd8f1f140a17f427f2fa"
     },
     {
       "path": "docs/development/reviews/issues/10/acquisition-survey-2026-11-02/sources.json",
@@ -234,6 +242,26 @@
       "sha256": "146a5fc3a0bf1ffcc9b97550452fc1a407a46e83a8b4164ebd8564678c6ca323"
     },
     {
+      "path": "docs/development/reviews/issues/4/development-preparation-2026-11-02/battle.json",
+      "sha256": "993c30d077aa297436e6c5bfb2084aad1c7ab212441132c332c91ae2bb1aa005"
+    },
+    {
+      "path": "docs/development/reviews/issues/4/development-preparation-2026-11-02/builder-check.md",
+      "sha256": "33a05c2a5c217c74b81aaf296fc5c9681c2b1ecd38cc1ff37ddd295faf00c383"
+    },
+    {
+      "path": "docs/development/reviews/issues/4/development-preparation-2026-11-02/environment.json",
+      "sha256": "a2f153c1251de62cd252ea193a5f2f4cb25f78cefffc992f49291aee6c345638"
+    },
+    {
+      "path": "docs/development/reviews/issues/4/development-preparation-2026-11-02/instructions.json",
+      "sha256": "dea5331d5b09f6adb176bb33fd0030d4e1551029d6f62454d556a8b3a2ef320c"
+    },
+    {
+      "path": "docs/development/reviews/issues/4/development-preparation-2026-11-02/problem-package.md",
+      "sha256": "55f570300aec8b703deed535d4d93514e4376deba49a029ca8fad7ee7f1a8102"
+    },
+    {
       "path": "docs/development/reviews/issues/4/independent-delivery-2026-11-02/battle.json",
       "sha256": "ffdf7ca217c04b7487718a60070a0b70015837212f5cfcd11e85e2e444469d07"
     },
@@ -366,16 +394,20 @@
       "sha256": "7d5bee1da8c3afc8c3c0d4bf6d182ba376e7542daad37609885a5922b25c50b0"
     },
     {
+      "path": "docs/domain/foundation.md",
+      "sha256": "58ae09cfd14a8615663a03996dd3d97f183e4a39a0330a51dacadc5c36497957"
+    },
+    {
       "path": "docs/domain/proposals/language-independent-layered-semantic-model.md",
       "sha256": "a7a1d78db875cf9793039bb57f21dce06ffac4673372554345806c02678cd7fa"
     },
     {
       "path": "docs/planning/agenda.md",
-      "sha256": "e2e2088eaab9ffbce9e15948eedbf1ed9008b4d909860d62649c93360149cb16"
+      "sha256": "03f3ac97bf6e1fdcfc14fc27d719207a7255ca62220d34e92d304ca22257b78c"
     },
     {
       "path": "docs/planning/issues.json",
-      "sha256": "158dc7e6445bbf65eac9769065c099cc3e5073ee7cc3add739f87368ff97995c"
+      "sha256": "c687f09fb3dbb4d89a55d011352bf218e6e81940e7949777294441ba6b0dbadb"
     },
     {
       "path": "docs/planning/program-2026-11-01/acceptance-matrix.md",
@@ -387,31 +419,59 @@
     },
     {
       "path": "docs/planning/program-2026-11-01/decision-requests.md",
-      "sha256": "8f94c95efb42c7693213b17d3b80bb8636c16d5ce4046d4b0184959cb0f496f6"
+      "sha256": "0410521df1acf29a9964e103c0250b6d056abc3bd20966e74071935f45e103d9"
     },
     {
       "path": "docs/planning/program-2026-11-01/milestones.md",
-      "sha256": "e723495da2d88033e29d1635064cd141a6da0685fdeb365578a82b7553bf1c42"
+      "sha256": "587b11790de7f63b44b0f9785f46d1c5d9444bd5eb6e9d057f01f86e420b1c0a"
     },
     {
       "path": "docs/planning/program-2026-11-01/overall-review.md",
-      "sha256": "cbeb10d103571ead780e760b26227298027ad58447eba5317c7b9ca562b16272"
+      "sha256": "82dda8a85c13c8ac6ad6066f9701dba4158935d6f729465e1a0680392117c59d"
+    },
+    {
+      "path": "docs/planning/program-2026-11-01/readiness.md",
+      "sha256": "ae423ff262a4967eb794b45a8743e6b29e9c3a5120f02cd7e6bcb5e65faf16c2"
     },
     {
       "path": "docs/planning/program-2026-11-01/upstream.md",
       "sha256": "0c57484fd493a9c8bf69a0d1424c28bdc90e6991446fa500d8bda2ac9c8202fb"
     },
     {
+      "path": "docs/project/constraints.md",
+      "sha256": "4105358a1c2d02db490130ec3b09ad4c7250b2b6fc938a8fe4ca18aab16eff8e"
+    },
+    {
       "path": "docs/session/artifact-manifest.json",
       "sha256": "ba6b02d04999b0fd8cd9f072d60b6dcdaee06ac3f364133aafcb7af224aa150d"
+    },
+    {
+      "path": "docs/workflow/agent-governance.md",
+      "sha256": "e5b11d28a90e064a9baf1350c1423a5da7bc72edf373679e462479761d419465"
     },
     {
       "path": "docs/workflow/battle-protocol.md",
       "sha256": "02e69755b8d195ce27e01546eeac2040aa3a6e1b18c0df7831033f599929ceff"
     },
     {
+      "path": "docs/workflow/ci.md",
+      "sha256": "4f936e3e1df542686e94d76193109336892f6e9088fba2a3a8e2567ea6c098f8"
+    },
+    {
+      "path": "docs/workflow/decision-policy.md",
+      "sha256": "16f1637f27bf1c34c42977d6840f168898899efc4f8ad767fe629eb833346a76"
+    },
+    {
       "path": "docs/workflow/planning-mode.md",
-      "sha256": "e4851a6642d11f372b9d17e2f7518bbe7849e6506a92e288240142670cd45f35"
+      "sha256": "e00a4e04df759af4611d783f3f8f1b113716658915f910383a677f780625cf23"
+    },
+    {
+      "path": "docs/workflow/repository-management.md",
+      "sha256": "dd78d691b922dbd35af97faa316c81abc3cc8525433c0f314e433a269519b8ea"
+    },
+    {
+      "path": "docs/workflow/task-decomposition.md",
+      "sha256": "23181a32d49a1a5a17ea0adb55f3b0d64f4b018c62a73632693808c8a888f1f6"
     },
     {
       "path": "openspec/changes/define-independent-ddd-delivery/.openspec.yaml",
@@ -419,7 +479,7 @@
     },
     {
       "path": "openspec/changes/define-independent-ddd-delivery/design.md",
-      "sha256": "5613c4eaf5097f0c670627315f4daffc28c6915c0ab8d11fddc9b8f5a28ee53c"
+      "sha256": "98c5b207e09e8971b824f1eaefb213efb6b137640e606b50e3ab291ff71c5ea1"
     },
     {
       "path": "openspec/changes/define-independent-ddd-delivery/proposal.md",
@@ -435,7 +495,7 @@
     },
     {
       "path": "openspec/changes/define-independent-ddd-delivery/tasks.md",
-      "sha256": "703050fc12c270b918e67fbd5a56f7fec7575ef222d426afb22901079b52d001"
+      "sha256": "7533a8e4f9158cc54a6976564f6695bd3484789566c83421cdba9d34a826d68c"
     },
     {
       "path": "openspec/changes/define-layered-semantic-fact-model/.openspec.yaml",
@@ -651,7 +711,7 @@
     },
     {
       "path": "openspec/changes/survey-semantic-acquisition-capabilities/design.md",
-      "sha256": "b9f01b3177100bb2e01b8abe767768f970ba0079b15b1aedc04c609b7a840372"
+      "sha256": "4fc0d35558691fdcd7c1e9c32dd482a0f8e617aa2b1412239c4961b617a169fd"
     },
     {
       "path": "openspec/changes/survey-semantic-acquisition-capabilities/proposal.md",
@@ -663,11 +723,11 @@
     },
     {
       "path": "openspec/changes/survey-semantic-acquisition-capabilities/tasks.md",
-      "sha256": "729b63a94e0bec64dc28b4753439870428138eb985f26351529144120772fa39"
+      "sha256": "117805d669a45fbdd4aa4dc1586d23e03d8d40f2759f44cc6e54919389bfaf59"
     },
     {
       "path": "openspec/config.yaml",
-      "sha256": "883bd7329dfedd83b00223685ead5f8e207ab949ad7cc874fe530f6e977f4a37"
+      "sha256": "1613c281cd2a253d6fc265bb4b7a2d53155be0a877236b78143b47d8cffcff4d"
     },
     {
       "path": "openspec/specs/.gitkeep",
@@ -700,6 +760,10 @@
     {
       "path": "openspec/specs/semantic-fact-query/spec.md",
       "sha256": "94cae1fe54086db07726a8ca698f3a18874e9c3e0e4ac6b1d4f189707f038967"
+    },
+    {
+      "path": "skill/README.md",
+      "sha256": "58d6d770f484004e2d247b3322976d4058a9c62a5d3182d7dcc2f8d9ccc5d0bf"
     }
   ],
   "supersedes_bundle_sha256": "f1d1db6e581ef4686f46d552f910c5cceb1623fc72513d6f6f3743af65e2003a",
@@ -744,5 +808,9 @@
   "delivery_change": "define-independent-ddd-delivery",
   "isolation_ready": false,
   "acquisition_document_survey_complete": true,
-  "acquisition_runtime_validation": "not-run"
+  "acquisition_runtime_validation": "partial-public-tool-experiments",
+  "development_authorized": true,
+  "authorization_ref": "docs/decisions/0009-continuous-development-authorization.md",
+  "readiness_complete": false,
+  "implementation_started": false
 }

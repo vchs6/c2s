@@ -1,5 +1,7 @@
 # 当前需求基线与整体规划状态
 
+最新授权：ADR-0009已允许准备完成后连续开发，development_authorized=true；以下原“未批准/另取批准”是先前规划状态。当前readiness_complete=false、isolation_ready=false、implementation_started=false，具体见readiness.md；不重复索取同一批准，不跳过实际门禁。
+
 ## 当前结论
 
 系统需求已按用户明确确认固化（ADR-0001至0007）；本次顶层指符合用户请求要求的顶层语义事实，范围内完整取得/报告，不递归夹带更深对象。当前没有要求用户继续定义金标、负载或逐工具许可的系统需求阻塞。

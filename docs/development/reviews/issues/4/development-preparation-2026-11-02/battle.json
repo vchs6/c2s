@@ -1,0 +1,268 @@
+{
+  "battle_id": "development-preparation-2026-11-02",
+  "record_kind": "实际代理返回的主代理结构化摘要，非逐字记录",
+  "problem": "准备后持续开发授权与真实隔离就绪",
+  "constraints": [
+    "不重复索取实施授权",
+    "五角色独立不取消",
+    "不写共享可见隐藏suite",
+    "准备通过后才开始产品",
+    "Issue不触发、不归档"
+  ],
+  "participants": {
+    "proposer": "/root/prep_proposer",
+    "challenger": "/root/prep_challenger",
+    "reviewer": "/root/prep_reviewer"
+  },
+  "rounds": [
+    {
+      "role": "battle_proposer",
+      "round": 1,
+      "position": "条件授权已成立，隔离尚未成立，独立准备可继续",
+      "claims": [
+        {
+          "id": "P1",
+          "statement": "授权无需重取，准备不等通过",
+          "evidence_refs": [
+            "用户最新原文"
+          ],
+          "assumptions": [
+            "问题包实际命令结果准确"
+          ],
+          "falsifier": "新指令撤回授权"
+        },
+        {
+          "id": "P2",
+          "statement": "当前身份/namespace/强制隔离不可用，目录提示不足",
+          "evidence_refs": [
+            "problem-package.md"
+          ],
+          "assumptions": [
+            "问题包实际命令结果准确"
+          ],
+          "falsifier": "存在有效强制隔离实证"
+        },
+        {
+          "id": "P3",
+          "statement": "公开治理/工具试验可继续，依赖隐藏验收的产品流水线blocked",
+          "evidence_refs": [
+            "AGENTS",
+            "交付2组"
+          ],
+          "assumptions": [
+            "问题包实际命令结果准确"
+          ],
+          "falsifier": "某准备项依赖不可用隔离"
+        }
+      ],
+      "responses": [],
+      "unknowns": [
+        "外部隔离设施及角色入口"
+      ]
+    },
+    {
+      "role": "battle_challenger",
+      "round": 1,
+      "position": "支持条件授权，不以授权或文档存在冒就绪",
+      "claims": [
+        {
+          "id": "C1",
+          "statement": "授权与技术状态分别记账",
+          "evidence_refs": [
+            "用户最新原文",
+            "原tasks"
+          ],
+          "assumptions": [
+            "问题包实际命令结果准确"
+          ],
+          "falsifier": "明确撤回授权"
+        },
+        {
+          "id": "C2",
+          "statement": "私有CI仍须检查日志制品及workflow管理接口不可读写",
+          "evidence_refs": [
+            "交付2.2"
+          ],
+          "assumptions": [
+            "问题包实际命令结果准确"
+          ],
+          "falsifier": "完整访问拒绝及合法交接证据"
+        },
+        {
+          "id": "C3",
+          "statement": "可继续治理/契约准备，GitHub写不等部署runner",
+          "evidence_refs": [
+            "problem-package.md"
+          ],
+          "assumptions": [
+            "问题包实际命令结果准确"
+          ],
+          "falsifier": "实际具备独立runner部署接口"
+        }
+      ],
+      "responses": [],
+      "unknowns": [
+        "外部设施、Rust前置、当前文档状态一致性"
+      ]
+    },
+    {
+      "role": "battle_proposer",
+      "round": 2,
+      "position": "接受四个边界",
+      "claims": [],
+      "responses": [
+        {
+          "dispute": "D01",
+          "action": "接受",
+          "reason": "授权持续有效，就绪另记"
+        },
+        {
+          "dispute": "D02",
+          "action": "接受",
+          "reason": "隔离失败不以提示替代"
+        },
+        {
+          "dispute": "D03",
+          "action": "接受",
+          "reason": "私有CI涵盖角色/进程/日志/制品/管理API"
+        },
+        {
+          "dispute": "D04",
+          "action": "接受",
+          "reason": "只推进无隔离依赖准备，不称全部M0完成"
+        }
+      ],
+      "unknowns": [
+        "真实隔离设施与试验结果"
+      ]
+    },
+    {
+      "role": "battle_challenger",
+      "round": 2,
+      "position": "接受边界，修正候选执行范围",
+      "claims": [],
+      "responses": [
+        {
+          "dispute": "D01",
+          "action": "接受",
+          "reason": "不重复开发批准"
+        },
+        {
+          "dispute": "D02",
+          "action": "接受",
+          "reason": "仅否定当前已具隔离，不断言所有技术永远不可行"
+        },
+        {
+          "dispute": "D03",
+          "action": "接受",
+          "reason": "连接器不能证明设施已部署"
+        },
+        {
+          "dispute": "D04",
+          "action": "修订",
+          "reason": "已授权工具试验可执行，不能混同产品candidate或隐藏验收"
+        }
+      ],
+      "unknowns": [
+        "外部权限与实际工具试验证据"
+      ]
+    },
+    {
+      "role": "battle_reviewer",
+      "round": 3,
+      "position": "授权/就绪与工具非验收边界一致，发现旧任务重索批及README自检缺口",
+      "claims": [
+        {
+          "id": "R1",
+          "statement": "交付唯一tasks仍另批，与ADR0009冲突须逐条改",
+          "evidence_refs": [
+            "交付tasks"
+          ],
+          "assumptions": [],
+          "falsifier": "任务当前指令不再另批"
+        },
+        {
+          "id": "R2",
+          "statement": "#10旧未安装状态与实际安装冲突须改",
+          "evidence_refs": [
+            "#10tasks",
+            "environment.json"
+          ],
+          "assumptions": [],
+          "falsifier": "当前任务状态与安装证据一致"
+        },
+        {
+          "id": "R3",
+          "statement": "Rust需完整本地home自检",
+          "evidence_refs": [
+            "skill/README.md",
+            "实际cargo命令"
+          ],
+          "assumptions": [],
+          "falsifier": "已给可用env命令"
+        }
+      ],
+      "responses": [
+        {
+          "dispute": "D01",
+          "action": "支持",
+          "reason": "授权有效但当前隔离/准备未过，不虚报产品"
+        },
+        {
+          "dispute": "D02",
+          "action": "支持",
+          "reason": "授权有效但当前隔离/准备未过，不虚报产品"
+        },
+        {
+          "dispute": "D03",
+          "action": "支持",
+          "reason": "授权有效但当前隔离/准备未过，不虚报产品"
+        },
+        {
+          "dispute": "D04",
+          "action": "支持",
+          "reason": "授权有效但当前隔离/准备未过，不虚报产品"
+        }
+      ],
+      "unknowns": [
+        "外部独立执行设施"
+      ],
+      "independent_scope": "读本地相关工件；实际核UID映射、Python五包及Rust版本；主规格无diff、无产品/suite变更；未接触认证或重跑全部隔离试验",
+      "followup": "复核三文件确认具体问题已修正，最后指出#10约束段残余“实施另批”，主代理精确替换并做文本核验"
+    }
+  ],
+  "disputes": [
+    {
+      "id": "D01",
+      "topic": "授权与就绪分别记录",
+      "resolution": "development_authorized=true/readiness=false"
+    },
+    {
+      "id": "D02",
+      "topic": "本地强制隔离失败",
+      "resolution": "不降级为角色提示"
+    },
+    {
+      "id": "D03",
+      "topic": "私有CI权限边界",
+      "resolution": "角色/候选进程/日志/制品/API均实证，当前未部署"
+    },
+    {
+      "id": "D04",
+      "topic": "继续准备的范围",
+      "resolution": "公开工具试验和治理继续；隐藏验收/产品流水线blocked"
+    }
+  ],
+  "recommendation": "保存已完成准备及实际安装/试验证据；保持真实隔离阻塞，不重新索批",
+  "unresolved": [
+    "需要独立强制隔离环境与受控交接入口",
+    "公共契约/组合仍未全部冻结"
+  ],
+  "decision_status": "proposed",
+  "user_decision": null,
+  "authority_note": "用户确认的是授权和既有约束，Battle技术判断仍为代理有证分析，不冒用户逐项选择。",
+  "user_scope_confirmation": {
+    "scope": "用户明确同意必要安装及准备后连续开发；五角色边界是既有确认",
+    "reference": "ADR-0009"
+  }
+}

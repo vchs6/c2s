@@ -1,53 +1,29 @@
-# c2s 主代理规则
+# c2s代理入口
 
-## 项目目标与已确认方向
-开发软件项目语义事实提取Skill。按DDD明确统一语言、主体身份和不变量，按SDD形成可验证规格。用户已确认E0工程组织与协作、E1构建装配与交付、E2程序结构与接口、E3操作行为契约、E4实现算法与局部语义。见docs/decisions/0001-five-semantic-layers.md；此确认不等于批准全部候选字段或实现。
+开发软件项目语义事实提取Skill，遵循DDD、OpenSpec及Superpowers。先读README和本次任务相关规格、变更及下表所需文档，按需加载，不重复通读全部资料。
 
-## 必须实际使用的工作流
-1. 先读README、相关OpenSpec规格/active changes及资料索引。主代理协调、查证和记录，不以会话记忆代替工件。
-2. 首先调用Superpowers using-superpowers；新设计调用brainstorming，已确认内容不反复提问。多步执行读取writing-plans/executing-plans，验证前调用verification-before-completion。
-3. OpenSpec优先使用安装生成的openspec-propose/openspec-apply-change等Skill；在终端通过 `npm run openspec -- ...` 执行new change、status、instructions、validate。不得把slash/Skill名谎称shell子命令。
-4. 必须先取得每个工件的instructions，再按返回template/context/rules撰写。CLI提供流程和指令，不会替代理解需求或自动代写所有工件。
-5. 实施前取得apply指令，按tasks推进并填写验证。任务有上游依据、交付物、检查方式、通过和失败条件。Superpowers执行计划引用OpenSpec任务，避免双轨待办。
-6. `status`的工件存在不是实现完成。完成声明前执行严格校验及相应检查；未经明确指令不archive。
+## 当前授权与不可越过的门禁
 
-## DDD与公共模型边界
-五层是语义组织尺度，不是DDD架构层、聚合树或默认refines链。主体单身份，跨层类型引用。目录/工作空间成员/项目归属/构建依赖/代码调用分别定义。未知、否定、声明与观测不得混淆；来源与覆盖横贯各层。聚合、限界上下文、数据库、实现语言、获取器选择不由导入草案自动决定。
+最新用户授权见`docs/decisions/0009-continuous-development-authorization.md`：先完成准备，门禁通过后连续开发；必要工具/Skill自行安装，不逐任务重复索批。用户确认优先于旧planning-only说明。Issue/评论/标签/定时仍不启动工作，不自动archive。
 
-## Battle与执行
-用户请求Battle或存在实质领域决策时读docs/workflow/battle-protocol.md，真实启动独立子代理；首轮不注入主代理倾向，第二轮按争议交叉质询，再独立综合评审。一般三角色；领域模型评审可按问题增加专业视角，在运行时并发上限内调度。子代理只读，主代理单点记录，不以多数票代替依据。
-没有运行时支持则报告限制，不能模拟多人结果。讨论不自动授权改规格或实现；用户已明确授权的任务持续完成，不重复索取同一批准。
+授权成立不等于准备通过。当前五角色真实隔离未通过；不在共享区编写隐藏测试，不以角色提示/worktree冒权限隔离，不开始依赖未通过门禁的产品开发。能独立推进的准备和工具试验继续；环境阻塞与授权分别报告。M0状态见`docs/planning/program-2026-11-01/readiness.md`。
 
-## 文件与验证
-正式规格在openspec/specs；活动变更在openspec/changes；领域资料在docs/domain；决策在docs/decisions；评审证据在docs/development/reviews。docs/session/README.md标记导入资料的权威性。
-不修改导入原件来假装旧稿已更新；需要修订时通过新变更与新工件保留来源。开发工具源由tools/superpowers子模块固定，不直接编辑上游Skill。不得提交node_modules、认证文件、宿主插件缓存或当前平台会话数据。
+## 按任务读取
 
-## 当前工作模式：显式启动、持续规划、开发关闭
+| 任务 | 必读文档 |
+| --- | --- |
+| 领域/公共契约 | `docs/domain/foundation.md`、相关`openspec/specs/`、ADR-0001至0008及原模型变更 |
+| 范围/架构/资源 | `docs/project/constraints.md`及相应design |
+| 角色/执行/证据 | `docs/workflow/agent-governance.md` |
+| 新取舍/反例/需求变更 | `docs/workflow/decision-policy.md`；实质领域争议再读`battle-protocol.md`并真实独立讨论 |
+| 任务规划/分派 | `docs/workflow/task-decomposition.md`及原change唯一tasks |
+| 提交/CI/发布 | `docs/workflow/repository-management.md`、`ci.md` |
+| 手动维护工具 | `docs/workflow/issue-worker.md`，其Runner仍只plan/smoke |
 
-Issue只登记议题：新建/编辑/评论/标签不启动工作，不定时扫描。首次必须由用户在会话显式指定规划目标，或由维护者手动workflow_dispatch指定一个Issue；不得在授权集合外自行轮询队列或启动其他Issue；用户授权总计划时，可在该集合内连续推进，无需逐Issue重复授权。启动后的授权会话可按依赖连续讨论，不因一个议题阻塞而停止无依赖议题。当前Runner只提供plan/smoke，不提供apply；旧评论令牌、bug/implement类型或单项方案确认均不授权产品开发。
+## 必须实际执行
 
-先使用brainstorming核对固定约束及需求；重大领域问题按Battle协议真实独立讨论并综合，不能以Battle替代brainstorming。继而按实际OpenSpec instructions维护提案、规格、设计及足够明确时的唯一tasks。小型技术细节在委托边界内可自行裁决并标明“授权范围内代理决定”；不能冒充用户确认。可经证据解决的争议自行查证；改变已确认行为、扩张范围、重要性能/成本承诺或证据不足的重大取舍形成决策请求。候选与未决设计不自动同步为正式基线。
-
-规划同时覆盖功能与查询性能、构造成本、存储效率、一致性、扩展性、可观测和可维护性。指标绑定工作负载、数据规模、冷/热场景、环境、统计口径、目标与验证方法；没有依据不冻结数值。跨语言与跨平台是全局要求：区分源代码语言（含混合语言）、Skill运行平台和源项目目标平台，规定首期支持矩阵/证据/未知与退化边界，不把语言无关模型等同于已实现全部语言/平台。
-
-方案确认、整体规划审核、产品实施批准分离。整体问题讨论/审核完成、规划集合冻结后，仍须用户明确批准该集合的开发才可实施；当前不写产品代码、获取器、事实Schema/目录、存储或产品测试实现，不安装产品依赖、不自动归档。用户对维护工具的明确修正指令可作为独立例外，只在指定治理/工具范围实施，不能扩大为语义事实产品开发。
-
-所有自维护脚本、校验和测试使用Python3。手动维护工具校验调用者及Issue作者的write/maintain/admin权限，Issue正文不能扩大权限；只处理指定Issue，不用评论授权推导实施。模型规划写入仅限所选OpenSpec变更与该Issue评审目录，不改workflow、发布脚本、规则或认证。复用已有变更时精确指定，不另建重复模型。合格授权结果直接提交main，不建分支/PR，不自动archive。
-
-## 独立交付与里程碑（ADR-0008）
-
-编码、代码审核、测试用例编写、测试执行、最终验证必须独立上下文/执行身份及工件所有权。编码者不编写或读取测试；独立作者依据公开契约及讨论中的真实项目写suite，不以candidate为期望依据。公开规格/Scenario可见，不等于私有suite；隐藏查询/断言/fixtures与原始日志不能进入编码可读仓库、历史或工具输出。私有runner的candidate进程也不能访问suite。共享目录、worktree、同账号全权token及角色提示不能证明隔离；当前缺真实隔离，隐藏用例编写和执行blocked，不在本会话提前编写。
-
-以`docs/planning/program-2026-11-01/milestones.md`索引既有唯一tasks，先契约后查询增量，每个增量独立审核/测试/验证并覆盖非功能。Superpowers默认编码者写测试的步骤按此用户要求改为跨角色red-green，独立执行者记录实际失败，不得虚构。交接绑定candidate/suite/契约/源/环境及证据，变更使相关结论失效。授权实施范围内门禁通过后持续推进；本次仍只规划，整体审核及另批开发不得绕过，Runner现状不等于已部署无人值守编排。
-
-当前产品版本0.b.c，a固定0；功能增b重置c、修复增c为交付设计。首次0.1.0仅候选；工具包和契约格式版本分开，不因规划修改package/lock/tag或宣布发布。详见`openspec/changes/define-independent-ddd-delivery/`。
-
-详见docs/workflow/planning-mode.md及issue-worker.md。现有维护工具不等于跨Issue无人值守编排器；真实模型失败、缺密钥或验证失败均明确blocked，smoke只证明确定性检查。旧运行资料保留历史，不代表当前入口仍自动执行。
-
-## 最小化分层语义事实提取的Token消耗（用户明确目标）
-
-在满足已确认语义、查询范围、正确性和证据追溯要求的前提下，最小化提取、维护和按需取得分层语义事实所需的LLM输入/输出Token。核心是减少必须交给LLM的工作量，而不只是计量或设置调用限额。规划须比较确定性工具/结构化结果直接转换、事实复用、增量处理、跨层共享证据、避免重复通读源码，以及仅向模型提供必要局部上下文等方案；不先锁定具体工具或承诺其能力。不得通过省掉必要语义、虚构完整性或删除证据实现表面节省。
-
-用固定输入、语义范围、质量和平台条件比较总Token、输入/输出Token、模型调用次数、交给模型的源码/上下文量和重复分析量；不同事实粒度下不单凭每事实Token作结论。冷启动/首次构造、已存结果复用、源码局部变更与跨语言/跨平台分别规划验证。计量、预算、重试限额和超限策略只是验证和治理手段，不能替代提取流程本身降低Token消耗的设计。无实际测量不得宣称节省比例。
-
-规划讨论本身也应减少重复上下文和机械性Battle，但这是辅助工作效率，不能替代上述Skill运行目标。准确性、覆盖、延迟和Token消耗的重大取舍须提交用户裁决。
+1. 先用using-superpowers；未决设计用brainstorming，多步计划用writing-plans，执行按适用执行Skill，完成声明前用verification-before-completion。用户五角色独立要求优先于默认编码者写测试流程。
+2. 执行`npm run openspec -- status --change <name>`及适用逐工件instructions；实施前取得apply instructions并读返回contextFiles。CLI不自动代写正文，文件存在不等于产品完成。
+3. 复用已有变更；公共契约单点归属，唯一tasks不复制为第二计划。已确认需求不重开；不能把代理共识冒用户确认。小型技术选择在委托内裁定并记录，重大变化给具体反例及影响。
+4. 合格授权工件直接main，先实际严格校验及适用检查，读回发布结果。不提交认证、私有suite/日志、node_modules、.local或宿主会话；不改导入原件和tools/superpowers上游。
+5. 自维护脚本/测试Python3。产品版本0.b.c（a固定0），工具/契约版本分开；最终Skill README必须列实际依赖、来源/版本、安装自检、平台范围及副作用。

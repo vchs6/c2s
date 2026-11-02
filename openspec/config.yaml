@@ -10,16 +10,17 @@ context: |
   Imported research under docs/domain and docs/development/reviews is evidence, not automatically approved specs.
   Coordinate actual OpenSpec instructions with installed Superpowers Skills.
   All repository-owned scripts and tests MUST use Python 3; pinned third-party CLIs remain upstream tools.
-  Current mode: explicit manual start, continuous planning within authorized session, product implementation disabled.
+  Current authorization: ADR-0009 permits preparation and continuous development after readiness gates pass.
+  Do not request the same implementation approval again; current isolation/readiness remain unproven.
   Issues/comments/labels/schedules MUST NOT start work. Current maintenance Runner permits plan/smoke only.
-  Separate scheme confirmation, whole-plan review and explicit product implementation approval.
+  Distinguish user authorization, technical readiness and actual acceptance evidence; authorization does not waive gates.
   Cover functional and nonfunctional requirements, including query performance/cost/scaling and cross-language/cross-platform matrices.
   Minimize actual LLM input/output tokens needed to extract and maintain layered semantic facts while preserving required semantics, correctness and evidence; metering/budgets alone do not satisfy this goal.
   Compare deterministic processing, cross-layer reuse, incremental work and minimal model context; do not claim measured savings without evidence.
   Source language, Skill host platform and analyzed-project target platform are separate dimensions; do not claim universal support.
   Delivery has five independent roles: coding, code review, test authoring, test execution, final verification.
   Coders MUST NOT author or access independent tests; private suites require proven access isolation, including candidate processes.
-  Shared agent filesystems are not isolation. Plan milestones using existing authoritative tasks, then obtain separate implementation approval.
+  Shared agent filesystems are not isolation. Use authoritative tasks; complete readiness before implementation.
   Current product versions are 0.b.c; planning does not bump tooling/contract versions or publish a release.
 rules:
   proposal:
