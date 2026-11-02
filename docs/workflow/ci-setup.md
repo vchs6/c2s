@@ -48,3 +48,7 @@ python3 scripts/configure_ci.py --apply --set-model-key
 先恢复执行环境对`api.github.com:443`的合规网络访问，并保留设备登录所需`github.com:443`；不通过替代域名、代理或关闭限制绕过策略。在网络未修复前不继续生成设备码。当前工具不提供网络策略修改接口；用户也可在能访问GitHub的可信本地终端按上文登录并执行已提交的bootstrap脚本。不要发送/提交令牌、设备授权状态或密钥，不能从已结束进程回收认证秘密。
 
 只有实际`gh auth status`通过后再执行--apply及API读回；bootstrap成功仍不等于完整角色隔离或模型可用。
+
+## 用户本地bootstrap完成后的接续
+
+用户已提供status=account_bootstrap_applied、bootstrap_configured=true回执，连接器已独立读回私有验收仓库。此前云端CLI网络阻塞仅保留为历史诊断；不能再要求用户重做已完成的账户基础配置。使用现有连接器部署不含suite的认证workflow，并读取实际托管结果；模板见ci/acceptance/credential-check.yml。model_key_set=false只表示该次脚本未写Secret，不是不存在的证据。认证GET成功也不证明生成模型/账单可用或完整隔离；后续仍按原门禁验证。

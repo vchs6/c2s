@@ -91,3 +91,19 @@ brainstorming只讨论未决设计，既有语义需求不重开；writing-plans
 容器probe仅证明该CI运行的容器与宿主标记边界，不证明GitHub仓库、日志、制品、管理API及五角色已全部隔离；回执始终development_ready=false。真实编码job需放在无私有验收权限的执行上下文，不能与suite共享可访问的artifact通道。账户端未配置及完整交接未运行前，2.2/2.3保持blocked。
 
 首次产品版本/发布载体以及具体host/工具版本由后续就绪任务根据选型和实测确定；不改变五角色和访问隔离约束。隐藏用例具体内容仅独立作者未来在私有环境决定，不进入公开规划。工作负载及跨次更新、语句粒度保持原延期范围。
+
+### 私有验收仓库接续诊断（代理技术选择，非新增用户需求）
+
+用户已提供account_bootstrap_applied回执，bootstrap_configured=true；连接器实读vchs6/c2s-acceptance为private，源维护CI成功。云端gh网络/登录失败不再阻塞通过已连接GitHub应用写入新私有仓库；不能继续要求用户重做基础配置。变量/默认权限以用户提供的脚本读回回执为依据，不冒称连接器独立实读。
+
+认证诊断采用最小私有Actions workflow：仅用已配置OPENAI_API_KEY对固定https://api.openai.com/v1/models执行一次GET，输出是否有值、HTTP状态、认证结论和development_ready=false，不输出key、返回正文、模型列表或私有日志。API认证不等于推理/账单可用；本步不发模型生成请求。对比“继续等待云端gh”会重复已解决的账户步骤；“直接开启模型代理及隐藏suite”尚无隔离证据；因此先运行此有限诊断，再按原2.1/2.2/2.3收敛。
+
+workflow只在自身变更push或显式workflow_dispatch启动；permissions为空、无checkout、无第三方action或制品上传、无suite，无代码生成。模板为ci/acceptance/credential-check.yml，部署到验收仓库.github/workflows/credential-check.yml。诊断只证明该次私有runner Secret可见与API认证，缺失/401/403/网络错误均失败分类报告，不自动扩权或覆盖密钥。未来实际角色身份仍不得共享管理token；本协调会话的连接器有admin权限，不能冒充正式编码身份。
+
+### 受限角色执行基础设施（代理技术选择）
+
+采用受信宿主协调者调用独立Docker进程，模型/候选的工具动作只能在其角色容器执行，不向其提供管理token、Docker socket或宿主shell。合成诊断先验证此配置；完整模型工具代理与受控交接仍属2.3，不以诊断冒其已完成。与同VM裸进程不同，容器不共享宿主挂载/PID/网络；与六套常驻服务器相比可重建且部署较小。当前只验证Linux宿主，不外推其他平台。
+
+宿主目录public包含公开契约/固定项目输入，candidate、review、suite、run、verdict为独立输出，host-only放公开合成凭据/日志标记。各容器均只读挂/public；coding独占rw /candidate；review只读/candidate、独占rw /review；author独占rw /suite且不可见candidate；runner只读/candidate与/suite、独占rw /run；verifier只读/candidate、/review、/suite、/run，独占rw /verdict；candidate仅读/candidate，无suite/review/run/verdict。角色未挂载内容均不提供旁路，独占目录不能通过同一run的artifact回流编码。容器实际程序可读执行输入，但不应持久回流独立断言；合成probe仅包含公开值。
+
+源repo的只读token只在受信网络检查step使用，校验私有API不可访问；容器本身禁网且不传令牌。部署私有诊断workflow时固定公开脚本commit及SHA256，避免从可变main下载受信代码。检查失败不扩权；未来每个角色模型会话须使用这些边界并单独写其输出，协调者不能代写suite/verdict。

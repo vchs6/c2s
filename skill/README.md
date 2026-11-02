@@ -47,3 +47,5 @@ CRG建图使用`--data-dir`外置图数据库及`--skip-postprocess`，未启用
 真实五角色权限隔离未就绪，隐藏用例和产品流水线尚未运行。用户已授权准备后连续开发，环境阻塞消除后可继续，无需重新批准同一范围；当前不声明产品版本发布、不自动归档。
 
 CI账户配置与公开容器探针的命令、最小权限、安装来源及安全输入方法见`../docs/workflow/ci-setup.md`；gh不是产品运行依赖。Docker仅供GitHub托管Ubuntu探针使用，本地未安装或验证。
+
+私有验收准备增加credential-check模板：使用托管Ubuntu预装Python 3标准库，一次GET /v1/models校验Secret可见和API认证，不执行生成请求、不证明推理或完整角色隔离。无需新增产品依赖；部署/状态见交付change tasks 3.2.1。

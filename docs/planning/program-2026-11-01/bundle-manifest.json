@@ -9,7 +9,7 @@
   "base_revision": "d40cb6c4bfdf5567ee3ca1dde82b31dd58528d8a",
   "historical_issue3_tokens_authorize_implementation": false,
   "digest_algorithm": "SHA-256 over sorted path + TAB + file SHA-256 + LF UTF-8",
-  "bundle_sha256": "f614d704b95f9132ae314d0e21cd618a8f28b50de3047d29aa9618a90fce1fd3",
+  "bundle_sha256": "7d5d845f46409835a82eb618cd6dc052bdaf6581a0d28a96a9a97222fd9d6aba",
   "exclusions": [
     "manifest itself",
     "validation execution logs/reports",
@@ -22,12 +22,28 @@
       "sha256": "64b581292a0a16e46abc126d1cc37c9becf49b2942ccd5a7406ba537ea1ff624"
     },
     {
+      "path": ".github/workflows/private-access-check.yml",
+      "sha256": "52c6a86fcbbc8dfb12870a313a5d7cecef6461b21a9e8d36d6fc0e51c0cbe27f"
+    },
+    {
       "path": "AGENTS.md",
       "sha256": "ca265fc00e302ef0154775551574be329b9bf9a598da979b01d38bbb888f649e"
     },
     {
       "path": "README.md",
       "sha256": "f0d250fc8c1e0a752710ccf4e7220d0b49b0833de1c6ac015c7602fafa1d5fab"
+    },
+    {
+      "path": "ci/acceptance/boundary-check.yml",
+      "sha256": "97b74ce072fa98213666febd8ab1ea560b570d768bfb12750a6b42f8a356e503"
+    },
+    {
+      "path": "ci/acceptance/credential-check.yml",
+      "sha256": "0d14238aecf6c52b1d0adbd0880f2f73538835dcf32f67459b2a3da3167f1968"
+    },
+    {
+      "path": "ci/acceptance/role_sandbox.py",
+      "sha256": "4964b2ab3e5e689bda88b226a974dbebad4e3ec00b68fd7888c353139a84d0d8"
     },
     {
       "path": "docs/decisions/0001-five-semantic-layers.md",
@@ -80,6 +96,10 @@
     {
       "path": "docs/development/reviews/2026-11-01/model-battle-result.json",
       "sha256": "54c753b31fc0678394bde98c1180009c4b951a36e92f0b27408a92510496fa59"
+    },
+    {
+      "path": "docs/development/reviews/independent-delivery/ci-setup-2026-11-02/account-receipt.json",
+      "sha256": "bb5e51b5d2f88b5b611a695ce79fad8520590a307171ee68eb99f48da0598df9"
     },
     {
       "path": "docs/development/reviews/issues/10/acquisition-survey-2026-11-02/battle.json",
@@ -435,7 +455,7 @@
     },
     {
       "path": "docs/planning/program-2026-11-01/readiness.md",
-      "sha256": "2be62527c3b9f330b97cc86a21abb2226185031fde0cffaf9b6285ab9143bdcc"
+      "sha256": "4757154b31d349e1005444de0d289a1cf7de9dabd09722a685205576c19de3e9"
     },
     {
       "path": "docs/planning/program-2026-11-01/upstream.md",
@@ -459,11 +479,11 @@
     },
     {
       "path": "docs/workflow/ci-setup.md",
-      "sha256": "5503fcd21d892b9316a30a064c40750e39377300d0097e690e4c48831122f3d4"
+      "sha256": "763b2c2f037acdea71b5b392c909639cf85ce57ebabb4e68cb2ac3c355d9c143"
     },
     {
       "path": "docs/workflow/ci.md",
-      "sha256": "982ad8c38047b5ed0e2979b08d5b5420daa2682e0ab2ea817164d68054097704"
+      "sha256": "331c20ee9630623a60b0db3a4fe211ab02c9cbaf6d367be0553ade85e0b40f2b"
     },
     {
       "path": "docs/workflow/decision-policy.md",
@@ -487,7 +507,7 @@
     },
     {
       "path": "openspec/changes/define-independent-ddd-delivery/design.md",
-      "sha256": "7bb6b473a09e3880f6ae8b05706ca0b9b15d1b97f4008da3490ffd2d8f4eb0a9"
+      "sha256": "e93f25a1109ad9632dc2a82224e17b281bfd65d15d94b49277c3d1e8283d69ea"
     },
     {
       "path": "openspec/changes/define-independent-ddd-delivery/proposal.md",
@@ -503,7 +523,7 @@
     },
     {
       "path": "openspec/changes/define-independent-ddd-delivery/tasks.md",
-      "sha256": "f5bb788a8342e2bf32631393e0076296ece11ee96c70f8d8b9b81421a940df2f"
+      "sha256": "74a5fc9e8e5a95327b0a0ccc6e7020c9f82056e875c3c53d946c1d842771456d"
     },
     {
       "path": "openspec/changes/define-layered-semantic-fact-model/.openspec.yaml",
@@ -775,10 +795,10 @@
     },
     {
       "path": "skill/README.md",
-      "sha256": "7f20c956f552df23b83c87534c6d8e9cab1dd7c3ac6aa83d9d2c8dff75ccec91"
+      "sha256": "701a088b1790d8e402259985e2649ed18be353b9a243710b173e08e2b46bd7d4"
     }
   ],
-  "supersedes_bundle_sha256": "3b7f5fa33af6481bd098f63f3937249726c0b63e24ec9bb56201ad495b05d0f7",
+  "supersedes_bundle_sha256": "f614d704b95f9132ae314d0e21cd618a8f28b50de3047d29aa9618a90fce1fd3",
   "confirmed_initial_source_languages": [
     "Rust",
     "Python"

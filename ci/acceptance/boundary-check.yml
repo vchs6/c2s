@@ -1,0 +1,100 @@
+# Public template: install as .github/workflows/boundary-check.yml in the
+# private acceptance repository. Replace both public immutable-pin placeholders
+# after publishing/reviewing role_sandbox.py; never substitute Secrets here.
+name: Private public-synthetic role boundary diagnostic
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/boundary-check.yml'
+  workflow_dispatch:
+
+permissions: {}
+
+jobs:
+  public-synthetic-boundary:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    steps:
+      - name: Verify immutable public script before synthetic diagnostic
+        shell: bash
+        env:
+          SOURCE_COMMIT: '__SOURCE_COMMIT__'
+          SCRIPT_SHA256: '__SCRIPT_SHA256__'
+        run: |
+          python3 - <<'PY'
+          import hashlib
+          import json
+          import os
+          from pathlib import Path
+          import re
+          import subprocess
+          import sys
+          import tempfile
+          import urllib.request
+
+          roles = ("coding", "review", "author", "runner", "verifier", "candidate")
+          report = {
+              "synthetic_only": True, "development_ready": False,
+              "script_downloaded": False, "script_digest_verified": False,
+              "image_digest": None, "independent_containers": False,
+              "host_control_read": False, "host_forbidden_areas_unchanged": False,
+              "roles_passed": {role: False for role in roles},
+              "container_probe_passed": False,
+          }
+
+          class RejectRedirects(urllib.request.HTTPRedirectHandler):
+              def redirect_request(self, req, fp, code, msg, headers, newurl):
+                  return None
+
+          try:
+              commit = os.environ.get("SOURCE_COMMIT", "")
+              expected = os.environ.get("SCRIPT_SHA256", "")
+              if not re.fullmatch(r"[0-9a-f]{40}", commit) or not re.fullmatch(r"[0-9a-f]{64}", expected):
+                  raise ValueError("public_immutable_pin_required")
+              url = "https://raw.githubusercontent.com/vchs6/c2s/" + commit + "/ci/acceptance/role_sandbox.py"
+              opener = urllib.request.build_opener(
+                  urllib.request.ProxyHandler({}), RejectRedirects())
+              with opener.open(urllib.request.Request(url, method="GET"), timeout=30) as response:
+                  if response.status != 200:
+                      raise ValueError("download_failed")
+                  script = response.read(262145)
+              if len(script) > 262144:
+                  raise ValueError("script_too_large")
+              report["script_downloaded"] = True
+              if hashlib.sha256(script).hexdigest() != expected:
+                  raise ValueError("public_script_digest_mismatch")
+              report["script_digest_verified"] = True
+              with tempfile.TemporaryDirectory(prefix="public-boundary-script-") as directory:
+                  path = Path(directory) / "role_sandbox.py"
+                  path.write_bytes(script)
+                  # No checkout, private files, Secrets or tokens supplied.
+                  process = subprocess.run(
+                      [sys.executable, "-I", "-B", str(path), "--probe"],
+                      capture_output=True, text=True, check=False, timeout=480,
+                      env={"PATH": "/usr/local/bin:/usr/bin:/bin", "HOME": "/nonexistent",
+                           "LC_ALL": "C.UTF-8"})
+                  if len(process.stdout) > 16384:
+                      raise ValueError("invalid_probe_output")
+                  probe = json.loads(process.stdout)
+                  # Re-emit only known booleans and a validated public image digest.
+                  digest = probe.get("image_digest", "")
+                  if isinstance(digest, str) and re.fullmatch(r"python@sha256:[0-9a-f]{64}", digest):
+                      report["image_digest"] = digest
+                  for name in ("independent_containers", "host_control_read", "host_forbidden_areas_unchanged"):
+                      report[name] = probe.get(name) is True
+                  for role in roles:
+                      report["roles_passed"][role] = probe.get("roles", {}).get(role, {}).get("passed") is True
+                  report["container_probe_passed"] = (
+                      process.returncode == 0 and probe.get("status") == "synthetic_probe_passed"
+                      and probe.get("synthetic_only") is True and probe.get("development_ready") is False
+                      and report["image_digest"] is not None and report["independent_containers"]
+                      and report["host_control_read"] and report["host_forbidden_areas_unchanged"]
+                      and all(report["roles_passed"].values()))
+          except Exception:
+              # Raw subprocess/network errors, private runner paths and output stay private.
+              pass
+          print(json.dumps(report, sort_keys=True))
+          sys.exit(0 if report["container_probe_passed"] else 1)
+          PY

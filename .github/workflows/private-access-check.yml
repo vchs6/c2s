@@ -1,0 +1,102 @@
+name: Source token and public role boundary diagnostic
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/private-access-check.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  source-access-boundary:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 3
+    steps:
+      - name: Check source token cannot read private acceptance API
+        shell: bash
+        env:
+          SOURCE_TOKEN: ${{ github.token }}
+          SOURCE_REPOSITORY: ${{ github.repository }}
+          ACCEPTANCE_REPOSITORY: ${{ vars.ACCEPTANCE_REPOSITORY }}
+        run: |
+          python3 - <<'PY'
+          import json
+          import os
+          import re
+          import sys
+          import urllib.error
+          import urllib.request
+
+          report = {
+              "synthetic_only": True, "development_ready": False,
+              "source_status": None, "source_read_allowed": False,
+              "private_statuses": {name: None for name in (
+                  "repository", "commits", "workflows", "runs", "artifacts")},
+              "private_reads_denied": False, "passed": False,
+          }
+
+          class RejectRedirects(urllib.request.HTTPRedirectHandler):
+              def redirect_request(self, req, fp, code, msg, headers, newurl):
+                  return None
+
+          def status(opener, path, token):
+              request = urllib.request.Request(
+                  "https://api.github.com/repos/" + path,
+                  headers={"Authorization": "Bearer " + token,
+                           "Accept": "application/vnd.github+json",
+                           "X-GitHub-Api-Version": "2022-11-28"}, method="GET")
+              try:
+                  # No response body, headers or credential output.
+                  with opener.open(request, timeout=15) as response:
+                      return response.status
+              except urllib.error.HTTPError as error:
+                  code = error.code
+                  error.close()
+                  return code
+
+          try:
+              source = os.environ.get("SOURCE_REPOSITORY", "")
+              private = os.environ.get("ACCEPTANCE_REPOSITORY", "")
+              token = os.environ.get("SOURCE_TOKEN", "")
+              repository = re.compile(r"[A-Za-z0-9_.-]+/[A-Za-z0-9_.-]+\Z")
+              if not token.strip() or not repository.fullmatch(source) or not repository.fullmatch(private):
+                  raise ValueError("invalid_configuration")
+              if source.casefold() == private.casefold():
+                  raise ValueError("invalid_configuration")
+              # No proxy environment or redirect can forward the source token.
+              opener = urllib.request.build_opener(
+                  urllib.request.ProxyHandler({}), RejectRedirects())
+              report["source_status"] = status(opener, source, token)
+              report["source_read_allowed"] = report["source_status"] == 200
+              for name, suffix in (
+                  ("repository", ""), ("commits", "/commits?per_page=1"),
+                  ("workflows", "/actions/workflows?per_page=1"),
+                  ("runs", "/actions/runs?per_page=1"),
+                  ("artifacts", "/actions/artifacts?per_page=1"),
+              ):
+                  report["private_statuses"][name] = status(opener, private + suffix, token)
+              report["private_reads_denied"] = all(
+                  code in (403, 404) for code in report["private_statuses"].values())
+              report["passed"] = report["source_read_allowed"] and report["private_reads_denied"]
+          except Exception:
+              # Keep output limited to HTTP statuses and boolean conclusions.
+              pass
+          print(json.dumps(report, sort_keys=True))
+          sys.exit(0 if report["passed"] else 1)
+          PY
+
+  public-role-boundary:
+    needs: source-access-boundary
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    steps:
+      - name: Read public infrastructure source
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          persist-credentials: false
+      - name: Run only public synthetic role checks
+        shell: bash
+        run: python3 -I -B ci/acceptance/role_sandbox.py --probe

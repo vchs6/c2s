@@ -1,0 +1,29 @@
+{
+  "source": "user-supplied configure_ci.py JSON; connector independently verifies repository privacy only",
+  "mode": "apply",
+  "source_repository": "vchs6/c2s",
+  "acceptance_repository": "vchs6/c2s-acceptance",
+  "status": "account_bootstrap_applied",
+  "bootstrap_configured": true,
+  "source_workflow_state": "active",
+  "model_key_set": false,
+  "role_boundary_verified": false,
+  "development_ready": false,
+  "completed_steps": [
+    "source_verified",
+    "acceptance_private_verified",
+    "ACCEPTANCE_REPOSITORY_verified",
+    "SOURCE_REPOSITORY_verified",
+    "actions_enabled_verified:vchs6/c2s",
+    "actions_defaults_verified:vchs6/c2s",
+    "actions_enabled_verified:vchs6/c2s-acceptance",
+    "actions_defaults_verified:vchs6/c2s-acceptance",
+    "source_workflow_active_verified"
+  ],
+  "connector_readback": {
+    "repository": "vchs6/c2s-acceptance",
+    "visibility": "private",
+    "initial_contents": "empty",
+    "actions_runs_before_deployment": 0
+  }
+}

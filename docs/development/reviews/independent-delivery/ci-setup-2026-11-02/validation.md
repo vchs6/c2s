@@ -7,3 +7,5 @@
 公开marker的候选读取被拒、公有挂载可读、宿主控制可读，只证明该Docker配置的这次合成路径访问检查。它没有验证GitHub私有仓库/历史/日志/制品API及五角色写权限。仍development_ready=false，不编写隐藏suite、不开始依赖门禁的产品实现、不自动归档。
 
 接续诊断：用户已报告网页授权成功。恢复CLI登录进程得到明确策略拦截：`Network access to "https://api.github.com:443" was blocked by policy.`；独立auth status仍exit=1未登录。阻塞更新为执行网络策略，而非用户未批准。未再次执行账户bootstrap、无账户/Secret写入；不在网络修复前重复设备授权。此诊断不否定前述托管probe成功，也不把托管网络能力外推当前会话。
+
+用户本地账户bootstrap成功回执已单独存account-receipt.json；连接器独立核实private并可写，不再要求云端gh登录。已部署私有认证workflow931cd87，run41422600087/job125201477876成功，安全结果Secret=true/authentication=true/HTTP200；未发生成请求、未证明账单或模型推理可用。详见credential-probe.json。3.2.1完成；父任务和产品门禁未因此放行。
