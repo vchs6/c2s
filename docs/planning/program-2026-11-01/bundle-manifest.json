@@ -5,14 +5,11 @@
   "development_ready": false,
   "implementation_approved": false,
   "user_decision": null,
-  "pending_decisions": [
-    "D01",
-    "D02"
-  ],
+  "pending_decisions": [],
   "base_revision": "d40cb6c4bfdf5567ee3ca1dde82b31dd58528d8a",
   "historical_issue3_tokens_authorize_implementation": false,
   "digest_algorithm": "SHA-256 over sorted path + TAB + file SHA-256 + LF UTF-8",
-  "bundle_sha256": "f1d1db6e581ef4686f46d552f910c5cceb1623fc72513d6f6f3743af65e2003a",
+  "bundle_sha256": "1439ff6245f769abd3ef08e5d81aff4237562cadd5dd83034a375f5fc5446529",
   "exclusions": [
     "manifest itself",
     "validation execution logs/reports",
@@ -23,6 +20,10 @@
     {
       "path": "AGENTS.md",
       "sha256": "b7ebc4fe750dd03e82a53533eba9755a369a2e0a5b6d5fe947578aa07e1a95e3"
+    },
+    {
+      "path": "README.md",
+      "sha256": "769ea83e7409efc7af151b334c21e11ab5788a73a3574b92c0786f4ea0a3f42c"
     },
     {
       "path": "docs/decisions/0001-five-semantic-layers.md",
@@ -47,6 +48,10 @@
     {
       "path": "docs/decisions/0006-stable-project-during-analysis.md",
       "sha256": "3d2b0937286003b9f9ff6bed51b9632351cabaae464b81775af20d28b237b337"
+    },
+    {
+      "path": "docs/decisions/0007-confirmed-system-query-requirements.md",
+      "sha256": "513e49a2648671e63a1441f88fdae37059ef852cbc1bb585aca403b31a46bf00"
     },
     {
       "path": "docs/development/discussions/2026-11-01-specification-baseline/semantic-fact-model-candidates.md",
@@ -205,6 +210,14 @@
       "sha256": "131285394de4208ea44c0b288ba063fa39d78470e988df63e1c20b58807cbd89"
     },
     {
+      "path": "docs/development/reviews/issues/4/system-requirements-confirmation-2026-11-02/builder-check.md",
+      "sha256": "de5eb546d79645f8803470cfa6ac031c09a191839521fde1f125965f368029aa"
+    },
+    {
+      "path": "docs/development/reviews/issues/4/system-requirements-confirmation-2026-11-02/record.json",
+      "sha256": "b831f51c3fe92f7e52d9850d689bd6cdab5a6b93c0b5f29f4cb0d83d7b6e0279"
+    },
+    {
       "path": "docs/development/reviews/issues/5/language-decision-2026-11-02/record.json",
       "sha256": "f4eb645e92415eb065ed73e7640e03813a6a31c257181b953fe7719df3be303d"
     },
@@ -314,31 +327,31 @@
     },
     {
       "path": "docs/planning/agenda.md",
-      "sha256": "a81066b8386526f9af54624a72790887a58cd41dfd82cdcb17f0fa4aea13c8a3"
+      "sha256": "60f2ea1526a27eb164c546067b938c5ce3a51b011e74590b93d5de3464cb29d5"
     },
     {
       "path": "docs/planning/issues.json",
-      "sha256": "d02922b9bb572f7f3435ea48e7bec734d050d38739bc42b3898e18a3f698a6bf"
+      "sha256": "ab5fd9729f990fbdb8242d8cd4bcb60ddb33159d13693ea1aaaa0392af0032c8"
     },
     {
       "path": "docs/planning/program-2026-11-01/acceptance-matrix.md",
-      "sha256": "d77256fdb83ddd1a0e50c344998a9b4ec5a10cc5f5c479ab18fb4feb8b480a16"
+      "sha256": "d8c968ee61dace47355c77d0b8493dea88e6e80b25472621ef46d201729955db"
     },
     {
       "path": "docs/planning/program-2026-11-01/context.md",
-      "sha256": "5058a3ac2a57bc438b0e87557b3a833dc1c660e5e93ddebf323be6eee19384c0"
+      "sha256": "432780da3d22816a89a893ae6231abb72dc38828978281a1c857d90edbfb40fd"
     },
     {
       "path": "docs/planning/program-2026-11-01/decision-requests.md",
-      "sha256": "8d0895a76277c02ac3b2c3d7e44d9d91f30526241d0d540565317780006dab49"
+      "sha256": "5e4c6b4a54bacbf99136ecdc0429782c5f706b8bcac563652f2c76ca8ececc34"
     },
     {
       "path": "docs/planning/program-2026-11-01/overall-review.md",
-      "sha256": "4916092900ae8826dc9c733a833c97b28b1943809692355c758ad966b0f7769c"
+      "sha256": "133be9c65c4cc0ccf976655b27d4e6e22c258000ce6c00971ec33d66b7968869"
     },
     {
       "path": "docs/planning/program-2026-11-01/upstream.md",
-      "sha256": "469a039299a209bc2770cd53c9f2bf1ef08239f4033613dc9c33fd4a9994f0fd"
+      "sha256": "0c57484fd493a9c8bf69a0d1424c28bdc90e6991446fa500d8bda2ac9c8202fb"
     },
     {
       "path": "docs/session/artifact-manifest.json",
@@ -358,7 +371,7 @@
     },
     {
       "path": "openspec/changes/define-layered-semantic-fact-model/design.md",
-      "sha256": "92ab812471e77353eade965cdf96dfe809ba3b3bef91c14e2270c93149824614"
+      "sha256": "a0456bf5a7a4a9bcec8f375f49a8fe5459ee8c59c22a77f0c0605c948b0803fa"
     },
     {
       "path": "openspec/changes/define-layered-semantic-fact-model/proposal.md",
@@ -378,11 +391,11 @@
     },
     {
       "path": "openspec/changes/define-layered-semantic-fact-model/specs/semantic-fact-query/spec.md",
-      "sha256": "3e2430e022e4d976746838a3637a1e989792e0b6e22f211b0a31967c8b362977"
+      "sha256": "c870829609b179b5b76c375570679a14cdbd071d1954f5bd4c9bc9a31ba40fc8"
     },
     {
       "path": "openspec/changes/define-layered-semantic-fact-model/tasks.md",
-      "sha256": "b8a9ccb1a7feffebfffa7210128150e2fbea35ce44e6f2d5e780b6375adba8cc"
+      "sha256": "156261bb60c6ebaa5c3ada9fdbc9490b76f8ba4e314cffd3e9d3b80e1abd68f3"
     },
     {
       "path": "openspec/changes/define-semantic-analysis-quality-goals/.openspec.yaml",
@@ -390,23 +403,23 @@
     },
     {
       "path": "openspec/changes/define-semantic-analysis-quality-goals/design.md",
-      "sha256": "17030e41b24031d34fb4dabf6c51f59094c90d4aa74e80d333849447a296db14"
+      "sha256": "e946d8547a1fae06d066f2dec46f17cd18f64a9fdb701536bfac57cef7cf45f7"
     },
     {
       "path": "openspec/changes/define-semantic-analysis-quality-goals/proposal.md",
-      "sha256": "60bfc7b19dd568af2a5235a3dc58bf52a4721a7ed15b6ed0381d64e3aec37665"
+      "sha256": "1351d4d9fee53c1389b7e3a1dd482805b16175e6f46e3d20338a332809c55a75"
     },
     {
       "path": "openspec/changes/define-semantic-analysis-quality-goals/specs/semantic-analysis-quality/spec.md",
-      "sha256": "29bf0a023c33bffbbc9e9935df13642dd74f7263fa611d49cde63c34badb3a1a"
+      "sha256": "543318a9d1e4361e2d115c67a99aa3b0e3089e20aa0e073b77a81c08a0940213"
     },
     {
       "path": "openspec/changes/define-semantic-analysis-quality-goals/specs/semantic-analysis-scope/spec.md",
-      "sha256": "6f79cfe42ab7073a1087817fff7d4554edcad8dfaad54bd3b69e86c25e227f05"
+      "sha256": "6e8192df205ed6e1ed3870f41cfd099fcd91606a508971c0f2305c9c6c8f4d85"
     },
     {
       "path": "openspec/changes/define-semantic-analysis-quality-goals/tasks.md",
-      "sha256": "7bbdb9b3bfaee33354cd1dc3d909b6a19f413969e1a2a74ce7e43be980811d64"
+      "sha256": "02e5f097efa77190e967169ab7c65c99d025cfa29a928c457a086044e7594d1f"
     },
     {
       "path": "openspec/changes/define-semantic-fact-query-contracts/.openspec.yaml",
@@ -414,19 +427,19 @@
     },
     {
       "path": "openspec/changes/define-semantic-fact-query-contracts/design.md",
-      "sha256": "23c16815ff4f9678af71211cd8aecde39631ae4498da4ba0f0536b164798c7b7"
+      "sha256": "ece328688be94815181b6162aabe5d1892869d8aea63148237aa9681c2aae39e"
     },
     {
       "path": "openspec/changes/define-semantic-fact-query-contracts/proposal.md",
-      "sha256": "2a14ab307d1af17bae0bf6f9b83908ff628ca30da9dfcf8551474903ba2cb3bb"
+      "sha256": "691cc64a9d77049984e90ff689128c624b515f3320b8335e19d8de2f2ccda18f"
     },
     {
       "path": "openspec/changes/define-semantic-fact-query-contracts/specs/semantic-fact-query/spec.md",
-      "sha256": "c472339219e703c1e066f6db2963c8baf758100d416e01351df3ecba6e722289"
+      "sha256": "2ab2ff238c1f897f8f1eab0552c09589dbe2a13a5699fead6930b3c7c414d6a1"
     },
     {
       "path": "openspec/changes/define-semantic-fact-query-contracts/tasks.md",
-      "sha256": "11cf05dda4766dfb9c65e71def55f2b26458e789c883743529f833bd7265f545"
+      "sha256": "ce56b818e7348b07439681f6ae6aea2c46d36ef8cfe558b2393d601e106b21e5"
     },
     {
       "path": "openspec/changes/design-incremental-semantic-fact-storage/.openspec.yaml",
@@ -434,11 +447,11 @@
     },
     {
       "path": "openspec/changes/design-incremental-semantic-fact-storage/design.md",
-      "sha256": "9b0d1b9563a8e5931e6d525297b94ddd46ee13b457aaed5cb3c0fa960356fac5"
+      "sha256": "da8d49330077f53641599d4b702993b655b3f251b90ef2bbcc80708365e5bcec"
     },
     {
       "path": "openspec/changes/design-incremental-semantic-fact-storage/proposal.md",
-      "sha256": "04b8a4324609f96f68e06a79c2f9c5869c3ca512d2edebfcb8fc0fd0ee9f027d"
+      "sha256": "25c785ae1167f6a032636fd0176fc8857cb82596e799a8a58161deefb3650820"
     },
     {
       "path": "openspec/changes/design-incremental-semantic-fact-storage/specs/incremental-semantic-fact-storage/spec.md",
@@ -446,7 +459,7 @@
     },
     {
       "path": "openspec/changes/design-incremental-semantic-fact-storage/tasks.md",
-      "sha256": "2c5272d1b1743922e54501be81af5f731fc7bb3319e9ab43157274f735e83eeb"
+      "sha256": "be3612f96018c8eefa4010fcb0265b33b7708e69f5427146117610e521813715"
     },
     {
       "path": "openspec/changes/design-lazy-semantic-fact-construction/.openspec.yaml",
@@ -454,19 +467,19 @@
     },
     {
       "path": "openspec/changes/design-lazy-semantic-fact-construction/design.md",
-      "sha256": "ebc07458a5dcc09ec6c4dbcbbd81379ec42004d50c2b82e5b3c0aadeff10dec2"
+      "sha256": "83a69e3afba9a617f106fb047cf6eccea4450947e660401ca260e7ca6e1cd48a"
     },
     {
       "path": "openspec/changes/design-lazy-semantic-fact-construction/proposal.md",
-      "sha256": "7740a204639a9e2ee531b8884661fe758dd3802f6b3c357f9bdb11a8bf75fd7b"
+      "sha256": "ba89c568b38b3b16fb05fa220ba3c6acda716c3646533a84fe5cbf2644ed3060"
     },
     {
       "path": "openspec/changes/design-lazy-semantic-fact-construction/specs/lazy-semantic-fact-construction/spec.md",
-      "sha256": "80a96d52dcc6f23ddac011e534af28d510ea83d10a181584333d25d7a3bb95f0"
+      "sha256": "46f78f0258361830cbda94dee0f6d2773aa09aab67595f1c9269a8432a640821"
     },
     {
       "path": "openspec/changes/design-lazy-semantic-fact-construction/tasks.md",
-      "sha256": "01c6763890e4582e9eadd3b032e5df5525975c46bbf74a2bbce2a10c6a4489b8"
+      "sha256": "3769eca5ce25c4896e3e340af17ea898c269e281129c4a2c6ecf1e1ca7f1aa70"
     },
     {
       "path": "openspec/changes/design-semantic-fact-coordination/.openspec.yaml",
@@ -474,11 +487,11 @@
     },
     {
       "path": "openspec/changes/design-semantic-fact-coordination/design.md",
-      "sha256": "31ae40fcde26790eece58e709c0e097f3ae9382850962ba9225345b933bb0705"
+      "sha256": "6e99afd67cb102afa6d2fc1cf9c1f7ae829e3d962d25fd8464938eddd2fa862c"
     },
     {
       "path": "openspec/changes/design-semantic-fact-coordination/proposal.md",
-      "sha256": "d4ab352fd4777de5549054a9a1b94e0ab5fb1380f0454435d9d0b9a0b64b5141"
+      "sha256": "1fc12c295f11d984cceab44fddcc450eb4445122615be2664c9a49a888b21504"
     },
     {
       "path": "openspec/changes/design-semantic-fact-coordination/specs/semantic-fact-coordination/spec.md",
@@ -486,7 +499,7 @@
     },
     {
       "path": "openspec/changes/design-semantic-fact-coordination/tasks.md",
-      "sha256": "2866c1ad044723d5f2dd4a73774cad5fde8e22aee8aa3b32f1eadbcf50254bb9"
+      "sha256": "3b4227b7343a94d43c44b62516ecbbdae407dc02485d25e2be072ca6a52f9f51"
     },
     {
       "path": "openspec/changes/design-semantic-fact-skill-architecture/.openspec.yaml",
@@ -494,11 +507,11 @@
     },
     {
       "path": "openspec/changes/design-semantic-fact-skill-architecture/design.md",
-      "sha256": "ed7fd79027fadac9c31f6b4cba87c3b7156372b8afaf1b2d1300c90c98002ab0"
+      "sha256": "bfa5e1515e16d7bc2915163a94fe771258c09afe68dc17a1420f5f1e3d8e1bd2"
     },
     {
       "path": "openspec/changes/design-semantic-fact-skill-architecture/proposal.md",
-      "sha256": "dfa7b1a5843933953741f58da9aaa55f04c276188b6c321170cf59c21182c4a5"
+      "sha256": "03249f7fc574f651283f0ff06124bcaa56ad55311792502d36334cea386083a2"
     },
     {
       "path": "openspec/changes/design-semantic-fact-skill-architecture/specs/semantic-fact-orchestration/spec.md",
@@ -506,7 +519,7 @@
     },
     {
       "path": "openspec/changes/design-semantic-fact-skill-architecture/tasks.md",
-      "sha256": "3ff95fe87131f9dd607bed9165299e22fc8bc65f4d465e93569ef2da0358f06c"
+      "sha256": "7608f5885a6f82360ea3199b8ffeeac28746d282e8b39c69996c9836d6962087"
     },
     {
       "path": "openspec/changes/minimize-semantic-extraction-tokens/.openspec.yaml",
@@ -514,19 +527,19 @@
     },
     {
       "path": "openspec/changes/minimize-semantic-extraction-tokens/design.md",
-      "sha256": "4b9ce6593084c7db7a5212b426b69b766b02c0e62de881d1d1b6eb87b58b2c18"
+      "sha256": "464447880329797279d4a510791e1c5ba4596e7b79c9d4bb496dfe3f59db0e94"
     },
     {
       "path": "openspec/changes/minimize-semantic-extraction-tokens/proposal.md",
-      "sha256": "e8a1417d0d931f94c7a80295ef3e55e236e02e8070a4e6150e6c75509856e6f8"
+      "sha256": "fe39bd67e1c37aa5fec1b6b5b5f7c0f8c6b95395cfc60f3f127a76a57af38d64"
     },
     {
       "path": "openspec/changes/minimize-semantic-extraction-tokens/specs/token-efficient-semantic-extraction/spec.md",
-      "sha256": "ce4fef67a2bce9d84529de41df7def6f0ac165660a0933c6b3e1ae4051cb6785"
+      "sha256": "d06e94dc5be83f31819867c3184c125ea7a4ad7d5b85834ab1a30275fafc7d6e"
     },
     {
       "path": "openspec/changes/minimize-semantic-extraction-tokens/tasks.md",
-      "sha256": "042ef0198fd1a5ebdd28d38c928c85cea66347331795a550ef2814ff9972b17b"
+      "sha256": "53878a820dd6be0bf414cc64c6a3fbd019b4f73bbe1b43f2d572734e3b32a4f9"
     },
     {
       "path": "openspec/changes/plan-semantic-fact-skill/.openspec.yaml",
@@ -538,7 +551,7 @@
     },
     {
       "path": "openspec/changes/plan-semantic-fact-skill/proposal.md",
-      "sha256": "7657fdeba47dc80455080bdc743d96b503b1a90082a2527045bb6c6d7c08d0ba"
+      "sha256": "cbba0d61787a204ce3763b7640e13f0eee78c6c19f37b2ce611a8d4f0e623543"
     },
     {
       "path": "openspec/changes/plan-semantic-fact-skill/tasks.md",
@@ -550,11 +563,11 @@
     },
     {
       "path": "openspec/changes/review-semantic-planning-readiness/design.md",
-      "sha256": "1e8de0c66ba05bcfb300a06cd524fac917ecc542cec76cbcc2e537db450e0a33"
+      "sha256": "c37c98ae1150e5a9216522f58ae51f30f5f82633be21e3d776954be1c91ed7ea"
     },
     {
       "path": "openspec/changes/review-semantic-planning-readiness/proposal.md",
-      "sha256": "6b82ae97bb7ca21c57e3841e6407164c58568bcce303ae6c9a11681a0a37f8c2"
+      "sha256": "7307deffa7f15bb9fe6c5e1fce512905278d52f109e8d3ce293625fbf06d4cf1"
     },
     {
       "path": "openspec/changes/review-semantic-planning-readiness/tasks.md",
@@ -566,19 +579,19 @@
     },
     {
       "path": "openspec/changes/survey-semantic-acquisition-capabilities/design.md",
-      "sha256": "e174d6239a12a599a29a997602552e737896654abd7fc7490899ea2890cd1d95"
+      "sha256": "5ad9f2ab7079ccd296d988cee234c8713d35e50c8cfd1b8d79ac3c95b4c81c12"
     },
     {
       "path": "openspec/changes/survey-semantic-acquisition-capabilities/proposal.md",
-      "sha256": "b42b791e2b0ceac2effd62a60de281f1d110c39ad6fe6044dabbc8b1b65c3c56"
+      "sha256": "35976f584dae6a583c652bfb06b01336d88f986e71b38de9800a2e9b01da3c17"
     },
     {
       "path": "openspec/changes/survey-semantic-acquisition-capabilities/specs/semantic-acquisition-capabilities/spec.md",
-      "sha256": "38540bc446d2d793a70f4cf25ee4e2299655e570b0f8879826a6f5b72085dfbd"
+      "sha256": "00a258f6e37ef7ffdd9097048fb8ac973b7eb392605bd8cd2ce7861a192423cb"
     },
     {
       "path": "openspec/changes/survey-semantic-acquisition-capabilities/tasks.md",
-      "sha256": "9e4d29412091c768cd3662805b8bd2053d28650a91d01c0cc1cb65d732ed847c"
+      "sha256": "1aefc5c17b7b5855b53a77062bd51468767d1a79fb570315a702e38a3c01e0e5"
     },
     {
       "path": "openspec/config.yaml",
@@ -589,8 +602,16 @@
       "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
     },
     {
+      "path": "openspec/specs/lazy-semantic-fact-construction/spec.md",
+      "sha256": "8a018f413f363078a46553db43c4cdedef455fd1fd677e9c3bd8c03a1e5beda6"
+    },
+    {
+      "path": "openspec/specs/semantic-analysis-quality/spec.md",
+      "sha256": "f6f547317dbe2cbbd68e5e2545cc50aedfbe8c42858859caf061933c1c230ba5"
+    },
+    {
       "path": "openspec/specs/semantic-analysis-scope/spec.md",
-      "sha256": "03a3311c0391106d8eec1fbee790a1066295215db1f65a6c9e2e69034e39887d"
+      "sha256": "9cc6a077eb25ecf816bf47314e24e90f4f4bc8d7c8a624469226b642e31f7c5b"
     },
     {
       "path": "openspec/specs/semantic-fact-model/spec.md",
@@ -598,26 +619,19 @@
     },
     {
       "path": "openspec/specs/semantic-fact-query/spec.md",
-      "sha256": "610a6e269df04c374a7dcfa887c166c98980d626053a293c0e026ccbcee45f24"
+      "sha256": "94cae1fe54086db07726a8ca698f3a18874e9c3e0e4ac6b1d4f189707f038967"
     }
   ],
-  "supersedes_bundle_sha256": "dba07d53134fb7c67f17e1e55a03599b7e526c6e8ee2e437467567a02982d0b9",
+  "supersedes_bundle_sha256": "f1d1db6e581ef4686f46d552f910c5cceb1623fc72513d6f6f3743af65e2003a",
   "confirmed_initial_source_languages": [
     "Rust",
     "Python"
   ],
   "partial_decisions": {
     "D01": {
-      "confirmed": [
-        "source-languages",
-        "host-tool-platform-alignment",
-        "project-platform-from-build-environment"
-      ],
-      "pending": [
-        "versions",
-        "mixed-language-boundaries",
-        "concrete-platform-support-combinations"
-      ]
+      "status": "delegated-design-investigation",
+      "requires_user_tool_version_selection": false,
+      "do_not_claim_unverified_support": true
     }
   },
   "deferred_items": {
@@ -634,7 +648,16 @@
       "blocks_intra_analysis_planning": false,
       "cross_analysis_policy": "not-selected",
       "decision_ref": "docs/decisions/0006-stable-project-during-analysis.md"
+    },
+    "D02": {
+      "status": "resolved-by-user-evaluation-policy",
+      "strict_semantic_gold_standard_required": false,
+      "method": "honest-results-and-before-after-performance-token-comparison",
+      "decision_ref": "docs/decisions/0007-confirmed-system-query-requirements.md"
     }
   },
-  "confirmed_stable_project_during_each_analysis": true
+  "confirmed_stable_project_during_each_analysis": true,
+  "requirements_baseline_status": "confirmed-by-user-ADR-0007",
+  "design_refinement_required": true,
+  "user_confirmed_system_requirements_ref": "docs/decisions/0007-confirmed-system-query-requirements.md"
 }

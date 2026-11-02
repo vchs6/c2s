@@ -22,7 +22,7 @@
       "depends_on": [
         3
       ],
-      "status": "planning-reviewed-awaiting-user-decisions",
+      "status": "requirements-confirmed-design-refinement",
       "review_path": "docs/development/reviews/issues/4/planning-2026-11-01/"
     },
     {
@@ -36,7 +36,7 @@
         3
       ],
       "proposed_change": "define-semantic-analysis-quality-goals",
-      "status": "planning-reviewed-awaiting-user-decisions",
+      "status": "requirements-confirmed-design-refinement",
       "review_path": "docs/development/reviews/issues/5/planning-2026-11-01/"
     },
     {
@@ -51,7 +51,7 @@
         5
       ],
       "proposed_change": "design-semantic-fact-skill-architecture",
-      "status": "planning-reviewed-awaiting-user-decisions",
+      "status": "requirements-confirmed-design-refinement",
       "review_path": "docs/development/reviews/issues/6/planning-2026-11-01/"
     },
     {
@@ -67,7 +67,7 @@
         6
       ],
       "proposed_change": "define-semantic-fact-query-contracts",
-      "status": "planning-reviewed-awaiting-user-decisions",
+      "status": "requirements-confirmed-design-refinement",
       "review_path": "docs/development/reviews/issues/7/planning-2026-11-01/"
     },
     {
@@ -83,7 +83,7 @@
         7
       ],
       "proposed_change": "design-lazy-semantic-fact-construction",
-      "status": "planning-reviewed-awaiting-user-decisions",
+      "status": "requirements-confirmed-design-refinement",
       "review_path": "docs/development/reviews/issues/8/planning-2026-11-01/"
     },
     {
@@ -100,7 +100,7 @@
         8
       ],
       "proposed_change": "design-incremental-semantic-fact-storage",
-      "status": "planning-reviewed-awaiting-user-decisions",
+      "status": "requirements-confirmed-design-refinement",
       "review_path": "docs/development/reviews/issues/9/planning-2026-11-01/"
     },
     {
@@ -117,7 +117,7 @@
         8
       ],
       "proposed_change": "survey-semantic-acquisition-capabilities",
-      "status": "planning-reviewed-awaiting-user-decisions",
+      "status": "requirements-confirmed-design-refinement",
       "review_path": "docs/development/reviews/issues/10/planning-2026-11-01/"
     },
     {
@@ -137,7 +137,7 @@
         10
       ],
       "proposed_change": "minimize-semantic-extraction-tokens",
-      "status": "planning-reviewed-awaiting-user-decisions",
+      "status": "requirements-confirmed-design-refinement",
       "review_path": "docs/development/reviews/issues/11/planning-2026-11-01/"
     },
     {
@@ -157,7 +157,7 @@
         11
       ],
       "proposed_change": "design-semantic-fact-coordination",
-      "status": "planning-reviewed-awaiting-user-decisions",
+      "status": "requirements-confirmed-design-refinement",
       "review_path": "docs/development/reviews/issues/12/planning-2026-11-01/"
     },
     {
@@ -179,7 +179,7 @@
         12
       ],
       "proposed_change": "review-semantic-planning-readiness",
-      "status": "planning-reviewed-awaiting-user-decisions",
+      "status": "requirements-confirmed-design-refinement",
       "review_path": "docs/development/reviews/issues/13/planning-2026-11-01/"
     }
   ],
@@ -191,7 +191,7 @@
     "Python"
   ],
   "initial_language_decision_ref": "docs/decisions/0003-initial-source-languages.md",
-  "d01_status": "partially-confirmed",
+  "d01_status": "delegated-design-investigation",
   "confirmed_platform_definitions": {
     "host": "Skill runtime platform; analysis tools use the same runtime platform",
     "project_platform": "determined by the analyzed project build/compile environment",
@@ -208,5 +208,9 @@
     "cross_analysis_immutability_confirmed": false
   },
   "d03_status": "resolved-for-intra-analysis",
-  "cross_analysis_update_policy": "not-selected"
+  "cross_analysis_update_policy": "not-selected",
+  "system_requirements_status": "confirmed-by-user-ADR-0007",
+  "remaining_user_requirement_decisions": [],
+  "d02_status": "resolved-by-user-evaluation-policy",
+  "design_refinement_required": true
 }
