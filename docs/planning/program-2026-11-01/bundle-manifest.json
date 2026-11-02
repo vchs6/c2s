@@ -9,7 +9,7 @@
   "base_revision": "d40cb6c4bfdf5567ee3ca1dde82b31dd58528d8a",
   "historical_issue3_tokens_authorize_implementation": false,
   "digest_algorithm": "SHA-256 over sorted path + TAB + file SHA-256 + LF UTF-8",
-  "bundle_sha256": "e4a6abcb0cb8a2a62b1a589e2b23bf42cec0bed0ac78a00862f95bf6e27b2e84",
+  "bundle_sha256": "5447a988bbdc5201e0e015149ace92d7df2da9397ee3a3869ad83b03210d6eaa",
   "exclusions": [
     "manifest itself",
     "validation execution logs/reports",
@@ -72,6 +72,34 @@
     {
       "path": "docs/development/reviews/2026-11-01/model-battle-result.json",
       "sha256": "54c753b31fc0678394bde98c1180009c4b951a36e92f0b27408a92510496fa59"
+    },
+    {
+      "path": "docs/development/reviews/issues/10/acquisition-survey-2026-11-02/battle.json",
+      "sha256": "d482463b6c36ed5020c5afc41f070609e11cd399dedfbf47c64ac87c08ea41a6"
+    },
+    {
+      "path": "docs/development/reviews/issues/10/acquisition-survey-2026-11-02/builder-check.md",
+      "sha256": "85af198463ab1d49994b3726f120c2b793b947e67d8ed1807935a7efba304711"
+    },
+    {
+      "path": "docs/development/reviews/issues/10/acquisition-survey-2026-11-02/capability-matrix.json",
+      "sha256": "630c3642f594fe35985b3ae8ce696047c8eebf0cdf3ae07ff1353c1f9dfccf9a"
+    },
+    {
+      "path": "docs/development/reviews/issues/10/acquisition-survey-2026-11-02/instructions.json",
+      "sha256": "0ebfa0303ee6f9edda9314e51dc6218b39cd905aa86de290536bfd0bb7da7e3f"
+    },
+    {
+      "path": "docs/development/reviews/issues/10/acquisition-survey-2026-11-02/problem-package.md",
+      "sha256": "41ad37d959bc85e6b5f58ca71f121022d30e167dd352d67ab16855faf62c8543"
+    },
+    {
+      "path": "docs/development/reviews/issues/10/acquisition-survey-2026-11-02/report.md",
+      "sha256": "ee1f4fa14033f26fd67913fcee09ca727feb00b83669176893779f4bc150fb10"
+    },
+    {
+      "path": "docs/development/reviews/issues/10/acquisition-survey-2026-11-02/sources.json",
+      "sha256": "847bed98210a451d9a8899f7b6f099c541f520bf990f10160a2edbf7d388e0b8"
     },
     {
       "path": "docs/development/reviews/issues/10/planning-2026-11-01/battle.json",
@@ -343,7 +371,7 @@
     },
     {
       "path": "docs/planning/agenda.md",
-      "sha256": "e3d7dcf418faf738ef6e43c32b4d3e2c49cba76df66ba344d87f04f2816872e0"
+      "sha256": "e2e2088eaab9ffbce9e15948eedbf1ed9008b4d909860d62649c93360149cb16"
     },
     {
       "path": "docs/planning/issues.json",
@@ -351,7 +379,7 @@
     },
     {
       "path": "docs/planning/program-2026-11-01/acceptance-matrix.md",
-      "sha256": "30a71b0a9be6d007d22166e7b021475fe587f160d9a23658d65e8606504b80c6"
+      "sha256": "656557a7bd8a88c33963ca72019e4758c725904e10eeb31f86bca023e63146ff"
     },
     {
       "path": "docs/planning/program-2026-11-01/context.md",
@@ -359,15 +387,15 @@
     },
     {
       "path": "docs/planning/program-2026-11-01/decision-requests.md",
-      "sha256": "5e4c6b4a54bacbf99136ecdc0429782c5f706b8bcac563652f2c76ca8ececc34"
+      "sha256": "8f94c95efb42c7693213b17d3b80bb8636c16d5ce4046d4b0184959cb0f496f6"
     },
     {
       "path": "docs/planning/program-2026-11-01/milestones.md",
-      "sha256": "0b4e831585bf2d7af623734f73bf8605f32df387f347154b62165302e5274d78"
+      "sha256": "e723495da2d88033e29d1635064cd141a6da0685fdeb365578a82b7553bf1c42"
     },
     {
       "path": "docs/planning/program-2026-11-01/overall-review.md",
-      "sha256": "69c0017a43c0282b3c431916f2a80e5b604e8859d50c182219dfbe5886ad0813"
+      "sha256": "cbeb10d103571ead780e760b26227298027ad58447eba5317c7b9ca562b16272"
     },
     {
       "path": "docs/planning/program-2026-11-01/upstream.md",
@@ -511,7 +539,7 @@
     },
     {
       "path": "openspec/changes/design-lazy-semantic-fact-construction/design.md",
-      "sha256": "83a69e3afba9a617f106fb047cf6eccea4450947e660401ca260e7ca6e1cd48a"
+      "sha256": "e8e411a8bb81c51271e2d374c9c172904d0c611e751f0009c221e9f728facbab"
     },
     {
       "path": "openspec/changes/design-lazy-semantic-fact-construction/proposal.md",
@@ -551,7 +579,7 @@
     },
     {
       "path": "openspec/changes/design-semantic-fact-skill-architecture/design.md",
-      "sha256": "bfa5e1515e16d7bc2915163a94fe771258c09afe68dc17a1420f5f1e3d8e1bd2"
+      "sha256": "9aacd7656416101e03ac9d4ec0f527bacaa7eb88b81529be05d247b89e122d77"
     },
     {
       "path": "openspec/changes/design-semantic-fact-skill-architecture/proposal.md",
@@ -571,7 +599,7 @@
     },
     {
       "path": "openspec/changes/minimize-semantic-extraction-tokens/design.md",
-      "sha256": "464447880329797279d4a510791e1c5ba4596e7b79c9d4bb496dfe3f59db0e94"
+      "sha256": "7695c11328d3f9bc8b1af4c5f1d1eadf1ea8deb1be5071650b619867e6b98cb9"
     },
     {
       "path": "openspec/changes/minimize-semantic-extraction-tokens/proposal.md",
@@ -623,19 +651,19 @@
     },
     {
       "path": "openspec/changes/survey-semantic-acquisition-capabilities/design.md",
-      "sha256": "5ad9f2ab7079ccd296d988cee234c8713d35e50c8cfd1b8d79ac3c95b4c81c12"
+      "sha256": "b9f01b3177100bb2e01b8abe767768f970ba0079b15b1aedc04c609b7a840372"
     },
     {
       "path": "openspec/changes/survey-semantic-acquisition-capabilities/proposal.md",
-      "sha256": "35976f584dae6a583c652bfb06b01336d88f986e71b38de9800a2e9b01da3c17"
+      "sha256": "1f9e592fa02cc1c08945f53aff2b494575b6598be0cd4ba7be9735bcc071177a"
     },
     {
       "path": "openspec/changes/survey-semantic-acquisition-capabilities/specs/semantic-acquisition-capabilities/spec.md",
-      "sha256": "00a258f6e37ef7ffdd9097048fb8ac973b7eb392605bd8cd2ce7861a192423cb"
+      "sha256": "4419a37dbde5e64ace2bf6bf14e0d5cf280de2dc37608b2a2562f40f5c0e76ef"
     },
     {
       "path": "openspec/changes/survey-semantic-acquisition-capabilities/tasks.md",
-      "sha256": "ee16391042b125b3294ec08d641863cac31a11e3e7a2c94213ebe8cdd214c6be"
+      "sha256": "27df54bda43a21d9c0f019dc257d6de40104efb0f8f08fa44f782a69dc3d5555"
     },
     {
       "path": "openspec/config.yaml",
@@ -714,5 +742,7 @@
   "user_confirmed_system_requirements_ref": "docs/decisions/0007-confirmed-system-query-requirements.md",
   "delivery_requirements_confirmed": true,
   "delivery_change": "define-independent-ddd-delivery",
-  "isolation_ready": false
+  "isolation_ready": false,
+  "acquisition_document_survey_complete": true,
+  "acquisition_runtime_validation": "not-run"
 }

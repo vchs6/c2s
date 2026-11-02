@@ -28,6 +28,8 @@
 
 ## 当前delta逐项映射
 
+#10本轮仍为原三项Requirement，补入Skill/接口候选、有限结果补取、默认忽略和索引/内部成本Scenario；文档取证归其tasks 0.1–0.3，未来试验归3.1–3.3，产品交付仍归1.1/2.1。所选路径完整性/来源/副作用未实证不冻结；新增场景追溯见`docs/development/reviews/issues/10/acquisition-survey-2026-11-02/report.md`的N01–N09，本矩阵不复制测试或实施待办。
+
 | Issue | 能力 / Requirement | Scenario | 唯一tasks | 通过依据 |
 | --- | --- | --- | --- | --- |
 | #5 | `semantic-analysis-quality` / 可复现评价档案 | 混合组合尚无证据 | `define-semantic-analysis-quality-goals/tasks.md` 1.1 | 评价将该组合标为未验证而不从单语言结果外推支持 |

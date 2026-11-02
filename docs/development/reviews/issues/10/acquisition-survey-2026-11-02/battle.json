@@ -1,0 +1,338 @@
+{
+  "battle_id": "acquisition-survey-2026-11-02",
+  "record_kind": "主代理对实际子代理返回的结构化摘要，非逐字转录",
+  "problem": "工具与项目分析Skill先行调研及获取组合边界",
+  "constraints": [
+    "仅文档及接口源码读取",
+    "不安装运行候选",
+    "不写产品或测试",
+    "既有领域需求不重开"
+  ],
+  "participants": {
+    "proposer": "/root/acquisition_proposer",
+    "challenger": "/root/acquisition_challenger",
+    "reviewer": "/root/acquisition_reviewer"
+  },
+  "rounds": [
+    {
+      "role": "battle_proposer",
+      "round": 1,
+      "position": "比较完整Skill复用、底层接口、自有完整性组合；初建议底层优先及Skill导航",
+      "claims": [
+        {
+          "id": "P1",
+          "statement": "Skill短摘要不足以承诺完整，底层也须能辨空/截断并补取",
+          "evidence_refs": [
+            "S03",
+            "S04",
+            "S06",
+            "S13"
+          ],
+          "assumptions": [
+            "接口可观察限制"
+          ],
+          "falsifier": "无法辨识或补取"
+        },
+        {
+          "id": "P2",
+          "statement": "top-k、默认忽略和预索引成本不能当作完整且按需",
+          "evidence_refs": [
+            "S04",
+            "S06",
+            "S16",
+            "S23"
+          ],
+          "assumptions": [
+            "未覆盖默认限制"
+          ],
+          "falsifier": "有范围清单和完整补取证明"
+        },
+        {
+          "id": "P3",
+          "statement": "初提Serena/CRG优先、其余后置以早查能力",
+          "evidence_refs": [
+            "S08",
+            "S09",
+            "S13",
+            "S20",
+            "S23"
+          ],
+          "assumptions": [
+            "符号闭合先行"
+          ],
+          "falsifier": "其他候选更低成本满足需要"
+        }
+      ],
+      "responses": [],
+      "unknowns": [
+        "缓存写入、host/target、实际Token缺证"
+      ],
+      "evidence_note": "主要依据中立包所载一手资料摘要，非独立完整源码审计"
+    },
+    {
+      "role": "battle_challenger",
+      "round": 1,
+      "position": "倾向底层通道，但以覆盖/缺口核对为准",
+      "claims": [
+        {
+          "id": "C1",
+          "statement": "JSON不保证完整，分页/分片须穷尽",
+          "evidence_refs": [
+            "S03",
+            "S04",
+            "S06",
+            "S13"
+          ],
+          "assumptions": [
+            "需求可超过限额"
+          ],
+          "falsifier": "完整终止证明"
+        },
+        {
+          "id": "C2",
+          "statement": "按需查询不等按需构造，阶段成本分开",
+          "evidence_refs": [
+            "S02",
+            "S20",
+            "S21"
+          ],
+          "assumptions": [
+            "索引前置"
+          ],
+          "falsifier": "可限定构造且缺口报告"
+        },
+        {
+          "id": "C3",
+          "statement": "取消忽略仍需清单及不支持/失败记录",
+          "evidence_refs": [
+            "S08",
+            "S09",
+            "S18",
+            "S23"
+          ],
+          "assumptions": [
+            "非源码也有需求证据"
+          ],
+          "falsifier": "全目录逐项对账"
+        },
+        {
+          "id": "C4",
+          "statement": "预算不证明总Token减少，含内部及补取",
+          "evidence_refs": [
+            "S03"
+          ],
+          "assumptions": [
+            "多次调用可能抵消"
+          ],
+          "falsifier": "等范围实际成本更低"
+        },
+        {
+          "id": "C5",
+          "statement": "可安装不等target支持，只读名不等无写入",
+          "evidence_refs": [
+            "S12",
+            "S14",
+            "S20",
+            "S21"
+          ],
+          "assumptions": [
+            "配置缓存及依赖"
+          ],
+          "falsifier": "写入边界实证"
+        }
+      ],
+      "responses": [],
+      "unknowns": [
+        "分页、内部账、禁写可用能力"
+      ],
+      "evidence_note": "明确未独立复核上游全文，仅据问题包"
+    },
+    {
+      "role": "battle_proposer",
+      "round": 2,
+      "position": "撤回Skill只能导航，接受条件化来源与独立成本证据",
+      "claims": [
+        {
+          "id": "P4",
+          "statement": "Skill与底层接口升级为来源的门槛一致",
+          "evidence_refs": [
+            "S04",
+            "S06",
+            "S13",
+            "S23"
+          ],
+          "assumptions": [
+            "范围/失败/省略可观测"
+          ],
+          "falsifier": "必要状态无法辨识"
+        }
+      ],
+      "responses": [
+        {
+          "dispute": "C01",
+          "action": "修订",
+          "reason": "满足公共契约Skill可直接作来源，不固定工具SkillAI顺序"
+        },
+        {
+          "dispute": "C02",
+          "action": "接受/缺证",
+          "reason": "目录盘点不等全语义构造；具体索引内容未证不能直接判候选违约"
+        },
+        {
+          "dispute": "C03",
+          "action": "修订",
+          "reason": "先原生对照加CRG/Serena互补，原生并非普遍真值，顺序可调整"
+        },
+        {
+          "dispute": "C04",
+          "action": "接受",
+          "reason": "仅文档、不写隐藏测试、不运行，unknown不冒通过"
+        }
+      ],
+      "unknowns": [
+        "候选索引到领域尺度的具体映射及运行成本/副作用缺证"
+      ]
+    },
+    {
+      "role": "battle_challenger",
+      "round": 2,
+      "position": "接受条件化组合，修订对高层Skill偏保守倾向",
+      "claims": [],
+      "responses": [
+        {
+          "dispute": "C01",
+          "action": "修订",
+          "reason": "Skill能证明契约则可直接来源，接口优先不是固定序列"
+        },
+        {
+          "dispute": "C02",
+          "action": "接受/保留",
+          "reason": "按索引实际内容判断，不据名称豁免；未读具体映射不能定性"
+        },
+        {
+          "dispute": "C03",
+          "action": "接受",
+          "reason": "暂定取证顺序，有必需独有能力则提前；对照不证明全部语义"
+        },
+        {
+          "dispute": "C04",
+          "action": "接受",
+          "reason": "源码局部行为不替代端到端实证"
+        }
+      ],
+      "unknowns": [
+        "最小调用集合、索引内容、完整分页、Token及隔离未实证"
+      ]
+    },
+    {
+      "role": "battle_reviewer",
+      "round": 3,
+      "position": "本轮文档可交付，不足直接编码/冻结组合或运行试验",
+      "claims": [
+        {
+          "id": "R1",
+          "statement": "来源资格看契约而非Skill/接口名称，短预算不能作完整枚举",
+          "evidence_refs": [
+            "S03",
+            "C01"
+          ],
+          "assumptions": [],
+          "falsifier": "重新只准Skill导航或将top-k冒全部"
+        },
+        {
+          "id": "R2",
+          "statement": "索引实际内容映射与成本仍未知，不能提前判所有候选违约或已满足按需",
+          "evidence_refs": [
+            "C02"
+          ],
+          "assumptions": [],
+          "falsifier": "仅以索引名称豁免构造约束"
+        },
+        {
+          "id": "R3",
+          "statement": "原生对照边界和可调整顺序合理，不要求全部候选全跑",
+          "evidence_refs": [
+            "S13",
+            "C03"
+          ],
+          "assumptions": [],
+          "falsifier": "以对照作全部领域真值"
+        },
+        {
+          "id": "R4",
+          "statement": "文档/源码/实测分级诚实、任务与上游接续一致",
+          "evidence_refs": [
+            "S23",
+            "C04"
+          ],
+          "assumptions": [],
+          "falsifier": "候选冒已部署或越界试验"
+        }
+      ],
+      "responses": [
+        {
+          "dispute": "C01",
+          "action": "支持",
+          "reason": "有独立约束理由，运行缺证仍保留"
+        },
+        {
+          "dispute": "C02",
+          "action": "支持",
+          "reason": "有独立约束理由，运行缺证仍保留"
+        },
+        {
+          "dispute": "C03",
+          "action": "支持",
+          "reason": "有独立约束理由，运行缺证仍保留"
+        },
+        {
+          "dispute": "C04",
+          "action": "支持",
+          "reason": "有独立约束理由，运行缺证仍保留"
+        }
+      ],
+      "unknowns": [
+        "具体接口/覆盖/写入/host-target/Token均未实测"
+      ],
+      "independent_evidence_scope": "本地文档全读及S03/S13/S23固定commit正文/blob抽查，非24份来源全面审计",
+      "nonblocking_fixes": [
+        "修正tasks Spec路径",
+        "复核范围如实写入builder/validation"
+      ]
+    }
+  ],
+  "disputes": [
+    {
+      "id": "C01",
+      "topic": "Skill可否直接提供事实",
+      "resolution": "满足同一契约可作为来源，不限导航；结构接口优先比较而非固定序列"
+    },
+    {
+      "id": "C02",
+      "topic": "索引与按需构造",
+      "resolution": "扫描/解析/结构索引/具体语义分开判必要性及成本，缺内容映射不指控特定候选违约"
+    },
+    {
+      "id": "C03",
+      "topic": "试验顺序及对照边界",
+      "resolution": "原生对照+CRG/Serena互补先行建议，独有必需能力可调整，不强制全跑"
+    },
+    {
+      "id": "C04",
+      "topic": "文档与运行边界",
+      "resolution": "本轮不安装运行/不写隐藏测试，文档/源码/实测分开"
+    }
+  ],
+  "recommendation": "完成文档能力矩阵并回补候选设计；后续取得独立试验授权再验证所选路径",
+  "unresolved": [
+    "工具组合未实测",
+    "所选接口/覆盖/索引与实际成本尚需证据"
+  ],
+  "decision_status": "proposed",
+  "user_decision": null,
+  "user_scope_confirmation": {
+    "quote": "可以。",
+    "antecedent": "沿用survey-semantic-acquisition-capabilities先行文档调研，通过任务完成，试验与产品开发分开"
+  },
+  "authority_note": "用户确认调研范围，不代表选择具体候选；Battle一致不替代用户决定。五层定义已有确认，代理所称未知仅为候选索引到E3/E4事实的具体内容映射。"
+}

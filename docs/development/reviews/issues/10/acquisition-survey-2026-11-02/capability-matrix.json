@@ -1,0 +1,379 @@
+{
+  "format": 1,
+  "scope": "document-and-selected-interface-source-survey",
+  "user_authorization": "本轮可以：沿用已有变更先行文档调研；不安装/运行候选，不实现产品",
+  "source_manifest": "sources.json",
+  "runtime_validation": "not-run",
+  "product_implementation_approved": false,
+  "evidence_levels": {
+    "documented-not-executed": "官方文档或Skill文件已读，未执行",
+    "source-inspected-not-executed": "选定接口源码已读，未运行",
+    "unknown": "现有证据不能判定"
+  },
+  "requirements": [
+    {
+      "id": "N01",
+      "name": "工程边界与目录范围"
+    },
+    {
+      "id": "N02",
+      "name": "构造目标依赖与target"
+    },
+    {
+      "id": "N03",
+      "name": "类型函数完整候选域"
+    },
+    {
+      "id": "N04",
+      "name": "成员定义签名"
+    },
+    {
+      "id": "N05",
+      "name": "引用调用与绑定证据"
+    },
+    {
+      "id": "N06",
+      "name": "行为契约与局部算法"
+    },
+    {
+      "id": "N07",
+      "name": "请求顶层完整双输出缺口"
+    },
+    {
+      "id": "N08",
+      "name": "按需复用实际Token成本"
+    },
+    {
+      "id": "N09",
+      "name": "语言host-target与全目录覆盖"
+    }
+  ],
+  "candidates": [
+    {
+      "id": "A01",
+      "name": "Code Review Graph",
+      "repository": "tirth8205/code-review-graph",
+      "commit": "d72e8fbf7ef571b668c26a4222a284bf7792e7a1",
+      "kind": [
+        "analysis-skill",
+        "graph-tool"
+      ],
+      "skills_read": [
+        "build-graph",
+        "explore-codebase"
+      ],
+      "interfaces": [
+        "query_graph(pattern,target,repo_root,detail_level,max_results,resolution)"
+      ],
+      "evidence": [
+        "S01",
+        "S02",
+        "S03",
+        "S04",
+        "S19",
+        "S20"
+      ],
+      "requirements_candidate": [
+        "N03",
+        "N04",
+        "N05",
+        "N08"
+      ],
+      "output": "query_graph Python dict; MCP wrapper runtime unverified",
+      "coverage_risks": [
+        "minimal最多五项",
+        "max_results",
+        "git跟踪/默认忽略",
+        "推断边不等确定绑定"
+      ],
+      "side_effects": [
+        "install配置/指令/hooks",
+        "图索引/缓存",
+        "可选watch"
+      ],
+      "license_document": "README MIT",
+      "proposed_validation_stage": 1,
+      "status": "candidate-not-selected",
+      "runtime_validation": "not-run",
+      "host_target_validation": "unknown",
+      "complete_enumeration_validation": "unknown",
+      "index_content_mapping": "unknown",
+      "actual_token_savings": "unknown"
+    },
+    {
+      "id": "A02",
+      "name": "GitNexus",
+      "repository": "abhigyanpatwari/GitNexus",
+      "commit": "54db34d5cb9361b55a1d30bbc379f86fb34878f0",
+      "kind": [
+        "analysis-skill",
+        "graph-tool"
+      ],
+      "skills_read": [
+        "gitnexus-exploring",
+        "gitnexus-guide"
+      ],
+      "interfaces": [
+        "query",
+        "context",
+        "impact",
+        "cypher"
+      ],
+      "evidence": [
+        "S05",
+        "S06",
+        "S07",
+        "S08",
+        "S09",
+        "S10",
+        "S21",
+        "S22"
+      ],
+      "requirements_candidate": [
+        "N03",
+        "N04",
+        "N05",
+        "N08"
+      ],
+      "output": "MCP文本承载JSON，可能追加提示；CLI对象输出",
+      "coverage_risks": [
+        "Skill示例limit=3/max_symbols=3",
+        "分页/预算截断",
+        "语言覆盖边界",
+        "扫描过滤"
+      ],
+      "side_effects": [
+        "analyze默认AGENTS/CLAUDE/skills/hooks",
+        "图索引/可选watch",
+        "index-only写入仍须核"
+      ],
+      "license_document": "PolyForm Noncommercial 1.0.0",
+      "proposed_validation_stage": 2,
+      "status": "candidate-not-selected",
+      "runtime_validation": "not-run",
+      "host_target_validation": "unknown",
+      "complete_enumeration_validation": "unknown",
+      "index_content_mapping": "unknown",
+      "actual_token_savings": "unknown"
+    },
+    {
+      "id": "A03",
+      "name": "Serena",
+      "repository": "oraios/serena",
+      "commit": "ede329aaf0c824bea75455a2926f01420d7aa620",
+      "kind": [
+        "mcp-symbol-toolkit"
+      ],
+      "skills_read": [],
+      "interfaces": [
+        "get_symbols_overview",
+        "find_symbol",
+        "find_referencing_symbols"
+      ],
+      "evidence": [
+        "S11",
+        "S12",
+        "S13",
+        "S14",
+        "S15"
+      ],
+      "requirements_candidate": [
+        "N03",
+        "N04",
+        "N05"
+      ],
+      "output": "str承载JSON表示；body源码可选",
+      "coverage_risks": [
+        "按文件overview不证明项目枚举",
+        "超max_answer_chars可无内容",
+        "后端/配置/动态语义"
+      ],
+      "side_effects": [
+        "宿主/项目配置及缓存",
+        "工具集含写能力",
+        "REPL不等只读沙箱"
+      ],
+      "license_document": "Serena GPL-3.0-or-later; SolidLSP MIT",
+      "proposed_validation_stage": 1,
+      "status": "candidate-not-selected",
+      "runtime_validation": "not-run",
+      "host_target_validation": "unknown",
+      "complete_enumeration_validation": "unknown",
+      "index_content_mapping": "unknown",
+      "actual_token_savings": "unknown"
+    },
+    {
+      "id": "A04",
+      "name": "CodeGraph",
+      "repository": "colbymchenry/codegraph",
+      "commit": "f72c9d2efb14454ff4f9fd7b8460abd82f19a287",
+      "kind": [
+        "code-graph-tool"
+      ],
+      "skills_read": [],
+      "interfaces": [
+        "codegraph query --json",
+        "codegraph files --json",
+        "codegraph callers --json",
+        "codegraph_explore"
+      ],
+      "evidence": [
+        "S16",
+        "S17",
+        "S18",
+        "S23",
+        "S24"
+      ],
+      "requirements_candidate": [
+        "N03",
+        "N04",
+        "N05",
+        "N08"
+      ],
+      "output": "CLI指定接口JSON；MCP综合探索和错误诊断文本，非统一格式承诺",
+      "coverage_risks": [
+        "默认忽略",
+        "嵌套gitignored工程",
+        "综合调用路径需投影",
+        "接口输出/完整分页未运行"
+      ],
+      "side_effects": [
+        "installer宿主配置",
+        "init索引/项目配置",
+        "默认自动同步"
+      ],
+      "license_document": "MIT",
+      "proposed_validation_stage": 2,
+      "status": "candidate-not-selected",
+      "runtime_validation": "not-run",
+      "host_target_validation": "unknown",
+      "complete_enumeration_validation": "unknown",
+      "index_content_mapping": "unknown",
+      "actual_token_savings": "unknown"
+    },
+    {
+      "id": "A05",
+      "name": "Cargo metadata",
+      "kind": [
+        "native-build-tool"
+      ],
+      "evidence": [
+        "legacy:T4"
+      ],
+      "requirements_candidate": [
+        "N01",
+        "N02"
+      ],
+      "output": "JSON",
+      "coverage_risks": [
+        "原生成员不等领域Project",
+        "声明不等实际产物",
+        "target参数及配置"
+      ],
+      "proposed_validation_stage": 0,
+      "status": "candidate-not-selected",
+      "runtime_validation": "not-run",
+      "host_target_validation": "unknown",
+      "complete_enumeration_validation": "unknown",
+      "index_content_mapping": "unknown",
+      "actual_token_savings": "unknown"
+    },
+    {
+      "id": "A06",
+      "name": "Python AST",
+      "kind": [
+        "native-language-api"
+      ],
+      "evidence": [
+        "legacy:T3"
+      ],
+      "requirements_candidate": [
+        "N03",
+        "N04",
+        "N06"
+      ],
+      "output": "版本化AST对象",
+      "coverage_risks": [
+        "动态绑定",
+        "UTF-8字节位置",
+        "运行期装饰器"
+      ],
+      "proposed_validation_stage": 0,
+      "status": "candidate-not-selected",
+      "runtime_validation": "not-run",
+      "host_target_validation": "unknown",
+      "complete_enumeration_validation": "unknown",
+      "index_content_mapping": "unknown",
+      "actual_token_savings": "unknown"
+    },
+    {
+      "id": "A07",
+      "name": "Tree-sitter",
+      "kind": [
+        "syntax-parser"
+      ],
+      "evidence": [
+        "legacy:T1"
+      ],
+      "requirements_candidate": [
+        "N03",
+        "N04",
+        "N06"
+      ],
+      "output": "CST",
+      "coverage_risks": [
+        "语法不等绑定/完整行为",
+        "错误恢复",
+        "语法版本"
+      ],
+      "proposed_validation_stage": "as-needed",
+      "status": "candidate-not-selected",
+      "runtime_validation": "not-run",
+      "host_target_validation": "unknown",
+      "complete_enumeration_validation": "unknown",
+      "index_content_mapping": "unknown",
+      "actual_token_savings": "unknown"
+    },
+    {
+      "id": "A08",
+      "name": "rust-analyzer",
+      "kind": [
+        "language-server"
+      ],
+      "evidence": [
+        "legacy:T2"
+      ],
+      "requirements_candidate": [
+        "N04",
+        "N05"
+      ],
+      "output": "具体LSP协议/配置待继续核验",
+      "coverage_risks": [
+        "宏生成/target",
+        "README不等接口输出",
+        "可能被Serena复用避免重复工作"
+      ],
+      "proposed_validation_stage": "as-needed",
+      "status": "candidate-not-selected",
+      "runtime_validation": "not-run",
+      "host_target_validation": "unknown",
+      "complete_enumeration_validation": "unknown",
+      "index_content_mapping": "unknown",
+      "actual_token_savings": "unknown"
+    }
+  ],
+  "combination_recommendation": {
+    "authority": "delegated-agent-proposal",
+    "approach": "按需求比较Skill/工具，优先可证结构接口，满足契约的Skill也可直接作为来源",
+    "fixed_tool_skill_llm_sequence": false,
+    "all_candidates_must_be_installed": false,
+    "unknown_cost_is_zero": false
+  },
+  "legacy_evidence_manifest": "../planning-2026-11-01/tool-evidence.json",
+  "limits": [
+    "不以文档支持等同本项目已验证",
+    "不以原生对照当普遍领域真值",
+    "E3/E4精确来源映射未验证",
+    "Skill候选均未安装执行"
+  ]
+}
