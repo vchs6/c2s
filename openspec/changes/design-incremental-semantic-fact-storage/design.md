@@ -1,5 +1,25 @@
 # Design
 
+## M1读取与引用自洽提交（代理技术决定，m1-project-discovery-1）
+
+本节固定M1端口和最小后端，不改变原全量任务；ADR-0009授权准备及门禁通过后实施，M2–M4细节不作M1新增前置。记录沿用#3封闭JSON记法，本节独占：
+- M1Receipt={operationId:Id|null,state:"stored"|"already_stored"|"not_required"|"failed"|"unknown",generation:int|null,addedIds:Id[],existingIds:Id[],diagnostics:M1Diagnostic[]}；generation非负，未读到有效存储为null。未需提交时not_required；语义取得不由state决定。
+- M1Read={analysisId:Id,session:M1Session|null,generation:int,bundle:M1Bundle,artifacts:M1Artifact[],receipts:M1Receipt[],diagnostics:M1Diagnostic[]}；session唯一引用#12、Artifact引用#3；不存在的合法新分析返回session=null/generation=0空包；损坏/不可读仍返回诊断，不把空包当有效命中。
+- M1Commit={session:M1Session,operationId:Id,expectedGeneration:int,bundle:M1Bundle,artifacts:M1Artifact[]}；session唯一引用#12、Artifact引用#3；operationId绑定session.analysisId、profile和规范提交内容（不含operationId）SHA256；同ID异内容拒绝CONTRACT_INVALID。会话的tools/target属于已观测元数据，提交时须与已有session的输入/身份域/根范围一致，可追加观测，不能变换inputId。
+
+端口：`read_m1(store:str, analysis_id:str)->M1Read`；`commit_m1(store:str, candidate:M1Commit)->M1Receipt`；`lookup_m1(store:str, analysis_id:str, operation_id:str)->M1Receipt`；没有回执返回state=unknown及COMMIT_UNKNOWN，不先重做获取。未触发提交的#7结果使用operationId=null/state=not_required/空ID数组；读取失败用failed，不伪装not_required。
+
+M1采用外置SQLite（Python3标准库sqlite3）单写事务；数据库承载session登记（#12 M1Session原值）、注册表、bundle记录及回执，提交一个M1Bundle为本切片最小自洽单元，含全部新增主体、证据、事实、评估、覆盖与回执，同事务可见。#12 session登记与registry首次写入须同事务；未完成记录对读取不可见。generation乐观比较失配返回failed/INPUT_MISMATCH，由#12重读后重新差量，不吞掉已得候选；事务失败无半包可见。M1串行协调，跨进程并发/取消代际留M4；SQLite原子性/基本崩溃后重读不得延期。
+
+规范比较端口（本#9所有）`fact_key_m1(fact:M1Fact)->str`返回规范JSON对象{predicate:fact.predicate,subject:fact.subject.identity,value:规范值,claimMode:fact.claimMode,condition:fact.condition}；引用值规范为{identity,kind}，字符串保原值，identity三元组完整保留。不含factId/evidenceIds；#5保存此key，不能自行重定义或跨身份域按名称匹配。等价主张合并新增证据并选最先已存factId（全新同批等价项选字典序最小ID），所有引用回写该规范ID。
+
+证据等价键为(source,path,来源附件sha256,sha256,startByte,endByte,method,toolName,toolVersion)，不删定位/方法；附件按原始字节判等（摘要加速，碰撞时比较原文），与证据同事务提交。Registration按sourceKey/完整ref绑定，其evidenceIds并集追加合法；仅ref/kind/sourceKey变化拒绝，不能把合法补证当“同ID异载荷”。Assessment按(declaration.identity,ruleId,status,projects完整引用集合,evidenceIds集合,supersedes集合,diagnostics规范JSON)判等，Coverage按全部非ID字段判等；同内容不同ID选已存规范ID并重写supersedes/诊断recordId。新进展记录按#3增加ID/替代边，保留旧记录；不在存储端擅选当前真值。单值不兼容主张仍保留双方和CONFLICTING_CLAIMS。#12 current_m1对#9读出的完整历史给唯一当前视图。
+
+纯数据端口`canonicalize_m1(session:M1Session, stored:M1Read, pending:M1Bundle, artifacts:list[M1Artifact])->M1Read`与commit使用同一规范化规则：在已核输入下合并历史/新记录、证据并集、规范ID/所有引用重写，返回generation不变的暂存读形状（不写盘、不增加成功回执）。全新分析可用session=null/generation=0的空M1Read作为stored。#12先canonicalize再校验其合并包；#5可直接以fact_key_m1生成包含未保存结果的比较摘要，无隐式全局缓存。
+
+commit_m1仍仅返回M1Receipt；stored/already_stored或lookup确认成功后，#12必须read_m1取得generation>=回执generation且同session的规范历史，再current_m1后供#7投影；不得直接把提交前ID包当已存结果。read失败/归属不符时本次返回unknown/COMMIT_UNKNOWN，暂存事实可报告但规范持久化身份未确认，下次显式查询可继续；不伪装stored。无需提交路径使用已有核验规范包；failed/unknown路径用canonicalize得到的已校验暂存+已存合并包并明确回执状态。相同内容不同operationId仍去重；同operationId同内容回原回执。M1后端只为此切片，不冻结全产品数据库/跨次更新政策。
+
+
 ## Context
 
 已确认：共享context、ADR-0001/0002和两份主规格；模型A由用户选择但未批准实施。当前无产品实现或性能实测。新设计是候选；细节由授权范围内代理提出，不成为用户确认。讨论、异议及独立复核见本Issue评审目录。

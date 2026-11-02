@@ -1,0 +1,200 @@
+{
+  "scope": "public-synthetic-infrastructure-only",
+  "source_commit": "34f8ea4951d8e4cdce7aa686d8756dc1f2793967",
+  "private_commit": "e1252d43dd3e03b9c6e4a437641ed40c78a38fb6",
+  "script_sha256": "4964b2ab3e5e689bda88b226a974dbebad4e3ec00b68fd7888c353139a84d0d8",
+  "source_run": {
+    "id": 41425279579,
+    "url": "https://github.com/vchs6/c2s/actions/runs/41425279579",
+    "conclusion": "success"
+  },
+  "private_run": {
+    "id": 41425296526,
+    "url": "https://github.com/vchs6/c2s-acceptance/actions/runs/41425296526",
+    "conclusion": "success"
+  },
+  "records": [
+    {
+      "repo": "vchs6/c2s",
+      "job_id": 125210280333,
+      "results": [
+        {
+          "development_ready": false,
+          "passed": true,
+          "private_reads_denied": true,
+          "private_statuses": {
+            "artifacts": 404,
+            "commits": 404,
+            "repository": 404,
+            "runs": 404,
+            "workflows": 404
+          },
+          "source_read_allowed": true,
+          "source_status": 200,
+          "synthetic_only": true
+        }
+      ]
+    },
+    {
+      "repo": "vchs6/c2s",
+      "job_id": 125210319046,
+      "results": [
+        {
+          "development_ready": false,
+          "host_control_read": true,
+          "host_forbidden_areas_unchanged": true,
+          "image_digest": "python@sha256:aa943ce411423c7582288f18707ff66eddcbaeb510502d747a72aeb34f30d159",
+          "independent_containers": true,
+          "roles": {
+            "author": {
+              "container_identity": true,
+              "empty_sensitive_environment": true,
+              "exclusive_output_write": true,
+              "forbidden_writes_denied": true,
+              "host_forbidden_areas_unchanged": true,
+              "host_paths_denied": true,
+              "host_process_credentials_denied": true,
+              "legal_reads": true,
+              "management_sockets_denied": true,
+              "network_none": true,
+              "passed": true,
+              "privileges_restricted": true,
+              "resource_limits": true,
+              "rootfs_read_only": true,
+              "uid_gid": true,
+              "unmounted_reads_denied": true
+            },
+            "candidate": {
+              "container_identity": true,
+              "empty_sensitive_environment": true,
+              "exclusive_output_write": true,
+              "forbidden_writes_denied": true,
+              "host_forbidden_areas_unchanged": true,
+              "host_paths_denied": true,
+              "host_process_credentials_denied": true,
+              "legal_reads": true,
+              "management_sockets_denied": true,
+              "network_none": true,
+              "passed": true,
+              "privileges_restricted": true,
+              "resource_limits": true,
+              "rootfs_read_only": true,
+              "uid_gid": true,
+              "unmounted_reads_denied": true
+            },
+            "coding": {
+              "container_identity": true,
+              "empty_sensitive_environment": true,
+              "exclusive_output_write": true,
+              "forbidden_writes_denied": true,
+              "host_forbidden_areas_unchanged": true,
+              "host_paths_denied": true,
+              "host_process_credentials_denied": true,
+              "legal_reads": true,
+              "management_sockets_denied": true,
+              "network_none": true,
+              "passed": true,
+              "privileges_restricted": true,
+              "resource_limits": true,
+              "rootfs_read_only": true,
+              "uid_gid": true,
+              "unmounted_reads_denied": true
+            },
+            "review": {
+              "container_identity": true,
+              "empty_sensitive_environment": true,
+              "exclusive_output_write": true,
+              "forbidden_writes_denied": true,
+              "host_forbidden_areas_unchanged": true,
+              "host_paths_denied": true,
+              "host_process_credentials_denied": true,
+              "legal_reads": true,
+              "management_sockets_denied": true,
+              "network_none": true,
+              "passed": true,
+              "privileges_restricted": true,
+              "resource_limits": true,
+              "rootfs_read_only": true,
+              "uid_gid": true,
+              "unmounted_reads_denied": true
+            },
+            "runner": {
+              "container_identity": true,
+              "empty_sensitive_environment": true,
+              "exclusive_output_write": true,
+              "forbidden_writes_denied": true,
+              "host_forbidden_areas_unchanged": true,
+              "host_paths_denied": true,
+              "host_process_credentials_denied": true,
+              "legal_reads": true,
+              "management_sockets_denied": true,
+              "network_none": true,
+              "passed": true,
+              "privileges_restricted": true,
+              "resource_limits": true,
+              "rootfs_read_only": true,
+              "uid_gid": true,
+              "unmounted_reads_denied": true
+            },
+            "verifier": {
+              "container_identity": true,
+              "empty_sensitive_environment": true,
+              "exclusive_output_write": true,
+              "forbidden_writes_denied": true,
+              "host_forbidden_areas_unchanged": true,
+              "host_paths_denied": true,
+              "host_process_credentials_denied": true,
+              "legal_reads": true,
+              "management_sockets_denied": true,
+              "network_none": true,
+              "passed": true,
+              "privileges_restricted": true,
+              "resource_limits": true,
+              "rootfs_read_only": true,
+              "uid_gid": true,
+              "unmounted_reads_denied": true
+            }
+          },
+          "status": "synthetic_probe_passed",
+          "synthetic_only": true
+        }
+      ]
+    },
+    {
+      "repo": "vchs6/c2s-acceptance",
+      "job_id": 125210334344,
+      "results": [
+        {
+          "container_probe_passed": true,
+          "development_ready": false,
+          "host_control_read": true,
+          "host_forbidden_areas_unchanged": true,
+          "image_digest": "python@sha256:aa943ce411423c7582288f18707ff66eddcbaeb510502d747a72aeb34f30d159",
+          "independent_containers": true,
+          "roles_passed": {
+            "author": true,
+            "candidate": true,
+            "coding": true,
+            "review": true,
+            "runner": true,
+            "verifier": true
+          },
+          "script_digest_verified": true,
+          "script_downloaded": true,
+          "synthetic_only": true
+        }
+      ]
+    }
+  ],
+  "development_ready": false,
+  "synthetic_only": true,
+  "limitations": [
+    "Effective container/token diagnostic passed, not a full model tool broker or product acceptance",
+    "Coordinator admin connector is not a coding identity",
+    "No hidden product tests authored"
+  ],
+  "review_notes": [
+    "Private-target variable misconfiguration is a deferred hardening item; target bound here to user bootstrap receipt and independently confirmed private repo",
+    "Denied-write probe accepts broad OSError; legal writes and resource controls passed but narrower errno remains a deferred hardening item"
+  ]
+}

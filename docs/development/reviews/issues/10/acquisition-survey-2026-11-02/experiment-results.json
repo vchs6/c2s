@@ -218,5 +218,94 @@
     "workspace_members": 7,
     "resolve_is_none": true,
     "limitation": "--no-deps --offline，仅声明/成员；没有依赖解析或构建观测"
+  },
+  "m1_native_interface_experiment_2026_11_02": {
+    "scope": "public-native-interface-experiment-not-product-acceptance",
+    "python": "Python 3.12.14",
+    "host": {
+      "os": "Linux",
+      "architecture": "x86_64"
+    },
+    "project_target": "not compiled; declared configuration only",
+    "model_calls": 0,
+    "token_measurement": "no model invocation in this experiment",
+    "cases": {
+      "regex": {
+        "commit": "94ac45b2a6e7b1c30927feb5b66c5ded5b7ad447",
+        "inventory": {
+          "files": 484,
+          "directories": 105,
+          "symlinks": 0,
+          "other": 0,
+          "bytes": 11762118,
+          "hidden_entries": 65,
+          "non_src_entries": 574,
+          "digest": "bfaaa2f2a7b546e797e4d562ae9600aad53316231e1f641cea37eb04425da18d"
+        },
+        "inventory_ms": 74.364,
+        "full_copy_ms": 39.219,
+        "copy_exclusions": [],
+        "cargo": "cargo 1.99.1 (5f94df478 2026-08-27)",
+        "metadata_ms": 15.051,
+        "exit": 0,
+        "metadata_format": 1,
+        "package_count": 7,
+        "workspace_member_count": 7,
+        "members_resolve_to_packages": true,
+        "all_target_paths_within_copy": true,
+        "all_target_paths_exist": true,
+        "workspace_root_matches": true,
+        "resolve_is_none": true,
+        "stdout_sha256": "b6febb5c864ebb570a7d3ee0f7f6d9c7ad75fe9ab4cc9b7ddca79a0d2be19ae6",
+        "target_count": 11,
+        "raw_manifest_declarations": {
+          "package": true,
+          "workspace": true
+        },
+        "copy_content_unchanged": true,
+        "copy_inventory_matches_original": true,
+        "original_content_unchanged": true,
+        "git_status_clean": true
+      },
+      "click": {
+        "commit": "2247b35ea1c47c727d7a06e51fa280e12a863ff6",
+        "inventory": {
+          "files": 211,
+          "directories": 43,
+          "symlinks": 0,
+          "other": 0,
+          "bytes": 4932747,
+          "hidden_entries": 70,
+          "non_src_entries": 234,
+          "digest": "419f92e6af75701b002b705dc1f3536f68f7fd77d87e22ec4096cae4ceb66b5c"
+        },
+        "inventory_ms": 43.38,
+        "full_copy_ms": 15.462,
+        "copy_exclusions": [],
+        "toml_ms": 1.749,
+        "project_name": "click",
+        "build_backend": "flit_core.buildapi",
+        "flit_rule": true,
+        "module": "click",
+        "entry_paths": [
+          "src/click/__init__.py"
+        ],
+        "unique_bound_entry": true,
+        "version_dynamic": false,
+        "manifest_sha256": "327b296ab1fc9280c106c71efea961f71dffa5d8f69d85a88eba758e0f440636",
+        "does_not_import_or_execute_source": true,
+        "copy_content_unchanged": true,
+        "copy_inventory_matches_original": true,
+        "original_content_unchanged": true,
+        "git_status_clean": true
+      }
+    },
+    "limitations": [
+      "No universal Project semantic truth asserted",
+      "No malformed/unreadable/symlink/error or other backend behavior runtime coverage claimed",
+      "Only Linux x86_64 host checked; no compilation/target support proof",
+      "Native Cargo IDs remain opaque PackageSpecification references, not Project identity",
+      "Dynamic version not requested or evaluated; no Python source imports"
+    ]
   }
 }

@@ -107,3 +107,7 @@ workflow只在自身变更push或显式workflow_dispatch启动；permissions为�
 宿主目录public包含公开契约/固定项目输入，candidate、review、suite、run、verdict为独立输出，host-only放公开合成凭据/日志标记。各容器均只读挂/public；coding独占rw /candidate；review只读/candidate、独占rw /review；author独占rw /suite且不可见candidate；runner只读/candidate与/suite、独占rw /run；verifier只读/candidate、/review、/suite、/run，独占rw /verdict；candidate仅读/candidate，无suite/review/run/verdict。角色未挂载内容均不提供旁路，独占目录不能通过同一run的artifact回流编码。容器实际程序可读执行输入，但不应持久回流独立断言；合成probe仅包含公开值。
 
 源repo的只读token只在受信网络检查step使用，校验私有API不可访问；容器本身禁网且不传令牌。部署私有诊断workflow时固定公开脚本commit及SHA256，避免从可变main下载受信代码。检查失败不扩权；未来每个角色模型会话须使用这些边界并单独写其输出，协调者不能代写suite/verdict。
+
+### 生成能力与API认证分离
+
+GET认证通过后，另用一次固定gpt-5-mini的短生成请求验证推理权限/可用性。此为代理在工具准备范围内选择的小额有界健康检查，不是用户选择该模型作为产品语义后端；最大256输出Token、单次不重试，不提交项目内容。只保存安全状态与usage，store=false；若额度/权限拒绝，如实阻塞相应模型步骤，不能继续错误地要求重建密钥或用认证200冒推理可用。较之先搭完整模型编排再发现额度不可用，此检查先确定外部能力；不把未知Token写成0。

@@ -1,5 +1,18 @@
 # Tasks
 
+## M1切片子任务（交付2.1绑定，父任务不勾选）
+
+本组只拆原父任务的项目发现/项目列表、语言声明、原生workspace成员切片，精确记录/签名以本design的M1节及其owner引用为准，不是第二套计划。ADR-0009已授权准备和门禁通过后持续实施；以下为未执行产品/所选路径准备子任务，真实技术/隔离门禁不省略，不重复索取旧批准。子任务只依赖列出的M1子切片，不要求对应父任务的M2–M4完整能力先完成；完成子项不得勾父项。所有产品验收仍按原五角色约束：独立作者基于公开契约/固定真实源形成私有suite、runner执行并留实际证据、编码者不接触suite、审核/最终验证独立；本次不创建或运行suite。
+
+- [x] 3.1.1 （M1）M1原生路径环境/副本验证。依据：原3.1已授权公开工具试验（父任务3.1）。交付：`docs/development/reviews/issues/10/acquisition-survey-2026-11-02/m1-native-interface.md及experiment-results.json的M1记录`。接口/依赖：Cargo metadata格式1/no-deps/offline、Python3 TOML/Flit入口；固定regex/click，host/target分列。验证/通过/失败：核实际工具版本/字段/副本映射和源不变，不要求无关候选全部运行；未经运行称API可用或修改源则失败。
+
+- [ ] 3.2.1 （M1）M1目录/声明覆盖实证。依据：原3.2与M1获取端口（父任务3.2）。交付：`docs/development/reviews/issues/10/acquisition-survey-2026-11-02/m1-native-interface.md的覆盖补充（不含隐藏断言）`。接口/依赖：M1Entry/Acquired所需枚举/错误/映射；依赖3.1.1。验证/通过/失败：核嵌套/非src/忽略项、Cargo成员、Flit绑定、未支持/失败及实际成本；README冒实测或成员推Project则失败。
+
+- [ ] 1.1.1 （M1）M1能力选择。依据：原1.1能力证据分开（父任务1.1）。交付：`skill/acquisition/capabilities/`。接口/依赖：消费M1Need/M1Session并执行M1ModelDecision；依赖3.1.1/3.2.1及模型3.1.1。验证/通过/失败：选定所需接口/版本可复现，缺能力诚实；未测host外推或为了切片强制所有候选先装则失败。
+
+- [ ] 2.1.1 （M1）M1原生声明适配。依据：原2.1项目不变/来源映射（父任务2.1）。交付：`skill/acquisition/adapters/`。接口/依赖：acquire_m1→M1Acquired；依赖1.1.1、构造1.1.1、Token1.1.1。验证/通过/失败：盘点全域、register_m1单身份、进展supersedes/诊断解决依据明确；动态version不阻塞无关名称/入口判定，真正动态module不忽略；边界评估与三个谓词证据完整；未支持格式不作不存在、空/失败不造成员，原项目无写入；位置错绑/图UID重键/静默排除则失败。
+
+
 > 实施时使用superpowers:executing-plans或subagent-driven-development，逐项引用本唯一tasks；按ADR-0009已获准备及连续实施授权，不归档；当前技术就绪/隔离仍未通过，先准备不跳门禁。
 
 **Goal:** 按需求取得事实，必要操作由设计选择且诚实报能力边界

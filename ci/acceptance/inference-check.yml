@@ -1,0 +1,191 @@
+# Public template: install as .github/workflows/inference-check.yml in the
+# private acceptance repository. One billable public-input diagnostic only.
+name: Bounded model inference diagnostic
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/inference-check.yml'
+  workflow_dispatch:
+
+permissions: {}
+
+jobs:
+  inference-check:
+    runs-on: ubuntu-latest
+    timeout-minutes: 2
+    steps:
+      - name: Run one bounded inference diagnostic
+        shell: bash
+        env:
+          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+        run: |
+          python3 - <<'PY'
+          import json
+          import os
+          import sys
+          import urllib.error
+          import urllib.request
+
+          MODEL = "gpt-5-mini"
+          MAX_RESPONSE_BYTES = 65536
+          SAFE_ERROR_CODES = {
+              "insufficient_quota", "model_not_found",
+              "rate_limit_exceeded", "invalid_api_key",
+              "credit_balance_exhausted",
+              "organization_usage_limit_exceeded",
+              "organization_spend_limit_exceeded",
+              "project_spend_limit_exceeded", "slow_down",
+          }
+          SAFE_RESPONSE_STATUSES = {
+              "completed", "incomplete", "failed", "cancelled",
+              "queued", "in_progress",
+          }
+          result = {
+              "model": MODEL,
+              "credential_present": False,
+              "http_status": None,
+              "response_status": None,
+              "answer_ok": False,
+              "error": "missing_credential",
+              "usage": {
+                  "input_tokens": None,
+                  "output_tokens": None,
+                  "total_tokens": None,
+              },
+              "inference_passed": False,
+              "role_boundary_verified": False,
+              "development_ready": False,
+          }
+
+          class RejectRedirects(urllib.request.HTTPRedirectHandler):
+              def redirect_request(self, req, fp, code, msg, headers, newurl):
+                  return None
+
+          def read_object(response):
+              # Response content stays internal; the extra byte detects overflow.
+              body = response.read(MAX_RESPONSE_BYTES + 1)
+              if len(body) > MAX_RESPONSE_BYTES:
+                  return None, "response_too_large"
+              try:
+                  value = json.loads(body)
+              except (ValueError, UnicodeError):
+                  return None, "invalid_response"
+              if not isinstance(value, dict):
+                  return None, "invalid_response"
+              return value, None
+
+          def record_http_error(status, response):
+              result["http_status"] = status
+              if 300 <= status < 400:
+                  result["error"] = "redirect_rejected"
+                  return
+              result["error"] = {
+                  401: "unauthorized",
+                  403: "forbidden",
+                  429: "rate_limit_exceeded",
+              }.get(status, "api_error")
+              # Error body is used only for a fixed error.code classification.
+              value, _ = read_object(response)
+              if value is not None:
+                  provider_error = value.get("error")
+                  if isinstance(provider_error, dict):
+                      code = provider_error.get("code")
+                      if isinstance(code, str):
+                          result["error"] = code if code in SAFE_ERROR_CODES else "api_error"
+
+          def record_success(response):
+              result["http_status"] = response.status
+              if response.status != 200:
+                  record_http_error(response.status, response)
+                  return
+              value, parse_error = read_object(response)
+              if parse_error is not None:
+                  result["error"] = parse_error
+                  return
+              status = value.get("status")
+              if isinstance(status, str) and status in SAFE_RESPONSE_STATUSES:
+                  result["response_status"] = status
+              usage = value.get("usage")
+              if isinstance(usage, dict):
+                  for field in result["usage"]:
+                      count = usage.get(field)
+                      if type(count) is int and count >= 0:
+                          result["usage"][field] = count
+              if status != "completed":
+                  result["error"] = "response_incomplete" if status == "incomplete" else "response_not_completed"
+                  return
+              output = value.get("output")
+              if not isinstance(output, list):
+                  result["error"] = "invalid_response"
+                  return
+              texts = []
+              for item in output:
+                  if not isinstance(item, dict):
+                      result["error"] = "invalid_response"
+                      return
+                  if item.get("type") != "message":
+                      continue
+                  content = item.get("content")
+                  if not isinstance(content, list):
+                      result["error"] = "invalid_response"
+                      return
+                  for part in content:
+                      if not isinstance(part, dict):
+                          result["error"] = "invalid_response"
+                          return
+                      if part.get("type") == "output_text":
+                          if not isinstance(part.get("text"), str):
+                              result["error"] = "invalid_response"
+                              return
+                          texts.append(part["text"])
+              result["answer_ok"] = "".join(texts).strip() == "OK"
+              result["inference_passed"] = result["answer_ok"]
+              result["error"] = None if result["answer_ok"] else "answer_mismatch"
+
+          key = os.environ.get("OPENAI_API_KEY", "")
+          if key.strip():
+              result["credential_present"] = True
+              try:
+                  payload = {
+                      "model": MODEL,
+                      "input": "Reply with exactly OK and nothing else.",
+                      "store": False,
+                      "reasoning": {"effort": "low"},
+                      "max_output_tokens": 256,
+                  }
+                  request = urllib.request.Request(
+                      "https://api.openai.com/v1/responses",
+                      data=json.dumps(payload).encode("utf-8"),
+                      headers={
+                          "Authorization": "Bearer " + key,
+                          "Content-Type": "application/json",
+                      },
+                      method="POST",
+                  )
+                  opener = urllib.request.build_opener(RejectRedirects())
+                  # Exactly one attempt: no retry, checkout, tools or project data.
+                  with opener.open(request, timeout=45) as response:
+                      record_success(response)
+              except urllib.error.HTTPError as error:
+                  try:
+                      record_http_error(error.code, error)
+                  except (urllib.error.URLError, TimeoutError, OSError):
+                      result["error"] = "network_error"
+                  except Exception:
+                      result["error"] = "diagnostic_error"
+                  finally:
+                      try:
+                          error.close()
+                      except Exception:
+                          result["error"] = "diagnostic_error"
+              except (urllib.error.URLError, TimeoutError, OSError):
+                  result["error"] = "network_error"
+              except Exception:
+                  # Never emit exception text, response text, headers or secrets.
+                  result["error"] = "diagnostic_error"
+
+          print(json.dumps(result, sort_keys=True))
+          sys.exit(0 if result["inference_passed"] else 1)
+          PY

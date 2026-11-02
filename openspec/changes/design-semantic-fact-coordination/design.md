@@ -1,5 +1,27 @@
 # Design
 
+## M1分析归属与串行恢复（代理技术决定，m1-project-discovery-1）
+
+本节固定M1执行切片；旧“另批/接口未定”不覆盖本节，ADR-0009及交付隔离门禁仍适用。M1不实现订阅并发/代际取消；单进程同一analysis串行，每个请求独立投影，不允许以未实现M4替代M1基本保存失败/断连诚实性。
+
+本节独占M1Session={analysisId:Id,inputId:Id,root:string,store:string,identityDomain:Id,sourceCommit:string|null,inputDigest:string|null,host:{os:string,arch:string,pythonVersion:string},target:{value:string|null,basisEvidenceIds:Id[],status:"declared"|"unknown"},tools:[{name:string,version:string,status:"verified"|"unknown"|"unavailable"}],profile:"m1-project-discovery-1"}。root/store为host绝对路径；analysisId/inputId/identityDomain均显式UUID登记，inputId只限定输入归属，不作主体身份；实际固定源commit/digest有证才填，不要求通用项目有Git。target未知必须null+unknown，不能从host补。tools记录实际版本；目标配置不是源码语言或宿主。首次请求建立session并在外置#9 SQLite登记，后续analysisId精确核root/store/profile/inputId；不同输入不盲复用，无跨次刷新/监控。
+
+端口：`open_m1(query:M1Query)->M1Session|M1Diagnostic`；`verify_m1(session:M1Session, stored:M1Read)->M1Read`；`current_m1(session:M1Session, read:M1Read)->M1Bundle`；`run_m1(query:M1Query)->M1Result`（供#6装配，#7拥有返回类型）；`observe_m1(event:M1Event)->None`（#5拥有事件）。open仅登记，不构造项目语义；verify核存储session/inputId、profile、工具规则适用，保留全部历史，不能因命中而推来源/语义有效；损坏/输入失配报INPUT_MISMATCH/CONTRACT_INVALID，不把不可核验项供复用。同次固定输入不每查询全量校验，重启须核已存session的输入归属，无法核验则缺口，不自动等同新分析。
+
+current_m1为当前视图唯一owner，#9 read返回规范化完整历史，#8/#7只消费本端口的有效包：
+
+1. Assessment按(declaration.identity,ruleId)分组，Coverage按(selector,subject完整身份或null)分组。只承认同键/同输入、无环、目标存在且证据集合不减少的supersedes边。Assessment允许unresolved→ambiguous/resolved、ambiguous→其候选子集或其一resolved、resolved→同一Project补证；resolved换Project/不可兼容分支不得覆盖，保留各叶并产生CONFLICTING_CLAIMS，不能以“最新”裁真。
+2. Coverage替代要求checkedPaths/证据不减少，消失的旧诊断键必须显式列于resolvedDiagnosticKeys，且新的checkedPaths/实际证据涵盖该诊断path（path=null须有对应新评估/盘点依据）。仍未支持/未决的项不能宣称解决；冲突诊断不能靠替代清除。complete→不完整不作有效替代；无新增需求的冗余失败探测只进M1Event，不推翻仍适用的完整覆盖。违反替代条件保留旧叶/新分支并报CONTRACT_INVALID，不丢失败内容。
+3. 每组只取未被合法替代的叶；旧失败/未决诊断保留在历史及事件，不再混入当前包。多叶一律保留，覆盖按所有相关叶均complete且无当前缺口/冲突才有效；没有Coverage、存在有效未决/矛盾Assessment或对应项缺口均不得视完整。project.*关联项目评估，workspace.member不要求Project评估先resolved。事实自身不因评估收敛删除，#7只按有效resolved评估选Project；相关冲突事实仍随结果和诊断披露。
+4. 返回包只含有效Assessment/Coverage、所需登记/证据及全部当前可用事实；bundle.diagnostics只列当前全局问题和有效叶/矛盾诊断。supersedes历史ID不递归展开；独立阶段失败只在事件/历史中，不当当前缺口。#8规划与#7投影调用同一视图，不各自挑“任一complete”。
+
+执行顺序：open/read/verify→#8 plan_m1（调用current_m1）→#10 acquire_m1→#9 canonicalize_m1合并已存/暂存→#3 validate_model合并包→#9 commit_m1→成功read_m1/verify/current_m1→#7 project_m1。open的新session先留本进程，首次commit连同M1Bundle原子登记；有新增session/记录才提交，无变化not_required并用已有current视图。成功或lookup确认成功都须读到同session且generation不早于回执的规范历史，再投影，不直接用候选ID；重读失败则回执unknown/COMMIT_UNKNOWN，已校验暂存可报告但不承诺规范ID已存。
+
+failed或仍unknown：将prior已存与pending经canonicalize_m1合并/校验/current_m1，保留本次已得事实，回执如实failed/unknown；暂存不冒已发布。下次同进程优先重用已校验暂存，unknown先lookup/read，确认成功转上面的统一规范回流。进程重启只复用已发布且适用内容，不保证未发布暂存/零Token；临时结果仅当前进程session存活期，close/进程结束释放。#9回执addedIds/existingIds只作提交说明，不充当投影ID映射。
+
+每次received/accepted（若有效）/firstResult（若有）/terminated单调时间和M1Event/#5 M1Usage送#5；#6补正常化/打开失败事件，Profile允许query/session=null。盘点完成性、analysisId与acquired/reused/none来源一起传profile_m1，无已核盘点就unknown，不能把[]解释成完整空目录。失败也入总体，必要盘点/副本准备计inventory/acquire，未知成本null。M1Result/#9回执分别拥有语义/持久化状态。M1每次获取失败至多一次本请求重试；未知提交至多一次lookup/规范重读后仍未知即报告，下一显式查询可继续，不挂后台。
+
+
 ## Context
 
 已确认：共享context、ADR-0001/0002和两份主规格；模型A由用户选择但未批准实施。当前无产品实现或性能实测。新设计是候选；细节由授权范围内代理提出，不成为用户确认。讨论、异议及独立复核见本Issue评审目录。

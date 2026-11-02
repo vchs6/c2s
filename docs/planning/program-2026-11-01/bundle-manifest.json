@@ -9,7 +9,7 @@
   "base_revision": "d40cb6c4bfdf5567ee3ca1dde82b31dd58528d8a",
   "historical_issue3_tokens_authorize_implementation": false,
   "digest_algorithm": "SHA-256 over sorted path + TAB + file SHA-256 + LF UTF-8",
-  "bundle_sha256": "7d5d845f46409835a82eb618cd6dc052bdaf6581a0d28a96a9a97222fd9d6aba",
+  "bundle_sha256": "ea84b560161bedde93de65d47d2b75414fea9493674a12ad7515181d19cf3e74",
   "exclusions": [
     "manifest itself",
     "validation execution logs/reports",
@@ -40,6 +40,10 @@
     {
       "path": "ci/acceptance/credential-check.yml",
       "sha256": "0d14238aecf6c52b1d0adbd0880f2f73538835dcf32f67459b2a3da3167f1968"
+    },
+    {
+      "path": "ci/acceptance/inference-check.yml",
+      "sha256": "9c6c54ec7412d99c3c380db8162bd328b399954c6f965cc176ff69f6c87edddb"
     },
     {
       "path": "ci/acceptance/role_sandbox.py",
@@ -102,6 +106,26 @@
       "sha256": "bb5e51b5d2f88b5b611a695ce79fad8520590a307171ee68eb99f48da0598df9"
     },
     {
+      "path": "docs/development/reviews/independent-delivery/ci-setup-2026-11-02/skill-usage.md",
+      "sha256": "691928719d873ff81ad5ec9b47cf57f7ea169120361a194fb63e92e471b4a433"
+    },
+    {
+      "path": "docs/development/reviews/independent-delivery/m1-contract-readiness-2026-11-02/initial-audit.md",
+      "sha256": "a18210b028ad30a306ae5ea88f80a27dd977b934fe76500caefa14d44569d393"
+    },
+    {
+      "path": "docs/development/reviews/independent-delivery/m1-contract-readiness-2026-11-02/refinement.md",
+      "sha256": "9cf73b92cd1501cabd303f1c7d30ba43a957a81178155067fd1a740d2df22659"
+    },
+    {
+      "path": "docs/development/reviews/independent-delivery/m1-contract-readiness-2026-11-02/review-result.json",
+      "sha256": "b875e8eb838dcfe3b4bea55cdc8c97e6ade8fb8ec900b1b17e8e25746c405548"
+    },
+    {
+      "path": "docs/development/reviews/independent-delivery/m1-contract-readiness-2026-11-02/review.md",
+      "sha256": "4fe564c481de902ce612df6f7a2543b3488c8c97f7dbde4cb9993efdf3e7a1fe"
+    },
+    {
       "path": "docs/development/reviews/issues/10/acquisition-survey-2026-11-02/battle.json",
       "sha256": "d482463b6c36ed5020c5afc41f070609e11cd399dedfbf47c64ac87c08ea41a6"
     },
@@ -115,11 +139,15 @@
     },
     {
       "path": "docs/development/reviews/issues/10/acquisition-survey-2026-11-02/experiment-results.json",
-      "sha256": "182dd37c90957f14ee174d660acf873e17dcbaebda5008eee0bcc0edd8159425"
+      "sha256": "af76a2a672c07942e1e51c5f936edc887bf6e7f75fcc473d9aa4c677fac95fd4"
     },
     {
       "path": "docs/development/reviews/issues/10/acquisition-survey-2026-11-02/instructions.json",
       "sha256": "0ebfa0303ee6f9edda9314e51dc6218b39cd905aa86de290536bfd0bb7da7e3f"
+    },
+    {
+      "path": "docs/development/reviews/issues/10/acquisition-survey-2026-11-02/m1-native-interface.md",
+      "sha256": "5c0694f171969f987e5a966765674f3209b84ba0839f5c15c155f96c83674ec2"
     },
     {
       "path": "docs/development/reviews/issues/10/acquisition-survey-2026-11-02/problem-package.md",
@@ -447,7 +475,7 @@
     },
     {
       "path": "docs/planning/program-2026-11-01/milestones.md",
-      "sha256": "587b11790de7f63b44b0f9785f46d1c5d9444bd5eb6e9d057f01f86e420b1c0a"
+      "sha256": "605c65690525bf6b301a85c4f5fa336dc1deeda9757335baa3ae891bd5401f99"
     },
     {
       "path": "docs/planning/program-2026-11-01/overall-review.md",
@@ -455,7 +483,7 @@
     },
     {
       "path": "docs/planning/program-2026-11-01/readiness.md",
-      "sha256": "4757154b31d349e1005444de0d289a1cf7de9dabd09722a685205576c19de3e9"
+      "sha256": "d5294e196b42597c6d01c72660f56265609b97a033048bd465700be32e878583"
     },
     {
       "path": "docs/planning/program-2026-11-01/upstream.md",
@@ -471,7 +499,7 @@
     },
     {
       "path": "docs/workflow/agent-governance.md",
-      "sha256": "e5b11d28a90e064a9baf1350c1423a5da7bc72edf373679e462479761d419465"
+      "sha256": "8d06c1af46a5800588e4d82ed43ee943ecbf70fc86874a18b7f31e639b9a5fbc"
     },
     {
       "path": "docs/workflow/battle-protocol.md",
@@ -479,11 +507,11 @@
     },
     {
       "path": "docs/workflow/ci-setup.md",
-      "sha256": "763b2c2f037acdea71b5b392c909639cf85ce57ebabb4e68cb2ac3c355d9c143"
+      "sha256": "ec8e0c72a8cca319e4ceb1a042c3b6f5a907c66ddd38a3f4ffd30e1e78c89d99"
     },
     {
       "path": "docs/workflow/ci.md",
-      "sha256": "331c20ee9630623a60b0db3a4fe211ab02c9cbaf6d367be0553ade85e0b40f2b"
+      "sha256": "2678e99c33d8d4de0aac852bde0eb218bc602e73c67a5a12ea6a5e201d7b7141"
     },
     {
       "path": "docs/workflow/decision-policy.md",
@@ -507,7 +535,7 @@
     },
     {
       "path": "openspec/changes/define-independent-ddd-delivery/design.md",
-      "sha256": "e93f25a1109ad9632dc2a82224e17b281bfd65d15d94b49277c3d1e8283d69ea"
+      "sha256": "6945ef0c355b635f527e44b62fbe6db96c6e1a73130b6d3176f4ae66c7dcf874"
     },
     {
       "path": "openspec/changes/define-independent-ddd-delivery/proposal.md",
@@ -523,7 +551,7 @@
     },
     {
       "path": "openspec/changes/define-independent-ddd-delivery/tasks.md",
-      "sha256": "74a5fc9e8e5a95327b0a0ccc6e7020c9f82056e875c3c53d946c1d842771456d"
+      "sha256": "9b7b941ace1a707da41be5d3faad9c40e100dd7b10a7e95335302f0342a6f2cf"
     },
     {
       "path": "openspec/changes/define-layered-semantic-fact-model/.openspec.yaml",
@@ -531,7 +559,7 @@
     },
     {
       "path": "openspec/changes/define-layered-semantic-fact-model/design.md",
-      "sha256": "a0456bf5a7a4a9bcec8f375f49a8fe5459ee8c59c22a77f0c0605c948b0803fa"
+      "sha256": "7c12cb6862a9348ce0de0dfa3c042e3d5843ba42e30957441c7f3b6813e9df02"
     },
     {
       "path": "openspec/changes/define-layered-semantic-fact-model/proposal.md",
@@ -555,7 +583,7 @@
     },
     {
       "path": "openspec/changes/define-layered-semantic-fact-model/tasks.md",
-      "sha256": "b4a36eafbd7e138724ba88559b9095341e527b79d4951bd9ef707cffa779d45f"
+      "sha256": "f2977eb70eb9b4f117d05ad78c8b15f6e385c519691099f6e74fcf6a7384a691"
     },
     {
       "path": "openspec/changes/define-semantic-analysis-quality-goals/.openspec.yaml",
@@ -563,7 +591,7 @@
     },
     {
       "path": "openspec/changes/define-semantic-analysis-quality-goals/design.md",
-      "sha256": "e946d8547a1fae06d066f2dec46f17cd18f64a9fdb701536bfac57cef7cf45f7"
+      "sha256": "8029b903309c79136016454a5f9271c233cfdde822c75c47d2a3759acf7985e4"
     },
     {
       "path": "openspec/changes/define-semantic-analysis-quality-goals/proposal.md",
@@ -579,7 +607,7 @@
     },
     {
       "path": "openspec/changes/define-semantic-analysis-quality-goals/tasks.md",
-      "sha256": "3df59cb0a36e649dd9f0f14edc01d0c9420174a051a85e9c7f074ce7befd4c42"
+      "sha256": "0496a083865e1ece6ab91f03bb76362bbc073b5d11aa5ee5114b8b96c74f0f32"
     },
     {
       "path": "openspec/changes/define-semantic-fact-query-contracts/.openspec.yaml",
@@ -587,7 +615,7 @@
     },
     {
       "path": "openspec/changes/define-semantic-fact-query-contracts/design.md",
-      "sha256": "ece328688be94815181b6162aabe5d1892869d8aea63148237aa9681c2aae39e"
+      "sha256": "27dadcc09d61b815303a702e7a2239a462e0fa477e6cf2f623f02d8835d907f0"
     },
     {
       "path": "openspec/changes/define-semantic-fact-query-contracts/proposal.md",
@@ -599,7 +627,7 @@
     },
     {
       "path": "openspec/changes/define-semantic-fact-query-contracts/tasks.md",
-      "sha256": "bc78d1cf54894b4bfe1b920249d8df086a367419702af20f4eb792bee3dfb9ff"
+      "sha256": "8578c920d1766437adf9339b834f2b766142cd2be0414828918d62039ea87794"
     },
     {
       "path": "openspec/changes/design-incremental-semantic-fact-storage/.openspec.yaml",
@@ -607,7 +635,7 @@
     },
     {
       "path": "openspec/changes/design-incremental-semantic-fact-storage/design.md",
-      "sha256": "da8d49330077f53641599d4b702993b655b3f251b90ef2bbcc80708365e5bcec"
+      "sha256": "f32e2f9b84add5c100eb67c9ad6ba4cb068bf0e7e7c693d722690a2336a4c5bb"
     },
     {
       "path": "openspec/changes/design-incremental-semantic-fact-storage/proposal.md",
@@ -619,7 +647,7 @@
     },
     {
       "path": "openspec/changes/design-incremental-semantic-fact-storage/tasks.md",
-      "sha256": "7b8ccf15b0e242c660b71f28175a27c9b801c98e07104d7dc69abc311cd6ffa1"
+      "sha256": "8b1fc2e6dceb5dbd5fbe71de22cdc8cbe7f7d1ff6aba83d5d6bee26d6bae16f2"
     },
     {
       "path": "openspec/changes/design-lazy-semantic-fact-construction/.openspec.yaml",
@@ -627,7 +655,7 @@
     },
     {
       "path": "openspec/changes/design-lazy-semantic-fact-construction/design.md",
-      "sha256": "e8e411a8bb81c51271e2d374c9c172904d0c611e751f0009c221e9f728facbab"
+      "sha256": "c9f6f2f5058c5a04bd141433449105c423dc9af68134f1a42bee0680d65ba095"
     },
     {
       "path": "openspec/changes/design-lazy-semantic-fact-construction/proposal.md",
@@ -639,7 +667,7 @@
     },
     {
       "path": "openspec/changes/design-lazy-semantic-fact-construction/tasks.md",
-      "sha256": "d62fb49efe50183323fcf6dc8bd9b21c4efe5c8073a38c7643736beefa05c1ce"
+      "sha256": "9bb2d1b88e6799d884d193fd1feacb44c9c53af1179d6f0f6b867052a6362ff6"
     },
     {
       "path": "openspec/changes/design-semantic-fact-coordination/.openspec.yaml",
@@ -647,7 +675,7 @@
     },
     {
       "path": "openspec/changes/design-semantic-fact-coordination/design.md",
-      "sha256": "6e99afd67cb102afa6d2fc1cf9c1f7ae829e3d962d25fd8464938eddd2fa862c"
+      "sha256": "ed48e07b6fc4b7ca199afd8236a76b6ed85feadedf68640c627d704622f501fa"
     },
     {
       "path": "openspec/changes/design-semantic-fact-coordination/proposal.md",
@@ -659,7 +687,7 @@
     },
     {
       "path": "openspec/changes/design-semantic-fact-coordination/tasks.md",
-      "sha256": "089e5541ee8fe9f21f534499d4d7589d30d0b86e031fbd22dcc0c7ea795ae883"
+      "sha256": "1823177e79d64a24057ee03c2c276993a92782d33fdb12f0a5e6dbe74e280460"
     },
     {
       "path": "openspec/changes/design-semantic-fact-skill-architecture/.openspec.yaml",
@@ -667,7 +695,7 @@
     },
     {
       "path": "openspec/changes/design-semantic-fact-skill-architecture/design.md",
-      "sha256": "9aacd7656416101e03ac9d4ec0f527bacaa7eb88b81529be05d247b89e122d77"
+      "sha256": "8a128f074b9ba49cdcfc80b29269691512c326fcacd90f4ff54f2273b62d41a7"
     },
     {
       "path": "openspec/changes/design-semantic-fact-skill-architecture/proposal.md",
@@ -679,7 +707,7 @@
     },
     {
       "path": "openspec/changes/design-semantic-fact-skill-architecture/tasks.md",
-      "sha256": "e8f94b0217c2e97f16a25b1b81c9da9d9169bd452a8a244b3569491b8bcf3940"
+      "sha256": "d8797421c7434c2dc8ae7eaafa8106819d0a595bee7fc6f463030493f84321b4"
     },
     {
       "path": "openspec/changes/minimize-semantic-extraction-tokens/.openspec.yaml",
@@ -687,7 +715,7 @@
     },
     {
       "path": "openspec/changes/minimize-semantic-extraction-tokens/design.md",
-      "sha256": "7695c11328d3f9bc8b1af4c5f1d1eadf1ea8deb1be5071650b619867e6b98cb9"
+      "sha256": "9d1dccf7ddda19d280785462c333fe16044fea141d760a6f4ba3c4a4eac9bb9e"
     },
     {
       "path": "openspec/changes/minimize-semantic-extraction-tokens/proposal.md",
@@ -699,7 +727,7 @@
     },
     {
       "path": "openspec/changes/minimize-semantic-extraction-tokens/tasks.md",
-      "sha256": "daa746ef45cb0244b9ef21b86d26bec3d590e0912812012a6ff256234abd1a8f"
+      "sha256": "daacdd34fde105112857dab63610c039789dd7c865bda0769f5923a38ceb9019"
     },
     {
       "path": "openspec/changes/plan-semantic-fact-skill/.openspec.yaml",
@@ -739,7 +767,7 @@
     },
     {
       "path": "openspec/changes/survey-semantic-acquisition-capabilities/design.md",
-      "sha256": "4fc0d35558691fdcd7c1e9c32dd482a0f8e617aa2b1412239c4961b617a169fd"
+      "sha256": "4bc0a6f91d9cb6f3fde017e3153214ead4abfbc12ff48e22950038a493f631f9"
     },
     {
       "path": "openspec/changes/survey-semantic-acquisition-capabilities/proposal.md",
@@ -751,7 +779,7 @@
     },
     {
       "path": "openspec/changes/survey-semantic-acquisition-capabilities/tasks.md",
-      "sha256": "117805d669a45fbdd4aa4dc1586d23e03d8d40f2759f44cc6e54919389bfaf59"
+      "sha256": "d50ab544325aded515ce9e65cdbe3376a4ebbab7b0470f3c47c00a43c2b49a6e"
     },
     {
       "path": "openspec/config.yaml",
@@ -795,10 +823,10 @@
     },
     {
       "path": "skill/README.md",
-      "sha256": "701a088b1790d8e402259985e2649ed18be353b9a243710b173e08e2b46bd7d4"
+      "sha256": "c99ce4a146fb98e10dc04d8cc34fc3dd0b32f3c83c582ac571e4bacd264b942a"
     }
   ],
-  "supersedes_bundle_sha256": "f614d704b95f9132ae314d0e21cd618a8f28b50de3047d29aa9618a90fce1fd3",
+  "supersedes_bundle_sha256": "7d5d845f46409835a82eb618cd6dc052bdaf6581a0d28a96a9a97222fd9d6aba",
   "confirmed_initial_source_languages": [
     "Rust",
     "Python"
@@ -844,5 +872,12 @@
   "development_authorized": true,
   "authorization_ref": "docs/decisions/0009-continuous-development-authorization.md",
   "readiness_complete": false,
-  "implementation_started": false
+  "implementation_started": false,
+  "m1_contract_design_review": {
+    "profile": "m1-project-discovery-1",
+    "status": "pass-after-local-corrections",
+    "implementation": false,
+    "full_delivery_readiness": false,
+    "evidence": "docs/development/reviews/independent-delivery/m1-contract-readiness-2026-11-02/review-result.json"
+  }
 }

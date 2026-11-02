@@ -1,5 +1,24 @@
 # Design
 
+## M1项目发现适配端口（代理技术决定，m1-project-discovery-1）
+
+ADR-0009已授权公开试验及准备；本节是接口规划，不把现有AST/CRG探索当本端口已验证。M1仅项目发现/列表、明确语言声明及原生workspace成员；其他谓词UNSUPPORTED_PREDICATE，未支持工程格式保留UNSUPPORTED_SOURCE，不把未识别当不存在。采用原生声明读取加Cargo metadata；与整套代码图相比，无需为此切片构建类型/调用图；CRG/Serena等候选的全量试验不作本切片前置。
+
+本节独占M1Entry={path:Path,kind:"file"|"directory"|"symlink"|"other",sizeBytes:int|null,state:"readable"|"unreadable"|"unfollowed",diagnostics:M1Diagnostic[]}；M1Acquired={bundle:M1Bundle,artifacts:M1Artifact[],inventory:M1Entry[],inventoryComplete:bool,diagnostics:M1Diagnostic[]}。输入M1Need/#8、M1Session/#12、已核验M1Read/#9（其中Registration/Artifact唯一归#3）；端口`acquire_m1(needs:list[M1Need], session:M1Session, prior:M1Read, current:M1Bundle)->M1Acquired`。不重复定义Fact/Evidence/Assessment/Artifact；经#3 register_m1登记身份后产生候选，#12负责校验/提交。current由#12 current_m1产生，prior保留完整历史/规范附件供定位和复用；每次Need可复用同session已有盘点/原生结果，不默认重新扫描全部目录。补证成功时#10产生新Assessment/Coverage的supersedes（指向current对应键叶）、非减少证据与已解决诊断键，#12验证后生效；原失败留历史/事件，新叶只列仍未解决项。不得自选最新记录或发无依据替代边。Cargo成员依据的原始stdout以M1Artifact留存，Evidence指向附件字节范围并保toolName/version；不可只引用Cargo.toml字节冒充解析结果证据。
+
+范围盘点从root递归，含未跟踪、忽略、测试、示例、隐藏及嵌套目录，不使用Git/工具默认忽略缩小范围；所有目录项记录M1Entry，权限/特殊文件不读为普通源码。符号链接本切片不跟随，以SYMLINK_UNFOLLOWED及覆盖缺口披露，不静默排除；越界成员只留OUTSIDE_SCOPE缺口，不越界扫描或伪造内部Package。允许必要盘点，不提前解析所有程序语义。覆盖.complete仅在完整盘点、所需格式/声明处理均无已知缺口时true；不认识的工程声明/格式保留能力缺口，不能从可识别的Cargo/Python声明推出目录内只有这些项目。
+
+所选Rust路径：Python3 TOML读取器（tomllib，运行期>=3.11）读取Cargo.toml，[package]/[workspace]分别登记SourceDeclaration；Cargo运行前以实际`cargo --version`绑定版本，`cargo metadata --format-version 1 --no-deps --offline --manifest-path <绝对Cargo.toml>`在外置副本、cwd明确执行，超时60秒；stdout按JSON格式1解析packages(id,name,manifest_path,targets.src_path)、workspace_members、workspace_root。opaque package id只映射PackageSpecification的sourceKey，不解析ID文本当领域身份；members必须实际在workspace_members，不能按目录或packages全集推导。无Cargo/非零/超时/未知格式为TOOL_FAILED，仍可报告已读声明，不能假装成员已解析。只消费当前请求需要字段，不取resolve依赖图、构建或宏展开。副本/缓存映射回root证据路径，原目录不得改写；复制范围与耗时/磁盘写入入#5，无法安全准备则缺口。
+
+ProjectBoundaryAssessment规则（ruleId="m1-engineering-boundary-1"）是有来源的工程判定，不是manifest=Project：Rust须[package]独立包声明+metadata给出至少一个可回指范围内存在源码的target；Python须pyproject.toml的[project].name+[build-system].build-backend以及该backend明确绑定的范围内源码入口。M1只实现flit_core.buildapi规则：模块名取[tool.flit.module].name，否则[project].name按Flit规则连字符转下划线；检查<module>.py/<module>/__init__.py或src对应路径，恰一入口才resolved。同一声明多个可能工程边界记录候选Project且ambiguous，依据不足unresolved；没有依据不创建确定Project。SourceDeclaration/PackageSpecification/Project身份分开登记，用Assessment联系；workspace本身不升级Project。已登记Project后补证/收敛不得重键。其他Python backend、旧setup.py、影响当前所需字段或入口判定的动态module映射、非Rust/Python声明保留相应未决及UNSUPPORTED_SOURCE，后续扩展不作M1前置。动态version不属于M1三个选择项；如project.name和Flit源码入口已有充分依据，不因未解析version阻塞整个Project。仅当动态值实际影响本次所需名称/语言声明/入口映射时，按受影响项报告缺口；不新增版本查询，不静默忽略真正动态入口。
+
+project.name来自对应明确元数据；project.language_declared仅Rust的Cargo包/target声明和Python的明确Python classifiers或requires-python声明支持，证据列出原字段；无明确语言声明保留缺口，不从文件扩展名推语言全集。workspace.member来源Cargo metadata的原生成员；Python无统一原生workspace接口，本切片不造workspace，也不能据此宣称Python不存在workspace。盘点中发现其他workspace声明时报告未支持。所有输出claimMode=declaration，工程判定Assessment另带ruleId，不生成运行观测/否定。
+
+sourceKey采用规范JSON字符串{adapter:"cargo-v1"|"pyproject-flit-v1",kind:主体kind,manifest:根相对清单路径,section:"package"|"workspace"|"project",slot:string}；Cargo的包/声明取package、workspace取workspace，Python取project；slot通常空串，Project候选为边界源码入口的根相对路径（多个Rust targets按已确认同一包边界共享空slot，不按target复制Project）。SourceDeclaration/PackageSpecification/Project的kind不同故键不同；metadata不透明package id仅作为本次输出→该注册键的映射，不解析文本。路径用于登记查找而不替代随机身份；已存登记表才是同次身份依据。规则收敛只补评估/证据，不改变既有sourceKey对应的身份；无法判明两个声明是否同一工程时保留未决，不按同名合并。
+
+实际可用性仍须#10 3.1/3.2的M1子切片在固定regex 94ac45b2a6e7b1c30927feb5b66c5ded5b7ad447、click 2247b35ea1c47c727d7a06e51fa280e12a863ff6核对metadata/API、Flit绑定、盘点/副本副作用与成本；未测工具/host组合标unknown。host工具与Skill同平台；项目target在#12单列，metadata无target参数不证明其他构造配置。此处不捏造命令运行结果，不要求所有候选先安装。
+
+
 当前执行授权接续：ADR-0009已允许必要准备/安装/工具试验及准备通过后的连续开发；下文旧“不实施/另批”描述历史阶段，不撤销当前授权。真实就绪/隔离仍未通过，见readiness.md，不冒已完成。
 
 ## Context

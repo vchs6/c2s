@@ -11,3 +11,5 @@
 账户bootstrap及公开容器探针接续见[ci-setup.md](ci-setup.md)。该探针不调用模型、不触发产品开发，始终报告development_ready=false；账户配置与完整五角色隔离分别验证。
 
 当前接续：用户账户bootstrap成功回执已收录，连接器可向现有私有验收仓库部署workflow；旧无建仓/Secrets接口的限制不再阻塞此部署。私有credential诊断已实跑通过，Secret可见/API认证200；仍未证明推理/账单、完整角色工具入口或产品验收。原就绪任务继续，正式编码上下文不能使用协调者的admin连接器。
+
+执行入口备选：当前直接Responses API诊断因credit_balance_exhausted受阻；并非项目要求只能使用API余额。可保留CI确定性校验，另用以ChatGPT登录的Codex本地/受信执行环境承担模型任务；官方也有仅适用受信私有runner的进阶账号认证方案。该备选当前未部署，认证来源/维护/隔离交接需实证，不复制当前宿主登录文件来冒已具备授权。依据https://learn.chatgpt.com/docs/auth与https://learn.chatgpt.com/docs/non-interactive-mode。符合资格的Pro/Business还可领取组织API赠送额度，但资格/支持用途须按官方说明核验，不承诺用户账户符合；该赠送额度不增加已登录Codex订阅限额，也不支持Codex API-key用量。https://developers.openai.com/api/docs/guides/chatgpt-api-credits。

@@ -1,0 +1,26 @@
+{
+  "scope": "M1 project discovery contract design only",
+  "design_profile": "m1-project-discovery-1",
+  "domain_baseline_changed": false,
+  "product_schema_or_code_created": false,
+  "product_tasks_completed": false,
+  "independent_author": {
+    "agent": "m0_contract_audit",
+    "model": "gpt-6.1-sol",
+    "reasoning": "medium"
+  },
+  "independent_reviewer": {
+    "agent": "m1_contract_review",
+    "model": "gpt-6-astra",
+    "reasoning": "high"
+  },
+  "review_result": "PASS after F1-F4 correction; ownership summary sentence synchronized",
+  "tool_evidence": "docs/development/reviews/issues/10/acquisition-survey-2026-11-02/experiment-results.json#m1_native_interface_experiment_2026_11_02",
+  "role_evidence": "docs/development/reviews/independent-delivery/ci-setup-2026-11-02/role-boundary-probe.json",
+  "remaining": [
+    "actual full model role tool broker and artifact handoff",
+    "API inference blocked: credit_balance_exhausted",
+    "native failure/symlink/unreadable/unknown-backend coverage not yet run",
+    "product implementation and independent real-project acceptance pending"
+  ]
+}

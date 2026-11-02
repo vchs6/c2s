@@ -1,5 +1,14 @@
 # Design
 
+## M1需求计划切片（代理技术决定，m1-project-discovery-1）
+
+本节取代M1的“接口待定/另批”历史描述，授权按ADR-0009，实施等独立门禁。只覆盖#7 M1Query三种select，不以M2–M4计划冻结为前置。独占记录（记法引用#3）：M1Need={needId:Id,selector:string,subject:M1SubjectRef|null,reason:string}；subject=null表示全目录该请求项；needId为对analysisId+selector+subject身份+profile的规范JSON SHA256（仅内部工作键，不是主体身份）。M1Plan={requestId:Id,reuse:M1Bundle,needs:M1Need[],diagnostics:M1Diagnostic[]}。
+
+`plan_m1(query:M1Query, session:M1Session, stored:M1Read)->M1Plan`是唯一需求规划端口；#7/#12/#9分别拥有输入类型。先消费#12 verify_m1结果并调用current_m1(session,stored)，仅其当前bundle可填reuse；不直接遍历历史选任一complete。对每个支持select，只有当前全域Coverage叶全部complete且无相关当前缺口/冲突才复用；否则列Need并保留已得内容。未知字符串是合法Query项，本#8为能力检查唯一owner，逐项产UNSUPPORTED_PREDICATE（recordId=selector/path=null）进M1Plan.diagnostics，无Need；支持项继续，全部未知时needs=[]。#12将这些诊断作为project_m1的request_diagnostics原样传递，不能把空needs当语义完成。不从project.list自动增加语言/成员需求。
+
+#10按Need执行目录盘点和必要声明读取，记录内部依赖理由；全目录盘点不构造E2–E4语义。停止于项已满足、明确工具/格式/配置能力缺口或本次失败；每个停止缺口附Diagnostic，不能把有限解析覆盖冒整个请求complete。保存失败的已核验暂存由#12保留，本计划可以复用其包，只把未存部分交#9；本能力不拥有事务或并发共享。生产者#8→消费者#12，M1Need同时供#10；#12不另造需求键。
+
+
 ## Context
 
 已确认：共享context、ADR-0001至0007及对应正式规格；模型A由用户选择但未批准实施。当前无产品实现或性能实测。新设计是候选；细节由授权范围内代理提出，不成为用户确认。讨论、异议及独立复核见本Issue评审目录。

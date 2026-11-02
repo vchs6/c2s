@@ -52,3 +52,15 @@ python3 scripts/configure_ci.py --apply --set-model-key
 ## 用户本地bootstrap完成后的接续
 
 用户已提供status=account_bootstrap_applied、bootstrap_configured=true回执，连接器已独立读回私有验收仓库。此前云端CLI网络阻塞仅保留为历史诊断；不能再要求用户重做已完成的账户基础配置。使用现有连接器部署不含suite的认证workflow，并读取实际托管结果；模板见ci/acceptance/credential-check.yml。model_key_set=false只表示该次脚本未写Secret，不是不存在的证据。认证GET成功也不证明生成模型/账单可用或完整隔离；后续仍按原门禁验证。
+
+短推理健康检查已实际返回HTTP429/credit_balance_exhausted，证明密钥可认证不等于有推理额度。当前需账户所有者在该密钥所属OpenAI组织恢复可用API余额；不重建密钥、不自动改预算或反复重试。细分code依据官方https://developers.openai.com/api/docs/guides/error-codes。恢复后重跑inference-check，再继续模型角色工具/交接门禁，不重复基础账户配置。开发模型按docs/workflow/agent-governance.md路由，探针固定模型不是全任务模型选择。
+
+恢复不只有充值一路：当前API路径余额不足属实；Codex的ChatGPT订阅认证是可选执行入口。API余额恢复、符合资格时领取API赠送额度、或重新部署订阅认证的受信执行入口，均需各自验证；不能将“需恢复API余额”误写成所有开发方式的硬要求。当前没有替用户选择付款/改计费或迁移订阅认证。
+
+## Codex以ChatGPT订阅登录
+
+在实际执行模型任务的可信终端先运行`codex login status`。若已显示Logged in using ChatGPT，不重复登录；若未登录，运行`codex login`并在浏览器选择ChatGPT账户登录。若现为API-key登录且明确要切换，先logout再login。对无人值守设备，官方另支持设备码登录，但应先核网络/账户权限，不循环生成设备码。登录配置只作用于该执行环境，不自动迁移到GitHub托管runner；已有OPENAI_API_KEY Secret不变成ChatGPT密码或订阅认证。
+
+当前云端CLI0.166.0实际login status为Logged in using ChatGPT；移除仅子进程的API-key环境并以read-only/ephemeral运行仅回复OK的60秒健康检查超时，故只证明已登录，不证明可完成推理或已建立角色隔离。证据subscription-login-check.json；不修改/导出认证文件，不将宿主会话复制进CI。
+
+本项目建议的备选是Codex订阅登录承担模型工作、GitHub CI继续做确定性检查；若确需私有CI账户认证，须按官方受信私有环境指南管理安全凭据与刷新，并实际验证角色边界，不能向公开/开源workflow放账户认证缓存。当前该迁移未部署。官方依据https://learn.chatgpt.com/docs/auth及https://learn.chatgpt.com/docs/non-interactive-mode。

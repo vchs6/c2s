@@ -1,5 +1,45 @@
 # Design
 
+## M1项目发现切片契约（代理技术决定，m1-project-discovery-1）
+
+本节是交付2.1的局部契约细化，不是新增用户确认、Schema或产品完成。后文旧“另批/全目录先完成”不适用于此切片：ADR-0009授权仍有效，实施仍须交付就绪/隔离门禁。M1仅发现/列出有边界依据的项目、项目语言声明、原生workspace成员；不是“完整所有项目事实”。M2–M4未消费类型不作为M1前置。本节记录由本change独占定义；其他change只引用，未来落入contracts/semantic-model，不在本轮创建。
+
+记法：JSON记录所有列出字段必填，`?`才可省略；`T|null`必须显式给值；数组允许空；Id为非空字符串，Path为保留大小写/Unicode的根相对路径（分隔符/原始host路径转换见Evidence），枚举大小写精确；未列字段拒绝。不以缺省值填未知。模型载荷version="1.0.0"，profile="m1-project-discovery-1"；同版本同profile目录内容固定，改变该切片含义须新profile/契约版本，M2另行扩展，不同版包不混用。
+
+| 精确记录 | 字段/约束 |
+| --- | --- |
+| M1Identity | {authority:Id, domainId:Id, localId:Id}；身份三元组，层/路径/摘要/工具UID不入身份 |
+| M1SubjectRef | {identity:M1Identity, kind:"Project"\|"PackageSpecification"\|"NativeWorkspace"\|"SourceDeclaration"}；本切片不使用contextRef |
+| M1Registration | {ref:M1SubjectRef, sourceKey:Id, evidenceIds:Id[]}；evidenceIds非空；sourceKey仅作同一分析输入内声明定位到已登记身份的查找键，不是身份编码 |
+| M1Artifact | {artifactId:Id, mediaType:"application/json", sha256:string, content:string}；保留原生JSON输出，摘要对应content的UTF-8字节；作为来源附件外置保存，不是语义事实，不投影原始内容到查询结果 |
+| M1Evidence | {evidenceId:Id, source:"input"\|"tool_output", path:Path\|null, artifactId:Id\|null, originalPath:string, sha256:string, startByte:int, endByte:int, method:Id, toolName:string\|null, toolVersion:string\|null}；input须path非null/artifactId=null，tool_output相反且附件可解；摘要为小写SHA256，原始来源字节区间[0<=startByte<=endByte<=来源字节数)，可指整文件/输出；不调用网络核验，不带源码全文 |
+| M1Diagnostic | {code:Id, severity:"error"\|"gap"\|"conflict"\|"info", recordId:Id\|null, path:Path\|null, message:string}；message非空，不含私有用例/凭据 |
+| M1Assessment | {assessmentId:Id, declaration:M1SubjectRef, status:"resolved"\|"ambiguous"\|"unresolved", projects:M1SubjectRef[], ruleId:Id, evidenceIds:Id[], supersedes:Id[], diagnostics:M1Diagnostic[]}；declaration为SourceDeclaration，projects仅Project；resolved恰1、ambiguous至少2、unresolved为0；依据非空；supersedes仅同声明/规则的旧assessmentId |
+| M1Fact | {factId:Id, predicate:Id, subject:M1SubjectRef, value:string\|M1SubjectRef, claimMode:"declaration"\|"interpretation", condition:{kind:"true"}, evidenceIds:Id[]}；evidenceIds非空；本切片不推导配置相关/运行观测/否定主张，不能表达时报告缺口，不能删条件冒true |
+| M1Coverage | {coverageId:Id, selector:string, subject:M1SubjectRef\|null, checkedPaths:Path[], evidenceIds:Id[], complete:bool, supersedes:Id[], resolvedDiagnosticKeys:string[], diagnostics:M1Diagnostic[]}；selector对应请求项，subject=null表示指定目录全域；supersedes仅同selector/subject的旧coverageId，resolvedDiagnosticKeys为被替代项已补齐缺口的规范(code,recordId,path)JSON键；complete仅表示该项本次取得无已知缺口，不证明语义真值 |
+| M1Bundle | {version:"1.0.0", profile:"m1-project-discovery-1", registrations:M1Registration[], assessments:M1Assessment[], facts:M1Fact[], evidence:M1Evidence[], coverage:M1Coverage[], diagnostics:M1Diagnostic[]}；每类ID包内唯一，全部内部主体引用须登记、证据引用须存在；响应只留选中顶层事实及必要引用/依据，不能嵌入子对象定义 |
+
+M1Fact的封闭谓词目录如下；每事实subject/value恰1，主层均E0，condition固定true仅用于上下文无关声明。project.name在同适用条件为单值，其他为多值；冲突保留双方，不最后写者裁真。名/语言是attribute，成员是association，不推归属。
+
+| predicate | subject.kind | value | 含义 |
+| --- | --- | --- | --- |
+| project.name | Project | 非空string | 有来源的项目名称；不作主体身份 |
+| project.language_declared | Project | 非空string | 元数据明确声明的源语言名称；规范Rust/Python分别"rust"/"python"，其他原值保留并报告支持边界；不从扩展名统计推“仅有这些语言” |
+| workspace.member | NativeWorkspace | PackageSpecification引用 | 原生声明/原生接口确认的成员，不把成员自动改成Project或推所有权 |
+
+诊断code封闭集合：INVALID_REQUEST、UNSUPPORTED_CONTRACT、UNSUPPORTED_PREDICATE、UNSUPPORTED_SOURCE、READ_FAILED、PARSE_FAILED、TOOL_FAILED、OUTSIDE_SCOPE、SYMLINK_UNFOLLOWED、UNRESOLVED_PROJECT、AMBIGUOUS_PROJECT、CONFLICTING_CLAIMS、CONTRACT_INVALID、INPUT_MISMATCH、SAVE_FAILED、COMMIT_UNKNOWN。来源定位/字段/引用校验细节放message；validate_model原全模型诊断结构仍适用，由公共适配明确映射到上述code，不能临时发明枚举。
+
+身份登记端口（模型所有）：`register_m1(domain_id:str, registrations:list[M1Registration], kind:str, source_key:str, evidence_ids:list[str]) -> M1Registration|M1Diagnostic`。同一固定输入内已绑定sourceKey/kind必须返回既有身份并补证；新声明显式分配UUID localId，authority="c2s-local"，domainId为调用者传入的#12 M1Session.identityDomain；源键冲突kind为CONTRACT_INVALID，不猜连续性。sourceKey为获取器版本化的原生声明键；只用于查已有登记，不能输出成身份。登记表随#9提交/重读，移动host、补证或Project评估收敛不重键；跨次连续性策略不在本切片。
+
+Registration的ref.identity/ref.kind/sourceKey不可变，evidenceIds为集合并集追加；补证不是“同ID异载荷”错误。Evidence/Artifact的同ID内容不可变；Fact同ID的主张键不可变但证据可并集。Assessment/Coverage本体同ID不可变，补证/取得进展创建新ID并显式supersedes旧ID，所有旧记录保留。supersedes必须同输入/同键、无环、目标已在提交历史或同批出现；它是存储历史链接而非主体引用，当前响应可只留链接ID不展开旧记录，不能因此捏造SubjectRef。是否可替代、哪些叶仍有效由#12 current_m1唯一规定，#9只验证/保存该受控关系。旧失败诊断附对应Coverage/Assessment或阶段事件，不作为永久bundle全局缺口复制到新当前视图；bundle.diagnostics仅保仍适用的全局契约/输入诊断。
+
+来源观察输入M1Observations（本模型所有）={items:[{evidenceId:Id,status:"verified"|"unchecked"|"mismatch",observedSha256:string|null}]}；verified必须有相符摘要，mismatch必须有已观察不同摘要，unchecked为null；None或缺少该证据项均unchecked，不擅自读取/联网。#12根据固定输入已观察来源与实际附件存在/摘要产生，来源不适用不能靠存储命中改成verified。
+
+校验端口沿用`validate_model(document:dict, catalogs:dict, source_observations:dict|None=None)->dict`，document在M1为M1Bundle，source_observations若非None须M1Observations形状；返回{valid:bool,stages:{catalog,structure,references,invariants各为pass/fail/partial/not_run},diagnostics:[{stage,recordRef,fieldPath,ruleCode,severity,relatedRefs,message}],consistency:"consistent"|"conflicting"|"undetermined"}。recordRef/fieldPath/message为string，relatedRefs为string[]，severity=error/conflict/gap/info；catalog/structure失败使依赖阶段not_run。valid只表示无契约error；合法冲突仍valid且consistency=conflicting。M1无算法阶段/条件SAT前置。目录校验、已知本地Schema及manifest固定摘要规则沿用§6；本轮只规划，不生成文件。
+
+生产者/消费者：#10经register_m1产生Registration/Evidence/Assessment/Fact/Coverage/Diagnostic及M1Artifact附件；#3验证、#9存储、#8规划、#12核验/#7投影、#5计量消费M1Bundle。附件由#10产出、#9与候选同事务保存/读取，#12将附件存在/摘要核验结果以source_observations传校验器；#7只投影Evidence引用，不回显原始输出夹带额外事实，保存失败须说明附件未持久化。Assessment的工程判定规则归#10，基本类型/基数/引用约束只归本节。M1子任务只依赖本切片；父3.1原全条件依赖保留给完整任务。
+
+
 ## Context
 
 Issue #3阶段一：评审与候选规划；状态 **awaiting-decision（方案A已选择，等待实施批准）**。读取基点为`18370af506d2153d0dae66a4d9536499a2b08114`。动机及范围见proposal.md；固定约束为ADR-0001/0002与两份主规格，均不修改。现有公共目录、Schema、契约校验器及产品测试尚未实现。

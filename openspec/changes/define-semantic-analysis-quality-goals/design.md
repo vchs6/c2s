@@ -1,5 +1,23 @@
 # Design
 
+## M1公开测量记录（代理技术决定，m1-project-discovery-1）
+
+本节独占计量记录，其他change只消费；ADR-0009授权及独立门禁继续适用，M2–M4优化不作开始M1前置。记法/基础类型沿用#3；不含源码/提示正文。
+- M1Event={eventId:Id,requestId:Id,attemptId:Id,needId:Id|null,operationId:Id|null,stage:"normalize"|"read"|"plan"|"inventory"|"acquire"|"validate"|"commit"|"project",clockId:Id,startNs:int,endNs:int,outcome:"complete"|"partial"|"failed"|"reused"|"unsupported",toolMs:number|null,peakRssBytes:int|null,readBytes:int|null,writtenBytes:int|null,llmCallIds:Id[],diagnostics:M1Diagnostic[]}；单调时钟同clockId才相减，未知资源为null，endNs>=startNs。
+- M1Usage={callId:Id,requestIds:Id[],provider:string,model:string,inputTokens:int|null,outputTokens:int|null,contextBytes:int|null,status:"measured"|"unknown",source:string}；actual物理调用/重试各一callId，source注明供应商usage/本地计数或缺证原因，不把估算当实际；无调用列表=[]，不能将未计量调用记零。
+- M1Profile={profileId:Id,requestId:Id,query:M1Query|null,session:M1Session|null,inputStatus:"invalid"|"accepted",scenario:"cold"|"reuse"|"supplement"|"retry",strategyId:Id,receivedNs:int,acceptedNs:int|null,firstResultNs:int|null,terminatedNs:int,clockId:Id,events:M1Event[],usage:M1Usage[],semantic:string,persistence:string,factSummary:[{factId:Id,key:string}],gaps:[{selector:string,subject:M1SubjectRef|null,path:Path|null,code:Id,message:string}],inventory:{analysisId:Id|null,state:"complete"|"partial"|"unknown",origin:"acquired"|"reused"|"none"},fileCount:int|null,sourceBytes:int|null,storeBytes:int|null,diagnostics:M1Diagnostic[]}；semantic/persistence枚举严格引用#7/#9。key由#9 fact_key_m1生成，保存实际投影事实的完整规范等价键而非仅ID；gaps逐当前请求项保留缺口，非项级诊断selector="*"。不保留源码/提示全文。
+
+端口`profile_m1(request_id:str, query:M1Query|None, session:M1Session|None, delivery:M1Delivery, scenario:str, strategy_id:str, received_ns:int, accepted_ns:int|None, first_result_ns:int|None, terminated_ns:int, clock_id:str, events:list[M1Event], usage:list[M1Usage], inventory:{analysisId:str|None,state:str,origin:str,entries:list[M1Entry]}, store_bytes:int|None)->M1Profile`；inventory枚举精确沿用M1Profile字段。#6在收到命令输入后、正常化前分配失败路径的备用requestId并记录receivedNs；正常化成功改用Query.requestId关联已缓冲的阶段事件，失败保留备用ID，profile的request_id始终等于delivery.data.requestId（query非null时也等于query.requestId）。结构有效请求acceptedNs非null，其他为null/query=null/inputStatus=invalid；open失败允许query非null/session=null/inputStatus=accepted。失败M1Delivery使用#7的空结果/诊断，不落原始非法输入。firstResultNs只在已有经校验可投影事实时给值，不是字节前缀；所有CLI请求尝试（含非法/打开失败）入总体，未送达进程的启动失败不计。#12供合法请求事件，#6供正常化/打开失败事件，#5产Profile供#11比较。
+
+盘点输入由#10 M1Acquired的inventory/inventoryComplete转换：同analysisId、完整且已核验时state=complete；部分为partial；未盘点、复用但无已验证盘点、session=null时unknown/none/entries=[]。复用已有盘点时origin=reused并保留其analysisId/完成性，不能仅凭空entries推0。只有state=complete且归属当前session才fileCount=完整file数（可0）；sourceBytes还要求每个file.sizeBytes已知才求和，否则null；其他总体均null，storeBytes取实测参数。received<=accepted（若有）<=firstResult（若有）<=terminated，均同clockId；前置失败也保留received→terminated时长与失败事件。
+
+factSummary精确遍历delivery.data.bundle.facts并调用#9 fact_key_m1，故保存失败仍有实际载荷的规范键；不靠事后重读补齐。gaps来自当前Coverage中severity=gap/error/conflict的诊断，使用该Coverage.selector/subject及诊断path/code/message；结果顶层诊断同样纳入，UNSUPPORTED_PREDICATE的selector取其recordId，其余无项关联用"*"/subject=null。相同(selector,subject身份或null,path,code)键去重，多个message按字典序连接保留原因。Profile.diagnostics保留结果顶层诊断及盘点/计量不可得原因，历史失败仍在events，不变成当前gaps。
+
+`compare_m1(before:M1Profile, after:M1Profile)->dict`返回{comparable:bool,reasons:string[],strategies:{before:Id,after:Id},elapsedMs:{before:number,after:number},tokens:{before:int|null,after:int|null},addedFactIds:Id[],removedFactIds:Id[],gapChanges:{before:[{selector:string,subject:M1SubjectRef|null,path:Path|null,code:Id,message:string}],after:同形数组}}。仅消费Profile内摘要，不读store/全局缓存；elapsedMs=(terminatedNs-receivedNs)/1e6，无调用的usage=[]确为0，存在unknown用量则总量null。
+
+可比性要求query/session非null、相同inputId与identityDomain、profile、root、select顺序及host/target/工具模型版本；策略由strategyId显式标明，允许前后不同以对照。不同分析新分配的inputId/identityDomain即不可比（reasons列明），不能按名称/路径重配身份；本切片不要求跨次身份连续性。非法/打开失败样本保留时长/成本，但不可比语义差异。可比时以factSummary.key集合差给added/removed的对应原factId，缺口以(selector,subject完整身份或null,path,code)键比较并保message；不可比时added/removed=[]、gapChanges仍分别原样列示，不把空差异当相等。少事实/多缺口不自动算收益；未测不得宣称收益/负载上限/全平台支持。
+
+
 ## Context
 
 用户确认见docs/decisions/0007-confirmed-system-query-requirements.md；“当前一层”仅指符合本次请求要求的顶层语义事实。 首期Rust/Python，host和项目平台遵循ADR-0003/0004；项目在单次分析中不变（ADR-0006），负载范围实际测试后定（ADR-0005）。必要分析操作和优化对照方法由代理设计，不再等待用户逐项选工具或定义严格语义金标。其他实现细节仍是候选，不假称已验证。

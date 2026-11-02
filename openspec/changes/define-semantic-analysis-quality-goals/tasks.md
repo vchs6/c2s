@@ -1,5 +1,14 @@
 # Tasks
 
+## M1切片子任务（交付2.1绑定，父任务不勾选）
+
+本组只拆原父任务的项目发现/项目列表、语言声明、原生workspace成员切片，精确记录/签名以本design的M1节及其owner引用为准，不是第二套计划。ADR-0009已授权准备和门禁通过后持续实施；以下为未执行产品/所选路径准备子任务，真实技术/隔离门禁不省略，不重复索取旧批准。子任务只依赖列出的M1子切片，不要求对应父任务的M2–M4完整能力先完成；完成子项不得勾父项。所有产品验收仍按原五角色约束：独立作者基于公开契约/固定真实源形成私有suite、runner执行并留实际证据、编码者不接触suite、审核/最终验证独立；本次不创建或运行suite。
+
+- [ ] 1.1.1 （M1）M1评价档案和测量事件。依据：原1.1及ADR-0005/0007（父任务1.1）。交付：`skill/quality/profiles/`。接口/依赖：M1Event/Usage/Profile与profile_m1；依赖查询M1Query/Result及协作M1Session公开契约。验证/通过/失败：冷/复用/补缺/正常化失败/open失败的可空query/session形态合法；盘点完成性/来源明确，factSummary/逐项gaps自包含，保实际来源/环境/计时/Token未知值，无SLO/金标前置；未知记0或失败不进总体则失败。
+
+- [ ] 2.1.1 （M1）M1可比较性与差异报告。依据：原2.1同输入请求前后对照（父任务2.1）。交付：`skill/quality/reports/`。接口/依赖：compare_m1→本design精确dict；依赖1.1.1。验证/通过/失败：按#9 fact_key_m1摘要比事实/逐项缺口，strategyId明确；跨inputId/identityDomain及前置失败不可比，不重读隐式缓存，unknown总量null；未测宣称收益或省事实当收益则失败。
+
+
 > 实施时使用superpowers:executing-plans或subagent-driven-development，逐项引用本唯一tasks；当前不实施、不归档。用户系统需求已确认，技术契约/设计仍须收敛并整体审核后另取开发批准。
 
 **Goal:** 如实记录取得/缺口并比较优化前后性能与Token

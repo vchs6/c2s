@@ -10,11 +10,13 @@
 | 分离领域及工程治理文档 | 已成文，领域/项目约束/治理/决策/任务/仓库/CI各自维护，AGENTS作入口 | 交付change新增1.3 |
 | 工具安装及固定真实输入 | AST/Tree-sitter/CRG/jsonschema及Rust工具链已安装；regex/click固定commit检出 | #10 tasks 3.1，环境/试验记录 |
 | 部分获取能力运行 | AST和语法树解析、CRG建图及结构查询、Cargo no-deps metadata已运行；CRG覆盖受限 | #10 3.2，不能勾全项完成 |
-| 工具组合/公共接口冻结 | 尚未完成，不能将原生对照当普遍真值或部分工具试验当完整链路 | #10 3.3、交付2.1 |
-| 角色权限隔离 | blocked：当前UID映射仅一个用户，setpriv/unshare/bwrap失败，Landlock不可用；无容器运行器 | 交付2.2 |
+| M1公共接口设计 | 九change最小切片已细化并经独立F1–F4修正复核PASS；原生路径成功实证已补。非全产品冻结，正式运行入口/交接仍待绑定 | 交付2.1.1、m1-contract-readiness-2026-11-02 |
+| 角色权限隔离 | 托管六容器挂载/UID/资源/进程/凭据及源token私有API拒绝诊断已实跑通过；尚未接通正式模型角色工具入口及制品交接。当前共享宿主不作编码身份 | 交付3.2.2、2.2/2.3、ci-setup-2026-11-02/role-boundary-probe.json |
 | CI配置与公开容器probe | 仓库侧已部署，6283a23的托管probe与维护CI均success；仅公开marker访问范围，不是完整角色隔离 | 交付3.1、ci-setup-2026-11-02/validation.json |
 | 私有验收账户配置 | 用户提供bootstrap成功及变量/权限读回回执；连接器独立核实验收库private。云端CLI未登录不影响现有连接器写workflow；模型认证与角色边界仍待实际运行 | 交付3.2/3.2.1、ci-setup-2026-11-02/account-receipt.json |
 | 模型Secret/API认证 | 私有run41422600087实测Secret可见、GET /v1/models HTTP200；未做推理/账单可用测试 | 交付3.2.1、ci-setup-2026-11-02/credential-probe.json |
+| 模型推理可用性 | blocked：短推理HTTP429，官方code=credit_balance_exhausted；Secret/API认证有效，仅当前API路径需账户侧恢复额度或改选受支持的Codex订阅执行入口；订阅备选尚未部署，停止进一步API尝试，usage未知不记0 | 交付3.2.3、ci-setup-2026-11-02/inference-probe.json |
+| Codex订阅执行备选 | 当前CLI实读已以ChatGPT登录；一次read-only/ephemeral订阅调用60秒超时，尚未证明推理/角色工具或私有CI接通 | ci-setup-2026-11-02/subscription-login-check.json |
 | 产品编码/隐藏测试 | 未开始；未写suite；没有虚报产品验收或后台执行 | 所有产品tasks未完成 |
 
 ## 当前可继续和不能放行的工作

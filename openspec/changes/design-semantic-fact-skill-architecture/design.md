@@ -1,5 +1,29 @@
 # Design
 
+## M1闭合端口与载体（代理技术决定，m1-project-discovery-1）
+
+M1是项目发现/列表、语言声明、原生workspace成员的有限增量，不是完整所有项目事实。本节装配已有owner，ADR-0009授权/交付2.1–2.3门禁不变；M2–M4未消费类型、全量算法、全平台/负载定值不作M1前置。以下是可冻结审查的切片设计，尚未声明集合冻结或能力实测。
+
+| 唯一记录owner（原change design的M1节） | 生产端口 | 消费方 |
+| --- | --- | --- |
+| 模型#3：M1Identity/SubjectRef/Registration/Artifact/Evidence/Diagnostic/Assessment/Fact/Coverage/Bundle/Observations | register_m1、validate_model；#10构造记录 | #7/#8/#9/#10/#12/#5 |
+| 查询#7：M1Query/Result/Delivery | normalize_m1、project_m1、present_m1 | #8/#12/公开入口、#5 |
+| 构造#8：M1Need/Plan | plan_m1 | #10/#12 |
+| 存储#9：M1Read/Commit/Receipt | read_m1、commit_m1、lookup_m1、fact_key_m1、canonicalize_m1 | #8/#12/#7 |
+| 获取#10：M1Entry/Acquired | acquire_m1 | #12/#11/#5 |
+| 质量#5：M1Event/Usage/Profile | profile_m1、compare_m1 | #12产生事件，#11消费档案 |
+| Token#11：M1ModelDecision | decide_model_m1 | #10/#12 |
+| 协作#12：M1Session | open_m1、verify_m1、current_m1、run_m1、observe_m1 | #8/#9/#10/#5及入口 |
+
+Python3 >=3.11为M1宿主实现的代理选择（TOML/SQLite/标准库JSON），模型校验复用#3固定依赖jsonschema==4.26.0；Cargo为#10所选原生工具，实际版本/平台以M1试验证据绑定，源语言仍Rust/Python；不把实现语言选择冒用户确认。未来`skill/core/contracts/`只重导入/适配各owner记录，不创建第二定义。唯一公开命令`python3 -m c2s_skill query --request REQUEST.json`由core入口读取一次M1Query后run_m1，再present_m1输出M1Delivery，协议/退出码由#7唯一规定；可复用结构化请求，不要求人手写Schema。固定短语适配由#7入口同样规范化，不增加第二查询协议。
+
+未来发行载体为包含skill/README.md、Python包c2s_skill、contracts/semantic-model本切片目录/Schema/manifest及依赖说明的Skill目录归档；原始产品布局skill/query、construction、acquisition、storage、coordination、quality、model职责通过包c2s_skill按相同模块映射，contracts目录按原模型路径打包本地资源，禁止运行期拉未知$ref。具体打包脚本随原架构2.1.1（M1）交付，不在本轮创建。候选产品0.1.0，model version=1.0.0/profile=m1-project-discovery-1，开发工具package.json版本独立；版本元数据随candidate摘要/契约摘要/独立verdict绑定，不提前tag/发布。
+
+F1–F4交接约束：#6在正常化前记录receivedNs，前置失败同样交#5可空query/session的Profile；#5摘要经#9 fact_key_m1获得，策略strategyId及逐项缺口自包含，不读隐式缓存，跨inputId/identityDomain比较明确不可比。#10生产带supersedes的进展，#9保完整历史，#12 current_m1唯一选有效叶，#8规划/#7投影只用该视图。结构有效的未知select保留交#8逐项诊断，经request_diagnostics到#7；提交/lookup成功必须read_m1规范重读后再投影，失败则canonicalize暂存并如实回执。
+
+合并只有三处：#8合必要需求、#9合已存规范主张/证据、#7合两种呈现；#6不实现它们。未知select由#8判定，并经#12交#7呈现，未支持格式由#10覆盖缺口，保存失败由#9回执，#12只能传递，不能凭单success覆盖。M1所选原生接口仍需#10对应M1试验和跨模块审查；隔离门禁未过前不写隐藏suite/产品。冻结此切片只要求所消费记录/签名闭合与真实所选路径证据，不要求全部产品先设计完。
+
+
 ## Context
 
 现有产品尚未实现；模型A定义主体身份、事实、条件、证据和覆盖候选，正式两份主规格是固定约束。新设计是候选；职责归属作为授权范围内代理规划决定，不是用户选定部署。

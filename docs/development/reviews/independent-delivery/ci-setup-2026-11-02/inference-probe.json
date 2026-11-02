@@ -1,0 +1,35 @@
+{
+  "run_id": 41427215501,
+  "job_id": 125216616020,
+  "commit": "a2e3ad7f3a7077dceea3794ffb6ac37b8e4e28f4",
+  "result": {
+    "answer_ok": false,
+    "credential_present": true,
+    "development_ready": false,
+    "error": "credit_balance_exhausted",
+    "http_status": 429,
+    "inference_passed": false,
+    "model": "gpt-5-mini",
+    "response_status": null,
+    "role_boundary_verified": false,
+    "usage": {
+      "input_tokens": null,
+      "output_tokens": null,
+      "total_tokens": null
+    }
+  },
+  "first_attempt": {
+    "run_id": 41426544349,
+    "commit": "dbdb0595f15155fbf141f78e0a29b53c43a25ab7",
+    "http_status": 429,
+    "error": "api_error"
+  },
+  "scope": "single-public-input-inference-diagnostic-per-release",
+  "attempt_count": 2,
+  "url": "https://github.com/vchs6/c2s-acceptance/actions/runs/41427215501",
+  "conclusion": "failure",
+  "root_cause": "credit_balance_exhausted",
+  "development_ready": false,
+  "retry_policy": "No automatic retries; no additional inference until account credit restored",
+  "unknown_usage_is_not_zero": true
+}

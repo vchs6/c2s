@@ -1,5 +1,24 @@
 # Design
 
+## M1请求与同源结果（代理技术决定，m1-project-discovery-1）
+
+本节补足交付2.1接口，后文历史“另批/类型待定”不阻塞此切片细化；当前ADR-0009已授权准备及门禁通过后实施。只承诺项目发现/列表、语言声明、原生workspace成员的本次顶层结果，不称完整项目语义。结构化入口使用JSON，人类可用三种固定短语“列出项目”“列出项目语言声明”“列出原生workspace成员”（可用中文顿号连接）；其他自然语言在M1返回INVALID_REQUEST并说明支持项，不猜意图；后续扩展自由语言不作M1前置。
+
+本节独占M1Query/M1Result/M1Delivery；模型记录精确引用#3 design“ M1项目发现切片契约”，不复制事实类型。记法沿用#3的必填/可空/封闭记录；JSON UTF-8、无NaN、重复键拒绝，Id/Path别名沿用#3。
+
+- M1Query = {contract:"m1-project-discovery-1", requestId:Id, analysisId:Id|null, root:string, store:string, select:string[]}；root/store是host绝对目录路径，store必须在root之外以保持项目不变；select是非空、非空字符串、不得重复的有序数组，结构有效时保留全部字符串，含未知项也仍是合法M1Query。能力检查唯一归#8：仅"project.list"/"project.language_declared"/"workspace.member"可产生Need，其余逐项诊断，不在正常化阶段拒绝整个请求。analysisId=null创建分析；非null只能打开已登记同root的分析。store不可用仍可取得并报告保存失败。
+- M1Result = {contract:"m1-project-discovery-1", requestId:Id, analysisId:Id|null, requested:string[], bundle:M1Bundle, semantic:"complete"|"partial"|"unavailable", persistence:M1Receipt, diagnostics:M1Diagnostic[]}；M1Receipt唯一归#9。无有效session时analysisId=null、bundle空且保留诊断。complete仅当前所有requested已取得且无已知获取/定位缺口；有任意所需项缺口且有事实/评估为partial，无可用所需事实/评估为unavailable。保存失败独立，不强制降semantic；非法输入无需读取项目/存储。
+- M1Delivery = {data:M1Result, report:string}；report为确定性Markdown，逐项列请求、Project列表/语言声明/workspace成员、未决声明、覆盖及原因、持久化结果。空列表必须附覆盖结论，不能写“没有项目”或“没有成员”的全称否定。两输出身份、事实集合、缺口原因与持久化状态相同，不再调用模型。
+
+端口：`normalize_m1(input:dict|str, root:str|None=None, store:str|None=None)->M1Query|M1Diagnostic`（字符串模式root/store须给定，requestId由入口分配UUID，analysisId默认null）；`project_m1(query:M1Query, bundle:M1Bundle, receipt:M1Receipt, analysis_id:str, request_diagnostics:list[M1Diagnostic])->M1Result`；`present_m1(result:M1Result)->M1Delivery`。request_diagnostics由#12传递#8 M1Plan.diagnostics及本次端口错误，#7不重做能力判定。非结构/未知字段/重复选择/空select/空字符串为INVALID_REQUEST，未知contract为UNSUPPORTED_CONTRACT，才返回单个Diagnostic；未知select保留在Query并交#8。正常化失败由#6产生analysisId=null/semantic=unavailable/空M1Bundle/current诊断及not_required回执的M1Result，requested只保留可安全解析的select字符串，否则[]。
+
+结构有效的混合select：requested保持完整原数组，#8每个未知项产生一条UNSUPPORTED_PREDICATE（recordId=该selector，path=null，message含原值），支持项继续；有已得所需事实/评估时semantic=partial，无可用所需内容时unavailable，退出2；全为未知则不读源码/不获取，空结果、unavailable、persistence=not_required、退出2。#12可仅做内存session登记，不为全未知请求创建存储事务。结构/contract错误才退出64；报告/JSON都保留每个未知请求项，不让诊断以外内容递归扩展响应。
+
+投影输入bundle必须由#12 current_m1给出（成功提交/lookup确认后先#9重读规范包；失败为已校验暂存合并的当前包）。project.list选有效resolved评估的Project及project.name；语言项另选project.language_declared，成员项只选workspace.member。project.*保留相关有效未决/冲突评估，成员项不夹带无关Project评估；两者都保当前相关缺口和request_diagnostics，已被合法替代的旧失败不再投影。登记/证据只留选中内容所需引用闭包，supersedes仅外部历史ID，不递归附旧记录。PackageSpecification只作成员引用，不能展开包。取得所需名称/声明未知使对应coverage.complete=false；#7不能挑某个complete吞掉其他有效缺口，#8/#7使用同一当前视图。没有语言声明不推出不存在语言；#7不做获取/提交或自行重写规范ID。
+
+未来公开调用入口由#6装配`python3 -m c2s_skill query --request REQUEST.json`，stdout仅一个M1Delivery JSON对象；退出0为semantic complete且persistence stored/already_stored/not_required，2为partial/unavailable/保存失败/未知提交，64为非法请求/契约版本。stderr仅安全运行诊断，不输出源码/秘密；candidate不接触suite。产品包装见#6，不在本轮创建入口。
+
+
 ## Context
 
 用户确认见docs/decisions/0007-confirmed-system-query-requirements.md；“当前一层”仅指符合本次请求要求的顶层语义事实。 首期Rust/Python，host和项目平台遵循ADR-0003/0004；项目在单次分析中不变（ADR-0006），负载范围实际测试后定（ADR-0005）。必要分析操作和优化对照方法由代理设计，不再等待用户逐项选工具或定义严格语义金标。其他实现细节仍是候选，不假称已验证。

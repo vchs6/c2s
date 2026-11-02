@@ -49,3 +49,7 @@ CRG建图使用`--data-dir`外置图数据库及`--skip-postprocess`，未启用
 CI账户配置与公开容器探针的命令、最小权限、安装来源及安全输入方法见`../docs/workflow/ci-setup.md`；gh不是产品运行依赖。Docker仅供GitHub托管Ubuntu探针使用，本地未安装或验证。
 
 私有验收准备增加credential-check模板：使用托管Ubuntu预装Python 3标准库，一次GET /v1/models校验Secret可见和API认证，不执行生成请求、不证明推理或完整角色隔离。无需新增产品依赖；部署/状态见交付change tasks 3.2.1。
+
+托管角色边界检查使用Docker与python:3.12-slim镜像；每次先解析并记录实际RepoDigest，按摘要执行，非root、禁网、只读根及限定挂载。源/私有runner合成诊断已通过；本地没有Docker能力，未验证其他host。该封装不是完整模型编排器，不能把当前原生代理全权工具当作正式编码工具入口。
+
+开发健康检查另有一次公开输入的gpt-5-mini Responses请求（最大256输出Token、store=false、不重试）；它不是产品语义后端选择。当前实际返回credit_balance_exhausted，推理未通过，usage未知。开发按任务选模型、按需选专用Skill及实际使用回报见../docs/workflow/agent-governance.md和本轮skill-usage.md。

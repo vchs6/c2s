@@ -1,0 +1,7 @@
+{
+  "auth_mode_before": "Logged in using ChatGPT",
+  "api_key_environment_removed_for_child": true,
+  "error": "timeout",
+  "answer_ok": false,
+  "full_role_isolation_verified": false
+}

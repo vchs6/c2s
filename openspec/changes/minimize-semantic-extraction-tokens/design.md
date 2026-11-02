@@ -1,5 +1,14 @@
 # Design
 
+## M1模型参与与计量消费（代理技术决定，m1-project-discovery-1）
+
+本切片仅明确元数据、工程边界评估规则和原生成员，采用#10确定性直转、#8复用/补缺、#9确定性去重、#7同源双输出。相较整包代码图交模型再转JSON，省去可机械完成的模型工作；这是待测机制，不是已实现或节省率声明。ADR-0009授权/独立门禁继续适用，不等全部M3算法语义/全部候选工具冻结。
+
+本节独占M1ModelDecision={needId:Id,mode:"deterministic"|"unavailable",reason:string,evidenceIds:Id[],diagnostics:M1Diagnostic[]}，端口`decide_model_m1(need:M1Need, acquired:M1Acquired)->M1ModelDecision`。可确定转换为deterministic；能力缺口为unavailable并报告原因，M1不以模型猜项目归属、语言全集、成员或否定来填洞；自然语言固定短语解析也不调用模型。本切片不定义未使用的通用LLM上下文包；后续语义查询另行设计，不扩大本次范围。
+
+实际计量唯一复用#5 M1Usage/M1Profile/compare_m1；#12/#10报告所有调用（包括工具/Skill内部调用，未知记unknown），不能因本策略“不主动调用”推整个上游成本为零。已知未调用的确定性路径usage=[]，与“无法观察调用量”区分。冷/复用/补缺/失败全链事件都计，不通过重算报告/结构数据重复读源码。前后比较只消费#5含factSummary/逐项gaps/strategyId的自包含Profile，正常化/open失败也保留成本；不同inputId/identityDomain明确不可比，不按路径/名称重配主体，不读全局缓存补数据。复用只消费#12 current_m1有效叶；旧失败仍计入事件成本而不永久当当前缺口。成功提交后以规范重读内容投影一次，失败保留已校验暂存；不另定义Token数/成功口径，未测不冻结收益。
+
+
 ## Context
 
 已确认：共享context、ADR-0001/0002和两份主规格；模型A由用户选择但未批准实施。当前无产品实现或性能实测。新设计是候选；细节由授权范围内代理提出，不成为用户确认。讨论、异议及独立复核见本Issue评审目录。
