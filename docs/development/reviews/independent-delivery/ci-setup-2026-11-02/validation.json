@@ -5,7 +5,7 @@
   "development_ready": false,
   "implementation_started": false,
   "account_bootstrap_applied": false,
-  "account_blocker": "authentication_required",
+  "account_blocker": "execution_network_policy_blocks_github_api",
   "model_credentials_changed": false,
   "independent_review": "ci_config_reviewer: final scoped review found no remaining material issue; no live account mutations",
   "checks": {
@@ -58,5 +58,16 @@
     "five-role account/API/artifact boundaries not verified",
     "private acceptance repository and Secrets not configured by this run",
     "product contracts and handoff readiness still pending"
-  ]
+  ],
+  "login_followup": {
+    "user_report": "GitHub page: Congratulations, you are all set",
+    "observed_tool_error": "Unified exec process failed: Network access to \"https://api.github.com:443\" was blocked by policy.",
+    "cli_auth_status": {
+      "exit": 1,
+      "logged_in": false
+    },
+    "account_bootstrap_retried": false,
+    "repository_or_secret_mutations": false,
+    "next_step": "Restore permitted API network access or use trusted local terminal; do not repeat device grants before network repair"
+  }
 }

@@ -40,3 +40,11 @@ python3 scripts/configure_ci.py --apply --set-model-key
 账户bootstrap、公开容器probe、完整私有角色隔离、模型凭据可用、产品编排及验收分别验证。账户配置脚本成功也不等于开发已就绪。
 
 完整3.2还需要：编码job处于没有验收仓库/日志/制品/管理API权限的上下文；可信私有harness与candidate进程分离；suite仅独立作者可写、执行者只执行、验证者只裁决；受控结果按版本交接。不能把私有suite作为编码job可下载的同运行artifact。配置/验证未实际完成不更新2.2/2.3为通过，不开始共享区隐藏测试。
+
+## 设备授权成功但CLI未登录时
+
+2026-11-02用户报告GitHub网页显示“Congratulations, you're all set!”；恢复登录进程时，执行工具实际返回`Network access to "https://api.github.com:443" was blocked by policy.`，随后独立`gh auth status`仍未登录。网页授权和当前CLI凭据保存不是同一结果；不能继续把阻塞只归因于用户未授权。
+
+先恢复执行环境对`api.github.com:443`的合规网络访问，并保留设备登录所需`github.com:443`；不通过替代域名、代理或关闭限制绕过策略。在网络未修复前不继续生成设备码。当前工具不提供网络策略修改接口；用户也可在能访问GitHub的可信本地终端按上文登录并执行已提交的bootstrap脚本。不要发送/提交令牌、设备授权状态或密钥，不能从已结束进程回收认证秘密。
+
+只有实际`gh auth status`通过后再执行--apply及API读回；bootstrap成功仍不等于完整角色隔离或模型可用。
