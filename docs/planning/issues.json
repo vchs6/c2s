@@ -191,5 +191,15 @@
     "Python"
   ],
   "initial_language_decision_ref": "docs/decisions/0003-initial-source-languages.md",
-  "d01_status": "partially-confirmed"
+  "d01_status": "partially-confirmed",
+  "confirmed_platform_definitions": {
+    "host": "Skill runtime platform; analysis tools use the same runtime platform",
+    "project_platform": "determined by the analyzed project build/compile environment",
+    "decision_ref": "docs/decisions/0004-host-and-project-platforms.md"
+  },
+  "workload_scope_policy": {
+    "status": "deferred-to-project-analysis-tests",
+    "blocks_current_planning_freeze": false,
+    "decision_ref": "docs/decisions/0005-defer-workload-scope-to-measurements.md"
+  }
 }

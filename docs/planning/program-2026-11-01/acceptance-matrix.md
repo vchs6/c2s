@@ -88,3 +88,12 @@
 | 确认 | 规格/Scenario | 唯一任务与验证 |
 | --- | --- | --- |
 | 首期Rust和Python，ADR-0003 | semantic-analysis-scope / 首期源代码语言范围；首期语言范围进入规划 | #5 tasks 1.1语言固定Rust/Python，#10能力组合按剩余D01参数验证；语言选择不是实测支持 |
+
+| ADR-0004确认 | 规格/Scenario | 唯一任务与验证 |
+| --- | --- | --- |
+| host为Skill平台，工具平台与之一致 | semantic-analysis-scope / Skill宿主与分析工具运行平台一致；在不同宿主平台选择分析工具 | #5 tasks 1.1档案明确host与工具平台一致；#10按相应host选择/验证工具能力 |
+| 项目平台取自构造/编译环境 | semantic-analysis-scope / 项目平台依据构造编译环境；宿主与项目设定平台不同 | #5 tasks 1.1与#10适配案例：Linux宿主工具分析Windows构造环境，不按host篡改项目语义 |
+
+| ADR-0005确认 | 规格/Scenario | 唯一任务与验证 |
+| --- | --- | --- |
+| 负载范围待实际分析测试后确定，不阻塞当前规划冻结 | semantic-analysis-scope / 负载范围依据实际测试确定；当前尚无实际负载测试 | #5 tasks 1.1先定义记录方法，2.1及未来项目分析测试记录实测负载/结果，再界定适用范围，不猜规模 |

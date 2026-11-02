@@ -1,0 +1,41 @@
+{
+  "authority": "explicit-user-confirmation",
+  "decision_ref": "docs/decisions/0004-host-and-project-platforms.md",
+  "method": "记录明确用户定义，不产生新设计，不模拟Battle",
+  "instructions": [
+    {
+      "artifact": "specs",
+      "instruction_sha256": "c437af75feb4604417cc54f23351982320f63049b6569b5f44f32e3a1796d389",
+      "exit_code": 0,
+      "rules": null
+    },
+    {
+      "artifact": "design",
+      "instruction_sha256": "5922b22cb9f4763a7f77391ed9a44b3eb25aaecd9d2d37a7fb64b2c169308847",
+      "exit_code": 0,
+      "rules": [
+        "Distinguish observed evidence, accepted decisions, delegated agent decisions and proposed implementation choices.",
+        "Include workload/scale/environment-bound nonfunctional goals and language/host/target support boundaries."
+      ]
+    },
+    {
+      "artifact": "tasks",
+      "instruction_sha256": "a1f0191dd45c4bf8f08662bfb9f27c3467d23fe6966aa050de55b18343e87a3d",
+      "exit_code": 0,
+      "rules": [
+        "Every task records upstream basis, deliverable paths, verification, pass and failure conditions.",
+        "Use one authoritative task list; Superpowers plans reference it."
+      ]
+    },
+    {
+      "artifact": "acquisition",
+      "instruction_sha256": "5922b22cb9f4763a7f77391ed9a44b3eb25aaecd9d2d37a7fb64b2c169308847",
+      "exit_code": 0,
+      "rules": [
+        "Distinguish observed evidence, accepted decisions, delegated agent decisions and proposed implementation choices.",
+        "Include workload/scale/environment-bound nonfunctional goals and language/host/target support boundaries."
+      ]
+    }
+  ],
+  "implementation_approved": false
+}

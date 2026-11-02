@@ -1,0 +1,8 @@
+{
+  "authority": "explicit-user-confirmation",
+  "user_quote": "负载范围可以先不确定，等项目分析时，依据实际的测试结果再确定",
+  "decision_ref": "docs/decisions/0005-defer-workload-scope-to-measurements.md",
+  "blocks_current_planning_freeze": false,
+  "implementation_approved": false,
+  "method": "记录用户明确延期，不预设负载数值，不新增设计或模拟Battle"
+}

@@ -13,7 +13,7 @@
   "base_revision": "d40cb6c4bfdf5567ee3ca1dde82b31dd58528d8a",
   "historical_issue3_tokens_authorize_implementation": false,
   "digest_algorithm": "SHA-256 over sorted path + TAB + file SHA-256 + LF UTF-8",
-  "bundle_sha256": "83be249ccf879b3732a3e8c94b4c9dd4dc56de8fc3c070b623141cd5c38fe7f3",
+  "bundle_sha256": "dba07d53134fb7c67f17e1e55a03599b7e526c6e8ee2e437467567a02982d0b9",
   "exclusions": [
     "manifest itself",
     "validation execution logs/reports",
@@ -36,6 +36,14 @@
     {
       "path": "docs/decisions/0003-initial-source-languages.md",
       "sha256": "2db9543628437182ff95c9809cb1fa67cd48dbca384e0b11118337cc22e2c2db"
+    },
+    {
+      "path": "docs/decisions/0004-host-and-project-platforms.md",
+      "sha256": "3c912936a418f5d852f57767241720060761b075e2bc37eda086ec2205378920"
+    },
+    {
+      "path": "docs/decisions/0005-defer-workload-scope-to-measurements.md",
+      "sha256": "a216f72228b2a7724df71b9afbcba9e22b2df05ee3cfb5189a6d7df126561c48"
     },
     {
       "path": "docs/development/discussions/2026-11-01-specification-baseline/semantic-fact-model-candidates.md",
@@ -218,6 +226,14 @@
       "sha256": "4d3d32c74d0bf3fc621c3dde7f7e7b89a0bed50137464a065c46b1006fdfb2d5"
     },
     {
+      "path": "docs/development/reviews/issues/5/platform-decision-2026-11-02/record.json",
+      "sha256": "8a3d6e349262aff42b474382f636daf4872e31ecf078230c974a737046cfe31e"
+    },
+    {
+      "path": "docs/development/reviews/issues/5/workload-decision-2026-11-02/record.json",
+      "sha256": "97193473a8c6bda04ca5493c1df03c4d65b902e0d8b3fd970b9bc1caf861f97d"
+    },
+    {
       "path": "docs/development/reviews/issues/6/planning-2026-11-01/battle.json",
       "sha256": "f48e31a2f5b673a5fec1f162f4fee7bd1e0981b505f17ee6c20524643e373d9d"
     },
@@ -291,27 +307,27 @@
     },
     {
       "path": "docs/planning/issues.json",
-      "sha256": "5a1cece2eb3fd8660db1a375f074044afed0e88a5c6738a6ff3841937bb040a5"
+      "sha256": "cf04d18884b260afe5e4a198adc21ac873e092c83b220c0865eda730429c9d98"
     },
     {
       "path": "docs/planning/program-2026-11-01/acceptance-matrix.md",
-      "sha256": "a1b44408021f847b7e0b4e7f1cf9613e196f11d6dfd0d6fe3b71dc0d8e97ea14"
+      "sha256": "5079c01e0c27c810b963031688b50f248f702a6165e496889208761f59665fd5"
     },
     {
       "path": "docs/planning/program-2026-11-01/context.md",
-      "sha256": "69b4bc0b93527cc7080d4dc24d45962a1ceed87ad1683cf2bdd836a52ddc8fcc"
+      "sha256": "48f39d08a7cd2ddbf819588143a87c552aec64a35c9c7f2837ab222bc05611ba"
     },
     {
       "path": "docs/planning/program-2026-11-01/decision-requests.md",
-      "sha256": "bed9b840d84fd7e13d6dbb162ae8b524041611cfd2ef6196227d7259862734fd"
+      "sha256": "12301a86997670e046da4ad6c6c1da409fb3bb00402ae916783f6bb581b0b62f"
     },
     {
       "path": "docs/planning/program-2026-11-01/overall-review.md",
-      "sha256": "0a51034e51074fdfc41e9b899fd0ef5246b2adbce18eabe78c1672a42851b3ff"
+      "sha256": "23dac054bcd58710e01688f8fffd8cf9846909bd3f41e64ede988d5e72bc230d"
     },
     {
       "path": "docs/planning/program-2026-11-01/upstream.md",
-      "sha256": "0de16e3020cfe161d3f93108577c04a9a7ef7c5d69ae73dbe543eac385e606a4"
+      "sha256": "f4689ec28488b37459301a35e473e36de6d164408a929d9f2a6c30fec62b39ca"
     },
     {
       "path": "docs/session/artifact-manifest.json",
@@ -363,11 +379,11 @@
     },
     {
       "path": "openspec/changes/define-semantic-analysis-quality-goals/design.md",
-      "sha256": "22e55fac72359ab37ee008d921fed3e79fca56ab52277ff5c138a801c5633d04"
+      "sha256": "68326600483a65d971773a21507278185de6e7a0c9389aab90205a4775aaa6d3"
     },
     {
       "path": "openspec/changes/define-semantic-analysis-quality-goals/proposal.md",
-      "sha256": "5d6f7fb2a6cee328208816f60c3c4d0406ff39b8004cf40e9f3432c1e36e0211"
+      "sha256": "d89a508f9de84088a3a4c720af4f6e05acd48df7ac39ae33c38457a733908b6a"
     },
     {
       "path": "openspec/changes/define-semantic-analysis-quality-goals/specs/semantic-analysis-quality/spec.md",
@@ -375,11 +391,11 @@
     },
     {
       "path": "openspec/changes/define-semantic-analysis-quality-goals/specs/semantic-analysis-scope/spec.md",
-      "sha256": "82364b162f7947149b820492df0943007e79a56115f7e25bbe2e2693911a40fc"
+      "sha256": "882b426089264c7c363735b1ad426a7ac8ffccaec3cda9840ce002ecdf6ef54c"
     },
     {
       "path": "openspec/changes/define-semantic-analysis-quality-goals/tasks.md",
-      "sha256": "d12d42f50feac6a5d10b4970040640392d27784bbbb8a52b2e9a68fcb242a2f3"
+      "sha256": "dfd707dbee0bf1bf9a91193b890867bc092b1b3ba289810962bbb6d17c513dee"
     },
     {
       "path": "openspec/changes/define-semantic-fact-query-contracts/.openspec.yaml",
@@ -539,7 +555,7 @@
     },
     {
       "path": "openspec/changes/survey-semantic-acquisition-capabilities/design.md",
-      "sha256": "b408c8c521877d0f898ab59f55c9802b84ae21080b047bd19dc067df6b4d0fce"
+      "sha256": "e174d6239a12a599a29a997602552e737896654abd7fc7490899ea2890cd1d95"
     },
     {
       "path": "openspec/changes/survey-semantic-acquisition-capabilities/proposal.md",
@@ -563,7 +579,7 @@
     },
     {
       "path": "openspec/specs/semantic-analysis-scope/spec.md",
-      "sha256": "f6f469d7f58cebf739a62e81d47f679e1e7dcd445f2877a9ec23fd4a55dad627"
+      "sha256": "60d8be93826e1dfc8307fdcb740b0a94cc89ac1e1fe29c3ca431fed530c3ff91"
     },
     {
       "path": "openspec/specs/semantic-fact-model/spec.md",
@@ -574,7 +590,7 @@
       "sha256": "610a6e269df04c374a7dcfa887c166c98980d626053a293c0e026ccbcee45f24"
     }
   ],
-  "supersedes_bundle_sha256": "bdd32b51898730a10a2e4ce5e0792e85176bda9981f8f771265b6e3dfd5c1607",
+  "supersedes_bundle_sha256": "83be249ccf879b3732a3e8c94b4c9dd4dc56de8fc3c070b623141cd5c38fe7f3",
   "confirmed_initial_source_languages": [
     "Rust",
     "Python"
@@ -582,15 +598,23 @@
   "partial_decisions": {
     "D01": {
       "confirmed": [
-        "source-languages"
+        "source-languages",
+        "host-tool-platform-alignment",
+        "project-platform-from-build-environment"
       ],
       "pending": [
         "versions",
         "mixed-language-boundaries",
-        "host",
-        "target",
-        "workload"
+        "concrete-platform-support-combinations"
       ]
+    }
+  },
+  "deferred_items": {
+    "workload-scope": {
+      "stage": "project-analysis-tests",
+      "basis": "actual-test-results",
+      "blocks_current_planning_freeze": false,
+      "decision_ref": "docs/decisions/0005-defer-workload-scope-to-measurements.md"
     }
   }
 }
