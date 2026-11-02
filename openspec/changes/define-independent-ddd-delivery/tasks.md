@@ -6,7 +6,7 @@
 
 **Architecture:** 公开DDD契约指导独立实现及私有验收；受控工件交接，由独立验证者裁决。
 
-**Tech Stack:** 现有OpenSpec/Superpowers；自维护脚本Python 3。隔离运行器尚未部署，本轮只写Markdown/JSON/YAML规划。
+**Tech Stack:** 现有OpenSpec/Superpowers；自维护脚本Python 3。隔离运行器尚未部署；当前允许公开CI配置及Python账户bootstrap准备，不实现产品。
 
 **Spec:** 本change两份specs、design.md及ADR-0008。
 
@@ -38,6 +38,10 @@
 
 - [ ] 2.3 在ADR-0009授权下且2.1/2.2通过后接通连续交接和版本门禁。依据：授权内持续推进、product-versioning及design §3/5/6。交付：`docs/development/reviews/independent-delivery/handoff-verification.md`公开脱敏结论；私有run/verdict/制品清单由各独立角色所有。验证：用真实candidate/suite/源/环境版本执行交接并核查失效/重验，失配拒绝推进；失败反馈仅公开契约诊断，版本0.b.c对应被接受candidate。通过：独立角色无越权改写、可续同一批准范围且不触发新Issue、不自动归档；失败：旧证据沿用、runner兼最终验证、隐藏内容泄漏或未部署却声称后台持续运行。各产品验收只勾选原任务，本任务不重复实现它们。
 
-## Workflow follow-up
+## 3. CI配置接续（用户已明确要求配置，账户能力不足时如实阻塞）
+
+- [ ] 3.1 交付仓库侧CI容器边界检查和安全账户配置入口。依据：用户要求完成GitHub托管Runner/私有验收仓库/凭据配置，ADR-0008/0009及本设计隔离约束。交付：`.github/workflows/isolation-readiness.yml`、`scripts/configure_ci.py`、`docs/workflow/ci-setup.md`。接口：脚本默认dry-run，--apply需本地gh已认证；创建/核实私有验收仓库、设置仓库变量和最小Actions默认权限，API密钥只通过安全输入及stdin交gh，不输出/提交凭据。CI仅执行公开合成标记的容器访问检查（非隐藏验收），不加载私有suite/调用模型；允许push仅在该workflow变更时运行此基础设施诊断，不触发产品开发或Issue扫描。验证：独立实现/代码审阅、脚本help/dry-run/无凭据拒绝、既有维护检查及实际GitHub托管CI结果。通过：候选容器只挂公共目录、无网络/凭据/Docker管理接口，宿主私有标记不可读，宿主可合法读取；报告镜像摘要及探测结果且development_ready=false。失败：把标记诊断冒完整五角色就绪、账户配置未执行却称完成、泄漏密钥或默认live修改。
+
+- [ ] 3.2 完成账户端配置及完整角色边界验证。依赖：3.1及有权限的GitHub账户管理入口、实际模型凭据。交付：私有验收仓库、Secrets/变量/权限、受控交接入口和本地脱敏配置回执。验证：私有性确证，编码身份不能读验收仓库/日志/制品或改验收workflow，candidate进程不能读suite，五角色及独立运行证据对应。通过：实际运行的合法交接及访问拒绝证据齐全才更新2.2；失败：仅脚本/YAML存在或只通过公开容器probe即放行。当前连接器不提供建仓/Secrets操作，未有实际账户入口时保持blocked；不得将用户开发授权误报为缺批准。
 
 - 整体技术准备及真实隔离检查通过后按既有授权持续实施；当前运行能力缺证持续blocked。不重复索批，不自动archive。

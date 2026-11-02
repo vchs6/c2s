@@ -9,7 +9,7 @@
   "base_revision": "d40cb6c4bfdf5567ee3ca1dde82b31dd58528d8a",
   "historical_issue3_tokens_authorize_implementation": false,
   "digest_algorithm": "SHA-256 over sorted path + TAB + file SHA-256 + LF UTF-8",
-  "bundle_sha256": "340fbf845bdb164059a230240d0f894d8a8cbc8e14309ff082f50dbe42660870",
+  "bundle_sha256": "d28bbc49acaa7f795d7fa15febb13bdedb8fafb019f7740b5d3885356c138820",
   "exclusions": [
     "manifest itself",
     "validation execution logs/reports",
@@ -17,6 +17,10 @@
     "checkpoint history"
   ],
   "files": [
+    {
+      "path": ".github/workflows/isolation-readiness.yml",
+      "sha256": "64b581292a0a16e46abc126d1cc37c9becf49b2942ccd5a7406ba537ea1ff624"
+    },
     {
       "path": "AGENTS.md",
       "sha256": "ca265fc00e302ef0154775551574be329b9bf9a598da979b01d38bbb888f649e"
@@ -454,8 +458,12 @@
       "sha256": "02e69755b8d195ce27e01546eeac2040aa3a6e1b18c0df7831033f599929ceff"
     },
     {
+      "path": "docs/workflow/ci-setup.md",
+      "sha256": "83caad65e6ea60bb28d13978879a0d2fd5551f2235407a38fd6cb0dd60bc45f3"
+    },
+    {
       "path": "docs/workflow/ci.md",
-      "sha256": "4f936e3e1df542686e94d76193109336892f6e9088fba2a3a8e2567ea6c098f8"
+      "sha256": "982ad8c38047b5ed0e2979b08d5b5420daa2682e0ab2ea817164d68054097704"
     },
     {
       "path": "docs/workflow/decision-policy.md",
@@ -479,7 +487,7 @@
     },
     {
       "path": "openspec/changes/define-independent-ddd-delivery/design.md",
-      "sha256": "98c5b207e09e8971b824f1eaefb213efb6b137640e606b50e3ab291ff71c5ea1"
+      "sha256": "7bb6b473a09e3880f6ae8b05706ca0b9b15d1b97f4008da3490ffd2d8f4eb0a9"
     },
     {
       "path": "openspec/changes/define-independent-ddd-delivery/proposal.md",
@@ -495,7 +503,7 @@
     },
     {
       "path": "openspec/changes/define-independent-ddd-delivery/tasks.md",
-      "sha256": "7533a8e4f9158cc54a6976564f6695bd3484789566c83421cdba9d34a826d68c"
+      "sha256": "ef038c9b2715347ae1aa1ad0a38a018c81077435009b7c167d8c286bf33af365"
     },
     {
       "path": "openspec/changes/define-layered-semantic-fact-model/.openspec.yaml",
@@ -762,11 +770,15 @@
       "sha256": "94cae1fe54086db07726a8ca698f3a18874e9c3e0e4ac6b1d4f189707f038967"
     },
     {
+      "path": "scripts/configure_ci.py",
+      "sha256": "ade51d4098bfa9067c3a9821b77a31bc5431d70707a86cc4ecc1adbb21163e46"
+    },
+    {
       "path": "skill/README.md",
-      "sha256": "58d6d770f484004e2d247b3322976d4058a9c62a5d3182d7dcc2f8d9ccc5d0bf"
+      "sha256": "7f20c956f552df23b83c87534c6d8e9cab1dd7c3ac6aa83d9d2c8dff75ccec91"
     }
   ],
-  "supersedes_bundle_sha256": "f1d1db6e581ef4686f46d552f910c5cceb1623fc72513d6f6f3743af65e2003a",
+  "supersedes_bundle_sha256": "340fbf845bdb164059a230240d0f894d8a8cbc8e14309ff082f50dbe42660870",
   "confirmed_initial_source_languages": [
     "Rust",
     "Python"

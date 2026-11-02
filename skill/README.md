@@ -11,6 +11,7 @@
 | jsonschema | 4.26.0 | 已安装的公共契约验证依赖候选；产品契约尚未实施 |
 | Code Review Graph | 2.3.9 | 已实际建图/查询，默认覆盖不能当全目录完整；外置图缓存，无模型嵌入 |
 | Rust工具链 | rustc 1.99.1，Cargo实际版本见环境档案 | 已安装，实际运行no-deps/offline metadata；不是依赖全解析或构建验证 |
+| GitHub CLI | 2.103.3 | 备用账户配置工具，官方归档摘要核验；仅CI开发准备，需独立GitHub授权 |
 | OpenSpec / Codex / Superpowers | 1.16.0 / 0.166.0 / 7.0.1 | 开发流程工具，不当产品运行依赖；Superpowers在当前环境可读 |
 
 Python包来自包索引；Rust安装来源为官方https://rust-lang.org/tools/install/，使用项目本地RUSTUP_HOME/CARGO_HOME且不改shell profile。当前安装路径`.local/analysis-venv`、`.local/rustup`、`.local/cargo`均为开发临时目录，不随Skill发行。
@@ -44,3 +45,5 @@ CRG建图使用`--data-dir`外置图数据库及`--skip-postprocess`，未启用
 ## 当前限制
 
 真实五角色权限隔离未就绪，隐藏用例和产品流水线尚未运行。用户已授权准备后连续开发，环境阻塞消除后可继续，无需重新批准同一范围；当前不声明产品版本发布、不自动归档。
+
+CI账户配置与公开容器探针的命令、最小权限、安装来源及安全输入方法见`../docs/workflow/ci-setup.md`；gh不是产品运行依赖。Docker仅供GitHub托管Ubuntu探针使用，本地未安装或验证。
