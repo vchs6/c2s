@@ -82,3 +82,9 @@
 | algorithm-description / 匿名操作闭包与绑定语义 | [原映射](../../../openspec/changes/define-layered-semantic-fact-model/review-map.md) | `define-layered-semantic-fact-model/tasks.md` 4.2 | test_closure_and_conditional_binding |
 | algorithm-description / 伪代码是可追溯投影 | [原映射](../../../openspec/changes/define-layered-semantic-fact-model/review-map.md) | `define-layered-semantic-fact-model/tasks.md` 4.3 | test_projection_preserves_behavior |
 | algorithm-description / 来源行为覆盖与投影分别验证 | [原映射](../../../openspec/changes/define-layered-semantic-fact-model/review-map.md) | `define-layered-semantic-fact-model/tasks.md` 4.3 | test_deleted_failure_exit_detected |
+
+## 用户确认增补（2026-11-02）
+
+| 确认 | 规格/Scenario | 唯一任务与验证 |
+| --- | --- | --- |
+| 首期Rust和Python，ADR-0003 | semantic-analysis-scope / 首期源代码语言范围；首期语言范围进入规划 | #5 tasks 1.1语言固定Rust/Python，#10能力组合按剩余D01参数验证；语言选择不是实测支持 |

@@ -19,3 +19,7 @@ Issue#3方案A已由用户选择，但不是产品实施批准；事实目录、
 ## 权威与证据路径
 
 AGENTS.md、openspec/config.yaml、docs/workflow/battle-protocol.md、docs/workflow/planning-mode.md；docs/decisions/0001与0002；#3的design、review-map及scheme-decision.md。Issue原文在各自planning-2026-11-01/issue-input.json；本期上游结论在本目录upstream.md，缺项代表尚未讨论或不确定，不可假称已确认。
+
+## 2026-11-02 用户确认更新
+
+D01源语言维度已确认：首期Rust和Python，依据ADR-0003。此前“首期语言未定”的描述仅保留为2026-11-01历史状态；现不再重开语言选择。版本、混合边界、host/target及负载仍未定，D02/D03不变，整体未冻结、未批准实施。

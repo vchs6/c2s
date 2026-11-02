@@ -185,5 +185,11 @@
   ],
   "planning_discussion_complete": true,
   "freeze_status": "not-frozen",
-  "development_ready": false
+  "development_ready": false,
+  "confirmed_initial_source_languages": [
+    "Rust",
+    "Python"
+  ],
+  "initial_language_decision_ref": "docs/decisions/0003-initial-source-languages.md",
+  "d01_status": "partially-confirmed"
 }

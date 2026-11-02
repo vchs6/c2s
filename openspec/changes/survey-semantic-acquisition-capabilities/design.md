@@ -29,7 +29,7 @@ T1/T3只能对其语法和版本断言；语法错误恢复节点不当成完整
 
 | 矩阵字段 | 状态及验证要求 |
 | --- | --- |
-| 源语言版本及混合边界 | Rust/Python/C/C++只是文档调查候选，D01未选首期；其他语言未知，非排除 |
+| 源语言版本及混合边界 | 首期源语言Rust和Python已由用户确认；C/C++仅保留历史文档调查，非首期支持承诺；语言版本和混合边界仍待定 |
 | Skill host | Windows/Linux/macOS、WSL/容器分别列版本/架构/可执行依赖；均未验证 |
 | 项目target | triple/ABI、编译开关/特性/依赖环境与host分列；缺失不默认host |
 | 工具版本/语法版本/能力 | documented、verified、unsupported、unknown分别记录，不从文档直接升级 |
@@ -51,7 +51,7 @@ T1/T3只能对其语法和版本断言；语法错误恢复节点不当成完整
 
 T4本次还实际读取全文核对workspace_members、targets及resolve字段；原生ID视为不透明引用，禁止解析其文本推主体身份。
 
-组合记录候选示例（不是支持声明）：Python/待选版本×Linux/待选架构host×待选Python target×AST，Rust/待选版本×Windows host×待选target×rust-analyzer，C/C++×容器Linux host×交叉编译target×Clang，以及Rust↔C桥接；全部unknown/未运行，D01未选择首期。
+组合记录候选示例（不是支持声明）：Python/待选版本×Linux/待选架构host×待选Python target×AST，Rust/待选版本×Windows host×待选target×rust-analyzer，C/C++×容器Linux host×交叉编译target×Clang，以及Rust↔C桥接；语言选择现仅Rust/Python已确认，以上具体版本/host/target组合仍unknown/未运行；C/C++及Rust↔C保留为后续调查。
 
 本地工具可用不代表远程工具可用；远程路径、版本、target和来源快照必须可对应，权限/网络/环境不可用则记录缺口，不自动上传源码或配置远端。WSL/容器不是Windows/Linux全组合替代。退化例：Windows路径无法映射容器原始文件→定位未核验，不伪造行列；远程rust-analyzer版本未知→能力unknown；FFI声明存在但链接依据缺失→保声明和桥接缺口，不确定调用绑定。
 
@@ -66,4 +66,4 @@ T4本次还实际读取全文核对workspace_members、targets及resolve字段�
 
 ## Open Questions
 
-D01首期语言/版本/组合；D02数值；具体工具API与模型兜底质量未验证，不锁定全套工具或安装依赖。
+D01语言已确认Rust/Python，版本/混合边界/平台组合及负载待定；D02数值；具体工具API与模型兜底质量未验证，不锁定全套工具或安装依赖。

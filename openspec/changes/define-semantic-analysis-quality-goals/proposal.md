@@ -13,6 +13,7 @@
 ## Capabilities
 
 ### New Capabilities
+- `semantic-analysis-scope`: 用户已确认的首期源语言范围（Rust和Python）；仅该确认同步基线。
 - `semantic-analysis-quality`: 质量、性能和成本的可比评价及证据边界。
 
 ### Modified Capabilities
@@ -21,4 +22,4 @@
 
 ## Impact
 
-关联#6–#13；不修改已确认主规格，不实现基准或产品。候选定义待整体审核，D01/D02阻塞范围和数值验收冻结。
+关联#6–#13；仅新增用户已确认的语言范围主规格，不修改原模型/查询主规格，不实现基准或产品。候选定义待整体审核，D01/D02阻塞范围和数值验收冻结。

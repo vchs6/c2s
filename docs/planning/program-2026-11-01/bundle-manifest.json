@@ -1,6 +1,6 @@
 {
   "format": 1,
-  "snapshot_date": "2026-11-01",
+  "snapshot_date": "2026-11-02",
   "freeze_status": "not-frozen",
   "development_ready": false,
   "implementation_approved": false,
@@ -13,7 +13,7 @@
   "base_revision": "d40cb6c4bfdf5567ee3ca1dde82b31dd58528d8a",
   "historical_issue3_tokens_authorize_implementation": false,
   "digest_algorithm": "SHA-256 over sorted path + TAB + file SHA-256 + LF UTF-8",
-  "bundle_sha256": "bdd32b51898730a10a2e4ce5e0792e85176bda9981f8f771265b6e3dfd5c1607",
+  "bundle_sha256": "83be249ccf879b3732a3e8c94b4c9dd4dc56de8fc3c070b623141cd5c38fe7f3",
   "exclusions": [
     "manifest itself",
     "validation execution logs/reports",
@@ -32,6 +32,10 @@
     {
       "path": "docs/decisions/0002-confirmed-specification-baseline.md",
       "sha256": "5d0a32574ccafe335d4359c9675bd02b459c1538f4e04fc2cca6e11fd25b775f"
+    },
+    {
+      "path": "docs/decisions/0003-initial-source-languages.md",
+      "sha256": "2db9543628437182ff95c9809cb1fa67cd48dbca384e0b11118337cc22e2c2db"
     },
     {
       "path": "docs/development/discussions/2026-11-01-specification-baseline/semantic-fact-model-candidates.md",
@@ -190,6 +194,10 @@
       "sha256": "131285394de4208ea44c0b288ba063fa39d78470e988df63e1c20b58807cbd89"
     },
     {
+      "path": "docs/development/reviews/issues/5/language-decision-2026-11-02/record.json",
+      "sha256": "f4eb645e92415eb065ed73e7640e03813a6a31c257181b953fe7719df3be303d"
+    },
+    {
       "path": "docs/development/reviews/issues/5/planning-2026-11-01/battle.json",
       "sha256": "553da515a208a29cde64c6d66a2d1e2e7760ccc1027ed6dcddea2c082c11bed2"
     },
@@ -283,27 +291,27 @@
     },
     {
       "path": "docs/planning/issues.json",
-      "sha256": "c6059f7bd82807a2b4ceecd2918c6febae81f28d631baa452cce778fee18d742"
+      "sha256": "5a1cece2eb3fd8660db1a375f074044afed0e88a5c6738a6ff3841937bb040a5"
     },
     {
       "path": "docs/planning/program-2026-11-01/acceptance-matrix.md",
-      "sha256": "d67a4dce806561179501ab30338b07e69e01fe88054c75e4e2cf71f5e7f2baaa"
+      "sha256": "a1b44408021f847b7e0b4e7f1cf9613e196f11d6dfd0d6fe3b71dc0d8e97ea14"
     },
     {
       "path": "docs/planning/program-2026-11-01/context.md",
-      "sha256": "6877c63ffc00c4b70f36a7e53b866546b31eda7c269051b6abce1bf8486a1968"
+      "sha256": "69b4bc0b93527cc7080d4dc24d45962a1ceed87ad1683cf2bdd836a52ddc8fcc"
     },
     {
       "path": "docs/planning/program-2026-11-01/decision-requests.md",
-      "sha256": "49408ef8007ce1e2a8c4f79da9d6c33302b61ad93f6867b33cef8f660472934c"
+      "sha256": "bed9b840d84fd7e13d6dbb162ae8b524041611cfd2ef6196227d7259862734fd"
     },
     {
       "path": "docs/planning/program-2026-11-01/overall-review.md",
-      "sha256": "9a77d5d6fd3e2d9a6129427b75a7a3a1e43ae355e2c9de1f909494b5cc2ad99c"
+      "sha256": "0a51034e51074fdfc41e9b899fd0ef5246b2adbce18eabe78c1672a42851b3ff"
     },
     {
       "path": "docs/planning/program-2026-11-01/upstream.md",
-      "sha256": "a7f65dc70b1315da301f54f51e3342aad16ca1524a56ce023a6332bb127c6d6e"
+      "sha256": "0de16e3020cfe161d3f93108577c04a9a7ef7c5d69ae73dbe543eac385e606a4"
     },
     {
       "path": "docs/session/artifact-manifest.json",
@@ -355,19 +363,23 @@
     },
     {
       "path": "openspec/changes/define-semantic-analysis-quality-goals/design.md",
-      "sha256": "8306f4ff9acb0775710e3d4761f7789117d3c10b840c06102be84af3d45fb193"
+      "sha256": "22e55fac72359ab37ee008d921fed3e79fca56ab52277ff5c138a801c5633d04"
     },
     {
       "path": "openspec/changes/define-semantic-analysis-quality-goals/proposal.md",
-      "sha256": "16562874103f2541d851286009b6fc4c4ef0c309b5842babd37755b2a37eb74b"
+      "sha256": "5d6f7fb2a6cee328208816f60c3c4d0406ff39b8004cf40e9f3432c1e36e0211"
     },
     {
       "path": "openspec/changes/define-semantic-analysis-quality-goals/specs/semantic-analysis-quality/spec.md",
       "sha256": "29b47b6cbddb2ca04e3224c43bb0454c257931b05cb21fe3c56fad07f2cd658d"
     },
     {
+      "path": "openspec/changes/define-semantic-analysis-quality-goals/specs/semantic-analysis-scope/spec.md",
+      "sha256": "82364b162f7947149b820492df0943007e79a56115f7e25bbe2e2693911a40fc"
+    },
+    {
       "path": "openspec/changes/define-semantic-analysis-quality-goals/tasks.md",
-      "sha256": "4652a70281d84bdd51f6188c251a01e5d211e0b211c17a0f153815afbcc651a7"
+      "sha256": "d12d42f50feac6a5d10b4970040640392d27784bbbb8a52b2e9a68fcb242a2f3"
     },
     {
       "path": "openspec/changes/define-semantic-fact-query-contracts/.openspec.yaml",
@@ -527,7 +539,7 @@
     },
     {
       "path": "openspec/changes/survey-semantic-acquisition-capabilities/design.md",
-      "sha256": "c2ca62cf1026cd0d450d4ae60db0cae4634cf3d4160472eecd4355c8effef2fd"
+      "sha256": "b408c8c521877d0f898ab59f55c9802b84ae21080b047bd19dc067df6b4d0fce"
     },
     {
       "path": "openspec/changes/survey-semantic-acquisition-capabilities/proposal.md",
@@ -550,6 +562,10 @@
       "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
     },
     {
+      "path": "openspec/specs/semantic-analysis-scope/spec.md",
+      "sha256": "f6f469d7f58cebf739a62e81d47f679e1e7dcd445f2877a9ec23fd4a55dad627"
+    },
+    {
       "path": "openspec/specs/semantic-fact-model/spec.md",
       "sha256": "59383a874afaf10b01ee2f60f8bafa043e489068b5130f75db7eaf0dfcfe860b"
     },
@@ -557,5 +573,24 @@
       "path": "openspec/specs/semantic-fact-query/spec.md",
       "sha256": "610a6e269df04c374a7dcfa887c166c98980d626053a293c0e026ccbcee45f24"
     }
-  ]
+  ],
+  "supersedes_bundle_sha256": "bdd32b51898730a10a2e4ce5e0792e85176bda9981f8f771265b6e3dfd5c1607",
+  "confirmed_initial_source_languages": [
+    "Rust",
+    "Python"
+  ],
+  "partial_decisions": {
+    "D01": {
+      "confirmed": [
+        "source-languages"
+      ],
+      "pending": [
+        "versions",
+        "mixed-language-boundaries",
+        "host",
+        "target",
+        "workload"
+      ]
+    }
+  }
 }
