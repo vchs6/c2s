@@ -212,5 +212,9 @@
   "system_requirements_status": "confirmed-by-user-ADR-0007",
   "remaining_user_requirement_decisions": [],
   "d02_status": "resolved-by-user-evaluation-policy",
-  "design_refinement_required": true
+  "design_refinement_required": true,
+  "delivery_change": "define-independent-ddd-delivery",
+  "milestones_index": "docs/planning/program-2026-11-01/milestones.md",
+  "isolation_ready": false,
+  "product_version_policy": "0.b.c"
 }

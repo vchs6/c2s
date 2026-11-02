@@ -1,0 +1,25 @@
+# DDD交付里程碑索引
+
+状态：规划方案；用户已确认先规划、五角色独立和0.b.c方向，未批准产品实施。具体技术契约仍需M0收敛，集合未冻结。本表不是第二套任务清单；唯一待办为下面引用的OpenSpec tasks。
+
+## 交付增量与原任务归属
+
+下表短名对应`openspec/changes/<change>/tasks.md`：模型=define-layered-semantic-fact-model；质量=define-semantic-analysis-quality-goals；架构=design-semantic-fact-skill-architecture；查询=define-semantic-fact-query-contracts；构造=design-lazy-semantic-fact-construction；存储=design-incremental-semantic-fact-storage；获取=survey-semantic-acquisition-capabilities；Token=minimize-semantic-extraction-tokens；协作=design-semantic-fact-coordination；交付=define-independent-ddd-delivery。
+
+| 里程碑 | 用户可验收的增量与DDD约束 | 唯一任务引用/交付路径 | 验证与通过条件 |
+| --- | --- | --- | --- |
+| M0 领域契约与交付就绪 | 明确统一语言、主体身份、不变量、请求/结果及端口，不按E层拆技术架构；公开规格足以独立编码及编写验收 | 交付2.1；原各change design/tasks精化，contracts/semantic-model与skill/core/contracts的接口规划；后续另批后才执行交付2.2/2.3 | 公共类型消费/产出无悬空；整体审查冻结新摘要；再取得独立开发批准；隐藏用例开始前隔离实证通过。M0不发布产品 |
+| M1 项目查询闭环 | 首期Rust/Python真实项目；指定目录按请求开始取得项目事实，返回请求顶层完整内容/缺口，双输出一致；重复查询复用、只保存未存内容 | 模型1.1–3.1中本查询所需公共契约，架构1.1/2.1，查询1.1/2.1/3.1，构造1.1/2.1，存储1.1/2.1，获取1.1/2.1，质量1.1/2.1，Token1.1，协作2.1/3.1中闭环切片；路径由原tasks指定 | 独立作者基于固定regex/click项目写用例，runner运行、审核者审代码、最终验证核证据；首次/复用/补缺/保存失败如实报告，记录耗时/Token/环境。候选0.1.0，尚未发布 |
+| M2 类型、成员与函数定义 | 查询有哪些类型/类、成员、成员及函数定义；顶层相对请求、无递归；身份跨尺度一致 | M1所列任务扩展至定义查询的切片，模型4.2的语言机制相关部分；核心路径skill/query、construction、acquisition及原模型契约 | Rust/Python能力差异和工具缺口明确；嵌套项目及非src内容不静默排除，人机双输出范围相同；继续独立回归及冷/热/补缺计量。候选0.2.0 |
+| M3 函数实现语义 | 函数实现/算法及行为边界可查询，来源/未知/错误出口如实；不默认逐语句事实化 | 模型4.1–4.3及5.1；查询/构造/获取相应实现语义切片，Token1.1；contracts/semantic-model、src/c2s_semantic_contract及原skill路径 | 独立真实来源核对与投影检查分开，不以映射完整当语义等价证明；suite不依据candidate生成期望。历史C++模型示例不扩大首期产品语言。候选0.3.0 |
+| M4 集成、恢复与优化 | 并发/取消/恢复保持其他订阅与身份/引用一致；性能和实际Token优化前后对照；形成实际语言/平台能力记录 | 协作1.1–3.1、质量1.1/2.1、Token1.1/2.1、存储2.1及各原任务剩余集成条件；skill/coordination、quality等原路径 | 对固定输入/范围/环境比较取得事实/缺口及耗时/实际Token；不以删事实省Token；Windows/Linux/macOS目标矩阵与项目target分列，未测组合标未验证；实测后确定负载。按新增能力或修复选择b或c，无预承诺收益比例 |
+
+同一原任务可支撑多个里程碑。里程碑记录的是该任务的验收切片，不能在M1仅完成项目查询就勾选整个查询任务；所有原通过条件完成才更新原checkbox。M0细化时若需拆分原任务，应在原tasks内分配稳定子任务ID并同步本索引，不能在这里新增第二份实施待办。M1引用的恢复是基本保存失败诚实/可继续，M4再验并发取消等完整约束，不延后基本一致性。
+
+## 每个里程碑都适用的门禁
+
+五角色与有效权限、候选/套件/规格/项目/环境证据绑定见交付design §2–4；公共Scenario不是私有suite。每个增量都先形成独立测试依据及实际失败证据，再编码/审核/独立执行/最终验证，不能直到M4才开始测试。
+
+基准来源固定regex 94ac45b2a6e7b1c30927feb5b66c5ded5b7ad447与click 2247b35ea1c47c727d7a06e51fa280e12a863ff6。当前只有20文件研究样本，完整项目检出、工具运行与验收均未完成。新增隐藏查询/断言不写入本表或产品仓库。
+
+在获批实施范围内，独立门禁通过后自动继续下一个依赖就绪增量，不逐里程碑重复请求同一批准。失败交回所有者修订，重跑受影响证据；真实重大需求变更/权限/无法裁定取舍才暂停依赖链。当前Runner不能实施或在会话结束后无人值守运行，本轮不创建后台自动化。

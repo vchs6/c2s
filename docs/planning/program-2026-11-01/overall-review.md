@@ -6,6 +6,8 @@
 
 需求确认不等于技术设计冻结或产品实施批准。freeze_status=not-frozen、development_ready=false、implementation_approved=false；具体契约、工具/后端适配等仍由代理收敛后提交整体审核。原单Issue令牌不能绕过整体新摘要门禁。
 
+ADR-0008补充已确认的五角色独立、真实项目隐藏验收、授权内连续推进及0.b.c版本边界。里程碑见milestones.md，交付设计及唯一治理tasks见define-independent-ddd-delivery；不是产品实现计划已就绪。当前isolation_ready=false，实际隐藏用例/产品测试未编写或执行；共享代理环境不能提供真实隔离。
+
 ## 确认的行为
 
 1. 可以逐步查询项目、类型、成员、函数定义/实现；每次仅本次所需顶层事实，不能用“最小”任意删减所需内容。

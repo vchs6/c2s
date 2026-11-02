@@ -28,9 +28,9 @@
 
 ## 本轮执行门槛与通用验证
 
-0组为历史已完成文档任务；6组为本次阶段一任务。1–5组的10项产品任务全部未完成，只有A获确认且另有明确实施批准后才能执行。每项先写对应正反例并观察失败，再实现候选定义/规则，运行该项验证，更新文档及实际证据并提交；任何失败不勾选。task中的候选Requirement不等于已生效主规格。
+0组为历史已完成文档任务；6组为本次阶段一任务。1–5组的10项产品任务全部未完成，只有A获确认且另有明确实施批准后才能执行。每项由独立作者写正反例、独立执行者观察实际失败，再由编码者实现候选定义/规则，独立审核/执行/最终验证后更新实际证据并提交；任何失败不勾选。task中的候选Requirement不等于已生效主规格。
 
-阶段二统一测试命令T：`PYTHONPATH=src python3 -m unittest discover -s tests/semantic-model -p 'test_*.py' -v`。需要先按1.1建立并安装requirements-semantic-model.txt；当前文件及测试不存在，T本轮未运行。下面的测试名称及期望是实施计划，不是本轮测试结果。
+阶段二验证入口T：由独立执行者调用交付变更2.2绑定的私有runner，通过隔离接口测试固定candidate；旧同进程unittest命令不适用于隐藏suite。实施获批且隔离就绪后再按1.1准备requirements-semantic-model.txt；当前文件及测试不存在，T本轮未运行。下面的测试名称及期望是实施计划，不是本轮测试结果。
 
 ## 0. 已确认规格固化（本次授权）
 
@@ -40,18 +40,22 @@
 
 - [x] 0.3 协调规划与验证记录。依赖：0.2。上游依据：用户条目4–6，B01–B06与两份主规格全部Requirement。交付：proposal.md、design.md、tasks.md、README/会话索引及`docs/development/reviews/2026-11-01/specification-baseline-verification.md`。验证：`npm run validate`、`npm run check:artifacts`、`git diff --check`，比较原10项产品任务均未完成，检查无产品代码/导入原件变动。通过：工件一致且实际校验有证据，文档任务与产品任务状态明确；失败：虚报验证、两套冲突计划、越界实施或归档。
 
+## 独立交付约束（ADR-0008，优先于旧同角色步骤）
+
+本清单所有测试步骤由独立用例作者编写、独立执行者运行，编码者只改实现与公开说明，不编写或读取测试；代码审核与最终验证另用独立身份。所有测试/fixture交付与测试命令均在交付变更2.2绑定的私有测试区，不落入编码可读产品仓库/历史/日志；本文既有名称与期望只是公开契约示例，不是隐藏suite。本轮未创建这些文件或运行产品测试。旧T/unittest直接同进程导入candidate不能用于隐藏验收，实际隔离runner命令须先绑定再执行。具体交接及红绿验证见`../define-independent-ddd-delivery/design.md` §2–4；里程碑仅索引本tasks，不复制产品任务。公共类型/路径及runner接口须先经交付2.1/2.2就绪检查；整体设计未冻结，实施另批，当前全部产品checkbox保持未完成。
+
 ## 1. 类型身份与公共目录
 
 - [ ] 1.1 建立类型/身份域/上下文与校验入口，运行T中身份和上下文正反例。依赖：方案和实施批准。
   - 上游依据：主规格“单一主体身份与跨层引用”；候选“稳定身份与上下文保持引用”“显式工程边界与组织关系”；C01/C02、design §1/6。
-  - 交付：types.json、fact.schema.json初始包/身份结构（均在contracts/semantic-model/）、rules.md身份章节、requirements-semantic-model.txt、src/c2s_semantic_contract/{__init__,validation}.py、tests/semantic-model/test_contracts.py、fixtures/identity-context.json及docs/domain/semantic-model-contract.md统一语言/身份章节。
+  - 交付：types.json、fact.schema.json初始包/身份结构（均在contracts/semantic-model/）、rules.md身份章节、requirements-semantic-model.txt、src/c2s_semantic_contract/{__init__,validation}.py、独立测试区/suites/semantic-model/test_contracts.py、独立测试区/suites/semantic-model/fixtures/identity-context.json及docs/domain/semantic-model-contract.md统一语言/身份章节。
   - 接口：按design §6提供validate_model(document, catalogs, source_observations=None)；后续任务扩展其阶段，不变签名。首次契约version=1.0.0，依赖jsonschema==4.26.0；此为获批A的值，不能在实施时擅自扩大兼容承诺。
   - 验证：test_same_declaration_two_contexts断言D未复制；test_context_overlap_cases依次断言缺配置为ambiguous、同值兼容、多值合法、确定矛盾为CONFLICTING_CLAIMS且双方保留、重叠未知为POTENTIAL_CONFLICT；test_context_contradiction断言CTX_CONTRADICTION；test_mapping_preserves_identity断言确认映射不重键。
   - 通过：输入错误与语义冲突分开，source域不冒Project，名称/路径/提交非单独身份，诊断有参与记录；失败：猜配置/造项目、静默删主张或身份仅靠位置。字段/记录规则同步文档。
 
 - [ ] 1.2 定义谓词、角色及组成/内嵌目录并运行T中的目录正反例。依赖：1.1。
   - 上游依据：候选“可查询的类型与谓词目录”“组成关联与引用边界”；C03/C07、design §2及导入候选§9的首批清单。
-  - 交付：contracts/semantic-model/predicates.json、catalog.schema.json、catalog-manifest.json（contracts/semantic-model/）、rules.md目录章、fixtures/predicates.json、扩展test_contracts.py及公共文档目录/五层边界。
+  - 交付：contracts/semantic-model/predicates.json、catalog.schema.json、catalog-manifest.json（contracts/semantic-model/）、rules.md目录章、独立测试区/suites/semantic-model/fixtures/predicates.json、扩展test_contracts.py及公共文档目录/五层边界。
   - 验证：test_catalog_roles_and_layers遍历每条谓词完整角色/类型/基数/约束/关系种类、Semantic唯一主层、Provenance无主层；test_catalog_input_rejected拒绝畸形目录、悬空目录类型引用、未知constraintId、混合版本及同版本改目录，并断言依赖阶段not_run；test_unknown_predicate_and_record拒绝缺类型/任意字典；test_cross_layer_entry_binding验证E1引用E2不复制。
   - 通过：固定发行包规范JSON摘要匹配、元目录Schema及已知规则通过，首批条目全部展开，program.contains/behavior.has_body/region_member与workspace/依赖/别名关联分开；失败：接受调用方自报manifest绕过核对、静默接受未知规则、漏条目、把层入身份、成员推依赖或内嵌白名单不闭合。
 
@@ -59,19 +63,19 @@
 
 - [ ] 2.1 完成事实包结构、引用与顶层静态形状约束，运行T结构/引用反例。依赖：1.1–1.2。
   - 上游依据：候选“类型化事实与分阶段校验”“组成关联与引用边界”；查询主规格默认边界；C02/C03/C07。
-  - 交付：完成fact.schema.json、扩展validation.py、rules.md结构/引用章、fixtures/{facts-valid,facts-invalid,top-level-shape}.json、test_contracts.py及公共文档完整包/引用例。
+  - 交付：完成fact.schema.json、扩展validation.py、rules.md结构/引用章、独立测试区/suites/semantic-model/fixtures/{facts-valid,facts-invalid,top-level-shape}.json、test_contracts.py及公共文档完整包/引用例。
   - 验证：test_invalid_role_and_internal_ref拒绝算法作为alias目标及悬空内部引用；test_external_stub不强造本地提供方；test_nested_payload_rejected覆盖Sequence/Record藏Fact/主体/body、复杂签名；test_shared_composition_and_cycle保持共享引用且顶层形状不递归；test_stages_not_run验证结构失败后依赖阶段not_run。
   - 通过：合法显式缺口可保留，错误含阶段/记录/字段/规则，完整包与示意顶层边界不同；失败：外部标记绕开全部身份/来源约束或把静态形状测试称查询流程实现。
 
 - [ ] 2.2 落实工程组织、目标与交付正反例并运行T。依赖：2.1。
   - 上游依据：候选“显式工程边界与组织关系”“目标配方别名与交付边界”；Issue二.3；C02。
-  - 交付：fixtures/{engineering,build-delivery}.json、validation.py对应不变量、rules.md工程章、test_contracts.py及公共文档工程案例。
+  - 交付：独立测试区/suites/semantic-model/fixtures/{engineering,build-delivery}.json、validation.py对应不变量、rules.md工程章、test_contracts.py及公共文档工程案例。
   - 验证：test_undecided_project_mapping接受声明未决/候选映射、拒绝来源域冒Project；test_multiple_workspaces_no_inferred_membership覆盖嵌套独立工程/包映射/根包workspace/无workspace项目；test_alias_recipe_observation覆盖CMake INTERFACE/ALIAS、Python无原生目标、未构建输出和未安装入口。
   - 通过：没有虚构目标/项目/观测，确认映射保单身份，成员不转移所有权；失败：靠目录/同名合并或把任务选择器造为目标。多workspace例标synthetic，不冒真实解析结果。
 
 - [ ] 2.3 完成依赖与有限条件/循环校验并运行T。依赖：2.1–2.2。
   - 上游依据：候选“需求解析与范围位置正交”“条件可满足性与循环诊断”；C04、design §3。
-  - 交付：fixtures/{dependencies,conditions}.json、validation.py条件判定及需求规则、rules.md片段/4096限额/循环章、test_contracts.py及公共文档范围说明。
+  - 交付：独立测试区/suites/semantic-model/fixtures/{dependencies,conditions}.json、validation.py条件判定及需求规则、rules.md片段/4096限额/循环章、test_contracts.py及公共文档范围说明。
   - 验证：test_dependency_scope_orthogonal断言resolved+outside切inside仍同需求；test_path_version_and_resolution_context保留path+version/多配置/歧义；test_condition_truth_tables覆盖Unknown及空All/Any；test_cycle_satisfiability区分共享x=A且x=B为unsat、sat有见证；test_condition_limits覆盖4096可枚举、4097及SourceCondition为undetermined且保原图。
   - 通过：求值、SAT与工程违规独立，非法/不支持配置有定位；失败：未知当false、删环、outside当unresolved或把项目环当目标违规。循环fixture标synthetic。
 
@@ -79,7 +83,7 @@
 
 - [ ] 3.1 完成证据/覆盖/三轴状态及有界否定规则，运行T。依赖：2.1–2.3。
   - 上游依据：候选“主张模态证据与推导可追溯”“覆盖与否定的边界”“状态维度独立表达”；C06、design §4。
-  - 交付：fact.schema.json的Evidence/Coverage/状态定义、validation.py阶段、rules.md模态/否定/组合矩阵、fixtures/evidence-coverage.json、test_contracts.py及公共文档覆盖报告例。
+  - 交付：fact.schema.json的Evidence/Coverage/状态定义、validation.py阶段、rules.md模态/否定/组合矩阵、独立测试区/suites/semantic-model/fixtures/evidence-coverage.json、test_contracts.py及公共文档覆盖报告例。
   - 验证：test_modes_not_truth_rank保留六模态和Supports/Refutes/Limits；test_derivation_missing_premise定位缺前提；test_source_unchecked_vs_mismatch区分无观察和不匹配；test_acquired_ref_only合法；test_negative_requires_closed_scope只接受design两种有限闭合检查且人工审定/输入齐备，未读输入、动态调用缺口和20文件样本不得证明全称否定。
   - 通过：valid只表示契约无error，冲突/gap/unchecked各列，空/五层有事实不报完备；失败：哈希/置信度裁真、把未展示当未获取或自动生成否定证书。
 
@@ -87,19 +91,19 @@
 
 - [ ] 4.1 完成操作契约、受限算法结构和引用校验，运行T算法正反例。依赖：1.1–3.1。
   - 上游依据：算法delta“操作契约独立表达”“算法描述身份目的与实现关联”“结构化行为体与引用完整性”“求值错误资源与并发语义保持”；C03/C05、design §5。
-  - 交付：algorithm.schema.json、validation.py算法阶段、rules.md算法章、fixtures/algorithms.json、test_algorithms.py及公共文档契约/算法例。
+  - 交付：algorithm.schema.json、validation.py算法阶段、rules.md算法章、独立测试区/suites/semantic-model/fixtures/algorithms.json、test_algorithms.py及公共文档契约/算法例。
   - 验证：test_algorithm_kinds_and_refs覆盖design列出的14种构造、重复stepId、悬空边/循环出口、局部步骤可独立定位；test_algorithm_multi_project保持管理归属未决和多实现；test_numeric_resource_concurrency_unknown不默认整数/次序/串行，opaque缺来源/影响/未知项拒绝；test_body_reference_boundary拒绝顶层示例偷带步骤。
   - 通过：契约/源码解释/抽象目的不同、错误与返回/资源/偏序保留，合法未知不补造事实；失败：implemented_by当等价证明或造共同workspace。
 
 - [ ] 4.2 落实语言机制映射的正反例并运行T。依赖：4.1。
   - 上游依据：算法delta“宏生成与注解的分阶段来源”“匿名操作闭包与绑定语义”；Issue二.4；design §5。
-  - 交付：fixtures/language-mechanisms.json、test_algorithms.py映射断言、rules.md映射章及公共文档语言支持/缺口矩阵。
+  - 交付：独立测试区/suites/semantic-model/fixtures/language-mechanisms.json、test_algorithms.py映射断言、rules.md映射章及公共文档语言支持/缺口矩阵。
   - 验证：test_macro_unexpanded_and_repeated不造展开AST且区分应用/生成绑定；test_metadata_vs_runtime_decorator区分cfg、未支持Java处理、Click Command/callback/返回替换；test_closure_and_conditional_binding保留捕获未知、模式、初始化/作用域/路径及绑定≠赋值。
   - 通过：来源多对多、主体/运行对象不合并，缺证显式UNKNOWN/opaque；失败：声明注解已执行或猜捕获方式。复杂宏/Java等合成例明确synthetic，不声称获取器支持。
 
 - [ ] 4.3 实现算法投影并分别核对来源覆盖与投影，运行T。依赖：4.1–4.2。
   - 上游依据：算法delta“伪代码是可追溯投影”“来源行为覆盖与投影分别验证”；C05、导入候选§12.1–12.3及R5/C5/P7固定来源。
-  - 交付：src/c2s_semantic_contract/projection.py导出project_algorithm及check_source_coverage（签名/返回见design §6），fixtures/pseudocode/三案例的source-checklist、body、expected-text与step-mappings，test_algorithms.py及rules/公共文档的投影规则和边界。
+  - 交付：src/c2s_semantic_contract/projection.py导出project_algorithm及check_source_coverage（签名/返回见design §6），独立测试区/suites/semantic-model/fixtures/pseudocode/三案例的source-checklist、body、expected-text与step-mappings，test_algorithms.py及rules/公共文档的投影规则和边界。
   - 验证：test_source_checklist_review_gate未审定不通过；test_source_body_coverage要求清单项均映射Step/effect或显式gap；test_deleted_failure_exit_detected在body和文本一起删出口时清单仍识别缺项；test_projection_preserves_behavior涵盖Rust两层循环/回调传播、C++接收器结果、Python零规格/第二通配错误，opaque/省略显示。
   - 通过：人工来源核对和程序投影断言分别报告，段落映射有效且未运行上游不称运行通过；失败：映射全覆盖就当源码覆盖、清单未审定或声称完整等价。清单需独立审查，不能只由生成body的代理自证。
 

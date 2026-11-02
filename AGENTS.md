@@ -34,6 +34,14 @@ Issue只登记议题：新建/编辑/评论/标签不启动工作，不定时扫
 
 所有自维护脚本、校验和测试使用Python3。手动维护工具校验调用者及Issue作者的write/maintain/admin权限，Issue正文不能扩大权限；只处理指定Issue，不用评论授权推导实施。模型规划写入仅限所选OpenSpec变更与该Issue评审目录，不改workflow、发布脚本、规则或认证。复用已有变更时精确指定，不另建重复模型。合格授权结果直接提交main，不建分支/PR，不自动archive。
 
+## 独立交付与里程碑（ADR-0008）
+
+编码、代码审核、测试用例编写、测试执行、最终验证必须独立上下文/执行身份及工件所有权。编码者不编写或读取测试；独立作者依据公开契约及讨论中的真实项目写suite，不以candidate为期望依据。公开规格/Scenario可见，不等于私有suite；隐藏查询/断言/fixtures与原始日志不能进入编码可读仓库、历史或工具输出。私有runner的candidate进程也不能访问suite。共享目录、worktree、同账号全权token及角色提示不能证明隔离；当前缺真实隔离，隐藏用例编写和执行blocked，不在本会话提前编写。
+
+以`docs/planning/program-2026-11-01/milestones.md`索引既有唯一tasks，先契约后查询增量，每个增量独立审核/测试/验证并覆盖非功能。Superpowers默认编码者写测试的步骤按此用户要求改为跨角色red-green，独立执行者记录实际失败，不得虚构。交接绑定candidate/suite/契约/源/环境及证据，变更使相关结论失效。授权实施范围内门禁通过后持续推进；本次仍只规划，整体审核及另批开发不得绕过，Runner现状不等于已部署无人值守编排。
+
+当前产品版本0.b.c，a固定0；功能增b重置c、修复增c为交付设计。首次0.1.0仅候选；工具包和契约格式版本分开，不因规划修改package/lock/tag或宣布发布。详见`openspec/changes/define-independent-ddd-delivery/`。
+
 详见docs/workflow/planning-mode.md及issue-worker.md。现有维护工具不等于跨Issue无人值守编排器；真实模型失败、缺密钥或验证失败均明确blocked，smoke只证明确定性检查。旧运行资料保留历史，不代表当前入口仍自动执行。
 
 ## 最小化分层语义事实提取的Token消耗（用户明确目标）

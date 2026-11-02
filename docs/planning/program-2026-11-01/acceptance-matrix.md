@@ -1,6 +1,18 @@
 # 当前需求—能力—场景—唯一任务矩阵
 
-用户确认范围见ADR-0001至0007；当前顶层=符合本次请求要求的顶层语义事实。正式规格仅固化明确确认，其他delta/设计仍为技术候选。所有产品任务未执行，本表仅索引，不是第二套计划。
+用户确认范围见ADR-0001至0008；当前顶层=符合本次请求要求的顶层语义事实。正式规格仅固化明确确认，其他delta/设计仍为技术候选。所有产品任务未执行，本表仅索引，不是第二套计划。
+
+## 独立交付及版本追溯（ADR-0008）
+
+| 确认依据 | 能力 / Requirement | Scenario | 唯一tasks | 通过依据 |
+| --- | --- | --- | --- | --- |
+| U02 | independent-delivery / 五类交付职责独立 | 候选实现交接 | define-independent-ddd-delivery 1.1、2.2/2.3及原产品tasks | 五角色独立输入/身份/工件输出，编码者不写测试/改验收结论 |
+| U01/U02 | independent-delivery / 独立测试对编码角色不可见 | 仅具备共享工作区；向编码角色反馈失败 | define-independent-ddd-delivery 2.2/2.3 | 编码及candidate进程越权访问被拒，反馈保护隐藏用例；当前无隔离实证则blocked |
+| U01 | independent-delivery / 验收用例依据讨论中的真实项目 | 真实项目尚未实际测试 | define-independent-ddd-delivery 2.1及原产品tasks | 固定regex/click来源，实际运行后才报覆盖；20文件研究不冒完整测试 |
+| U03/U04 | independent-delivery / 授权范围内持续推进 | 规划完成尚未获开发批准；已授权里程碑具备推进条件 | define-independent-ddd-delivery 1.2、2.3 | 不绕过另批开发、Issue不触发、未部署不称后台运行 |
+| U03 | product-versioning / 当前产品版本固定主版本为零 | 递增产品版本 | define-independent-ddd-delivery 2.1/2.3 | 产品0.b.c，当前不改工具/契约版本、不创建产品发布 |
+
+以上新增5项delta，原#5–#12的50项映射及#3继承映射保留。实际隐藏suite的具体用例不进入公开矩阵。
 
 ## 用户七点及补充追溯
 

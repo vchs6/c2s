@@ -9,7 +9,7 @@
   "base_revision": "d40cb6c4bfdf5567ee3ca1dde82b31dd58528d8a",
   "historical_issue3_tokens_authorize_implementation": false,
   "digest_algorithm": "SHA-256 over sorted path + TAB + file SHA-256 + LF UTF-8",
-  "bundle_sha256": "1439ff6245f769abd3ef08e5d81aff4237562cadd5dd83034a375f5fc5446529",
+  "bundle_sha256": "fc2004155f8fc1e8a5ce86cae7bf05a054082e1a07cc792611e038e8b41b155d",
   "exclusions": [
     "manifest itself",
     "validation execution logs/reports",
@@ -19,11 +19,11 @@
   "files": [
     {
       "path": "AGENTS.md",
-      "sha256": "b7ebc4fe750dd03e82a53533eba9755a369a2e0a5b6d5fe947578aa07e1a95e3"
+      "sha256": "d6249af4b7420724aaec8f8a588eea7865a57fe6e55e6c2da3a79f004180eb27"
     },
     {
       "path": "README.md",
-      "sha256": "769ea83e7409efc7af151b334c21e11ab5788a73a3574b92c0786f4ea0a3f42c"
+      "sha256": "921ba13d5144deed2436169dfa9fe2f8854321ef4959e5d4fa6b2b32123fc4cc"
     },
     {
       "path": "docs/decisions/0001-five-semantic-layers.md",
@@ -52,6 +52,10 @@
     {
       "path": "docs/decisions/0007-confirmed-system-query-requirements.md",
       "sha256": "513e49a2648671e63a1441f88fdae37059ef852cbc1bb585aca403b31a46bf00"
+    },
+    {
+      "path": "docs/decisions/0008-independent-delivery-and-milestones.md",
+      "sha256": "dc0a0fd462e74dee4a2bbe4adbf679bb641c7b540a73246723a56d97a6ffb948"
     },
     {
       "path": "docs/development/discussions/2026-11-01-specification-baseline/semantic-fact-model-candidates.md",
@@ -202,8 +206,20 @@
       "sha256": "146a5fc3a0bf1ffcc9b97550452fc1a407a46e83a8b4164ebd8564678c6ca323"
     },
     {
-      "path": "docs/development/reviews/issues/3/stage-one-2026-11-01/validation.md",
-      "sha256": "fb7b25f5afa9f6242516c4cb28f60975019ae113206a2f24633bd84a785660d9"
+      "path": "docs/development/reviews/issues/4/independent-delivery-2026-11-02/battle.json",
+      "sha256": "ffdf7ca217c04b7487718a60070a0b70015837212f5cfcd11e85e2e444469d07"
+    },
+    {
+      "path": "docs/development/reviews/issues/4/independent-delivery-2026-11-02/builder-check.md",
+      "sha256": "19cb5b9ff52ce0cbd761e521f2720f706340cd1a4a6498c02d2b88cb56fe4170"
+    },
+    {
+      "path": "docs/development/reviews/issues/4/independent-delivery-2026-11-02/problem-package.md",
+      "sha256": "c8978b9290fbb1f53d5822db4d2349eaf783704b5fc938d5b4c91f265e81c2e6"
+    },
+    {
+      "path": "docs/development/reviews/issues/4/independent-delivery-2026-11-02/tool-evidence.json",
+      "sha256": "cec28240a7511a74b1c6a762bfd2daa29c72319dc6a1db2e538271c9c7cfcec8"
     },
     {
       "path": "docs/development/reviews/issues/4/planning-2026-11-01/issue-input.json",
@@ -327,15 +343,15 @@
     },
     {
       "path": "docs/planning/agenda.md",
-      "sha256": "60f2ea1526a27eb164c546067b938c5ce3a51b011e74590b93d5de3464cb29d5"
+      "sha256": "e3d7dcf418faf738ef6e43c32b4d3e2c49cba76df66ba344d87f04f2816872e0"
     },
     {
       "path": "docs/planning/issues.json",
-      "sha256": "ab5fd9729f990fbdb8242d8cd4bcb60ddb33159d13693ea1aaaa0392af0032c8"
+      "sha256": "158dc7e6445bbf65eac9769065c099cc3e5073ee7cc3add739f87368ff97995c"
     },
     {
       "path": "docs/planning/program-2026-11-01/acceptance-matrix.md",
-      "sha256": "d8c968ee61dace47355c77d0b8493dea88e6e80b25472621ef46d201729955db"
+      "sha256": "30a71b0a9be6d007d22166e7b021475fe587f160d9a23658d65e8606504b80c6"
     },
     {
       "path": "docs/planning/program-2026-11-01/context.md",
@@ -346,8 +362,12 @@
       "sha256": "5e4c6b4a54bacbf99136ecdc0429782c5f706b8bcac563652f2c76ca8ececc34"
     },
     {
+      "path": "docs/planning/program-2026-11-01/milestones.md",
+      "sha256": "0b4e831585bf2d7af623734f73bf8605f32df387f347154b62165302e5274d78"
+    },
+    {
       "path": "docs/planning/program-2026-11-01/overall-review.md",
-      "sha256": "133be9c65c4cc0ccf976655b27d4e6e22c258000ce6c00971ec33d66b7968869"
+      "sha256": "69c0017a43c0282b3c431916f2a80e5b604e8859d50c182219dfbe5886ad0813"
     },
     {
       "path": "docs/planning/program-2026-11-01/upstream.md",
@@ -363,7 +383,31 @@
     },
     {
       "path": "docs/workflow/planning-mode.md",
-      "sha256": "898be7c741368297ff5eba2c5c6b97a25100d1b9191048474284f948e963a008"
+      "sha256": "e4851a6642d11f372b9d17e2f7518bbe7849e6506a92e288240142670cd45f35"
+    },
+    {
+      "path": "openspec/changes/define-independent-ddd-delivery/.openspec.yaml",
+      "sha256": "108f7b3dae33488206672f31b510275110c0194c93062eb1970e19ca60c08722"
+    },
+    {
+      "path": "openspec/changes/define-independent-ddd-delivery/design.md",
+      "sha256": "5613c4eaf5097f0c670627315f4daffc28c6915c0ab8d11fddc9b8f5a28ee53c"
+    },
+    {
+      "path": "openspec/changes/define-independent-ddd-delivery/proposal.md",
+      "sha256": "61515a48e2d43f6e0b6eb6c1e1ef2c95a1fc3e8c1216ca79330b7f1a1069a0b9"
+    },
+    {
+      "path": "openspec/changes/define-independent-ddd-delivery/specs/independent-delivery/spec.md",
+      "sha256": "cecd0e45ebd5da83402d07de40a63e3267fd4046ae212057d2553b23a7e44b57"
+    },
+    {
+      "path": "openspec/changes/define-independent-ddd-delivery/specs/product-versioning/spec.md",
+      "sha256": "d8ff5da748f71fc642bd67e3cca3b3c284be4697393c9232dfb14b788395f4dd"
+    },
+    {
+      "path": "openspec/changes/define-independent-ddd-delivery/tasks.md",
+      "sha256": "9ca3b67b1e05ebcfa76fb0079bf22024a7edf514617dc268760be30cca01f0b9"
     },
     {
       "path": "openspec/changes/define-layered-semantic-fact-model/.openspec.yaml",
@@ -395,7 +439,7 @@
     },
     {
       "path": "openspec/changes/define-layered-semantic-fact-model/tasks.md",
-      "sha256": "156261bb60c6ebaa5c3ada9fdbc9490b76f8ba4e314cffd3e9d3b80e1abd68f3"
+      "sha256": "b4a36eafbd7e138724ba88559b9095341e527b79d4951bd9ef707cffa779d45f"
     },
     {
       "path": "openspec/changes/define-semantic-analysis-quality-goals/.openspec.yaml",
@@ -419,7 +463,7 @@
     },
     {
       "path": "openspec/changes/define-semantic-analysis-quality-goals/tasks.md",
-      "sha256": "02e5f097efa77190e967169ab7c65c99d025cfa29a928c457a086044e7594d1f"
+      "sha256": "3df59cb0a36e649dd9f0f14edc01d0c9420174a051a85e9c7f074ce7befd4c42"
     },
     {
       "path": "openspec/changes/define-semantic-fact-query-contracts/.openspec.yaml",
@@ -439,7 +483,7 @@
     },
     {
       "path": "openspec/changes/define-semantic-fact-query-contracts/tasks.md",
-      "sha256": "ce56b818e7348b07439681f6ae6aea2c46d36ef8cfe558b2393d601e106b21e5"
+      "sha256": "bc78d1cf54894b4bfe1b920249d8df086a367419702af20f4eb792bee3dfb9ff"
     },
     {
       "path": "openspec/changes/design-incremental-semantic-fact-storage/.openspec.yaml",
@@ -459,7 +503,7 @@
     },
     {
       "path": "openspec/changes/design-incremental-semantic-fact-storage/tasks.md",
-      "sha256": "be3612f96018c8eefa4010fcb0265b33b7708e69f5427146117610e521813715"
+      "sha256": "7b8ccf15b0e242c660b71f28175a27c9b801c98e07104d7dc69abc311cd6ffa1"
     },
     {
       "path": "openspec/changes/design-lazy-semantic-fact-construction/.openspec.yaml",
@@ -479,7 +523,7 @@
     },
     {
       "path": "openspec/changes/design-lazy-semantic-fact-construction/tasks.md",
-      "sha256": "3769eca5ce25c4896e3e340af17ea898c269e281129c4a2c6ecf1e1ca7f1aa70"
+      "sha256": "d62fb49efe50183323fcf6dc8bd9b21c4efe5c8073a38c7643736beefa05c1ce"
     },
     {
       "path": "openspec/changes/design-semantic-fact-coordination/.openspec.yaml",
@@ -499,7 +543,7 @@
     },
     {
       "path": "openspec/changes/design-semantic-fact-coordination/tasks.md",
-      "sha256": "3b4227b7343a94d43c44b62516ecbbdae407dc02485d25e2be072ca6a52f9f51"
+      "sha256": "089e5541ee8fe9f21f534499d4d7589d30d0b86e031fbd22dcc0c7ea795ae883"
     },
     {
       "path": "openspec/changes/design-semantic-fact-skill-architecture/.openspec.yaml",
@@ -519,7 +563,7 @@
     },
     {
       "path": "openspec/changes/design-semantic-fact-skill-architecture/tasks.md",
-      "sha256": "7608f5885a6f82360ea3199b8ffeeac28746d282e8b39c69996c9836d6962087"
+      "sha256": "e8f94b0217c2e97f16a25b1b81c9da9d9169bd452a8a244b3569491b8bcf3940"
     },
     {
       "path": "openspec/changes/minimize-semantic-extraction-tokens/.openspec.yaml",
@@ -539,7 +583,7 @@
     },
     {
       "path": "openspec/changes/minimize-semantic-extraction-tokens/tasks.md",
-      "sha256": "53878a820dd6be0bf414cc64c6a3fbd019b4f73bbe1b43f2d572734e3b32a4f9"
+      "sha256": "daa746ef45cb0244b9ef21b86d26bec3d590e0912812012a6ff256234abd1a8f"
     },
     {
       "path": "openspec/changes/plan-semantic-fact-skill/.openspec.yaml",
@@ -591,19 +635,27 @@
     },
     {
       "path": "openspec/changes/survey-semantic-acquisition-capabilities/tasks.md",
-      "sha256": "1aefc5c17b7b5855b53a77062bd51468767d1a79fb570315a702e38a3c01e0e5"
+      "sha256": "ee16391042b125b3294ec08d641863cac31a11e3e7a2c94213ebe8cdd214c6be"
     },
     {
       "path": "openspec/config.yaml",
-      "sha256": "1a8dc0d514994f76a2b6c714ffecbf1e6fc77485b3596ab1212c4e442fefee39"
+      "sha256": "883bd7329dfedd83b00223685ead5f8e207ab949ad7cc874fe530f6e977f4a37"
     },
     {
       "path": "openspec/specs/.gitkeep",
       "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
     },
     {
+      "path": "openspec/specs/independent-delivery/spec.md",
+      "sha256": "d39b906f5abb812a3cd0d649bf666a5376beeb05cbd66fcb9413fc23c6b9eb59"
+    },
+    {
       "path": "openspec/specs/lazy-semantic-fact-construction/spec.md",
       "sha256": "8a018f413f363078a46553db43c4cdedef455fd1fd677e9c3bd8c03a1e5beda6"
+    },
+    {
+      "path": "openspec/specs/product-versioning/spec.md",
+      "sha256": "c80ef64d8ca249539ec726ae4361416de0a81320b743c133e82bdb7d7da5c892"
     },
     {
       "path": "openspec/specs/semantic-analysis-quality/spec.md",
@@ -659,5 +711,8 @@
   "confirmed_stable_project_during_each_analysis": true,
   "requirements_baseline_status": "confirmed-by-user-ADR-0007",
   "design_refinement_required": true,
-  "user_confirmed_system_requirements_ref": "docs/decisions/0007-confirmed-system-query-requirements.md"
+  "user_confirmed_system_requirements_ref": "docs/decisions/0007-confirmed-system-query-requirements.md",
+  "delivery_requirements_confirmed": true,
+  "delivery_change": "define-independent-ddd-delivery",
+  "isolation_ready": false
 }

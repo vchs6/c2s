@@ -6,6 +6,8 @@
 
 当前确认的查询需求见[ADR-0007](docs/decisions/0007-confirmed-system-query-requirements.md)：返回符合请求的顶层完整事实、不递归展开、如实报告缺口，同时提供报告与结构数据。另见[分析范围](openspec/specs/semantic-analysis-scope/spec.md)、[按需补充](openspec/specs/lazy-semantic-fact-construction/spec.md)和[评价边界](openspec/specs/semantic-analysis-quality/spec.md)。系统需求确认不等于产品实施批准。
 
+独立交付要求见[ADR-0008](docs/decisions/0008-independent-delivery-and-milestones.md)及[里程碑索引](docs/planning/program-2026-11-01/milestones.md)：编码、审核、用例编写、测试和最终验证独立；基于真实项目的私有测试不向编码者开放。当前仅规划，隔离环境尚未验证；产品版本政策为0.b.c，未发布产品版本。
+
 ## 开发环境
 
 Node.js 22.13+（22.x）或24+、npm、Git。固定工具：OpenSpec 1.16.0、Codex CLI 0.166.0、Superpowers 7.0.1（git子模块固定提交）。Node依赖仅为开发工具，不指定Skill的实现语言。

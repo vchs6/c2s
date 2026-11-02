@@ -1,0 +1,325 @@
+{
+  "battle_id": "independent-delivery-2026-11-02",
+  "record_kind": "主代理依据实际代理返回的结构化摘要，非逐字转录",
+  "problem": "五角色独立、隐藏真实项目验收、DDD里程碑、持续推进与0.b.c版本规划",
+  "constraints": [
+    "本轮仅规划",
+    "既有语义需求不重开",
+    "共享文件系统不是隔离",
+    "无产品或测试实现",
+    "无归档"
+  ],
+  "participants": {
+    "proposer": "/root/delivery_proposer",
+    "challenger": "/root/delivery_challenger",
+    "reviewer": "/root/delivery_reviewer"
+  },
+  "rounds": [
+    {
+      "round": 1,
+      "role": "battle_proposer",
+      "position": "五角色分权执行及可追溯交接，公开契约后查询增量",
+      "claims": [
+        {
+          "id": "P1",
+          "statement": "公开DDD契约与私有suite分开，初建议编码者可写公开自检",
+          "evidence_refs": [
+            "problem-package.md",
+            "AGENTS.md"
+          ],
+          "assumptions": [
+            "公开契约足够明确"
+          ],
+          "falsifier": "实现必须读隐藏断言才可确定行为"
+        },
+        {
+          "id": "P2",
+          "statement": "各角色独占输出，身份权限实际隔离",
+          "evidence_refs": [
+            "problem-package.md"
+          ],
+          "assumptions": [
+            "可分配有效权限"
+          ],
+          "falsifier": "同账号token可全读写"
+        },
+        {
+          "id": "P3",
+          "statement": "独立环境及candidate沙箱，suite不挂载，远程服务备选",
+          "evidence_refs": [
+            "problem-package.md"
+          ],
+          "assumptions": [
+            "可部署独立设施"
+          ],
+          "falsifier": "candidate能读测试文件/环境/管理接口"
+        },
+        {
+          "id": "P4",
+          "statement": "初提签名交接，candidate/suite/契约/源/环境绑定且反馈受控",
+          "evidence_refs": [
+            "AGENTS.md"
+          ],
+          "assumptions": [
+            "可固定工件"
+          ],
+          "falsifier": "运行对象替换后旧证据仍通过"
+        },
+        {
+          "id": "P5",
+          "statement": "0.b.c，b功能/c修复，0.1.0候选；另批开发",
+          "evidence_refs": [
+            "用户U03",
+            "AGENTS.md"
+          ],
+          "assumptions": [
+            "产品发布序列"
+          ],
+          "falsifier": "版本号被当作开发授权"
+        }
+      ],
+      "responses": [],
+      "unknowns": [
+        "隔离设施、身份、制品传递和平台矩阵未证实"
+      ]
+    },
+    {
+      "round": 1,
+      "role": "battle_challenger",
+      "position": "角色独立不等于交付隔离；当前blocked",
+      "claims": [
+        {
+          "id": "C1",
+          "statement": "输入、输出、凭据与待测进程都需隔离",
+          "evidence_refs": [
+            "problem-package.md"
+          ],
+          "assumptions": [
+            "私有suite不可泄露"
+          ],
+          "falsifier": "逐角色越权读取挂载凭据复用被拒实证"
+        },
+        {
+          "id": "C2",
+          "statement": "远程服务或独立VM均需harness与candidate分离",
+          "evidence_refs": [
+            "problem-package.md"
+          ],
+          "assumptions": [
+            "可建可信边界"
+          ],
+          "falsifier": "candidate能读harness文件或进程"
+        },
+        {
+          "id": "C3",
+          "statement": "反馈保留契约条款和错误类别，核查累积泄漏",
+          "evidence_refs": [
+            "problem-package.md"
+          ],
+          "assumptions": [
+            "反馈可控"
+          ],
+          "falsifier": "必须泄露隐藏样例才能修复"
+        },
+        {
+          "id": "C4",
+          "statement": "变更使相关证据失效，0.1.0不等于发布",
+          "evidence_refs": [
+            "problem-package.md",
+            "用户U03"
+          ],
+          "assumptions": [
+            "连续推进受门禁"
+          ],
+          "falsifier": "旧证据批准新candidate"
+        }
+      ],
+      "responses": [],
+      "unknowns": [
+        "运行器/私有平台/完整真实项目运行缺证"
+      ]
+    },
+    {
+      "round": 2,
+      "role": "battle_proposer",
+      "position": "修订公开自检、禁网和签名为非必需",
+      "claims": [
+        {
+          "id": "P6",
+          "statement": "多轮反馈核查累积泄漏",
+          "evidence_refs": [
+            "C3"
+          ],
+          "assumptions": [
+            "可审计历史反馈"
+          ],
+          "falsifier": "反馈逐步还原隐藏断言"
+        }
+      ],
+      "responses": [
+        {
+          "dispute": "D01",
+          "action": "修订",
+          "reason": "编码者不写测试，独立作者+runner记录真实red，接口缺失亦须真实执行，不能伪造"
+        },
+        {
+          "dispute": "D02",
+          "action": "接受",
+          "reason": "身份/进程边界是约束；平台未部署，准备阶段可受控联网"
+        },
+        {
+          "dispute": "D03",
+          "action": "修订",
+          "reason": "撤回必须签名，摘要+可审计身份来源/所有者留存，摘要不认证身份"
+        },
+        {
+          "dispute": "D04",
+          "action": "接受",
+          "reason": "版本绑定重验，环境不能证明无影响则重验，代码与套件审核分别核对"
+        }
+      ],
+      "unknowns": [
+        "隔离平台及实测缺证，0.1.0仍候选"
+      ]
+    },
+    {
+      "round": 2,
+      "role": "battle_challenger",
+      "position": "接受修订，区分四类门禁",
+      "claims": [
+        {
+          "id": "C5",
+          "statement": "规划通过、开发获批、隔离可证明、验收通过分别记账",
+          "evidence_refs": [
+            "problem-package.md",
+            "用户U04"
+          ],
+          "assumptions": [
+            "仅规划授权"
+          ],
+          "falsifier": "任一路径以文档或角色名替代实际门禁"
+        }
+      ],
+      "responses": [
+        {
+          "dispute": "D01",
+          "action": "接受",
+          "reason": "不能以公开自检改名绕过测试编写独立"
+        },
+        {
+          "dispute": "D02",
+          "action": "接受",
+          "reason": "设施需越权反证，网络按角色/阶段授权"
+        },
+        {
+          "dispute": "D03",
+          "action": "接受",
+          "reason": "摘要不证明来源，需所有权与留存控制"
+        },
+        {
+          "dispute": "D04",
+          "action": "接受",
+          "reason": "相关证据依赖失效，不可保留旧总通过；私有审核上下文不回流编码"
+        }
+      ],
+      "unknowns": [
+        "有效权限/可信留存/反馈粒度需后续实证"
+      ]
+    },
+    {
+      "role": "battle_reviewer",
+      "round": 3,
+      "position": "支持D01-D04处理；没有影响当前规划的重要未回答问题；不代表冻结、部署、验收或实施批准",
+      "claims": [
+        {
+          "id": "R1",
+          "statement": "五角色职责闭环；编码者不写测试，runner实际red，公共Scenario不冒私有用例",
+          "evidence_refs": [
+            "design §2/4",
+            "D01"
+          ],
+          "assumptions": [],
+          "falsifier": "测试编写重新落回编码者"
+        },
+        {
+          "id": "R2",
+          "statement": "隔离边界完整且设施选型延后不妨碍规划",
+          "evidence_refs": [
+            "design §3",
+            "D02"
+          ],
+          "assumptions": [],
+          "falsifier": "声称共享区已隔离"
+        },
+        {
+          "id": "R3",
+          "statement": "摘要与来源分开，不强制签名合理；版本依赖失效防旧证据放行",
+          "evidence_refs": [
+            "design §3",
+            "D03",
+            "D04"
+          ],
+          "assumptions": [],
+          "falsifier": "旧总通过批准新candidate"
+        }
+      ],
+      "responses": [
+        {
+          "dispute": "D01",
+          "action": "支持",
+          "reason": "对应边界已写入设计，实施实证仍是前置"
+        },
+        {
+          "dispute": "D02",
+          "action": "支持",
+          "reason": "对应边界已写入设计，实施实证仍是前置"
+        },
+        {
+          "dispute": "D03",
+          "action": "支持",
+          "reason": "对应边界已写入设计，实施实证仍是前置"
+        },
+        {
+          "dispute": "D04",
+          "action": "支持",
+          "reason": "对应边界已写入设计，实施实证仍是前置"
+        }
+      ],
+      "unknowns": [
+        "实际权限、可信留存、真实项目运行均缺证",
+        "产品契约仍未冻结"
+      ]
+    }
+  ],
+  "disputes": [
+    {
+      "id": "D01",
+      "topic": "编码者公开自检是否违背测试编写独立",
+      "resolution": "编码者不编写测试；公共Scenario可见，私有suite独立作者负责"
+    },
+    {
+      "id": "D02",
+      "topic": "设施选型与最小权限/必要联网",
+      "resolution": "冻结隔离边界，平台尚未选定部署；按阶段授予必要能力"
+    },
+    {
+      "id": "D03",
+      "topic": "密码签名是否强制",
+      "resolution": "不新增强制签名；摘要+身份来源+所有权留存"
+    },
+    {
+      "id": "D04",
+      "topic": "证据绑定和变更失效",
+      "resolution": "相关证据按版本依赖重验，私有上下文不回流"
+    }
+  ],
+  "recommendation": "按用户确认目标形成规格和交付设计，部署/测试保持blocked，完成规划后待另批开发",
+  "unresolved": [
+    "隔离设施和有效权限未实际验证",
+    "产品技术契约仍未冻结"
+  ],
+  "decision_status": "proposed",
+  "user_decision": null,
+  "user_confirmed_constraints_ref": "docs/decisions/0008-independent-delivery-and-milestones.md",
+  "authority_note": "user_decision为本次Battle细节的独立用户裁决，尚无；已确认需求另见ADR，不以双方一致代替用户批准。"
+}
