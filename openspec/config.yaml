@@ -18,6 +18,8 @@ context: |
   Minimize actual LLM input/output tokens needed to extract and maintain layered semantic facts while preserving required semantics, correctness and evidence; metering/budgets alone do not satisfy this goal.
   Compare deterministic processing, cross-layer reuse, incremental work and minimal model context; do not claim measured savings without evidence.
   Source language, Skill host platform and analyzed-project target platform are separate dimensions; do not claim universal support.
+  ADR-0010 clarifies bidirectional blind authoring, not total mutual invisibility. Deterministic CI needs no AI call.
+  Test authors MUST NOT access candidate c2s implementations; real analyzed project sources remain allowed inputs.
   Delivery has five independent roles: coding, code review, test authoring, test execution, final verification.
   Coders MUST NOT author or access independent tests; private suites require proven access isolation, including candidate processes.
   Shared agent filesystems are not isolation. Use authoritative tasks; complete readiness before implementation.

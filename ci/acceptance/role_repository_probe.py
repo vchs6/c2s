@@ -54,7 +54,7 @@ CHECKS = (
 
 # No caller-supplied program, path expansion or shell is executed in the worker.
 # All attempted cross-role paths name this invocation's public synthetic files.
-PROBE = r'''
+PROBE_SETUP = r'''
 import json, os, pathlib, sys
 
 roles = ("coding", "review", "author", "runner", "verifier")
@@ -159,10 +159,13 @@ try:
         int(cpu[0]) == int(cpu[1]))
 except Exception:
     pass
+'''
+PROBE_RESULT = r'''
 passed = all(checks.values())
 print(json.dumps({"status": "passed" if passed else "failed", "checks": checks}, sort_keys=True))
 sys.exit(0 if passed else 1)
 '''
+PROBE = PROBE_SETUP + PROBE_RESULT
 
 
 class ProbeError(Exception):
@@ -273,7 +276,8 @@ def verify_preparation(root: Path, commit: str, git: str, output: bytes) -> None
             raise ProbeError("host_positive_control_failed")
 
 
-def probe(role: str, report: dict) -> None:
+def probe(role: str, report: dict, *, prepare_check=None,
+          worker_code: str = PROBE, worker_checks: tuple = CHECKS) -> None:
     source = Path(__file__).resolve(strict=True).parents[2]
     commit = os.environ.get("GITHUB_SHA", "")
     if os.environ.get("GITHUB_ACTIONS") != "true":
@@ -307,6 +311,8 @@ def probe(role: str, report: dict) -> None:
         if prepared.returncode:
             raise ProbeError("repository_preparation_failed")
         verify_preparation(root, commit, git, prepared.stdout)
+        if prepare_check is not None:
+            prepare_check(root, commit, git)
         before = snapshot(root)
         report["host_controls_passed"] = True
         pulled = run([docker, "pull", IMAGE], timeout=180, category="image_pull")
@@ -334,7 +340,7 @@ def probe(role: str, report: dict) -> None:
             "--mount", f"type=bind,source={root / role},target=/repo",
             "--entrypoint", "/usr/bin/env", digest, "-i",
             "PATH=/usr/local/bin:/usr/bin:/bin", "/usr/local/bin/python3", "-I", "-B",
-            "-c", PROBE, role, commit, str(uid), str(gid), str(root),
+            "-c", worker_code, role, commit, str(uid), str(gid), str(root),
         ]
         try:
             worker = run(command, timeout=90, category="worker")
@@ -357,7 +363,7 @@ def probe(role: str, report: dict) -> None:
         if (not isinstance(value, dict) or set(value) != {"status", "checks"} or
                 value.get("status") not in ("passed", "failed") or
                 not isinstance(value.get("checks"), dict) or
-                set(value["checks"]) != set(CHECKS) or
+                set(value["checks"]) != set(worker_checks) or
                 any(type(item) is not bool for item in value["checks"].values())):
             raise ProbeError("worker_invalid_schema")
         report["worker_checks"] = value["checks"]

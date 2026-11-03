@@ -6,7 +6,7 @@
 
 当前确认的查询需求见[ADR-0007](docs/decisions/0007-confirmed-system-query-requirements.md)：返回符合请求的顶层完整事实、不递归展开、如实报告缺口，同时提供报告与结构数据。另见[分析范围](openspec/specs/semantic-analysis-scope/spec.md)、[按需补充](openspec/specs/lazy-semantic-fact-construction/spec.md)和[评价边界](openspec/specs/semantic-analysis-quality/spec.md)。系统需求确认不等于产品实施批准。
 
-独立交付要求见[ADR-0008](docs/decisions/0008-independent-delivery-and-milestones.md)及[里程碑索引](docs/planning/program-2026-11-01/milestones.md)：编码、审核、用例编写、测试和最终验证独立；基于真实项目的私有测试不向编码者开放。当前仅规划，隔离环境尚未验证；产品版本政策为0.b.c，未发布产品版本。
+独立交付要求见[ADR-0008](docs/decisions/0008-independent-delivery-and-milestones.md)及[里程碑索引](docs/planning/program-2026-11-01/milestones.md)：编码、审核、用例编写、测试和最终验证独立；基于真实项目的私有测试不向编码者开放。已授权准备后连续开发；托管公开边界探针已通过，真实双向编写入口及交接仍待验证。产品版本政策为0.b.c，未发布产品版本。
 
 ## 开发环境
 
@@ -86,3 +86,5 @@ python3 scripts/prepare_role_repositories.py \
 现有`Source token and public role boundary diagnostic`工作流新增五角色matrix job，各自使用GitHub托管Ubuntu24.04。可信准备按该run提交创建公开角色快照，仅将所选仓库挂到受限worker的/repo；公开probe测试合法自身读写、其他role/宿主路径不可读写、socket/凭据不继承。脚本为`ci/acceptance/role_repository_probe.py`，只在配置齐全的可信CI宿主运行；它不是模型代理或任意candidate入口。
 
 该工作流仅显式dispatch或相关基础设施文件push触发，不因Issue/评论/定时启动开发。源token只在独立检查step访问GitHub API，不传worker；不调用模型、不创建实际隐藏suite、不授予worker Docker权限。阶段通过只说明本次CI边界，不会改变当前聊天原生子代理工具权限，也不放行完整五角色门禁。
+
+当前开发环境按[双向独立编写说明](docs/workflow/blind-development.md)组织：AI负责需判断的工作，CI固定执行构建与测试，普通检查不调用模型。正式角色入口与公开探针的验证范围分别报告。

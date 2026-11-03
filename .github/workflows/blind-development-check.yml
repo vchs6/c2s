@@ -1,0 +1,34 @@
+name: Public synthetic two-way blind delivery diagnostic
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/blind-development-check.yml'
+      - 'ci/acceptance/blind_delivery_probe.py'
+      - 'ci/acceptance/role_repository_probe.py'
+      - 'scripts/prepare_role_repositories.py'
+      - 'tests/test_blind_delivery_probe.py'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  public-synthetic-blind-boundary:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    strategy:
+      fail-fast: false
+      matrix:
+        role: [coding, author]
+    steps:
+      - name: Read fixed public infrastructure source
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          ref: ${{ github.sha }}
+          persist-credentials: false
+      - name: Run fixed synthetic checks without AI or model credentials
+        env:
+          C2S_BLIND_ROLE: ${{ matrix.role }}
+        run: python3 -I -B ci/acceptance/blind_delivery_probe.py --role "$C2S_BLIND_ROLE"

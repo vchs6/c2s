@@ -19,3 +19,7 @@
 角色仓库实验接续（2026-11-03）：维护CI用该运行的GITHUB_SHA调用`prepare_role_repositories.py`，在RUNNER_TEMP内创建五个公开Git快照，不访问私有测试项目、不调用模型、不授予角色身份。步骤成功只证明准备入口运行，不是“角色只能看自己仓库”的权限通过；当前原生访问实测FAIL见role-repositories报告。当前仅Linux实际验证，其他宿主平台未外推。
 
 CI边界实测接续（2026-11-03）：private-access-check工作流保留源token私有API拒绝检查及既有六容器诊断，另加五个独立Ubuntu24.04角色job（最多并行3）。每job可信宿主生成公开快照，仅所选role仓库挂入非root worker；role_repository_probe.py使用固定image digest与有界只读/写公开marker检查，凭据和Docker socket不进入worker。模型认证、模型工具broker、实际私有role交接不属于此probe，完整门禁始终不因基础设施success自动通过。
+
+## ADR-0010当前执行模式
+
+双向独立编写＋确定性CI是当前模式，入口与输入矩阵见[blind-development.md](blind-development.md)。不要求所有五角色彼此互盲，也不要求AI参与每次构建/测试。历史完整五角色诊断不再扩大解释为用户硬性需求；实际coding/author权限、candidate拒读suite、受控反馈和真实版本交接仍需通过。模型调用只属于编写/判断入口，不能以API额度不足阻塞无模型CI。

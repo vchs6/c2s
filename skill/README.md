@@ -53,3 +53,5 @@ CI账户配置与公开容器探针的命令、最小权限、安装来源及安
 托管角色边界检查使用Docker与python:3.12-slim镜像；每次先解析并记录实际RepoDigest，按摘要执行，非root、禁网、只读根及限定挂载。源/私有runner合成诊断已通过；本地没有Docker能力，未验证其他host。该封装不是完整模型编排器，不能把当前原生代理全权工具当作正式编码工具入口。
 
 开发健康检查另有一次公开输入的gpt-5-mini Responses请求（最大256输出Token、store=false、不重试）；它不是产品语义后端选择。当前实际返回credit_balance_exhausted，推理未通过，usage未知。开发按任务选模型、按需选专用Skill及实际使用回报见../docs/workflow/agent-governance.md和本轮skill-usage.md。
+
+开发环境采用ADR-0010双向独立编写与确定性CI，见`../docs/workflow/blind-development.md`。GitHub托管Linux probe的Docker仅为可信CI准备依赖，不是最终Skill或所有开发宿主必装依赖；普通测试执行不消耗模型Token。正式AI编写工具入口尚未部署验证。

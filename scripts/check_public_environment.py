@@ -86,7 +86,7 @@ def main():
         "limitations": [
             "Only Linux host execution is supported; other platforms return error.",
             "Native subagent availability, model access and model identity are not verified.",
-            "Five-role permission isolation, private acceptance and controlled handoff are not verified.",
+            "Bidirectional blind-authoring access, private acceptance and controlled handoff are not verified.",
             "Runtime command presence does not verify runtime execution or isolation.",
             "Public tool checks never authorize product implementation or pass product gates.",
         ],

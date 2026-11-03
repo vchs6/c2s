@@ -59,3 +59,9 @@
 - [ ] 3.2.3 运行一次有界模型推理健康检查（非产品/隐藏用例）。依赖：3.2.1通过。交付：ci/acceptance/inference-check.yml模板、私有.github/workflows/inference-check.yml、脱敏证据。技术选择：固定gpt-5-mini，POST https://api.openai.com/v1/responses一次，store=false、reasoning.effort=low、max_output_tokens=256，公开输入只要求返回OK；无重试、无工具、无仓库数据，网络超时45秒、job2分钟。权限为空、仅自身路径push/显式dispatch，Secret仅runner step环境；禁checkout/action/artifact、密钥/响应正文/原始异常输出。结果仅credential_present/http_status/response_status/answer_ok/error、usage(input_tokens/output_tokens/total_tokens可null)、inference_passed/role_boundary_verified=false/development_ready=false；固定模型名可记录。HTTP200 completed且输出去空白为OK才通过；401/403/429/余额不足/无模型权限/不完整输出分别安全分类，不冒称都缺密钥。验证：语法/独立审阅及实际私有CI；本次调用有实际API Token消耗，记录真实usage，不当语义提取Token指标；失败按类别报告，不自动改密钥/预算或持续重试。父任务/完整编排仍待验证。
 
 - 整体技术准备及真实隔离检查通过后按既有授权持续实施；当前运行能力缺证持续blocked。不重复索批，不自动archive。
+
+## 当前模式接续：ADR-0010
+
+- [ ] 2.2.5 搭建双向盲开发的确定性CI环境并实跑公开验证。依据：ADR-0010 U01/U02、independent-delivery“测试作者对候选实现保持独立”“按信息边界分工执行”。依赖：已完成2.2.3/2.2.4；负责：公开基础设施实现、独立审阅、固定CI执行。输入：固定源SHA的公共快照/合成marker；输出：`ci/acceptance/blind_delivery_probe.py`及对应workflow、`docs/workflow/blind-development.md`、脱敏执行证据。步骤：定义双向输入矩阵；复用受限coding/author worker；以固定脚本验证同契约交接与失配拒绝；实跑CI并绑定SHA/结果；独立审查及严格校验。通过：双方合法输入正控和禁止读取负控、版本失配拒绝、确定性公开执行真实通过，报告synthetic_only且无模型调用；失败/未运行保持未完成。无产品/真实隐藏suite；本子步不自动勾2.2/2.3。
+
+当前2.2/3.2的权限验收按ADR-0010聚焦coding与author双向不可见及必要管理旁路，其他角色按职责授权，不再要求五方全部互盲。2.3仍需真实产出的固定版本交接及独立结论；无需测试执行/安装job调用模型。API健康检查3.2.3仅阻塞该API模型入口，不阻塞无需AI的CI；不要求为已可用的其他合法编写入口恢复API余额。

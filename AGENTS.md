@@ -6,7 +6,9 @@
 
 最新用户授权见`docs/decisions/0009-continuous-development-authorization.md`：先完成准备，门禁通过后连续开发；必要工具/Skill自行安装，不逐任务重复索批。用户确认优先于旧planning-only说明。Issue/评论/标签/定时仍不启动工作，不自动archive。
 
-授权成立不等于准备通过。当前五角色真实隔离未通过；不在共享区编写隐藏测试，不以角色提示/worktree冒权限隔离，不开始依赖未通过门禁的产品开发。能独立推进的准备和工具试验继续；环境阻塞与授权分别报告。M0状态见`docs/planning/program-2026-11-01/readiness.md`。
+授权成立不等于准备通过。当前双向盲开发角色入口与受控交接尚未通过；不在共享区编写隐藏测试，不以角色提示/worktree冒权限隔离，不开始依赖未通过门禁的产品开发。能独立推进的准备和工具试验继续；环境阻塞与授权分别报告。M0状态见`docs/planning/program-2026-11-01/readiness.md`。
+
+当前工作模式见`docs/decisions/0010-bidirectional-blind-development.md`：编码与独立作者双向不可见；审核/执行/验证按职责读取，固定CI不必调用模型。五角色彼此完全不可见不再作为额外门禁。
 
 ## 按任务读取
 
@@ -22,7 +24,7 @@
 
 ## 必须实际执行
 
-1. 先用using-superpowers；未决设计用brainstorming，多步计划用writing-plans，执行按适用执行Skill，完成声明前用verification-before-completion。用户五角色独立要求优先于默认编码者写测试流程。
+1. 先用using-superpowers；未决设计用brainstorming，多步计划用writing-plans，执行按适用执行Skill，完成声明前用verification-before-completion。用户双向独立验收要求优先于默认同上下文编写验收与实现流程。
 2. 执行`npm run openspec -- status --change <name>`及适用逐工件instructions；实施前取得apply instructions并读返回contextFiles。CLI不自动代写正文，文件存在不等于产品完成。
 3. 复用已有变更；公共契约单点归属，唯一tasks不复制为第二计划。已确认需求不重开；不能把代理共识冒用户确认。小型技术选择在委托内裁定并记录，重大变化给具体反例及影响。
 4. 合格授权工件直接main，先实际严格校验及适用检查，读回发布结果。不提交认证、私有suite/日志、node_modules、.local或宿主会话；不改导入原件和tools/superpowers上游。
