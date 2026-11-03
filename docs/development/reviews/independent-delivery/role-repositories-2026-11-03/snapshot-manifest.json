@@ -1,0 +1,96 @@
+{
+  "development_ready": false,
+  "format": 1,
+  "permission_isolation_verified": false,
+  "repository_setup_passed": true,
+  "roles": {
+    "author": {
+      "files": [
+        {
+          "path": "openspec/specs/independent-delivery/spec.md",
+          "sha256": "d39b906f5abb812a3cd0d649bf666a5376beeb05cbd66fcb9413fc23c6b9eb59"
+        },
+        {
+          "path": "openspec/specs/semantic-fact-query/spec.md",
+          "sha256": "94cae1fe54086db07726a8ca698f3a18874e9c3e0e4ac6b1d4f189707f038967"
+        }
+      ],
+      "path": "author",
+      "role_commit": "cbaca7da4cbfbc94d2e9d5984afdf8116055a0e9"
+    },
+    "coding": {
+      "files": [
+        {
+          "path": "openspec/specs/independent-delivery/spec.md",
+          "sha256": "d39b906f5abb812a3cd0d649bf666a5376beeb05cbd66fcb9413fc23c6b9eb59"
+        },
+        {
+          "path": "openspec/specs/semantic-fact-query/spec.md",
+          "sha256": "94cae1fe54086db07726a8ca698f3a18874e9c3e0e4ac6b1d4f189707f038967"
+        },
+        {
+          "path": "scripts/check_public_environment.py",
+          "sha256": "ebfc7e65824268b5ea15c2bc1c15fc91c865d11df9b67739774626093545aea5"
+        }
+      ],
+      "path": "coding",
+      "role_commit": "736af90da318fea93bfc5fef1167db83e6bf6c19"
+    },
+    "review": {
+      "files": [
+        {
+          "path": "openspec/specs/independent-delivery/spec.md",
+          "sha256": "d39b906f5abb812a3cd0d649bf666a5376beeb05cbd66fcb9413fc23c6b9eb59"
+        },
+        {
+          "path": "openspec/specs/semantic-fact-query/spec.md",
+          "sha256": "94cae1fe54086db07726a8ca698f3a18874e9c3e0e4ac6b1d4f189707f038967"
+        },
+        {
+          "path": "scripts/check_public_environment.py",
+          "sha256": "ebfc7e65824268b5ea15c2bc1c15fc91c865d11df9b67739774626093545aea5"
+        }
+      ],
+      "path": "review",
+      "role_commit": "2a7fc648d471e52b8ac881604a80e9162ad8151b"
+    },
+    "runner": {
+      "files": [
+        {
+          "path": "openspec/specs/independent-delivery/spec.md",
+          "sha256": "d39b906f5abb812a3cd0d649bf666a5376beeb05cbd66fcb9413fc23c6b9eb59"
+        },
+        {
+          "path": "openspec/specs/semantic-fact-query/spec.md",
+          "sha256": "94cae1fe54086db07726a8ca698f3a18874e9c3e0e4ac6b1d4f189707f038967"
+        },
+        {
+          "path": "scripts/check_public_environment.py",
+          "sha256": "ebfc7e65824268b5ea15c2bc1c15fc91c865d11df9b67739774626093545aea5"
+        }
+      ],
+      "path": "runner",
+      "role_commit": "a8e4ca99ba9f319562fa0d047ebfc3234bf849cf"
+    },
+    "verifier": {
+      "files": [
+        {
+          "path": "openspec/specs/independent-delivery/spec.md",
+          "sha256": "d39b906f5abb812a3cd0d649bf666a5376beeb05cbd66fcb9413fc23c6b9eb59"
+        },
+        {
+          "path": "openspec/specs/semantic-fact-query/spec.md",
+          "sha256": "94cae1fe54086db07726a8ca698f3a18874e9c3e0e4ac6b1d4f189707f038967"
+        },
+        {
+          "path": "scripts/check_public_environment.py",
+          "sha256": "ebfc7e65824268b5ea15c2bc1c15fc91c865d11df9b67739774626093545aea5"
+        }
+      ],
+      "path": "verifier",
+      "role_commit": "56aec0a794636989389ad2d7244bc2bd2d3c596f"
+    }
+  },
+  "scope": "public-role-repositories-only",
+  "source_commit": "188ac7022da6be8d6bbb550b08eafbab39434643"
+}

@@ -30,3 +30,7 @@
 用户已要求尝试原生子代理＋独立测试环境＋runner直接候选隔离。当前原生公开工作者已完成工具探测，模型分派/返回不依赖嵌套Codex；旧CLI/bwrap阻塞只属于旧调用路径，不再作为公开协作前提。公开工具自检入口为`python3 scripts/check_public_environment.py`，维护CI同样调用；结果和审阅见`docs/development/reviews/independent-delivery/flat-environment-2026-11-03/`。
 
 本轮不读取/复制私有suite，不尝试提权、放宽沙箱或部署常驻服务。原生工作者仍共享工具权限；正式编码身份的管理连接器隔离、独立作者/runner/verifier及不可变交接未接通，2.2/2.3/3.2仍未完成。Docker仅是可选runner底座，不是原生协作及公开工具检查的必需项。当前readiness_complete/isolation_ready/implementation_started仍false。
+
+## 2026-11-03角色仓库实测
+
+主协调者已从固定188ac70白名单快照创建五个独立本地Git仓库，各main/root commit独立，无源历史或对象共享，内容/拒绝覆盖等公开检查通过。原生coding工作目录下的独立探针仍能经相对路径、绝对路径及Git读取相邻author公开marker，权限要求实测失败。完整公开证据见`docs/development/reviews/independent-delivery/role-repositories-2026-11-03/`。这是实际反例，不是缺少Docker或嵌套CLI问题；当前原生分派没有每角色工具范围配置。没有真实隐藏用例暴露。父2.2/2.3/3.2及所有完整门禁维持未通过。

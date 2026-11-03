@@ -68,3 +68,15 @@ python3 scripts/check_public_environment.py
 这是不联网、不安装、不调用模型/容器的公开工具自检；输出JSON和退出码只说明Python/Node/npm/Git/本地OpenSpec是否可用。Docker/Podman仅列命令存在性，缺失不使公开工具检查失败。原生模型可用性须由实际分派和返回另证；本脚本永远不宣布完整开发门禁通过。当前已验证宿主仅Linux，其他平台须另验。
 
 私有用例作者、测试执行、最终验证及候选进程仍须具备独立有效权限和受控交接；共享会话、worktree或不同模型不能替代。现有runner可直接隔离候选程序，无需在其内再运行Codex。主规格/现有tasks保持权威；不要克隆私有suite到共享编码工作区。公开准备通过不授权绕过2.2/2.3，也不要求用户迁移仓库、升级GitLab或重复配置密钥。
+
+## 主代理准备角色独立Git仓库（公开实验）
+
+```bash
+mkdir -p .local
+python3 scripts/prepare_role_repositories.py \
+  --source . --ref main --destination .local/my-role-repositories
+```
+
+目标必须尚不存在。该入口不联网、不创建远端项目，从ref一次解析固定提交，仅同步角色白名单文件；创建coding/review/author/runner/verifier五个独立Git仓库，独立main/root commit、无源remote或对象共享，MANIFEST与ROLE_INPUT记录源SHA和内容摘要。不带入未提交工作区内容或源历史；author不接收candidate示例。输入只含公开契约和公开基础设施示例，生成仓库不提交回主仓库。
+
+它只负责主代理内容准备，不能收窄原生子代理现有文件、终端或连接器权限。首次使用须按本轮公开marker验证角色是否只能读取自身仓库；实际测试报告见`docs/development/reviews/independent-delivery/role-repositories-2026-11-03/`。权限未通过前，不在这些共享可读仓库创建隐藏用例/凭据，不放行产品编码。这里的本地仓库不冒充独立账号控制的远端私有项目或长期角色启动设施。

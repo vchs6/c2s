@@ -1,0 +1,72 @@
+{
+  "date": "2026-11-03",
+  "scope": "public-role-repository-setup-and-access-experiment",
+  "source_commit": "188ac7022da6be8d6bbb550b08eafbab39434643",
+  "script_sha256": "106c1c39a7044305e50b4498f4e487e7b9b17cf09b5789795115f27be7178cdd",
+  "repository_count": 5,
+  "repository_content_checks": {
+    "checks_passed": [
+      "five_current_main_snapshots_exact_blobs_unique_git_roots_and_objects",
+      "existing_destination_rejected_and_all_existing_bytes_unchanged",
+      "dangling_destination_symlink_rejected_unchanged",
+      "dirty_source_workspace_and_unlisted_committed_untracked_files_excluded",
+      "source_symlink_rejected_without_destination",
+      "source_submodule_gitlink_rejected_without_destination",
+      "source_missing_blob_rejected_without_destination",
+      "ref_option_not_executed_and_error_is_safe_json"
+    ],
+    "count": 8,
+    "source_commit": "188ac7022da6be8d6bbb550b08eafbab39434643",
+    "repository_setup_verified": true,
+    "permission_isolation_verified": false,
+    "development_ready": false,
+    "synthetic_only": true
+  },
+  "native_access_probe": {
+    "worker": "role_repo_access_probe",
+    "model_requested": "gpt-6.1-sol",
+    "reasoning_effort": "medium",
+    "model_returned": "unknown",
+    "usage": null,
+    "own_marker_read": "allowed",
+    "relative_author_marker_read": "allowed",
+    "absolute_author_marker_read": "allowed",
+    "git_author_marker_read": "allowed",
+    "command_exit_code": 0,
+    "role_repository_isolation_passed": false,
+    "test_assets": "public synthetic markers only",
+    "escalation_or_policy_changes": false,
+    "scope_limit": "This is a concrete counterexample in the current shared native-agent environment, not a test of separate-account remote repository enforcement."
+  },
+  "repository_setup_passed": true,
+  "permission_requirement_passed": false,
+  "readiness_complete": false,
+  "isolation_ready": false,
+  "development_ready": false,
+  "implementation_started": false,
+  "hidden_suite_created": false,
+  "remote_role_projects_created": false,
+  "limitations": [
+    "Local independent Git repositories and controlled initial content are implemented; role launch credentials and tool scopes are not.",
+    "No long-running synchronization service, role endpoint, candidate sandbox or product test was deployed.",
+    "Actual generated repositories remain ignored local artifacts; the source repository receives only tool and public evidence.",
+    "The replay snippet reports this actual failure; other runs with errors or missing markers must not be counted as permission denial."
+  ],
+  "public_tool_review": {
+    "spec": "PASS",
+    "quality": "PASS",
+    "data_scope": "PASS",
+    "permission_requirement": "FAIL",
+    "report": "review.md"
+  },
+  "validation": {
+    "openspec_strict_passed": 21,
+    "openspec_strict_failed": 0,
+    "maintenance_tests_passed": 31,
+    "maintenance_tests_failed": 0,
+    "artifact_check": "PASS",
+    "python_ast": "PASS",
+    "diff_check": "PASS",
+    "ci_execution_before_publication": "not_run"
+  }
+}

@@ -40,6 +40,8 @@
 
 - [x] 2.2.2 验证原生平级公开协作准备（2.2有限子步）。依据：用户2026-11-03要求尝试平级方案、design“平级执行准备接续”、ADR-0009及independent-delivery。交付：`scripts/check_public_environment.py`、README公开启动步骤、维护CI调用、自检与原生分派/独立审阅脱敏记录。角色：原生公开基础设施探测、实现、审阅由不同上下文承担，不冒正式权限隔离。接口：自检stdout JSON，Python>=3.11、Node ^22.13.0 || >=24、npm/Git/本地OpenSpec可用，每次外部调用<=10秒；只探测Docker/Podman命令存在性，不启动CLI模型/容器、不安装依赖、不读认证、不改策略。验证：实际自检、不同cwd执行、失败分类与门禁false、原生代理返回、独立源码审核、严格OpenSpec及适用维护检查；通过：无嵌套Codex即可运行公开准备流程，Docker缺失不误报必需工具失败，报告准确区分公开工具和真实角色权限；失败：创建隐藏suite、继承管理权限冒编码隔离、把旧CI证据记成本次通过。父2.2/2.3/3.2保持未完成。
 
+- [x] 2.2.3 搭建独立角色Git仓库并实测访问边界（公开实验，不放行父门禁）。依据：用户明确选择主代理白名单同步、角色只可访问自身仓库，design“主代理同步独立角色仓库”及independent-delivery。交付：`scripts/prepare_role_repositories.py`、README用法及`docs/development/reviews/independent-delivery/role-repositories-2026-11-03/`公开报告；运行生成仓库只留本地。接口：主代理指定source/ref/new destination，ref一次解析固定SHA，白名单regular blobs快照到五个独立main/root commit仓库，无remote/alternates/源历史；ROLE_INPUT及MANIFEST绑定源SHA、内容摘要、角色提交，author无candidate。验证：独立仓库/白名单/摘要/工作区未提交内容排除/目标拒绝覆盖，实际原生coding探针合法读取自身及尝试公开合成author marker的相对路径/绝对路径/Git读取，记录实际允许/拒绝、独立审核及严格校验。通过范围：实验搭建和可信证据齐全，能回答是否达到权限要求；若越权读取成功，必须明确权限验收failed并保持父2.2/2.3/3.2未完成，不创建真实隐藏suite或产品，不以提示词/分仓库冒权限隔离。不得读取认证、真实私有用例或原始日志，不提权、不修改安全策略、不启动嵌套Codex。
+
 - [ ] 2.3 在ADR-0009授权下且2.1/2.2通过后接通连续交接和版本门禁。依据：授权内持续推进、product-versioning及design §3/5/6。交付：`docs/development/reviews/independent-delivery/handoff-verification.md`公开脱敏结论；私有run/verdict/制品清单由各独立角色所有。验证：用真实candidate/suite/源/环境版本执行交接并核查失效/重验，失配拒绝推进；失败反馈仅公开契约诊断，版本0.b.c对应被接受candidate。通过：独立角色无越权改写、可续同一批准范围且不触发新Issue、不自动归档；失败：旧证据沿用、runner兼最终验证、隐藏内容泄漏或未部署却声称后台持续运行。各产品验收只勾选原任务，本任务不重复实现它们。
 
 ## 3. CI配置接续（用户已明确要求配置，账户能力不足时如实阻塞）
