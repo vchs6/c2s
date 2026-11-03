@@ -34,3 +34,7 @@
 ## 2026-11-03角色仓库实测
 
 主协调者已从固定188ac70白名单快照创建五个独立本地Git仓库，各main/root commit独立，无源历史或对象共享，内容/拒绝覆盖等公开检查通过。原生coding工作目录下的独立探针仍能经相对路径、绝对路径及Git读取相邻author公开marker，权限要求实测失败。完整公开证据见`docs/development/reviews/independent-delivery/role-repositories-2026-11-03/`。这是实际反例，不是缺少Docker或嵌套CLI问题；当前原生分派没有每角色工具范围配置。没有真实隐藏用例暴露。父2.2/2.3/3.2及所有完整门禁维持未通过。
+
+## 2026-11-03 CI角色仓库边界实跑
+
+实际GitHub run41565989028、head1b2dfa0成功；五角色独立job的受限worker各15项检查通过，合法自身读写成功，其他角色/宿主路径读写、Docker socket与敏感env边界通过，镜像digest及宿主正控已记录。源token源repo200、明确私有验收五API全部404。证据：`docs/development/reviews/independent-delivery/ci-role-repositories-2026-11-03/`。本轮有限CI执行边界通过；前述原生共享工具反例不被改写。仍需模型角色只能使用受限工具、独立私有作者/runner/verifier及版本交接，2.2/2.3/3.2保持未完成，所有完整就绪/实施flags仍false。

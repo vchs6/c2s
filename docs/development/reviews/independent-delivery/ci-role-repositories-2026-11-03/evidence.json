@@ -18,11 +18,242 @@
     "artifact_check": "PASS"
   },
   "ci_execution": {
-    "status": "pending_publication",
-    "run_id": null,
-    "head_sha": null,
-    "role_reports": {},
-    "private_api_report": null
+    "status": "completed",
+    "conclusion": "success",
+    "run_id": 41565989028,
+    "head_sha": "1b2dfa06f3dcac3868c2707570c2a80d9c17d98a",
+    "url": "https://github.com/vchs6/c2s/actions/runs/41565989028",
+    "jobs": [
+      {
+        "id": 125687533181,
+        "name": "source-access-boundary",
+        "status": "completed",
+        "conclusion": "success"
+      },
+      {
+        "id": 125687567767,
+        "name": "public-role-boundary",
+        "status": "completed",
+        "conclusion": "success"
+      },
+      {
+        "id": 125687567887,
+        "name": "role-repository-workspace (runner)",
+        "status": "completed",
+        "conclusion": "success"
+      },
+      {
+        "id": 125687567891,
+        "name": "role-repository-workspace (review)",
+        "status": "completed",
+        "conclusion": "success"
+      },
+      {
+        "id": 125687567893,
+        "name": "role-repository-workspace (coding)",
+        "status": "completed",
+        "conclusion": "success"
+      },
+      {
+        "id": 125687567902,
+        "name": "role-repository-workspace (verifier)",
+        "status": "completed",
+        "conclusion": "success"
+      },
+      {
+        "id": 125687567990,
+        "name": "role-repository-workspace (author)",
+        "status": "completed",
+        "conclusion": "success"
+      }
+    ],
+    "role_reports": {
+      "runner": {
+        "job_id": 125687567887,
+        "container_repo_boundary_passed": true,
+        "development_ready": false,
+        "format": 1,
+        "full_role_delivery_ready": false,
+        "host_controls_passed": true,
+        "host_output_control_passed": true,
+        "host_repositories_unchanged": true,
+        "image_digest": "python@sha256:b18b261e1b4974b4f321451ad5251ded85abb22c2b8b262da527dda1d031ab30",
+        "job_workspace_scope": "separate-ci-job",
+        "native_subagent_scoping_verified": false,
+        "role": "runner",
+        "source_commit": "1b2dfa06f3dcac3868c2707570c2a80d9c17d98a",
+        "status": "synthetic_probe_passed",
+        "synthetic_only": true,
+        "worker_checks": {
+          "absolute_reads_denied": true,
+          "absolute_writes_denied": true,
+          "docker_sockets_denied": true,
+          "host_reads_denied": true,
+          "host_writes_denied": true,
+          "legal_inputs": true,
+          "legal_output_write": true,
+          "network_none": true,
+          "privileges_restricted": true,
+          "relative_reads_denied": true,
+          "relative_writes_denied": true,
+          "resource_limits": true,
+          "rootfs_read_only": true,
+          "sensitive_environment_absent": true,
+          "uid_gid": true
+        }
+      },
+      "review": {
+        "job_id": 125687567891,
+        "container_repo_boundary_passed": true,
+        "development_ready": false,
+        "format": 1,
+        "full_role_delivery_ready": false,
+        "host_controls_passed": true,
+        "host_output_control_passed": true,
+        "host_repositories_unchanged": true,
+        "image_digest": "python@sha256:b18b261e1b4974b4f321451ad5251ded85abb22c2b8b262da527dda1d031ab30",
+        "job_workspace_scope": "separate-ci-job",
+        "native_subagent_scoping_verified": false,
+        "role": "review",
+        "source_commit": "1b2dfa06f3dcac3868c2707570c2a80d9c17d98a",
+        "status": "synthetic_probe_passed",
+        "synthetic_only": true,
+        "worker_checks": {
+          "absolute_reads_denied": true,
+          "absolute_writes_denied": true,
+          "docker_sockets_denied": true,
+          "host_reads_denied": true,
+          "host_writes_denied": true,
+          "legal_inputs": true,
+          "legal_output_write": true,
+          "network_none": true,
+          "privileges_restricted": true,
+          "relative_reads_denied": true,
+          "relative_writes_denied": true,
+          "resource_limits": true,
+          "rootfs_read_only": true,
+          "sensitive_environment_absent": true,
+          "uid_gid": true
+        }
+      },
+      "coding": {
+        "job_id": 125687567893,
+        "container_repo_boundary_passed": true,
+        "development_ready": false,
+        "format": 1,
+        "full_role_delivery_ready": false,
+        "host_controls_passed": true,
+        "host_output_control_passed": true,
+        "host_repositories_unchanged": true,
+        "image_digest": "python@sha256:b18b261e1b4974b4f321451ad5251ded85abb22c2b8b262da527dda1d031ab30",
+        "job_workspace_scope": "separate-ci-job",
+        "native_subagent_scoping_verified": false,
+        "role": "coding",
+        "source_commit": "1b2dfa06f3dcac3868c2707570c2a80d9c17d98a",
+        "status": "synthetic_probe_passed",
+        "synthetic_only": true,
+        "worker_checks": {
+          "absolute_reads_denied": true,
+          "absolute_writes_denied": true,
+          "docker_sockets_denied": true,
+          "host_reads_denied": true,
+          "host_writes_denied": true,
+          "legal_inputs": true,
+          "legal_output_write": true,
+          "network_none": true,
+          "privileges_restricted": true,
+          "relative_reads_denied": true,
+          "relative_writes_denied": true,
+          "resource_limits": true,
+          "rootfs_read_only": true,
+          "sensitive_environment_absent": true,
+          "uid_gid": true
+        }
+      },
+      "verifier": {
+        "job_id": 125687567902,
+        "container_repo_boundary_passed": true,
+        "development_ready": false,
+        "format": 1,
+        "full_role_delivery_ready": false,
+        "host_controls_passed": true,
+        "host_output_control_passed": true,
+        "host_repositories_unchanged": true,
+        "image_digest": "python@sha256:b18b261e1b4974b4f321451ad5251ded85abb22c2b8b262da527dda1d031ab30",
+        "job_workspace_scope": "separate-ci-job",
+        "native_subagent_scoping_verified": false,
+        "role": "verifier",
+        "source_commit": "1b2dfa06f3dcac3868c2707570c2a80d9c17d98a",
+        "status": "synthetic_probe_passed",
+        "synthetic_only": true,
+        "worker_checks": {
+          "absolute_reads_denied": true,
+          "absolute_writes_denied": true,
+          "docker_sockets_denied": true,
+          "host_reads_denied": true,
+          "host_writes_denied": true,
+          "legal_inputs": true,
+          "legal_output_write": true,
+          "network_none": true,
+          "privileges_restricted": true,
+          "relative_reads_denied": true,
+          "relative_writes_denied": true,
+          "resource_limits": true,
+          "rootfs_read_only": true,
+          "sensitive_environment_absent": true,
+          "uid_gid": true
+        }
+      },
+      "author": {
+        "job_id": 125687567990,
+        "container_repo_boundary_passed": true,
+        "development_ready": false,
+        "format": 1,
+        "full_role_delivery_ready": false,
+        "host_controls_passed": true,
+        "host_output_control_passed": true,
+        "host_repositories_unchanged": true,
+        "image_digest": "python@sha256:b18b261e1b4974b4f321451ad5251ded85abb22c2b8b262da527dda1d031ab30",
+        "job_workspace_scope": "separate-ci-job",
+        "native_subagent_scoping_verified": false,
+        "role": "author",
+        "source_commit": "1b2dfa06f3dcac3868c2707570c2a80d9c17d98a",
+        "status": "synthetic_probe_passed",
+        "synthetic_only": true,
+        "worker_checks": {
+          "absolute_reads_denied": true,
+          "absolute_writes_denied": true,
+          "docker_sockets_denied": true,
+          "host_reads_denied": true,
+          "host_writes_denied": true,
+          "legal_inputs": true,
+          "legal_output_write": true,
+          "network_none": true,
+          "privileges_restricted": true,
+          "relative_reads_denied": true,
+          "relative_writes_denied": true,
+          "resource_limits": true,
+          "rootfs_read_only": true,
+          "sensitive_environment_absent": true,
+          "uid_gid": true
+        }
+      }
+    },
+    "private_api_report": {
+      "development_ready": false,
+      "passed": true,
+      "private_reads_denied": true,
+      "private_statuses": {
+        "artifacts": 404,
+        "commits": 404,
+        "repository": 404,
+        "runs": 404,
+        "workflows": 404
+      },
+      "source_read_allowed": true,
+      "source_status": 200,
+      "synthetic_only": true
+    }
   },
   "synthetic_only": true,
   "native_subagent_scoping_verified": false,
@@ -38,5 +269,19 @@
     "blocking_findings": 0,
     "report": "review.md",
     "container_execution_verified": false
+  },
+  "limited_ci_boundary_passed": true,
+  "independent_receipt_review": {
+    "verdict": "PASS_limited_2.2.4",
+    "report": "receipt-review.md",
+    "model_requested": "gpt-6.1-sol",
+    "reasoning_effort": "high",
+    "usage": null,
+    "fallback_reason": "original review model temporarily at capacity for receipt-only followup; no CI/test retry"
+  },
+  "maintenance_ci": {
+    "id": 41565989125,
+    "head_sha": "1b2dfa06f3dcac3868c2707570c2a80d9c17d98a",
+    "conclusion": "success"
   }
 }
