@@ -15,7 +15,8 @@
 | CI配置与公开容器probe | 仓库侧已部署，6283a23的托管probe与维护CI均success；仅公开marker访问范围，不是完整角色隔离 | 交付3.1、ci-setup-2026-11-02/validation.json |
 | 私有验收账户配置 | 用户提供bootstrap成功及变量/权限读回回执；连接器独立核实验收库private。云端CLI未登录不影响现有连接器写workflow；模型认证与角色边界仍待实际运行 | 交付3.2/3.2.1、ci-setup-2026-11-02/account-receipt.json |
 | 模型Secret/API认证 | 私有run41422600087实测Secret可见、GET /v1/models HTTP200；未做推理/账单可用测试 | 交付3.2.1、ci-setup-2026-11-02/credential-probe.json |
-| 模型推理可用性 | blocked：短推理HTTP429，官方code=credit_balance_exhausted；Secret/API认证有效，仅当前API路径需账户侧恢复额度或改选受支持的Codex订阅执行入口；订阅备选尚未部署，停止进一步API尝试，usage未知不记0 | 交付3.2.3、ci-setup-2026-11-02/inference-probe.json |
+| 当前模型入口（ChatGPT模式） | 当前CLI登录状态为ChatGPT；原生模型审查已实际完成。尚缺受限角色工具绑定；不以旧API余额作为当前开发前置，实际用量未知不记0 | ADR-0010；full-readiness-2026-11-03.json |
+| 旧API推理健康检查（非当前前置） | 历史HTTP429/credit_balance_exhausted仅属于API路径；停止进一步API尝试，不要求为ChatGPT模式充值或重建密钥 | 交付3.2.3、ci-setup-2026-11-02/inference-probe.json |
 | 旧嵌套Codex订阅执行备选（历史路径） | CLI已以ChatGPT登录，模型目录200/WS101；保留受管配置并排除输入/可选MCP后仍停thread/start/session_init，具体子步骤未明、resolved=false；推理/正式角色交接未通过 | ci-setup-2026-11-02/subscription-timeout-diagnosis.json |
 | 产品编码/隐藏测试 | 未开始；未写suite；没有虚报产品验收或后台执行 | 所有产品tasks未完成 |
 
@@ -46,3 +47,9 @@ ADR-0010记录用户原始目的和最新搭建授权。当前必需访问门禁
 ## 双向模式托管验证回执
 
 ADR-0010已同步治理及规格；run41573123198/head8166ab4的coding/author两方各18项worker检查、4项准备及5项交接检查通过。普通CI不调用AI，维护run41573123172成功。2.2.5有限子步完成，正式AI角色工具入口/真实suite交接仍未部署；development_ready保持false，不把公开探针当产品交付环境。完整证据见docs/development/reviews/independent-delivery/blind-development-2026-11-03/。
+
+## 当前完整就绪核验（ChatGPT模式）
+
+本轮重新执行工具/35项维护测试/严格21项校验、读取最新维护CI，并由原生audit_full_readiness独立核验。公开合成交接通过；实际原生双向权限测试失败，coding可读author公开marker，author可读coding公开基础设施文件。spawn接口未提供角色工具/目录/连接器访问控制，仓库配置不能补上。
+
+完整结论为BLOCKED，非余额问题。实际产品交接、修复重验和恢复未运行，不宣称可以按双向盲开发要求持续工作。准确记录：docs/development/reviews/independent-delivery/isolation-readiness.md、handoff-verification.md、full-readiness-2026-11-03.json。授权有效，2.2/2.3/3.2继续未完成。

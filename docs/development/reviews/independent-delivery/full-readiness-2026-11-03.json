@@ -1,0 +1,127 @@
+{
+  "format": 1,
+  "date": "2026-11-03",
+  "source_commit": "610e3540d35efadeb0fe573464c7dbfdfbd7afba",
+  "scope": "current-chatgpt-native-development-environment-readiness",
+  "development_authorized": true,
+  "readiness_complete": false,
+  "isolation_ready": false,
+  "implementation_started": false,
+  "continuous_product_development_ready": false,
+  "verdict": "blocked",
+  "blocking_reason": "native_role_tool_scope_not_configurable",
+  "api_balance_is_prerequisite": false,
+  "api_requests_made": 0,
+  "auth_files_copied": false,
+  "checks": {
+    "chatgpt_cli_login": {
+      "status": "pass",
+      "command": "npm run codex -- login status",
+      "observed": "Logged in using ChatGPT",
+      "proves_role_isolation": false
+    },
+    "native_model_execution": {
+      "status": "pass",
+      "agent_task": "audit_full_readiness",
+      "observed": "fresh context completed read-only readiness audit",
+      "usage": null,
+      "proves_role_isolation": false
+    },
+    "public_toolchain": {
+      "status": "pass",
+      "python": "3.12.14",
+      "node": "24.22.1",
+      "npm": "11.9.0",
+      "git": "2.51.1",
+      "openspec": "1.16.0"
+    },
+    "maintenance": {
+      "status": "pass",
+      "strict_openspec": {
+        "passed": 21,
+        "failed": 0
+      },
+      "unittest": {
+        "passed": 35,
+        "failed": 0
+      },
+      "artifact_hashes": 4,
+      "diff_check": "pass"
+    },
+    "native_coder_cannot_read_author": {
+      "status": "fail",
+      "relative_read_succeeded": true,
+      "absolute_read_succeeded": true,
+      "synthetic_public_fixtures_only": true
+    },
+    "native_author_cannot_read_coder": {
+      "status": "fail",
+      "relative_read_succeeded": true,
+      "synthetic_public_fixtures_only": true
+    },
+    "local_fixed_synthetic_handoff": {
+      "status": "pass",
+      "preparation_checks": 4,
+      "acceptance_checks": 5,
+      "proves_real_handoff": false
+    },
+    "hosted_ci_boundary": {
+      "status": "pass_existing_evidence",
+      "run_id": 41573123198,
+      "tested_commit": "8166ab4b341dd6c095818b19169eb747886e5a8b",
+      "roles": [
+        "coding",
+        "author"
+      ],
+      "worker_checks_per_role": 18,
+      "proves_native_agent_boundary": false
+    },
+    "hosted_maintenance": {
+      "status": "pass_existing_evidence",
+      "run_id": 41573332117,
+      "tested_commit": "610e3540d35efadeb0fe573464c7dbfdfbd7afba",
+      "job_id": 125711059030
+    },
+    "real_role_authoring_and_handoff": {
+      "status": "not_run",
+      "reason": "bidirectional_access_prerequisite_failed"
+    },
+    "real_candidate_suite_isolation": {
+      "status": "not_run",
+      "reason": "no_production_candidate_suite_or_fixed_harness_bound"
+    },
+    "real_failure_fix_retest_resume": {
+      "status": "not_run",
+      "reason": "real_role_authoring_and_handoff_not_available"
+    },
+    "independent_product_verdict": {
+      "status": "not_run",
+      "reason": "no_actual_product_execution_evidence"
+    }
+  },
+  "required_capability": "Supported ChatGPT-authenticated role launcher/tool broker enforcing filesystem and app/connector input/output boundaries without inherited bypass, followed by immutable CI handoff.",
+  "independent_audit": {
+    "agent": "audit_full_readiness",
+    "verdict": "blocked",
+    "files_changed": false,
+    "candidate_programs_executed": false,
+    "exit_codes": [
+      0,
+      0
+    ],
+    "observations": [
+      {
+        "probe": "coding_relative_author_marker",
+        "read_success": true
+      },
+      {
+        "probe": "coding_absolute_author_marker",
+        "read_success": true
+      },
+      {
+        "probe": "author_relative_coding_script",
+        "read_success": true
+      }
+    ]
+  }
+}
