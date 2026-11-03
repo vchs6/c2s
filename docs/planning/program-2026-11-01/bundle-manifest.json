@@ -1,6 +1,6 @@
 {
   "format": 1,
-  "snapshot_date": "2026-11-02",
+  "snapshot_date": "2026-11-03",
   "freeze_status": "not-frozen",
   "development_ready": false,
   "implementation_approved": true,
@@ -9,7 +9,7 @@
   "base_revision": "d40cb6c4bfdf5567ee3ca1dde82b31dd58528d8a",
   "historical_issue3_tokens_authorize_implementation": false,
   "digest_algorithm": "SHA-256 over sorted path + TAB + file SHA-256 + LF UTF-8",
-  "bundle_sha256": "16d1c6ea0b61fa02ccdbb5df6446681b338983d0e843cc84455c184f8b80acab",
+  "bundle_sha256": "166497c211565f7874e524581846c58957bad9bbfe250225d9896d681216b2f2",
   "exclusions": [
     "manifest itself",
     "validation execution logs/reports",
@@ -26,12 +26,16 @@
       "sha256": "52c6a86fcbbc8dfb12870a313a5d7cecef6461b21a9e8d36d6fc0e51c0cbe27f"
     },
     {
+      "path": ".github/workflows/validate.yml",
+      "sha256": "d621bfb0f05df1bb0c6468bf245e4b28d7a1edb50b0bb320a63021750a13cf1a"
+    },
+    {
       "path": "AGENTS.md",
       "sha256": "ca265fc00e302ef0154775551574be329b9bf9a598da979b01d38bbb888f649e"
     },
     {
       "path": "README.md",
-      "sha256": "f0d250fc8c1e0a752710ccf4e7220d0b49b0833de1c6ac015c7602fafa1d5fab"
+      "sha256": "cb5285729193286c90657cd62f10ca5abfeefacdc66d4c02267e43ddcdbd2610"
     },
     {
       "path": "ci/acceptance/boundary-check.yml",
@@ -483,7 +487,7 @@
     },
     {
       "path": "docs/planning/program-2026-11-01/readiness.md",
-      "sha256": "b1107b104de892b21842c742814ec2978e7e7d77e52a98d1b3171e17b5ef3d29"
+      "sha256": "bcbf30e0a85efbc6cd941c0f314fa60fc17d62b5540646a248f04e3cbc3f4f7c"
     },
     {
       "path": "docs/planning/program-2026-11-01/upstream.md",
@@ -511,7 +515,7 @@
     },
     {
       "path": "docs/workflow/ci.md",
-      "sha256": "2678e99c33d8d4de0aac852bde0eb218bc602e73c67a5a12ea6a5e201d7b7141"
+      "sha256": "9f73a31a3cfef8c40850b604658f42ff59a644ce98d4a846ac8421a98c26b12e"
     },
     {
       "path": "docs/workflow/decision-policy.md",
@@ -535,11 +539,11 @@
     },
     {
       "path": "openspec/changes/define-independent-ddd-delivery/design.md",
-      "sha256": "6945ef0c355b635f527e44b62fbe6db96c6e1a73130b6d3176f4ae66c7dcf874"
+      "sha256": "86767fc9583378ec1424036a0193b131c9d84ec177df656f7425b75801b564de"
     },
     {
       "path": "openspec/changes/define-independent-ddd-delivery/proposal.md",
-      "sha256": "61515a48e2d43f6e0b6eb6c1e1ef2c95a1fc3e8c1216ca79330b7f1a1069a0b9"
+      "sha256": "c85d591bcc0f08848dfcf58455fd23e47ee949f586ef6aca29ed1dd48fe5d69d"
     },
     {
       "path": "openspec/changes/define-independent-ddd-delivery/specs/independent-delivery/spec.md",
@@ -551,7 +555,7 @@
     },
     {
       "path": "openspec/changes/define-independent-ddd-delivery/tasks.md",
-      "sha256": "9b7b941ace1a707da41be5d3faad9c40e100dd7b10a7e95335302f0342a6f2cf"
+      "sha256": "1a32012ed82d5117ad0fb5545a7c593a373ecb37f6c2bd4d7d956305df279d87"
     },
     {
       "path": "openspec/changes/define-layered-semantic-fact-model/.openspec.yaml",
@@ -818,6 +822,10 @@
       "sha256": "94cae1fe54086db07726a8ca698f3a18874e9c3e0e4ac6b1d4f189707f038967"
     },
     {
+      "path": "scripts/check_public_environment.py",
+      "sha256": "ebfc7e65824268b5ea15c2bc1c15fc91c865d11df9b67739774626093545aea5"
+    },
+    {
       "path": "scripts/configure_ci.py",
       "sha256": "ade51d4098bfa9067c3a9821b77a31bc5431d70707a86cc4ecc1adbb21163e46"
     },
@@ -826,7 +834,7 @@
       "sha256": "c99ce4a146fb98e10dc04d8cc34fc3dd0b32f3c83c582ac571e4bacd264b942a"
     }
   ],
-  "supersedes_bundle_sha256": "dbf9c7e2251e99b8949eacafae0e16d33bf47214f8255a3e7d964f73073f0ad1",
+  "supersedes_bundle_sha256": "16d1c6ea0b61fa02ccdbb5df6446681b338983d0e843cc84455c184f8b80acab",
   "confirmed_initial_source_languages": [
     "Rust",
     "Python"

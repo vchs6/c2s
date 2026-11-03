@@ -38,6 +38,8 @@
 
 - [ ] 2.2 按ADR-0009既有授权建立并验证独立执行环境。依据：测试不可见和五角色独立，design §2–3。交付：`docs/development/reviews/independent-delivery/isolation-readiness.md`公开脱敏就绪结论；私有环境留存实际身份/权限/设施/运行命令与访问检查证据，不把凭据或suite路径暴露产品库。验证：编码身份及candidate身份对suite、日志、历史/API、挂载、进程和管理接口的读写被拒，合法交接可执行；runner及最终验证身份不同。通过：具体私有suite根、制品交接接口和runner命令已绑定且证据可复核；失败：仅分支/目录/角色提示隔离、共享全权token或candidate进程可读suite。未通过不得编写隐藏用例，当前因执行环境能力blocked；必要设施准备已获用户授权，但不得捏造当前未具备的部署管理能力或泄漏凭据。
 
+- [x] 2.2.2 验证原生平级公开协作准备（2.2有限子步）。依据：用户2026-11-03要求尝试平级方案、design“平级执行准备接续”、ADR-0009及independent-delivery。交付：`scripts/check_public_environment.py`、README公开启动步骤、维护CI调用、自检与原生分派/独立审阅脱敏记录。角色：原生公开基础设施探测、实现、审阅由不同上下文承担，不冒正式权限隔离。接口：自检stdout JSON，Python>=3.11、Node ^22.13.0 || >=24、npm/Git/本地OpenSpec可用，每次外部调用<=10秒；只探测Docker/Podman命令存在性，不启动CLI模型/容器、不安装依赖、不读认证、不改策略。验证：实际自检、不同cwd执行、失败分类与门禁false、原生代理返回、独立源码审核、严格OpenSpec及适用维护检查；通过：无嵌套Codex即可运行公开准备流程，Docker缺失不误报必需工具失败，报告准确区分公开工具和真实角色权限；失败：创建隐藏suite、继承管理权限冒编码隔离、把旧CI证据记成本次通过。父2.2/2.3/3.2保持未完成。
+
 - [ ] 2.3 在ADR-0009授权下且2.1/2.2通过后接通连续交接和版本门禁。依据：授权内持续推进、product-versioning及design §3/5/6。交付：`docs/development/reviews/independent-delivery/handoff-verification.md`公开脱敏结论；私有run/verdict/制品清单由各独立角色所有。验证：用真实candidate/suite/源/环境版本执行交接并核查失效/重验，失配拒绝推进；失败反馈仅公开契约诊断，版本0.b.c对应被接受candidate。通过：独立角色无越权改写、可续同一批准范围且不触发新Issue、不自动归档；失败：旧证据沿用、runner兼最终验证、隐藏内容泄漏或未部署却声称后台持续运行。各产品验收只勾选原任务，本任务不重复实现它们。
 
 ## 3. CI配置接续（用户已明确要求配置，账户能力不足时如实阻塞）

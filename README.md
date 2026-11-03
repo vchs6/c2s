@@ -56,3 +56,15 @@ Issue仅登记议题；创建、编辑、评论、标签及定时任务不触发
 规划议题见[总计划 #4](https://github.com/vchs6/c2s/issues/4)与[仓库台账](docs/planning/agenda.md)；本次只创建事项，不自动启动讨论。
 
 当前规范按需阅读：领域基础见docs/domain/foundation.md，项目约束见docs/project/constraints.md，代理治理/决策/任务/仓库管理/CI分别在docs/workflow下；AGENTS仅作入口。
+
+## 平级公开开发准备（2026-11-03接续）
+
+当前会话使用原生子代理推进公开基础设施；不在受限宿主另启Codex CLI，不把Docker作为公开协作前提。完成既有`npm ci`后可运行：
+
+```bash
+python3 scripts/check_public_environment.py
+```
+
+这是不联网、不安装、不调用模型/容器的公开工具自检；输出JSON和退出码只说明Python/Node/npm/Git/本地OpenSpec是否可用。Docker/Podman仅列命令存在性，缺失不使公开工具检查失败。原生模型可用性须由实际分派和返回另证；本脚本永远不宣布完整开发门禁通过。当前已验证宿主仅Linux，其他平台须另验。
+
+私有用例作者、测试执行、最终验证及候选进程仍须具备独立有效权限和受控交接；共享会话、worktree或不同模型不能替代。现有runner可直接隔离候选程序，无需在其内再运行Codex。主规格/现有tasks保持权威；不要克隆私有suite到共享编码工作区。公开准备通过不授权绕过2.2/2.3，也不要求用户迁移仓库、升级GitLab或重复配置密钥。
