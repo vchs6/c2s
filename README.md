@@ -80,3 +80,9 @@ python3 scripts/prepare_role_repositories.py \
 目标必须尚不存在。该入口不联网、不创建远端项目，从ref一次解析固定提交，仅同步角色白名单文件；创建coding/review/author/runner/verifier五个独立Git仓库，独立main/root commit、无源remote或对象共享，MANIFEST与ROLE_INPUT记录源SHA和内容摘要。不带入未提交工作区内容或源历史；author不接收candidate示例。输入只含公开契约和公开基础设施示例，生成仓库不提交回主仓库。
 
 它只负责主代理内容准备，不能收窄原生子代理现有文件、终端或连接器权限。首次使用须按本轮公开marker验证角色是否只能读取自身仓库；实际测试报告见`docs/development/reviews/independent-delivery/role-repositories-2026-11-03/`。权限未通过前，不在这些共享可读仓库创建隐藏用例/凭据，不放行产品编码。这里的本地仓库不冒充独立账号控制的远端私有项目或长期角色启动设施。
+
+## CI角色仓库边界演练
+
+现有`Source token and public role boundary diagnostic`工作流新增五角色matrix job，各自使用GitHub托管Ubuntu24.04。可信准备按该run提交创建公开角色快照，仅将所选仓库挂到受限worker的/repo；公开probe测试合法自身读写、其他role/宿主路径不可读写、socket/凭据不继承。脚本为`ci/acceptance/role_repository_probe.py`，只在配置齐全的可信CI宿主运行；它不是模型代理或任意candidate入口。
+
+该工作流仅显式dispatch或相关基础设施文件push触发，不因Issue/评论/定时启动开发。源token只在独立检查step访问GitHub API，不传worker；不调用模型、不创建实际隐藏suite、不授予worker Docker权限。阶段通过只说明本次CI边界，不会改变当前聊天原生子代理工具权限，也不放行完整五角色门禁。

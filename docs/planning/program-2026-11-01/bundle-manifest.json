@@ -9,7 +9,7 @@
   "base_revision": "d40cb6c4bfdf5567ee3ca1dde82b31dd58528d8a",
   "historical_issue3_tokens_authorize_implementation": false,
   "digest_algorithm": "SHA-256 over sorted path + TAB + file SHA-256 + LF UTF-8",
-  "bundle_sha256": "d80e29b353ccf3c371fe43c9f05f5cd9022401c8e399869997e12cbbf4ae4f9d",
+  "bundle_sha256": "ee149654dbc12754498a16495c1a960ce0d649e0125e7bd3f9a82ca09cbe51ae",
   "exclusions": [
     "manifest itself",
     "validation execution logs/reports",
@@ -23,7 +23,7 @@
     },
     {
       "path": ".github/workflows/private-access-check.yml",
-      "sha256": "52c6a86fcbbc8dfb12870a313a5d7cecef6461b21a9e8d36d6fc0e51c0cbe27f"
+      "sha256": "ca0315f9b89366343196e96b402235b1dd9f53a5ef5a32666760aad88e07ea01"
     },
     {
       "path": ".github/workflows/validate.yml",
@@ -35,7 +35,7 @@
     },
     {
       "path": "README.md",
-      "sha256": "94cca7fd1d5ebd97d052906e91de9a3316930e797ec6c7da6f373f704fbc1a21"
+      "sha256": "8098049c132792cc211cfc926528d8d7ee21e9fe85ed10d6ec7d537a280b4a23"
     },
     {
       "path": "ci/acceptance/boundary-check.yml",
@@ -48,6 +48,10 @@
     {
       "path": "ci/acceptance/inference-check.yml",
       "sha256": "9c6c54ec7412d99c3c380db8162bd328b399954c6f965cc176ff69f6c87edddb"
+    },
+    {
+      "path": "ci/acceptance/role_repository_probe.py",
+      "sha256": "80cc4c05ef8288e7eeefe87af1e5953cdeded3978cc6e3f6278599a6b7cc5c92"
     },
     {
       "path": "ci/acceptance/role_sandbox.py",
@@ -515,7 +519,7 @@
     },
     {
       "path": "docs/workflow/ci.md",
-      "sha256": "01b89720806ff0c061db0dae052b9fabee401dd06cb128c346df3b5628340aac"
+      "sha256": "3376551ad126dac4ed62acf3fa8dffdd496905fec87e7db079aaa56b72738191"
     },
     {
       "path": "docs/workflow/decision-policy.md",
@@ -539,11 +543,11 @@
     },
     {
       "path": "openspec/changes/define-independent-ddd-delivery/design.md",
-      "sha256": "edc7ba484114b2af46d550ae4ce533e902b37143760c0a39a5522b52f5eaa8c5"
+      "sha256": "c48807784b55dae755e7e731f437344e5ae2451b2af61ebb5fb2a8a0188e05d8"
     },
     {
       "path": "openspec/changes/define-independent-ddd-delivery/proposal.md",
-      "sha256": "2df35a37d72a0b482fb35addc75469a1a6030e8f2ae62f626a8bb4e1ba75b34e"
+      "sha256": "52a5497b46e3b69e6ce9316df51fec1fdbd616e4261f24179bc6ace3b78c2ce5"
     },
     {
       "path": "openspec/changes/define-independent-ddd-delivery/specs/independent-delivery/spec.md",
@@ -555,7 +559,7 @@
     },
     {
       "path": "openspec/changes/define-independent-ddd-delivery/tasks.md",
-      "sha256": "47603ce62f62028ccb45e8181787c1da75e38bd23bfd26bbf78fc8f9132ccc2b"
+      "sha256": "b685ab47daf4750ab2fab9381b1c09f2d6096a1fb4390da7a94653a8d9e8ccbb"
     },
     {
       "path": "openspec/changes/define-layered-semantic-fact-model/.openspec.yaml",
@@ -838,7 +842,7 @@
       "sha256": "c99ce4a146fb98e10dc04d8cc34fc3dd0b32f3c83c582ac571e4bacd264b942a"
     }
   ],
-  "supersedes_bundle_sha256": "166497c211565f7874e524581846c58957bad9bbfe250225d9896d681216b2f2",
+  "supersedes_bundle_sha256": "d80e29b353ccf3c371fe43c9f05f5cd9022401c8e399869997e12cbbf4ae4f9d",
   "confirmed_initial_source_languages": [
     "Rust",
     "Python"

@@ -5,6 +5,8 @@ on:
     branches: [main]
     paths:
       - '.github/workflows/private-access-check.yml'
+      - 'ci/acceptance/role_repository_probe.py'
+      - 'scripts/prepare_role_repositories.py'
   workflow_dispatch:
 
 permissions:
@@ -64,6 +66,8 @@ jobs:
               repository = re.compile(r"[A-Za-z0-9_.-]+/[A-Za-z0-9_.-]+\Z")
               if not token.strip() or not repository.fullmatch(source) or not repository.fullmatch(private):
                   raise ValueError("invalid_configuration")
+              if private != "vchs6/c2s-acceptance":
+                  raise ValueError("unexpected_acceptance_repository")
               if source.casefold() == private.casefold():
                   raise ValueError("invalid_configuration")
               # No proxy environment or redirect can forward the source token.
@@ -100,3 +104,22 @@ jobs:
       - name: Run only public synthetic role checks
         shell: bash
         run: python3 -I -B ci/acceptance/role_sandbox.py --probe
+
+  role-repository-workspace:
+    needs: source-access-boundary
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    strategy:
+      fail-fast: false
+      max-parallel: 3
+      matrix:
+        role: [coding, review, author, runner, verifier]
+    steps:
+      - name: Read fixed public infrastructure source
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          persist-credentials: false
+      - name: Check only the selected public role repository is mounted
+        env:
+          C2S_PROBE_ROLE: ${{ matrix.role }}
+        run: python3 -I -B ci/acceptance/role_repository_probe.py --role "$C2S_PROBE_ROLE"

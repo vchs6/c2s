@@ -1,0 +1,42 @@
+{
+  "date": "2026-11-03",
+  "scope": "ci-public-role-repository-boundary-probe",
+  "base_revision": "9d782f02f7bd51127c8be8cf2141278c2f7b0745",
+  "script_sha256": "80cc4c05ef8288e7eeefe87af1e5953cdeded3978cc6e3f6278599a6b7cc5c92",
+  "coordinator_metadata_check": {
+    "repository": "vchs6/c2s-acceptance",
+    "private": true,
+    "source": "connected GitHub repository metadata only; not role credentials or suite contents"
+  },
+  "local_validation": {
+    "host_worker_ast": "PASS",
+    "workflow_yaml": "PASS",
+    "missing_ci_safe_failure": "PASS",
+    "container_executed_locally": false,
+    "openspec_strict_passed": 21,
+    "maintenance_tests_passed": 31,
+    "artifact_check": "PASS"
+  },
+  "ci_execution": {
+    "status": "pending_publication",
+    "run_id": null,
+    "head_sha": null,
+    "role_reports": {},
+    "private_api_report": null
+  },
+  "synthetic_only": true,
+  "native_subagent_scoping_verified": false,
+  "full_role_delivery_ready": false,
+  "readiness_complete": false,
+  "isolation_ready": false,
+  "development_ready": false,
+  "implementation_started": false,
+  "hidden_suite_created": false,
+  "model_requests_in_ci": false,
+  "independent_review": {
+    "verdict": "PASS_for_actual_CI_experiment",
+    "blocking_findings": 0,
+    "report": "review.md",
+    "container_execution_verified": false
+  }
+}

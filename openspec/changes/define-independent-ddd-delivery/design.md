@@ -131,3 +131,11 @@ GET认证通过后，另用一次固定gpt-5-mini的短生成请求验证推理�
 选项：单分支fetch仍携带可达历史；整个主库clone会扩大输入；因此本次采用固定SHA的白名单快照导入。先用公开合成marker而非真实suite建立五仓库，验证每个本地历史/object数据库独立、内容与源提交相符、既有目标拒绝覆盖。随后由实际原生子代理以coding仓库为工作目录，测试自己marker合法可读、相邻author仓库marker经相对/绝对路径及Git接口是否被强制拒绝。只读公开标记，不尝试读取任何真实私有文件/凭据，不更改宿主权限或网络控制。
 
 创建仓库、固定提交及内容白名单通过只说明同步正确；必须将实测权限结果单列。当前原生spawn接口未暴露每角色文件/终端/连接器范围配置，因此不能预先保证“只能看自己的仓库”。任一禁止路径仍可读，则权限验收失败、父2.2/2.3/3.2继续未完成，不能把另设工作目录或再加提示视为修复。下一阶段需要实际受限角色执行身份/工具入口，而非更多Git目录；不静默撤销用户访问限制。
+
+### CI角色仓库执行边界实测（2026-11-03）
+
+用户选择测试CI方式；复用现有GitHub托管Ubuntu24.04及source token拒绝私有API检查，不重登/复制模型认证，不创建真正隐藏suite。五角色分别在独立matrix job运行；可信准备在宿主从该次GITHUB_SHA创建公开快照，仅把所选角色仓库挂到受限worker的/repo，其他角色仓库、宿主源码/socket/凭据不挂入，worker使用非root、无网络/额外权限、只读根和资源限制。模型不在该容器运行，不启动嵌套Codex，也不把可信宿主的Docker权限暴露给worker。
+
+公开marker的宿主正向控制必须先确认其他仓库存在可读，再从worker验证自己的输入/输出合法及其他仓库相对路径、容器绝对路径、真实宿主路径不可达，其他目录不可写，socket/凭据不提供。源token另验证源repo200及明确的vchs6/c2s-acceptance私有API拒绝，避免误配置成其他不存在仓库产生伪通过。角色job不读取真实私有suite，源token不传worker。
+
+本次可通过的范围仅是CI文件/挂载/环境边界及指定token读取范围，脚本输出container_repo_boundary_passed；native_subagent_scoping_verified/full_role_delivery_ready/development_ready固定false。脚本只运行可信有限probe，不是任意candidate执行服务或模型工具broker。独立模型作者/runner/verifier身份、工件传输/访问授权、受控反馈与版本失效门禁仍未接通，父2.2/2.3/3.2不因本次probe通过而勾选。实际run绑定公开提交及镜像digest；失败按实际阶段记录，不用静态配置冒成功。

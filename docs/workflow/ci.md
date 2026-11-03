@@ -17,3 +17,5 @@
 平级接续（2026-11-03）：维护CI在`npm ci`后运行`python3 scripts/check_public_environment.py`，不调用嵌套Codex或模型，也不以Docker存在作为公开工具通过条件。原生代理用于公开基础设施协作；角色私有权限和candidate执行仍在独立设施验证。此入口的public_tools_ready不是完整开发门禁，不触发Issue开发、不创建suite、不自动归档。
 
 角色仓库实验接续（2026-11-03）：维护CI用该运行的GITHUB_SHA调用`prepare_role_repositories.py`，在RUNNER_TEMP内创建五个公开Git快照，不访问私有测试项目、不调用模型、不授予角色身份。步骤成功只证明准备入口运行，不是“角色只能看自己仓库”的权限通过；当前原生访问实测FAIL见role-repositories报告。当前仅Linux实际验证，其他宿主平台未外推。
+
+CI边界实测接续（2026-11-03）：private-access-check工作流保留源token私有API拒绝检查及既有六容器诊断，另加五个独立Ubuntu24.04角色job（最多并行3）。每job可信宿主生成公开快照，仅所选role仓库挂入非root worker；role_repository_probe.py使用固定image digest与有界只读/写公开marker检查，凭据和Docker socket不进入worker。模型认证、模型工具broker、实际私有role交接不属于此probe，完整门禁始终不因基础设施success自动通过。
