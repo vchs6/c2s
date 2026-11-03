@@ -62,6 +62,6 @@
 
 ## 当前模式接续：ADR-0010
 
-- [ ] 2.2.5 搭建双向盲开发的确定性CI环境并实跑公开验证。依据：ADR-0010 U01/U02、independent-delivery“测试作者对候选实现保持独立”“按信息边界分工执行”。依赖：已完成2.2.3/2.2.4；负责：公开基础设施实现、独立审阅、固定CI执行。输入：固定源SHA的公共快照/合成marker；输出：`ci/acceptance/blind_delivery_probe.py`及对应workflow、`docs/workflow/blind-development.md`、脱敏执行证据。步骤：定义双向输入矩阵；复用受限coding/author worker；以固定脚本验证同契约交接与失配拒绝；实跑CI并绑定SHA/结果；独立审查及严格校验。通过：双方合法输入正控和禁止读取负控、版本失配拒绝、确定性公开执行真实通过，报告synthetic_only且无模型调用；失败/未运行保持未完成。无产品/真实隐藏suite；本子步不自动勾2.2/2.3。
+- [x] 2.2.5 搭建双向盲开发的确定性CI环境并实跑公开验证。依据：ADR-0010 U01/U02、independent-delivery“测试作者对候选实现保持独立”“按信息边界分工执行”。依赖：已完成2.2.3/2.2.4；负责：公开基础设施实现、独立审阅、固定CI执行。输入：固定源SHA的公共快照/合成marker；输出：`ci/acceptance/blind_delivery_probe.py`及对应workflow、`docs/workflow/blind-development.md`、脱敏执行证据。步骤：定义双向输入矩阵；复用受限coding/author worker；以固定脚本验证同契约交接与失配拒绝；实跑CI并绑定SHA/结果；独立审查及严格校验。通过：双方合法输入正控和禁止读取负控、版本失配拒绝、确定性公开执行真实通过，报告synthetic_only且无模型调用；失败/未运行保持未完成。无产品/真实隐藏suite；本子步不自动勾2.2/2.3。实际证据：run41573123198/head8166ab4，coding/author各18项worker检查、4项准备及5项交接检查全部通过；见docs/development/reviews/independent-delivery/blind-development-2026-11-03/ci-results.json。
 
 当前2.2/3.2的权限验收按ADR-0010聚焦coding与author双向不可见及必要管理旁路，其他角色按职责授权，不再要求五方全部互盲。2.3仍需真实产出的固定版本交接及独立结论；无需测试执行/安装job调用模型。API健康检查3.2.3仅阻塞该API模型入口，不阻塞无需AI的CI；不要求为已可用的其他合法编写入口恢复API余额。

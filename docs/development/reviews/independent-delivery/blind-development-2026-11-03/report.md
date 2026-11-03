@@ -19,3 +19,9 @@
 ## 使用的Skills
 
 using-superpowers；brainstorming（已确认模式不重开讨论）；writing-plans（沿用唯一tasks的2.2.5）；executing-plans；requesting-code-review；verification-before-completion。独立审核单独记录。
+
+## 托管实跑
+
+代码提交8166ab4b341dd6c095818b19169eb747886e5a8b，run41573123198，coding job125710399037/author job125710398759均success。两份日志JSON已逐字段提取为ci-results.json：各18项worker检查、4项准备检查和5项交接检查全部true，宿主输入未改且合法输出存在；均synthetic_only=true、model_invoked=false、development_ready=false、ai_role_broker_deployed=false。镜像python@sha256:b18b261e1b4974b4f321451ad5251ded85abb22c2b8b262da527dda1d031ab30。
+
+维护CI run41573123172成功。仅有限任务2.2.5完成；父门禁保持未完成。后续明确缺口是正式角色编写入口、真实产出交接及固定harness的产品候选隔离，不能继续用增加公开marker替代这些工作。

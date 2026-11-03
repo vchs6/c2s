@@ -1,0 +1,197 @@
+{
+  "run_id": 41573123198,
+  "run_url": "https://github.com/vchs6/c2s/actions/runs/41573123198",
+  "tested_commit": "8166ab4b341dd6c095818b19169eb747886e5a8b",
+  "scope": "public synthetic infrastructure only",
+  "roles": [
+    {
+      "job_id": 125710398759,
+      "acceptance_checks": {
+        "all_binding_mismatches_rejected": true,
+        "contract_drift_rejected": true,
+        "controlled_report_only": true,
+        "matching_binding_passed": true,
+        "wrong_answer_rejected": true
+      },
+      "ai_role_broker_deployed": false,
+      "container_repo_boundary_passed": true,
+      "delivery_binding": {
+        "candidate_sha256": "ad2c6dbcdd5472a4e1e2b20614c5299cebde258b9afd0ff3986d136c31b887b2",
+        "contract_sha256": {
+          "author": {
+            "openspec/specs/independent-delivery/spec.md": "c74f473a5724650d0eadd432efe9c09c38a6758cd6ef949923d13e80725e1f6e",
+            "openspec/specs/semantic-fact-query/spec.md": "94cae1fe54086db07726a8ca698f3a18874e9c3e0e4ac6b1d4f189707f038967"
+          },
+          "coding": {
+            "openspec/specs/independent-delivery/spec.md": "c74f473a5724650d0eadd432efe9c09c38a6758cd6ef949923d13e80725e1f6e",
+            "openspec/specs/semantic-fact-query/spec.md": "94cae1fe54086db07726a8ca698f3a18874e9c3e0e4ac6b1d4f189707f038967"
+          }
+        },
+        "environment_sha256": "eb52894bbd671f3e3526f3c42f13e86ccfe4b3ca6e6ea5fa35d0ac1c5a002195",
+        "source_commit": "8166ab4b341dd6c095818b19169eb747886e5a8b",
+        "suite_sha256": "e641bb48d4ddbb20878da9ebb1c30a5deeadaa868ad5436dfd72a144957b4fe7"
+      },
+      "delivery_manifest": {
+        "binding": {
+          "candidate_sha256": "ad2c6dbcdd5472a4e1e2b20614c5299cebde258b9afd0ff3986d136c31b887b2",
+          "contract_sha256": {
+            "author": {
+              "openspec/specs/independent-delivery/spec.md": "c74f473a5724650d0eadd432efe9c09c38a6758cd6ef949923d13e80725e1f6e",
+              "openspec/specs/semantic-fact-query/spec.md": "94cae1fe54086db07726a8ca698f3a18874e9c3e0e4ac6b1d4f189707f038967"
+            },
+            "coding": {
+              "openspec/specs/independent-delivery/spec.md": "c74f473a5724650d0eadd432efe9c09c38a6758cd6ef949923d13e80725e1f6e",
+              "openspec/specs/semantic-fact-query/spec.md": "94cae1fe54086db07726a8ca698f3a18874e9c3e0e4ac6b1d4f189707f038967"
+            }
+          },
+          "environment_sha256": "eb52894bbd671f3e3526f3c42f13e86ccfe4b3ca6e6ea5fa35d0ac1c5a002195",
+          "source_commit": "8166ab4b341dd6c095818b19169eb747886e5a8b",
+          "suite_sha256": "e641bb48d4ddbb20878da9ebb1c30a5deeadaa868ad5436dfd72a144957b4fe7"
+        },
+        "development_ready": false,
+        "final_role_commits": {
+          "author": "8c65f7bbd8e866dc8fa4c85694a16a732e7e8dd5",
+          "coding": "3969c848d1451cd8676204ffdfd9accd580300da"
+        },
+        "format": 1,
+        "initial_preparation_manifest_scope": "pre-fixture-snapshot-only",
+        "model_invoked": false,
+        "scope": "public-synthetic-delivery-only",
+        "synthetic_only": true
+      },
+      "development_ready": false,
+      "format": 1,
+      "host_controls_passed": true,
+      "host_output_control_passed": true,
+      "host_repositories_unchanged": true,
+      "image_digest": "python@sha256:b18b261e1b4974b4f321451ad5251ded85abb22c2b8b262da527dda1d031ab30",
+      "model_invoked": false,
+      "preparation_checks": {
+        "author_no_candidate_or_history": true,
+        "author_own_suite": true,
+        "coding_no_suite_or_history": true,
+        "coding_own_candidate": true
+      },
+      "role": "author",
+      "scope": "public-synthetic-two-way-blind-diagnostic",
+      "source_commit": "8166ab4b341dd6c095818b19169eb747886e5a8b",
+      "status": "synthetic_probe_passed",
+      "synthetic_only": true,
+      "worker_checks": {
+        "absolute_reads_denied": true,
+        "absolute_writes_denied": true,
+        "docker_sockets_denied": true,
+        "host_reads_denied": true,
+        "host_writes_denied": true,
+        "legal_inputs": true,
+        "legal_output_write": true,
+        "network_none": true,
+        "opposite_content_absent": true,
+        "opposite_delivery_reads_denied": true,
+        "own_delivery_input": true,
+        "privileges_restricted": true,
+        "relative_reads_denied": true,
+        "relative_writes_denied": true,
+        "resource_limits": true,
+        "rootfs_read_only": true,
+        "sensitive_environment_absent": true,
+        "uid_gid": true
+      }
+    },
+    {
+      "job_id": 125710399037,
+      "acceptance_checks": {
+        "all_binding_mismatches_rejected": true,
+        "contract_drift_rejected": true,
+        "controlled_report_only": true,
+        "matching_binding_passed": true,
+        "wrong_answer_rejected": true
+      },
+      "ai_role_broker_deployed": false,
+      "container_repo_boundary_passed": true,
+      "delivery_binding": {
+        "candidate_sha256": "ad2c6dbcdd5472a4e1e2b20614c5299cebde258b9afd0ff3986d136c31b887b2",
+        "contract_sha256": {
+          "author": {
+            "openspec/specs/independent-delivery/spec.md": "c74f473a5724650d0eadd432efe9c09c38a6758cd6ef949923d13e80725e1f6e",
+            "openspec/specs/semantic-fact-query/spec.md": "94cae1fe54086db07726a8ca698f3a18874e9c3e0e4ac6b1d4f189707f038967"
+          },
+          "coding": {
+            "openspec/specs/independent-delivery/spec.md": "c74f473a5724650d0eadd432efe9c09c38a6758cd6ef949923d13e80725e1f6e",
+            "openspec/specs/semantic-fact-query/spec.md": "94cae1fe54086db07726a8ca698f3a18874e9c3e0e4ac6b1d4f189707f038967"
+          }
+        },
+        "environment_sha256": "eb52894bbd671f3e3526f3c42f13e86ccfe4b3ca6e6ea5fa35d0ac1c5a002195",
+        "source_commit": "8166ab4b341dd6c095818b19169eb747886e5a8b",
+        "suite_sha256": "e641bb48d4ddbb20878da9ebb1c30a5deeadaa868ad5436dfd72a144957b4fe7"
+      },
+      "delivery_manifest": {
+        "binding": {
+          "candidate_sha256": "ad2c6dbcdd5472a4e1e2b20614c5299cebde258b9afd0ff3986d136c31b887b2",
+          "contract_sha256": {
+            "author": {
+              "openspec/specs/independent-delivery/spec.md": "c74f473a5724650d0eadd432efe9c09c38a6758cd6ef949923d13e80725e1f6e",
+              "openspec/specs/semantic-fact-query/spec.md": "94cae1fe54086db07726a8ca698f3a18874e9c3e0e4ac6b1d4f189707f038967"
+            },
+            "coding": {
+              "openspec/specs/independent-delivery/spec.md": "c74f473a5724650d0eadd432efe9c09c38a6758cd6ef949923d13e80725e1f6e",
+              "openspec/specs/semantic-fact-query/spec.md": "94cae1fe54086db07726a8ca698f3a18874e9c3e0e4ac6b1d4f189707f038967"
+            }
+          },
+          "environment_sha256": "eb52894bbd671f3e3526f3c42f13e86ccfe4b3ca6e6ea5fa35d0ac1c5a002195",
+          "source_commit": "8166ab4b341dd6c095818b19169eb747886e5a8b",
+          "suite_sha256": "e641bb48d4ddbb20878da9ebb1c30a5deeadaa868ad5436dfd72a144957b4fe7"
+        },
+        "development_ready": false,
+        "final_role_commits": {
+          "author": "8c65f7bbd8e866dc8fa4c85694a16a732e7e8dd5",
+          "coding": "3969c848d1451cd8676204ffdfd9accd580300da"
+        },
+        "format": 1,
+        "initial_preparation_manifest_scope": "pre-fixture-snapshot-only",
+        "model_invoked": false,
+        "scope": "public-synthetic-delivery-only",
+        "synthetic_only": true
+      },
+      "development_ready": false,
+      "format": 1,
+      "host_controls_passed": true,
+      "host_output_control_passed": true,
+      "host_repositories_unchanged": true,
+      "image_digest": "python@sha256:b18b261e1b4974b4f321451ad5251ded85abb22c2b8b262da527dda1d031ab30",
+      "model_invoked": false,
+      "preparation_checks": {
+        "author_no_candidate_or_history": true,
+        "author_own_suite": true,
+        "coding_no_suite_or_history": true,
+        "coding_own_candidate": true
+      },
+      "role": "coding",
+      "scope": "public-synthetic-two-way-blind-diagnostic",
+      "source_commit": "8166ab4b341dd6c095818b19169eb747886e5a8b",
+      "status": "synthetic_probe_passed",
+      "synthetic_only": true,
+      "worker_checks": {
+        "absolute_reads_denied": true,
+        "absolute_writes_denied": true,
+        "docker_sockets_denied": true,
+        "host_reads_denied": true,
+        "host_writes_denied": true,
+        "legal_inputs": true,
+        "legal_output_write": true,
+        "network_none": true,
+        "opposite_content_absent": true,
+        "opposite_delivery_reads_denied": true,
+        "own_delivery_input": true,
+        "privileges_restricted": true,
+        "relative_reads_denied": true,
+        "relative_writes_denied": true,
+        "resource_limits": true,
+        "rootfs_read_only": true,
+        "sensitive_environment_absent": true,
+        "uid_gid": true
+      }
+    }
+  ]
+}
+
