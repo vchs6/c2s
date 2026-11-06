@@ -6,7 +6,12 @@
 
 ## 公共语义模型契约（M1）
 
-仓库根目录的 `contracts/semantic-model/` 与 `src/c2s_semantic_contract/` 提供版本 `1.0.0`、profile `m1-project-discovery-1` 的初始M1身份、事实包及封闭谓词目录契约，含`project.name`、`project.language_declared`和`workspace.member`。开发环境安装使用 `python3 -m pip install -r requirements-semantic-model.txt`；验证使用 `PYTHONPATH=src:skill/src .local/analysis-venv/bin/python -m unittest discover -s tests/semantic_model -v`。`register_m1`按identity domain和sourceKey复用身份并合并证据；`validate_model`检查M1结构、身份/证据引用、assessment基数与lineage、目录闭包、事实角色、来源观察和coverage关系。`project_query_to_m1`把现有项目发现查询投影为M1包，并在投影前后检查项目树摘要；Click名称/语言与regex workspace真实查询均已通过投影和校验。Cargo workspace适配器捕获`metadata --no-deps --offline` JSON附件，校验成员清单一致后才标记verified；Cargo缺失或输出不一致时保留unchecked gap。附件持久化、查询CLI原生支持M1、评估判定、上下文冲突和完整跨事实规则仍在后续工作中；共享工作区开发测试不是独立验收。
+仓库根目录的 `contracts/semantic-model/` 与 `src/c2s_semantic_contract/` 提供版本 `1.0.0`、profile `m1-project-discovery-1` 的初始M1身份、事实包及封闭谓词目录契约，含`project.name`、`project.language_declared`和`workspace.member`。开发环境安装使用 `python3 -m pip install -r requirements-semantic-model.txt`；验证使用 `PYTHONPATH=src:skill/src .local/analysis-venv/bin/python -m unittest discover -s tests/semantic_model -v`。`register_m1`按identity domain和sourceKey复用身份并合并证据；`validate_model`检查M1结构、身份/证据引用、assessment基数与lineage、目录闭包、事实角色、来源观察和coverage关系。`scripts/query_m1.py`可按项目根目录运行`project`或`workspace-members`并输出M1 bundle、附件、来源观察和校验结果。Click名称/语言与regex workspace真实查询均已通过投影和校验。Cargo workspace适配器捕获`metadata --no-deps --offline` JSON附件，校验成员清单一致后才标记verified；Cargo缺失或输出不一致时保留unchecked gap。附件持久化、评估判定、上下文冲突和完整跨事实规则仍在后续工作中；共享工作区开发测试不是独立验收。
+
+```bash
+python3 scripts/query_m1.py --root .local/real-projects/click --select project
+python3 scripts/query_m1.py --root .local/real-projects/regex --select workspace-members
+```
 
 ## 当前实现与测试
 
