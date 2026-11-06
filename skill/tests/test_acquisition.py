@@ -47,6 +47,34 @@ class AcquisitionTests(unittest.TestCase):
         self.assertIn("let (left, right) = pair", rust_bindings[1].text)
         self.assertIn("let (left, right) = pair", rust_bindings[2].text)
 
+    def test_rust_local_binding_facts_cover_struct_tuple_struct_and_slice_patterns(self):
+        source = (b"struct Point { x: i32, y: i32 }\n"
+                  b"fn run(point: Point, option: Option<i32>, values: [i32; 2]) {\n"
+                  b"    let Point { x, y: z } = point;\n"
+                  b"    let Some(value) = option else { return; };\n"
+                  b"    let [first, second] = values;\n"
+                  b"}\n")
+        result = parse_source("src.rs", source, "rust")
+        self.assertTrue(result.parse_complete)
+        bindings = [fact for fact in result.facts if fact.kind == "local_binding"]
+        self.assertEqual([fact.name for fact in bindings],
+                         ["x", "z", "value", "first", "second"])
+        self.assertTrue(all(fact.layer == "E4" and fact.owner == "run" for fact in bindings))
+        self.assertEqual(len({fact.id for fact in bindings}), len(bindings))
+
+    def test_rust_local_binding_facts_cover_or_reference_and_captured_patterns(self):
+        source = (b"enum Choice { A(i32), B(i32) }\n"
+                  b"fn run(choice: Choice, borrowed: &i32, number: i32) {\n"
+                  b"    let Choice::A(shared) | Choice::B(shared) = choice else { return; };\n"
+                  b"    let &reference = borrowed;\n"
+                  b"    let captured @ 1..=3 = number else { return; };\n"
+                  b"}\n")
+        result = parse_source("src.rs", source, "rust")
+        self.assertTrue(result.parse_complete)
+        bindings = [fact for fact in result.facts if fact.kind == "local_binding"]
+        self.assertEqual([fact.name for fact in bindings], ["shared", "reference", "captured"])
+        self.assertTrue(all(fact.owner == "run" and fact.layer == "E4" for fact in bindings))
+
     def test_rust_parser_emits_struct_fields_and_methods(self):
         source = b"pub struct Item { pub value: u32 } impl Item { /// Return the stored value.\n pub fn read(&self) -> u32 { if self.value > 0 { helper() } else { 0 } } }"
         result = parse_source("src/lib.rs", source, "rust")
