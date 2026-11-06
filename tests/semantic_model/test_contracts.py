@@ -33,6 +33,34 @@ def bundle_with_fact(predicate="project.name", subject_kind="Project", value="Ex
 
 
 class M1IdentityTests(unittest.TestCase):
+    @staticmethod
+    def assessment(assessment_id, declaration, status, projects, *, rule_id="boundary-v1", supersedes=None):
+        return {"assessmentId": assessment_id, "declaration": declaration, "status": status,
+                "projects": projects, "ruleId": rule_id, "evidenceIds": ["ev-assessment"],
+                "supersedes": supersedes or [], "diagnostics": []}
+
+    @staticmethod
+    def assessment_bundle(assessments):
+        bundle = empty_bundle()
+        declaration = {"identity": {"authority": "c2s-local", "domainId": "domain-a", "localId": "decl"},
+                       "kind": "SourceDeclaration"}
+        project_a = {"identity": {"authority": "c2s-local", "domainId": "domain-a", "localId": "project-a"},
+                     "kind": "Project"}
+        project_b = {"identity": {"authority": "c2s-local", "domainId": "domain-a", "localId": "project-b"},
+                     "kind": "Project"}
+        bundle["registrations"] = [
+            {"ref": ref, "sourceKey": f"source:{ref['kind']}:{ref['identity']['localId']}",
+             "evidenceIds": ["ev-assessment"]} for ref in (declaration, project_a, project_b)]
+        bundle["evidence"].append({"evidenceId": "ev-assessment", "source": "input", "path": "project.toml",
+            "artifactId": None, "originalPath": "project.toml", "sha256": "a" * 64,
+            "startByte": 0, "endByte": 1, "method": "fixture", "toolName": None, "toolVersion": None})
+        bundle["assessments"] = [
+            M1IdentityTests.assessment(item["assessmentId"], declaration, item["status"],
+                                       [project_a if name == "a" else project_b for name in item["projects"]],
+                                       rule_id=item.get("ruleId", "boundary-v1"), supersedes=item.get("supersedes"))
+            for item in assessments]
+        return bundle
+
     def test_registration_reuses_identity_and_merges_new_evidence(self):
         first = register_m1("domain-a", [], "SourceDeclaration", "python:module:entry", ["ev-1"])
         second = register_m1("domain-a", [first], "SourceDeclaration", "python:module:entry", ["ev-2"])
@@ -111,6 +139,33 @@ class M1IdentityTests(unittest.TestCase):
         self.assertTrue(result["valid"])
         self.assertEqual(result["stages"]["invariants"], "partial")
         self.assertEqual(result["consistency"], "undetermined")
+
+    def test_project_boundary_assessments_enforce_status_cardinality(self):
+        cases = [("resolved", ["a"], True), ("ambiguous", ["a", "b"], True),
+                 ("unresolved", [], True), ("resolved", [], False),
+                 ("ambiguous", ["a"], False), ("unresolved", ["a"], False)]
+        for status, project_keys, expected_valid in cases:
+            with self.subTest(status=status, projects=project_keys):
+                result = validate_model(self.assessment_bundle([{
+                    "assessmentId": "assessment-1", "status": status, "projects": project_keys}]), fixed_catalogs())
+                self.assertEqual(result["valid"], expected_valid)
+                if not expected_valid:
+                    self.assertIn("ASSESSMENT_CARDINALITY", {item["ruleCode"] for item in result["diagnostics"]})
+
+    def test_assessment_supersedes_must_preserve_declaration_and_rule_and_be_acyclic(self):
+        base = {"assessmentId": "assessment-1", "status": "resolved", "projects": ["a"]}
+        replacement = {"assessmentId": "assessment-2", "status": "resolved", "projects": ["a"],
+                       "supersedes": ["assessment-1"]}
+        self.assertTrue(validate_model(self.assessment_bundle([base, replacement]), fixed_catalogs())["valid"])
+
+        wrong_rule = dict(replacement, ruleId="boundary-v2")
+        result = validate_model(self.assessment_bundle([base, wrong_rule]), fixed_catalogs())
+        self.assertIn("SUPERSEDES_KEY_MISMATCH", {item["ruleCode"] for item in result["diagnostics"]})
+
+        cycle_base = dict(base, supersedes=["assessment-2"])
+        cycle_replacement = dict(replacement, supersedes=["assessment-1"])
+        result = validate_model(self.assessment_bundle([cycle_base, cycle_replacement]), fixed_catalogs())
+        self.assertIn("SUPERSEDES_CYCLE", {item["ruleCode"] for item in result["diagnostics"]})
 
     def test_closed_m1_catalog_accepts_project_name_with_a_project_subject(self):
         result = validate_model(bundle_with_fact(), fixed_catalogs())

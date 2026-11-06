@@ -291,6 +291,57 @@ def validate_model(document: dict, catalogs: dict, source_observations: dict | N
                 invariant_diagnostics.append(_diagnostic("invariants", "ROLE_TYPE_MISMATCH",
                     f"Role {role['roleId']} requires a non-empty string.", record_ref=record_ref,
                     field_path=path))
+    assessments = {item["assessmentId"]: item for item in document["assessments"]}
+    supersedes_edges: dict[str, list[str]] = {}
+    for index, assessment in enumerate(document["assessments"]):
+        record_ref = f"assessment:{assessment['assessmentId']}"
+        path = f"/assessments/{index}"
+        if assessment["declaration"]["kind"] != "SourceDeclaration":
+            invariant_diagnostics.append(_diagnostic("invariants", "ASSESSMENT_DECLARATION_KIND",
+                "Project-boundary assessments must reference a SourceDeclaration.", record_ref=record_ref,
+                field_path=f"{path}/declaration/kind"))
+        if any(project["kind"] != "Project" for project in assessment["projects"]):
+            invariant_diagnostics.append(_diagnostic("invariants", "ASSESSMENT_PROJECT_KIND",
+                "Project-boundary candidates must all be Project subjects.", record_ref=record_ref,
+                field_path=f"{path}/projects"))
+        count = len(assessment["projects"])
+        expected_count = (count == 1 if assessment["status"] == "resolved"
+                          else count >= 2 if assessment["status"] == "ambiguous" else count == 0)
+        if not expected_count:
+            invariant_diagnostics.append(_diagnostic("invariants", "ASSESSMENT_CARDINALITY",
+                "resolved requires one project, ambiguous at least two, and unresolved none.",
+                record_ref=record_ref, field_path=f"{path}/projects"))
+        supersedes_edges[assessment["assessmentId"]] = list(assessment["supersedes"])
+        for old_id in assessment["supersedes"]:
+            old = assessments.get(old_id)
+            if old is not None and (_identity_key(old["declaration"]) != _identity_key(assessment["declaration"])
+                                    or old["ruleId"] != assessment["ruleId"]):
+                invariant_diagnostics.append(_diagnostic("invariants", "SUPERSEDES_KEY_MISMATCH",
+                    "An assessment may supersede only an assessment for the same declaration and rule.",
+                    record_ref=record_ref, field_path=f"{path}/supersedes"))
+
+    visiting: set[str] = set()
+    visited: set[str] = set()
+
+    def has_supersedes_cycle(assessment_id: str) -> bool:
+        if assessment_id in visiting:
+            return True
+        if assessment_id in visited:
+            return False
+        visiting.add(assessment_id)
+        for old_id in supersedes_edges.get(assessment_id, []):
+            if old_id in supersedes_edges and has_supersedes_cycle(old_id):
+                return True
+        visiting.remove(assessment_id)
+        visited.add(assessment_id)
+        return False
+
+    for assessment_id in supersedes_edges:
+        if has_supersedes_cycle(assessment_id):
+            invariant_diagnostics.append(_diagnostic("invariants", "SUPERSEDES_CYCLE",
+                "Assessment supersedes lineage must be acyclic.", record_ref=f"assessment:{assessment_id}",
+                field_path=f"/assessments/{list(supersedes_edges).index(assessment_id)}/supersedes"))
+            break
     for index, evidence in enumerate(document["evidence"]):
         if evidence["endByte"] < evidence["startByte"]:
             invariant_diagnostics.append(_diagnostic("invariants", "BYTE_RANGE_INVALID",

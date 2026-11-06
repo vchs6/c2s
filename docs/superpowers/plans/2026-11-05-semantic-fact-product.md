@@ -114,3 +114,7 @@ Final verification: product tests 45/45; repository maintenance tests 35/35; str
 ## Progress — 2026-11-06, M1 phased validation slice
 
 - Added regression coverage for stage dependency stopping, preservation of identity-kind conflicts with related registration references, and the rule that a structurally/reference-valid subset remains `consistency=undetermined`. Updated `rules.md` to document the four ordered stages and the distinction between checked validity and semantic consistency. Twenty focused semantic-model tests pass. Task 2.1.1 remains open under the change-level five-role acceptance boundary; no independent/private acceptance was performed.
+
+## Progress — 2026-11-06, M1 project-boundary assessment slice
+
+- Implemented explicit assessment invariants: declaration and candidate kinds, resolved/ambiguous/unresolved candidate cardinalities, same-declaration-and-rule supersedes, and acyclic in-bundle lineage. Added tests for all three valid states, invalid cardinalities, incompatible rule lineage, cycles, and the valid lineage case. Twenty-two focused semantic-model tests pass. Task 2.2.1 remains open under the change-level acceptance boundary; no independent/private acceptance was performed.

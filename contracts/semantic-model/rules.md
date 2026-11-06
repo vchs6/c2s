@@ -16,3 +16,7 @@ A new registration receives an explicit UUID local identifier under authority `c
 ## Structural validation boundary
 
 `validate_model` runs four dependent stages in order: fixed catalog integrity, versioned wire structure, internal subject/evidence references, then the available M1 invariants. A failed stage leaves its dependent stages `not_run`; reference diagnostics retain identity/source conflicts and related record references. A successful result means only that the checked contract rules hold (`valid=true`, `invariants=partial`); `consistency` remains `undetermined` and does not establish source truth, project ownership, semantic completeness, or runtime behavior. Evidence-source observation checks and broader cross-fact rules remain outside this M1 slice.
+
+## Project-boundary assessment invariants
+
+An assessment declaration must reference a `SourceDeclaration`, and every candidate must reference a `Project`. `resolved` has exactly one candidate, `ambiguous` has at least two, and `unresolved` has none. An assessment may supersede only assessments with the same declaration identity and `ruleId`; the in-bundle supersedes graph must be acyclic. These constraints validate explicit assessments only: package or workspace membership does not infer project ownership.
