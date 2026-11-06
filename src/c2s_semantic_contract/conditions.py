@@ -107,3 +107,44 @@ def classify_claim_overlap(left: dict, right: dict, domains: dict) -> dict:
     if truth["status"] == "sat":
         return {"status": "conflict", "witness": truth["witness"], "reason": None}
     return {"status": "potential_conflict", "witness": None, "reason": truth["reason"]}
+
+
+def diagnose_conditional_cycles(edges: list[dict], domains: dict) -> dict:
+    """Enumerate simple directed cycles and jointly solve their edge conditions.
+
+    The original edge records are returned unchanged. This diagnoses whether a
+    cycle can be active; it does not decide whether a build rule is erroneous.
+    """
+    if not isinstance(edges, list):
+        return {"edges": edges, "cycles": [], "diagnostics": ["DEPENDENCY_GRAPH_INVALID"]}
+    adjacency: dict[str, list[dict]] = {}
+    vertices: set[str] = set()
+    edge_ids: set[str] = set()
+    for edge in edges:
+        if (not isinstance(edge, dict) or not isinstance(edge.get("edgeId"), str)
+                or not isinstance(edge.get("source"), str) or not isinstance(edge.get("target"), str)
+                or edge["edgeId"] in edge_ids):
+            return {"edges": edges, "cycles": [], "diagnostics": ["DEPENDENCY_GRAPH_INVALID"]}
+        edge_ids.add(edge["edgeId"])
+        vertices.update((edge["source"], edge["target"]))
+        adjacency.setdefault(edge["source"], []).append(edge)
+
+    cycles: list[dict] = []
+    for start in sorted(vertices):
+        def walk(current: str, visited: set[str], path_edges: list[dict]) -> None:
+            for edge in adjacency.get(current, []):
+                target = edge["target"]
+                if target == start:
+                    cycle_edges = [*path_edges, edge]
+                    result = condition_satisfiability(
+                        [item.get("condition", {"kind": "true"}) for item in cycle_edges], domains)
+                    status = {"sat": "possible", "unsat": "infeasible", "undetermined": "undetermined"}[result["status"]]
+                    cycles.append({"nodes": [start, *[item["target"] for item in cycle_edges]],
+                                   "edgeIds": [item["edgeId"] for item in cycle_edges],
+                                   "status": status, "witness": result["witness"],
+                                   "reason": result["reason"]})
+                elif target not in visited and target >= start:
+                    walk(target, visited | {target}, [*path_edges, edge])
+        walk(start, {start}, [])
+    cycles.sort(key=lambda item: tuple(item["edgeIds"]))
+    return {"edges": edges, "cycles": cycles, "diagnostics": []}

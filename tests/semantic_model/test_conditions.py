@@ -4,10 +4,47 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[2] / "src"))
 
-from c2s_semantic_contract.conditions import classify_claim_overlap, condition_satisfiability
+from c2s_semantic_contract.conditions import (classify_claim_overlap, condition_satisfiability,
+                                             diagnose_conditional_cycles)
 
 
 class FiniteConditionTests(unittest.TestCase):
+    def test_cycle_conditions_are_solved_jointly_and_original_edges_are_retained(self):
+        edges = [
+            {"edgeId": "ab", "source": "a", "target": "b",
+             "condition": {"kind": "eq", "key": "x", "value": "A"}},
+            {"edgeId": "ba", "source": "b", "target": "a",
+             "condition": {"kind": "eq", "key": "x", "value": "B"}},
+        ]
+
+        result = diagnose_conditional_cycles(edges, {"x": ["A", "B"]})
+
+        self.assertEqual(result["cycles"][0]["status"], "infeasible")
+        self.assertEqual(result["cycles"][0]["edgeIds"], ["ab", "ba"])
+        self.assertEqual(result["edges"], edges)
+
+    def test_cycle_with_joint_witness_is_possible(self):
+        edges = [
+            {"edgeId": "ab", "source": "a", "target": "b", "condition": {"kind": "true"}},
+            {"edgeId": "ba", "source": "b", "target": "a", "condition": {"kind": "eq", "key": "x", "value": True}},
+        ]
+
+        result = diagnose_conditional_cycles(edges, {"x": [True, False]})
+
+        self.assertEqual(result["cycles"][0]["status"], "possible")
+        self.assertEqual(result["cycles"][0]["witness"], {"x": True})
+
+    def test_unknown_cycle_condition_stays_undetermined(self):
+        edges = [
+            {"edgeId": "ab", "source": "a", "target": "b", "condition": {"kind": "source", "expression": "cfg(x)"}},
+            {"edgeId": "ba", "source": "b", "target": "a", "condition": {"kind": "true"}},
+        ]
+
+        result = diagnose_conditional_cycles(edges, {})
+
+        self.assertEqual(result["cycles"][0]["status"], "undetermined")
+        self.assertEqual(result["cycles"][0]["reason"], "CONDITION_UNSUPPORTED_FRAGMENT")
+
     def test_shared_enum_key_distinguishes_sat_and_unsat_with_witnesses(self):
         domains = {"target": ["linux", "windows"]}
         same = {"kind": "eq", "key": "target", "value": "linux"}

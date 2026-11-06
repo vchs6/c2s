@@ -144,3 +144,7 @@ Final verification: product tests 45/45; repository maintenance tests 35/35; str
 
 - Added the separate `semantic-fact-model-1` profile with finite context domains, partial context assignments, identity-preserving reference annotations, Boolean/enum condition solving, contradiction diagnostics, and overlap-aware single-valued claim conflicts. M1 project-discovery explicitly rejects context and conditional facts. Unknown or unsupported condition reasoning remains a gap/potential conflict. Forty-six focused contract/solver tests pass; the full repository suite passes 81/81, strict OpenSpec validation 21/21, artifact hashes, Python compilation, and `git diff --check` pass.
 - This remains a bounded validator over the initial M1 predicate catalog. It does not complete project-wide E0–E4 extraction, language-specific condition discovery, dependency graph validation, broader evidence completeness, or behavioral algorithm proof.
+
+## Progress — 2026-11-06, conditional dependency cycle primitive
+
+- Added `diagnose_conditional_cycles` for explicit directed dependency graphs. It enumerates simple cycles, conjoins all edge conditions before evaluating, returns possible cycles with witnesses, proves infeasible cycles only by exhaustive finite-domain solving, and preserves unknown/source expressions and original edges. Tests cover mutually exclusive shared enum values, a satisfiable witness, and unsupported source conditions. This primitive is not yet wired to dependency records in `SemanticFactSet`, and it does not infer build-system violations.
