@@ -1,0 +1,113 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:c2s:semantic-algorithm:1.0.0",
+  "title": "C2S structured algorithm descriptions",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema_version", "algorithms"],
+  "properties": {
+    "schema_version": {"const": "1.0.0"},
+    "algorithms": {"type": "array", "items": {"$ref": "#/$defs/algorithm"}}
+  },
+  "$defs": {
+    "source": {
+      "type": "object", "additionalProperties": false,
+      "required": ["path", "start_byte", "end_byte"],
+      "properties": {
+        "path": {"type": "string", "minLength": 1},
+        "start_byte": {"type": "integer", "minimum": 0},
+        "end_byte": {"type": "integer", "minimum": 0}
+      }
+    },
+    "condition": {
+      "type": "object", "additionalProperties": false,
+      "required": ["kind"],
+      "properties": {
+        "kind": {"enum": ["true", "false", "unknown", "expression"]},
+        "expression": {"type": "string", "minLength": 1},
+        "reason": {"type": "string", "minLength": 1}
+      },
+      "allOf": [
+        {"if": {"properties": {"kind": {"const": "unknown"}}}, "then": {"required": ["reason"]}},
+        {"if": {"properties": {"kind": {"const": "expression"}}}, "then": {"required": ["expression"]}}
+      ]
+    },
+    "step": {
+      "type": "object", "additionalProperties": false,
+      "required": ["step_id", "kind", "region_id", "evidence_refs", "source"],
+      "properties": {
+        "step_id": {"type": "string", "minLength": 1},
+        "kind": {"enum": ["sequence", "bind", "assign", "compute", "select", "loop", "call", "return", "raise", "handle", "resource", "concurrent", "synchronize", "unknown", "opaque"]},
+        "region_id": {"type": ["string", "null"]},
+        "evidence_refs": {"type": "array", "minItems": 1, "items": {"type": "string", "minLength": 1}},
+        "source": {"anyOf": [{"$ref": "#/$defs/source"}, {"type": "null"}]},
+        "attributes": {"type": "object"},
+        "impact": {"type": "string", "minLength": 1},
+        "unknowns": {"type": "array", "minItems": 1, "items": {"type": "string", "minLength": 1}},
+        "boundary": {
+          "type": "object", "additionalProperties": false,
+          "required": ["inputs", "outputs", "effects"],
+          "properties": {
+            "inputs": {"type": "array", "items": {"type": "string"}},
+            "outputs": {"type": "array", "items": {"type": "string"}},
+            "effects": {"type": "array", "minItems": 1, "items": {"type": "string", "minLength": 1}}
+          }
+        }
+      },
+      "allOf": [
+        {"if": {"properties": {"kind": {"const": "opaque"}}}, "then": {"required": ["source", "impact", "unknowns", "boundary"]}},
+        {"if": {"properties": {"kind": {"const": "compute"}}}, "then": {
+          "properties": {"attributes": {
+            "type": "object", "required": ["operation", "type_rule", "evaluation_order"],
+            "properties": {
+              "operation": {"type": "string", "minLength": 1},
+              "type_rule": {"type": "string", "minLength": 1},
+              "evaluation_order": {"type": "string", "minLength": 1}
+            }
+          }}
+        }}
+      ]
+    },
+    "algorithm": {
+      "type": "object", "additionalProperties": false,
+      "required": ["algorithm_id", "purpose", "problem", "body", "implementation_refs", "evidence_refs", "omissions"],
+      "properties": {
+        "algorithm_id": {"type": "string", "minLength": 1},
+        "purpose": {"enum": ["normative", "current_implementation", "abstract"]},
+        "problem": {"type": "string", "minLength": 1},
+        "body": {
+          "type": "object", "additionalProperties": false,
+          "required": ["regions", "steps", "control_edges", "data_edges"],
+          "properties": {
+            "regions": {"type": "array", "items": {"type": "object", "additionalProperties": false,
+              "required": ["region_id", "parent_region_id"], "properties": {
+                "region_id": {"type": "string", "minLength": 1},
+                "parent_region_id": {"type": ["string", "null"]}
+              }}},
+            "steps": {"type": "array", "items": {"$ref": "#/$defs/step"}},
+            "control_edges": {"type": "array", "items": {"type": "object", "additionalProperties": false,
+              "required": ["from_step", "to_step", "kind", "condition"], "properties": {
+                "from_step": {"type": "string", "minLength": 1},
+                "to_step": {"type": "string", "minLength": 1},
+                "kind": {"enum": ["next", "branch_true", "branch_false", "loop_body", "loop_exit", "break", "continue", "exception", "return"]},
+                "condition": {"$ref": "#/$defs/condition"}
+              }}},
+            "data_edges": {"type": "array", "items": {"type": "object", "additionalProperties": false,
+              "required": ["from_step", "to_step", "role"], "properties": {
+                "from_step": {"type": "string", "minLength": 1},
+                "to_step": {"type": "string", "minLength": 1},
+                "role": {"type": "string", "minLength": 1}
+              }}}
+          }
+        },
+        "implementation_refs": {"type": "array", "items": {"type": "object", "additionalProperties": false,
+          "required": ["subject_id"], "properties": {"subject_id": {"type": "string", "minLength": 1}}}},
+        "evidence_refs": {"type": "array", "minItems": 1, "items": {"type": "string", "minLength": 1}},
+        "omissions": {"type": "array", "items": {"type": "object", "additionalProperties": false,
+          "required": ["reason", "impact"], "properties": {
+            "reason": {"type": "string", "minLength": 1}, "impact": {"type": "string", "minLength": 1}
+          }}}
+      }
+    }
+  }
+}
