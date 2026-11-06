@@ -22,9 +22,10 @@ _CATALOG_MANIFEST_PATH = _ROOT / "contracts" / "semantic-model" / "catalog-manif
 _SEMANTIC_TYPES_PATH = _ROOT / "contracts" / "semantic-model" / "semantic-types.json"
 _SEMANTIC_PREDICATES_PATH = _ROOT / "contracts" / "semantic-model" / "semantic-predicates.json"
 _SEMANTIC_CATALOG_MANIFEST_PATH = _ROOT / "contracts" / "semantic-model" / "semantic-catalog-manifest.json"
-_TRUSTED_MANIFEST_SHA256 = "cb5db790f3e3e21fbcdc82981f2ca8b921b7dac5e02502f6fbb71a78b570bfe1"
-_TRUSTED_SEMANTIC_MANIFEST_SHA256 = "b1757a85a7ef2710c4016c13f95887b9ca91122e23f1a0f6ef58a78181a66a7a"
-_SUPPORTED_KINDS = {"Project", "PackageSpecification", "NativeWorkspace", "SourceDeclaration"}
+_TRUSTED_MANIFEST_SHA256 = "33c294da627e6a55f82f21a8fac90619ac4ca9cb26f00570b188338e1a8d6302"
+_TRUSTED_SEMANTIC_MANIFEST_SHA256 = "961563b6d5f5f4dcf2e3fc51713656b81eb2e5082dc6e8c1185da71b13b3ffc1"
+_M1_SUPPORTED_KINDS = {"Project", "PackageSpecification", "NativeWorkspace", "SourceDeclaration"}
+_SUPPORTED_KINDS = _M1_SUPPORTED_KINDS | {"BehaviorBody", "BehaviorRegion"}
 _SUPPORTED_CONSTRAINTS = {
     "KIND_MATCH", "ROLE_CARDINALITY", "INTERNAL_REF_EXISTS", "DOMAIN_UNIQUE",
     "CONTEXT_KEYS_SINGLE_VALUED", "PROJECT_MAPPING_CARDINALITY", "LAYER_CLASSIFICATION",
@@ -138,6 +139,12 @@ def _validate_catalogs(catalogs: dict, document_profile: str = "m1-project-disco
                 diagnostics.append(_diagnostic("catalog", "CATALOG_TYPE_REF_MISSING",
                     f"Role references unknown type {role['valueType']}.",
                     field_path=f"/catalogs/predicates/predicates/{index}/roles/{role_index}/valueType"))
+            enum_values = set().union(*catalogs["types"]["enums"].values())
+            for kind in role["allowedKinds"]:
+                if kind not in enum_values:
+                    diagnostics.append(_diagnostic("catalog", "CATALOG_KIND_REF_MISSING",
+                        f"Role references unknown subject kind {kind}.",
+                        field_path=f"/catalogs/predicates/predicates/{index}/roles/{role_index}/allowedKinds"))
         for rule_index, rule_id in enumerate(predicate["constraints"]):
             if rule_id not in _SUPPORTED_CONSTRAINTS:
                 diagnostics.append(_diagnostic("catalog", "RULE_UNSUPPORTED",
@@ -170,7 +177,7 @@ def register_m1(domain_id: str, registrations: list[dict], kind: str,
     """Return the stable registration for a source key, merging evidence monotonically."""
     if not isinstance(domain_id, str) or not domain_id.strip() \
             or not isinstance(registrations, list) or any(not isinstance(item, dict) for item in registrations) \
-            or not isinstance(kind, str) or kind not in _SUPPORTED_KINDS \
+            or not isinstance(kind, str) or kind not in _M1_SUPPORTED_KINDS \
             or not isinstance(source_key, str) or not source_key.strip() \
             or not isinstance(evidence_ids, list) or not evidence_ids \
             or any(not isinstance(item, str) or not item.strip() for item in evidence_ids):
@@ -179,7 +186,7 @@ def register_m1(domain_id: str, registrations: list[dict], kind: str,
     for item in registrations:
         ref = item.get("ref")
         identity = ref.get("identity") if isinstance(ref, dict) else None
-        if (not isinstance(ref, dict) or ref.get("kind") not in _SUPPORTED_KINDS
+        if (not isinstance(ref, dict) or ref.get("kind") not in _M1_SUPPORTED_KINDS
                 or not isinstance(identity, dict)
                 or any(not isinstance(identity.get(key), str) or not identity[key].strip()
                        for key in ("authority", "domainId", "localId"))
@@ -255,6 +262,25 @@ def validate_model(document: dict, catalogs: dict, source_observations: dict | N
             sources[source_key] = registration
     registered = {_identity_key(item["ref"]): item["ref"]["kind"] for item in registrations}
     evidence_ids = {item["evidenceId"] for item in document["evidence"]}
+
+    if document["profile"] == "m1-project-discovery-1":
+        def semantic_refs(value):
+            if isinstance(value, dict):
+                if isinstance(value.get("identity"), dict) and "kind" in value:
+                    yield value
+                for child in value.values():
+                    yield from semantic_refs(child)
+            elif isinstance(value, list):
+                for child in value:
+                    yield from semantic_refs(child)
+
+        unsupported = [ref for ref in semantic_refs(document)
+                       if ref.get("kind") not in _M1_SUPPORTED_KINDS]
+        if unsupported:
+            result["stages"]["references"] = "fail"
+            result["diagnostics"] = [_diagnostic("references", "M1_KIND_UNSUPPORTED",
+                "The M1 profile does not permit full semantic subject kinds.", field_path="/profile")]
+            return result
 
     def check_ref(ref: dict, field_path: str, record_ref: str) -> None:
         key = _identity_key(ref)

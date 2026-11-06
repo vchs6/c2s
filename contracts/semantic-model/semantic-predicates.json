@@ -3,381 +3,10 @@
   "profile": "semantic-fact-model-1",
   "predicates": [
     {
-      "predicateId": "project.name",
+      "predicateId": "behavior.algorithm_step",
       "category": "Semantic",
-      "primaryLayer": "E0",
-      "description": "A source-backed declared name for a Project; the name is not its identity.",
-      "relationKind": "attribute",
-      "claimCardinality": "single_value_per_context",
-      "comparisonPolicy": "same_claim_mode_only",
-      "claimModes": [
-        "declaration",
-        "specification",
-        "static_may",
-        "static_must",
-        "observation",
-        "interpretation"
-      ],
-      "roles": [
-        {
-          "roleId": "subject",
-          "position": "subject",
-          "valueType": "M1SubjectRef",
-          "allowedKinds": [
-            "Project"
-          ],
-          "cardinality": "exactly_one"
-        },
-        {
-          "roleId": "value",
-          "position": "value",
-          "valueType": "string",
-          "allowedKinds": [],
-          "cardinality": "exactly_one"
-        }
-      ],
-      "constraints": [
-        "KIND_MATCH",
-        "ROLE_CARDINALITY",
-        "INTERNAL_REF_EXISTS",
-        "LAYER_CLASSIFICATION"
-      ]
-    },
-    {
-      "predicateId": "project.language_declared",
-      "category": "Semantic",
-      "primaryLayer": "E0",
-      "description": "A language explicitly declared by project metadata; it is not inferred from source extensions.",
-      "relationKind": "attribute",
-      "claimCardinality": "multi_value",
-      "comparisonPolicy": "same_claim_mode_only",
-      "claimModes": [
-        "declaration",
-        "specification",
-        "static_may",
-        "static_must",
-        "observation",
-        "interpretation"
-      ],
-      "roles": [
-        {
-          "roleId": "subject",
-          "position": "subject",
-          "valueType": "M1SubjectRef",
-          "allowedKinds": [
-            "Project"
-          ],
-          "cardinality": "exactly_one"
-        },
-        {
-          "roleId": "value",
-          "position": "value",
-          "valueType": "string",
-          "allowedKinds": [],
-          "cardinality": "exactly_one"
-        }
-      ],
-      "constraints": [
-        "KIND_MATCH",
-        "ROLE_CARDINALITY",
-        "INTERNAL_REF_EXISTS",
-        "LAYER_CLASSIFICATION"
-      ]
-    },
-    {
-      "predicateId": "workspace.member",
-      "category": "Semantic",
-      "primaryLayer": "E0",
-      "description": "A native workspace declaration lists a package specification as a member; membership does not imply Project ownership.",
-      "relationKind": "association",
-      "claimCardinality": "multi_value",
-      "comparisonPolicy": "same_claim_mode_only",
-      "claimModes": [
-        "declaration",
-        "specification",
-        "static_may",
-        "static_must",
-        "observation",
-        "interpretation"
-      ],
-      "roles": [
-        {
-          "roleId": "subject",
-          "position": "subject",
-          "valueType": "M1SubjectRef",
-          "allowedKinds": [
-            "NativeWorkspace"
-          ],
-          "cardinality": "exactly_one"
-        },
-        {
-          "roleId": "value",
-          "position": "value",
-          "valueType": "M1SubjectRef",
-          "allowedKinds": [
-            "PackageSpecification"
-          ],
-          "cardinality": "exactly_one"
-        }
-      ],
-      "constraints": [
-        "KIND_MATCH",
-        "ROLE_CARDINALITY",
-        "INTERNAL_REF_EXISTS",
-        "LAYER_CLASSIFICATION"
-      ]
-    },
-    {
-      "predicateId": "module.declared",
-      "category": "Semantic",
-      "primaryLayer": "E2",
-      "description": "A source-declared module or namespace.",
-      "relationKind": "attribute",
-      "claimCardinality": "multi_value",
-      "comparisonPolicy": "never",
-      "claimModes": [
-        "declaration",
-        "specification",
-        "static_may",
-        "static_must",
-        "observation",
-        "interpretation"
-      ],
-      "roles": [
-        {
-          "roleId": "subject",
-          "position": "subject",
-          "valueType": "M1SubjectRef",
-          "allowedKinds": [
-            "SourceDeclaration"
-          ],
-          "cardinality": "exactly_one"
-        },
-        {
-          "roleId": "value",
-          "position": "value",
-          "valueType": "string",
-          "allowedKinds": [],
-          "cardinality": "exactly_one"
-        }
-      ],
-      "constraints": [
-        "KIND_MATCH",
-        "ROLE_CARDINALITY",
-        "INTERNAL_REF_EXISTS",
-        "LAYER_CLASSIFICATION"
-      ]
-    },
-    {
-      "predicateId": "type.declared",
-      "category": "Semantic",
-      "primaryLayer": "E2",
-      "description": "A source-declared class, struct, enum, trait, or type alias.",
-      "relationKind": "attribute",
-      "claimCardinality": "multi_value",
-      "comparisonPolicy": "never",
-      "claimModes": [
-        "declaration",
-        "specification",
-        "static_may",
-        "static_must",
-        "observation",
-        "interpretation"
-      ],
-      "roles": [
-        {
-          "roleId": "subject",
-          "position": "subject",
-          "valueType": "M1SubjectRef",
-          "allowedKinds": [
-            "SourceDeclaration"
-          ],
-          "cardinality": "exactly_one"
-        },
-        {
-          "roleId": "value",
-          "position": "value",
-          "valueType": "string",
-          "allowedKinds": [],
-          "cardinality": "exactly_one"
-        }
-      ],
-      "constraints": [
-        "KIND_MATCH",
-        "ROLE_CARDINALITY",
-        "INTERNAL_REF_EXISTS",
-        "LAYER_CLASSIFICATION"
-      ]
-    },
-    {
-      "predicateId": "member.declared",
-      "category": "Semantic",
-      "primaryLayer": "E2",
-      "description": "A source-declared field, enum variant, or related member.",
-      "relationKind": "attribute",
-      "claimCardinality": "multi_value",
-      "comparisonPolicy": "never",
-      "claimModes": [
-        "declaration",
-        "specification",
-        "static_may",
-        "static_must",
-        "observation",
-        "interpretation"
-      ],
-      "roles": [
-        {
-          "roleId": "subject",
-          "position": "subject",
-          "valueType": "M1SubjectRef",
-          "allowedKinds": [
-            "SourceDeclaration"
-          ],
-          "cardinality": "exactly_one"
-        },
-        {
-          "roleId": "value",
-          "position": "value",
-          "valueType": "string",
-          "allowedKinds": [],
-          "cardinality": "exactly_one"
-        }
-      ],
-      "constraints": [
-        "KIND_MATCH",
-        "ROLE_CARDINALITY",
-        "INTERNAL_REF_EXISTS",
-        "LAYER_CLASSIFICATION"
-      ]
-    },
-    {
-      "predicateId": "implementation.block",
-      "category": "Semantic",
-      "primaryLayer": "E2",
-      "description": "A source-declared implementation block.",
-      "relationKind": "attribute",
-      "claimCardinality": "multi_value",
-      "comparisonPolicy": "never",
-      "claimModes": [
-        "declaration",
-        "specification",
-        "static_may",
-        "static_must",
-        "observation",
-        "interpretation"
-      ],
-      "roles": [
-        {
-          "roleId": "subject",
-          "position": "subject",
-          "valueType": "M1SubjectRef",
-          "allowedKinds": [
-            "SourceDeclaration"
-          ],
-          "cardinality": "exactly_one"
-        },
-        {
-          "roleId": "value",
-          "position": "value",
-          "valueType": "string",
-          "allowedKinds": [],
-          "cardinality": "exactly_one"
-        }
-      ],
-      "constraints": [
-        "KIND_MATCH",
-        "ROLE_CARDINALITY",
-        "INTERNAL_REF_EXISTS",
-        "LAYER_CLASSIFICATION"
-      ]
-    },
-    {
-      "predicateId": "function.declared",
-      "category": "Semantic",
-      "primaryLayer": "E2",
-      "description": "A source-declared callable declaration.",
-      "relationKind": "attribute",
-      "claimCardinality": "multi_value",
-      "comparisonPolicy": "never",
-      "claimModes": [
-        "declaration",
-        "specification",
-        "static_may",
-        "static_must",
-        "observation",
-        "interpretation"
-      ],
-      "roles": [
-        {
-          "roleId": "subject",
-          "position": "subject",
-          "valueType": "M1SubjectRef",
-          "allowedKinds": [
-            "SourceDeclaration"
-          ],
-          "cardinality": "exactly_one"
-        },
-        {
-          "roleId": "value",
-          "position": "value",
-          "valueType": "string",
-          "allowedKinds": [],
-          "cardinality": "exactly_one"
-        }
-      ],
-      "constraints": [
-        "KIND_MATCH",
-        "ROLE_CARDINALITY",
-        "INTERNAL_REF_EXISTS",
-        "LAYER_CLASSIFICATION"
-      ]
-    },
-    {
-      "predicateId": "import.declared",
-      "category": "Semantic",
-      "primaryLayer": "E2",
-      "description": "A source-declared import or use declaration.",
-      "relationKind": "attribute",
-      "claimCardinality": "multi_value",
-      "comparisonPolicy": "never",
-      "claimModes": [
-        "declaration",
-        "specification",
-        "static_may",
-        "static_must",
-        "observation",
-        "interpretation"
-      ],
-      "roles": [
-        {
-          "roleId": "subject",
-          "position": "subject",
-          "valueType": "M1SubjectRef",
-          "allowedKinds": [
-            "SourceDeclaration"
-          ],
-          "cardinality": "exactly_one"
-        },
-        {
-          "roleId": "value",
-          "position": "value",
-          "valueType": "string",
-          "allowedKinds": [],
-          "cardinality": "exactly_one"
-        }
-      ],
-      "constraints": [
-        "KIND_MATCH",
-        "ROLE_CARDINALITY",
-        "INTERNAL_REF_EXISTS",
-        "LAYER_CLASSIFICATION"
-      ]
-    },
-    {
-      "predicateId": "constant.declared",
-      "category": "Semantic",
-      "primaryLayer": "E2",
-      "description": "A source-declared constant or static item.",
+      "primaryLayer": "E4",
+      "description": "A source-located syntax step in a callable body.",
       "relationKind": "attribute",
       "claimCardinality": "multi_value",
       "comparisonPolicy": "never",
@@ -456,11 +85,11 @@
       ]
     },
     {
-      "predicateId": "behavior.algorithm_step",
+      "predicateId": "behavior.has_body",
       "category": "Semantic",
       "primaryLayer": "E4",
-      "description": "A source-located syntax step in a callable body.",
-      "relationKind": "attribute",
+      "description": "A callable or operation is associated with one separately identified behavior body.",
+      "relationKind": "composition",
       "claimCardinality": "multi_value",
       "comparisonPolicy": "never",
       "claimModes": [
@@ -484,8 +113,10 @@
         {
           "roleId": "value",
           "position": "value",
-          "valueType": "string",
-          "allowedKinds": [],
+          "valueType": "M1SubjectRef",
+          "allowedKinds": [
+            "BehaviorBody"
+          ],
           "cardinality": "exactly_one"
         }
       ],
@@ -527,6 +158,504 @@
           "position": "value",
           "valueType": "string",
           "allowedKinds": [],
+          "cardinality": "exactly_one"
+        }
+      ],
+      "constraints": [
+        "KIND_MATCH",
+        "ROLE_CARDINALITY",
+        "INTERNAL_REF_EXISTS",
+        "LAYER_CLASSIFICATION"
+      ]
+    },
+    {
+      "predicateId": "constant.declared",
+      "category": "Semantic",
+      "primaryLayer": "E2",
+      "description": "A source-declared constant or static item.",
+      "relationKind": "attribute",
+      "claimCardinality": "multi_value",
+      "comparisonPolicy": "never",
+      "claimModes": [
+        "declaration",
+        "specification",
+        "static_may",
+        "static_must",
+        "observation",
+        "interpretation"
+      ],
+      "roles": [
+        {
+          "roleId": "subject",
+          "position": "subject",
+          "valueType": "M1SubjectRef",
+          "allowedKinds": [
+            "SourceDeclaration"
+          ],
+          "cardinality": "exactly_one"
+        },
+        {
+          "roleId": "value",
+          "position": "value",
+          "valueType": "string",
+          "allowedKinds": [],
+          "cardinality": "exactly_one"
+        }
+      ],
+      "constraints": [
+        "KIND_MATCH",
+        "ROLE_CARDINALITY",
+        "INTERNAL_REF_EXISTS",
+        "LAYER_CLASSIFICATION"
+      ]
+    },
+    {
+      "predicateId": "function.declared",
+      "category": "Semantic",
+      "primaryLayer": "E2",
+      "description": "A source-declared callable declaration.",
+      "relationKind": "attribute",
+      "claimCardinality": "multi_value",
+      "comparisonPolicy": "never",
+      "claimModes": [
+        "declaration",
+        "specification",
+        "static_may",
+        "static_must",
+        "observation",
+        "interpretation"
+      ],
+      "roles": [
+        {
+          "roleId": "subject",
+          "position": "subject",
+          "valueType": "M1SubjectRef",
+          "allowedKinds": [
+            "SourceDeclaration"
+          ],
+          "cardinality": "exactly_one"
+        },
+        {
+          "roleId": "value",
+          "position": "value",
+          "valueType": "string",
+          "allowedKinds": [],
+          "cardinality": "exactly_one"
+        }
+      ],
+      "constraints": [
+        "KIND_MATCH",
+        "ROLE_CARDINALITY",
+        "INTERNAL_REF_EXISTS",
+        "LAYER_CLASSIFICATION"
+      ]
+    },
+    {
+      "predicateId": "implementation.block",
+      "category": "Semantic",
+      "primaryLayer": "E2",
+      "description": "A source-declared implementation block.",
+      "relationKind": "attribute",
+      "claimCardinality": "multi_value",
+      "comparisonPolicy": "never",
+      "claimModes": [
+        "declaration",
+        "specification",
+        "static_may",
+        "static_must",
+        "observation",
+        "interpretation"
+      ],
+      "roles": [
+        {
+          "roleId": "subject",
+          "position": "subject",
+          "valueType": "M1SubjectRef",
+          "allowedKinds": [
+            "SourceDeclaration"
+          ],
+          "cardinality": "exactly_one"
+        },
+        {
+          "roleId": "value",
+          "position": "value",
+          "valueType": "string",
+          "allowedKinds": [],
+          "cardinality": "exactly_one"
+        }
+      ],
+      "constraints": [
+        "KIND_MATCH",
+        "ROLE_CARDINALITY",
+        "INTERNAL_REF_EXISTS",
+        "LAYER_CLASSIFICATION"
+      ]
+    },
+    {
+      "predicateId": "import.declared",
+      "category": "Semantic",
+      "primaryLayer": "E2",
+      "description": "A source-declared import or use declaration.",
+      "relationKind": "attribute",
+      "claimCardinality": "multi_value",
+      "comparisonPolicy": "never",
+      "claimModes": [
+        "declaration",
+        "specification",
+        "static_may",
+        "static_must",
+        "observation",
+        "interpretation"
+      ],
+      "roles": [
+        {
+          "roleId": "subject",
+          "position": "subject",
+          "valueType": "M1SubjectRef",
+          "allowedKinds": [
+            "SourceDeclaration"
+          ],
+          "cardinality": "exactly_one"
+        },
+        {
+          "roleId": "value",
+          "position": "value",
+          "valueType": "string",
+          "allowedKinds": [],
+          "cardinality": "exactly_one"
+        }
+      ],
+      "constraints": [
+        "KIND_MATCH",
+        "ROLE_CARDINALITY",
+        "INTERNAL_REF_EXISTS",
+        "LAYER_CLASSIFICATION"
+      ]
+    },
+    {
+      "predicateId": "member.declared",
+      "category": "Semantic",
+      "primaryLayer": "E2",
+      "description": "A source-declared field, enum variant, or related member.",
+      "relationKind": "attribute",
+      "claimCardinality": "multi_value",
+      "comparisonPolicy": "never",
+      "claimModes": [
+        "declaration",
+        "specification",
+        "static_may",
+        "static_must",
+        "observation",
+        "interpretation"
+      ],
+      "roles": [
+        {
+          "roleId": "subject",
+          "position": "subject",
+          "valueType": "M1SubjectRef",
+          "allowedKinds": [
+            "SourceDeclaration"
+          ],
+          "cardinality": "exactly_one"
+        },
+        {
+          "roleId": "value",
+          "position": "value",
+          "valueType": "string",
+          "allowedKinds": [],
+          "cardinality": "exactly_one"
+        }
+      ],
+      "constraints": [
+        "KIND_MATCH",
+        "ROLE_CARDINALITY",
+        "INTERNAL_REF_EXISTS",
+        "LAYER_CLASSIFICATION"
+      ]
+    },
+    {
+      "predicateId": "module.declared",
+      "category": "Semantic",
+      "primaryLayer": "E2",
+      "description": "A source-declared module or namespace.",
+      "relationKind": "attribute",
+      "claimCardinality": "multi_value",
+      "comparisonPolicy": "never",
+      "claimModes": [
+        "declaration",
+        "specification",
+        "static_may",
+        "static_must",
+        "observation",
+        "interpretation"
+      ],
+      "roles": [
+        {
+          "roleId": "subject",
+          "position": "subject",
+          "valueType": "M1SubjectRef",
+          "allowedKinds": [
+            "SourceDeclaration"
+          ],
+          "cardinality": "exactly_one"
+        },
+        {
+          "roleId": "value",
+          "position": "value",
+          "valueType": "string",
+          "allowedKinds": [],
+          "cardinality": "exactly_one"
+        }
+      ],
+      "constraints": [
+        "KIND_MATCH",
+        "ROLE_CARDINALITY",
+        "INTERNAL_REF_EXISTS",
+        "LAYER_CLASSIFICATION"
+      ]
+    },
+    {
+      "predicateId": "program.contains",
+      "category": "Semantic",
+      "primaryLayer": "E2",
+      "description": "A program-structure container explicitly contains a declaration; this does not imply cross-layer refinement.",
+      "relationKind": "composition",
+      "claimCardinality": "multi_value",
+      "comparisonPolicy": "never",
+      "claimModes": [
+        "declaration",
+        "specification",
+        "static_may",
+        "static_must",
+        "observation",
+        "interpretation"
+      ],
+      "roles": [
+        {
+          "roleId": "subject",
+          "position": "subject",
+          "valueType": "M1SubjectRef",
+          "allowedKinds": [
+            "SourceDeclaration"
+          ],
+          "cardinality": "exactly_one"
+        },
+        {
+          "roleId": "value",
+          "position": "value",
+          "valueType": "M1SubjectRef",
+          "allowedKinds": [
+            "SourceDeclaration"
+          ],
+          "cardinality": "exactly_one"
+        }
+      ],
+      "constraints": [
+        "KIND_MATCH",
+        "ROLE_CARDINALITY",
+        "INTERNAL_REF_EXISTS",
+        "LAYER_CLASSIFICATION"
+      ]
+    },
+    {
+      "predicateId": "project.language_declared",
+      "category": "Semantic",
+      "primaryLayer": "E0",
+      "description": "A language explicitly declared by project metadata; it is not inferred from source extensions.",
+      "relationKind": "attribute",
+      "claimCardinality": "multi_value",
+      "comparisonPolicy": "same_claim_mode_only",
+      "claimModes": [
+        "declaration",
+        "specification",
+        "static_may",
+        "static_must",
+        "observation",
+        "interpretation"
+      ],
+      "roles": [
+        {
+          "roleId": "subject",
+          "position": "subject",
+          "valueType": "M1SubjectRef",
+          "allowedKinds": [
+            "Project"
+          ],
+          "cardinality": "exactly_one"
+        },
+        {
+          "roleId": "value",
+          "position": "value",
+          "valueType": "string",
+          "allowedKinds": [],
+          "cardinality": "exactly_one"
+        }
+      ],
+      "constraints": [
+        "KIND_MATCH",
+        "ROLE_CARDINALITY",
+        "INTERNAL_REF_EXISTS",
+        "LAYER_CLASSIFICATION"
+      ]
+    },
+    {
+      "predicateId": "project.name",
+      "category": "Semantic",
+      "primaryLayer": "E0",
+      "description": "A source-backed declared name for a Project; the name is not its identity.",
+      "relationKind": "attribute",
+      "claimCardinality": "single_value_per_context",
+      "comparisonPolicy": "same_claim_mode_only",
+      "claimModes": [
+        "declaration",
+        "specification",
+        "static_may",
+        "static_must",
+        "observation",
+        "interpretation"
+      ],
+      "roles": [
+        {
+          "roleId": "subject",
+          "position": "subject",
+          "valueType": "M1SubjectRef",
+          "allowedKinds": [
+            "Project"
+          ],
+          "cardinality": "exactly_one"
+        },
+        {
+          "roleId": "value",
+          "position": "value",
+          "valueType": "string",
+          "allowedKinds": [],
+          "cardinality": "exactly_one"
+        }
+      ],
+      "constraints": [
+        "KIND_MATCH",
+        "ROLE_CARDINALITY",
+        "INTERNAL_REF_EXISTS",
+        "LAYER_CLASSIFICATION"
+      ]
+    },
+    {
+      "predicateId": "region.member",
+      "category": "Semantic",
+      "primaryLayer": "E4",
+      "description": "A behavior region explicitly contains a step declaration; region membership does not duplicate the step identity.",
+      "relationKind": "association",
+      "claimCardinality": "multi_value",
+      "comparisonPolicy": "never",
+      "claimModes": [
+        "declaration",
+        "specification",
+        "static_may",
+        "static_must",
+        "observation",
+        "interpretation"
+      ],
+      "roles": [
+        {
+          "roleId": "subject",
+          "position": "subject",
+          "valueType": "M1SubjectRef",
+          "allowedKinds": [
+            "BehaviorRegion"
+          ],
+          "cardinality": "exactly_one"
+        },
+        {
+          "roleId": "value",
+          "position": "value",
+          "valueType": "M1SubjectRef",
+          "allowedKinds": [
+            "BehaviorStep"
+          ],
+          "cardinality": "exactly_one"
+        }
+      ],
+      "constraints": [
+        "KIND_MATCH",
+        "ROLE_CARDINALITY",
+        "INTERNAL_REF_EXISTS",
+        "LAYER_CLASSIFICATION"
+      ]
+    },
+    {
+      "predicateId": "type.declared",
+      "category": "Semantic",
+      "primaryLayer": "E2",
+      "description": "A source-declared class, struct, enum, trait, or type alias.",
+      "relationKind": "attribute",
+      "claimCardinality": "multi_value",
+      "comparisonPolicy": "never",
+      "claimModes": [
+        "declaration",
+        "specification",
+        "static_may",
+        "static_must",
+        "observation",
+        "interpretation"
+      ],
+      "roles": [
+        {
+          "roleId": "subject",
+          "position": "subject",
+          "valueType": "M1SubjectRef",
+          "allowedKinds": [
+            "SourceDeclaration"
+          ],
+          "cardinality": "exactly_one"
+        },
+        {
+          "roleId": "value",
+          "position": "value",
+          "valueType": "string",
+          "allowedKinds": [],
+          "cardinality": "exactly_one"
+        }
+      ],
+      "constraints": [
+        "KIND_MATCH",
+        "ROLE_CARDINALITY",
+        "INTERNAL_REF_EXISTS",
+        "LAYER_CLASSIFICATION"
+      ]
+    },
+    {
+      "predicateId": "workspace.member",
+      "category": "Semantic",
+      "primaryLayer": "E0",
+      "description": "A native workspace declaration lists a package specification as a member; membership does not imply Project ownership.",
+      "relationKind": "association",
+      "claimCardinality": "multi_value",
+      "comparisonPolicy": "same_claim_mode_only",
+      "claimModes": [
+        "declaration",
+        "specification",
+        "static_may",
+        "static_must",
+        "observation",
+        "interpretation"
+      ],
+      "roles": [
+        {
+          "roleId": "subject",
+          "position": "subject",
+          "valueType": "M1SubjectRef",
+          "allowedKinds": [
+            "NativeWorkspace"
+          ],
+          "cardinality": "exactly_one"
+        },
+        {
+          "roleId": "value",
+          "position": "value",
+          "valueType": "M1SubjectRef",
+          "allowedKinds": [
+            "PackageSpecification"
+          ],
           "cardinality": "exactly_one"
         }
       ],

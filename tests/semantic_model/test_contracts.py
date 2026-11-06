@@ -713,6 +713,48 @@ class M1IdentityTests(unittest.TestCase):
         result = validate_model(empty_bundle() | {"profile": "semantic-fact-model-1"}, catalogs)
         self.assertTrue(result["valid"], result["diagnostics"])
 
+    def test_full_semantic_catalog_declares_distinct_program_body_and_region_relations(self):
+        catalog = semantic_model_catalogs()
+        predicates = {item["predicateId"]: item for item in catalog["predicates"]["predicates"]}
+        self.assertEqual(predicates["program.contains"]["primaryLayer"], "E2")
+        self.assertEqual(predicates["program.contains"]["relationKind"], "composition")
+        self.assertEqual(predicates["behavior.has_body"]["primaryLayer"], "E4")
+        self.assertEqual(predicates["behavior.has_body"]["relationKind"], "composition")
+        self.assertEqual(predicates["region.member"]["primaryLayer"], "E4")
+        self.assertEqual(predicates["region.member"]["roles"][1]["allowedKinds"], ["BehaviorStep"])
+        self.assertNotEqual(predicates["program.contains"]["predicateId"],
+                            predicates["behavior.has_body"]["predicateId"])
+
+    def test_full_semantic_body_and_region_refs_are_registered_and_m1_rejects_them(self):
+        bundle = empty_bundle() | {"profile": "semantic-fact-model-1"}
+        declaration = {"identity": {"authority": "test", "domainId": "d", "localId": "fn"},
+                       "kind": "SourceDeclaration"}
+        body = {"identity": {"authority": "test", "domainId": "d", "localId": "body"},
+                "kind": "BehaviorBody"}
+        region = {"identity": {"authority": "test", "domainId": "d", "localId": "region"},
+                  "kind": "BehaviorRegion"}
+        step = {"identity": {"authority": "test", "domainId": "d", "localId": "step"},
+                "kind": "BehaviorStep"}
+        evidence = {"evidenceId": "ev", "source": "input", "path": "src.py", "artifactId": None,
+                    "originalPath": "src.py", "sha256": "a" * 64, "startByte": 0, "endByte": 1,
+                    "method": "fixture", "toolName": None, "toolVersion": None}
+        bundle["evidence"].append(evidence)
+        for ref in (declaration, body, region, step):
+            bundle["registrations"].append({"ref": ref, "sourceKey": ref["kind"], "evidenceIds": ["ev"]})
+        bundle["facts"] = [
+            {"factId": "body-fact", "predicate": "behavior.has_body", "subject": declaration,
+             "value": body, "claimMode": "declaration", "condition": {"kind": "true"}, "evidenceIds": ["ev"]},
+            {"factId": "region-fact", "predicate": "region.member", "subject": region,
+             "value": step, "claimMode": "declaration", "condition": {"kind": "true"}, "evidenceIds": ["ev"]},
+        ]
+        result = validate_model(bundle, semantic_model_catalogs())
+        self.assertTrue(result["valid"], result["diagnostics"])
+
+        m1 = bundle_with_fact(subject_kind="BehaviorBody")
+        rejected = validate_model(m1, fixed_catalogs())
+        self.assertEqual(rejected["stages"]["references"], "fail")
+        self.assertIn("M1_KIND_UNSUPPORTED", {item["ruleCode"] for item in rejected["diagnostics"]})
+
     def test_catalog_rejects_dangling_type_references_and_mixed_versions(self):
         catalogs = fixed_catalogs()
         catalogs["types"]["types"][0]["fields"]["authority"]["type"] = "MissingType"

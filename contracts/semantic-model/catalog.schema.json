@@ -265,7 +265,10 @@
               "Project",
               "PackageSpecification",
               "NativeWorkspace",
-              "SourceDeclaration"
+              "SourceDeclaration",
+              "BehaviorBody",
+              "BehaviorRegion",
+              "BehaviorStep"
             ]
           }
         },

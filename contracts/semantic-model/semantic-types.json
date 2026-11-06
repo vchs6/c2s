@@ -30,12 +30,13 @@
           "required": true
         },
         "kind": {
-          "type": "M1SubjectKind",
+          "type": "SemanticSubjectKind",
           "required": true
         }
       },
       "invariants": [
-        "same_identity_has_one_kind"
+        "same_identity_has_one_kind",
+        "profile_controls_subject_kind_vocabulary"
       ]
     },
     {
@@ -67,6 +68,15 @@
       "PackageSpecification",
       "NativeWorkspace",
       "SourceDeclaration"
+    ],
+    "SemanticSubjectKind": [
+      "Project",
+      "PackageSpecification",
+      "NativeWorkspace",
+      "SourceDeclaration",
+      "BehaviorBody",
+      "BehaviorRegion",
+      "BehaviorStep"
     ]
   }
 }
