@@ -804,6 +804,32 @@ class M1IdentityTests(unittest.TestCase):
         undeclared_alias = validate_model(bundle, semantic_model_catalogs())
         self.assertIn("ALIAS_TARGET_UNDECLARED", {item["ruleCode"] for item in undeclared_alias["diagnostics"]})
 
+    def test_observed_artifact_requires_tool_output_observation_evidence(self):
+        bundle = empty_bundle() | {"profile": "semantic-fact-model-1"}
+        output = {"identity": {"authority": "test", "domainId": "d", "localId": "output"},
+                  "kind": "OutputSpecification"}
+        artifact = {"identity": {"authority": "test", "domainId": "d", "localId": "artifact"},
+                    "kind": "ArtifactObservation"}
+        digest = "a" * 64
+        bundle["evidence"].append({"evidenceId": "artifact-evidence", "source": "tool_output", "path": None,
+            "artifactId": "artifact-json", "originalPath": "dist/package.whl", "sha256": digest,
+            "startByte": 0, "endByte": 1, "method": "sha256", "toolName": "build", "toolVersion": "1"})
+        for ref in (output, artifact):
+            bundle["registrations"].append({"ref": ref, "sourceKey": ref["identity"]["localId"],
+                                             "evidenceIds": ["artifact-evidence"]})
+        bundle["facts"].append({"factId": "artifact-fact", "predicate": "build.observed_artifact",
+            "subject": output, "value": artifact, "claimMode": "observation", "condition": {"kind": "true"},
+            "evidenceIds": ["artifact-evidence"]})
+        observation = {"items": [{"evidenceId": "artifact-evidence", "status": "verified",
+                                  "observedSha256": digest}]}
+        valid = validate_model(bundle, semantic_model_catalogs(), observation)
+        self.assertTrue(valid["valid"], valid["diagnostics"])
+
+        invalid = validate_model(bundle | {"facts": [bundle["facts"][0] | {"claimMode": "declaration"}]},
+                                 semantic_model_catalogs(), observation)
+        self.assertIn("ARTIFACT_OBSERVATION_UNVERIFIED",
+                      {item["ruleCode"] for item in invalid["diagnostics"]})
+
     def test_catalog_rejects_dangling_type_references_and_mixed_versions(self):
         catalogs = fixed_catalogs()
         catalogs["types"]["types"][0]["fields"]["authority"]["type"] = "MissingType"

@@ -791,6 +791,17 @@ def validate_model(document: dict, catalogs: dict, source_observations: dict | N
         if observation is None or observation["status"] == "unchecked":
             gap_diagnostics.append(_diagnostic("invariants", "EVIDENCE_UNCHECKED",
                 "Evidence source was not verified by the caller.", record_ref=f"evidence:{evidence_id}", severity="gap"))
+    if not is_m1:
+        for index, fact in enumerate(document["facts"]):
+            if fact["predicate"] != "build.observed_artifact":
+                continue
+            qualifying = [evidence_id for evidence_id in fact["evidenceIds"]
+                          if evidence_id in evidence_by_id and evidence_by_id[evidence_id]["source"] == "tool_output"
+                          and observations_by_id.get(evidence_id, {}).get("status") == "verified"]
+            if fact["claimMode"] != "observation" or not qualifying:
+                invariant_diagnostics.append(_diagnostic("invariants", "ARTIFACT_OBSERVATION_UNVERIFIED",
+                    "An observed artifact requires observation claim mode and verified tool-output evidence.",
+                    record_ref=f"fact:{fact['factId']}", field_path=f"/facts/{index}/evidenceIds"))
 
     coverage_by_id = {item["coverageId"]: item for item in document["coverage"]}
     coverage_edges = {}

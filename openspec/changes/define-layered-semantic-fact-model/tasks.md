@@ -91,6 +91,7 @@
   - 通过：没有虚构目标/项目/观测，确认映射保单身份，成员不转移所有权；失败：靠目录/同名合并或把任务选择器造为目标。多workspace例标synthetic，不冒真实解析结果。
   - 进展（2026-11-06）：full-profile类型/目录已分别建模Project声明Target与Recipe、Alias解析Target、声明OutputSpecification及ArtifactObservation；当前仅提供类型化事实表达与契约引用，不含构建系统获取器、管理归属推断或真实产物观察，故父任务仍开放。
   - 进展（2026-11-06）：校验器现拒绝条件重叠时同一Target由多个Project管理，并要求Alias目标在当前事实集中有Target声明；条件互斥时保持可并存。获取器和recipe/output/artifact的来源核验规则仍未完成。
+  - 进展（2026-11-06）：`build.observed_artifact`已要求observation claim mode及至少一项已核验tool-output证据；仍没有构建/安装获取器和真实产物端到端案例。
 
 - [x] 2.3 完成依赖与有限条件/循环校验并运行公开回归。依赖记录含path/version、解析状态/配置和独立scopePosition；条件求值实现Kleene三值、SAT/UNSAT见证、4096/4097限额与unknown保留；条件环按配置联合判定并保留原图。测试覆盖共享键互斥环、可满足见证、source条件未定和循环预算。用户已放宽双盲/私有验收隔离门禁；勾选只代表公开代码/测试，不代表独立私有验收。
   - 上游依据：候选“需求解析与范围位置正交”“条件可满足性与循环诊断”；C04、design §3。
