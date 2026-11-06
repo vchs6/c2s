@@ -98,7 +98,7 @@ def analysis_profile_digest() -> str:
                         for name in ("tree-sitter", "tree-sitter-python", "tree-sitter-rust")}
     except importlib.metadata.PackageNotFoundError as error:
         dependencies = {"missing": error.name or "unknown"}
-    profile = {"analyzer": "c2s-semantic-facts/0.6.1", "python": platform.python_version(),
+    profile = {"analyzer": "c2s-semantic-facts/0.6.2", "python": platform.python_version(),
                "platform": platform.platform(), "parsers": dependencies, "cargo": cargo_version}
     return hashlib.sha256(json.dumps(profile, sort_keys=True, separators=(",", ":")).encode()).hexdigest()
 
@@ -125,7 +125,7 @@ def _make_fact(path: str, source: bytes, kind: str, name: str, start: int, end: 
     if kind in {"function", "behavior_contract"}:
         subject_type = "function"
         subject_name = f"{owner}.{name}" if owner else name
-    elif kind == "algorithm_step" and owner:
+    elif kind in {"algorithm_step", "local_binding"} and owner:
         subject_type, subject_name = "function", owner
     elif kind in {"project_name", "language_declared"}:
         subject_type, subject_name = "project", "root"
@@ -192,6 +192,15 @@ def _python_facts(path: str, source: bytes, tree: ast.AST) -> list[Fact]:
                        ast.Return, ast.Raise, ast.Call, ast.Await, ast.BoolOp, ast.Compare,
                        ast.BinOp, ast.UnaryOp, ast.NamedExpr, ast.Assert, ast.Match,
                        ast.Assign, ast.AnnAssign, ast.AugAssign, ast.Delete, ast.Yield, ast.YieldFrom)
+
+    def binding_names(target) -> list[str]:
+        if isinstance(target, ast.Name):
+            return [target.id]
+        if isinstance(target, (ast.Tuple, ast.List)):
+            return [name for element in target.elts for name in binding_names(element)]
+        if isinstance(target, ast.Starred):
+            return binding_names(target.value)
+        return []
     for node in ast.walk(tree):
         kind = None
         name = None
@@ -242,6 +251,16 @@ def _python_facts(path: str, source: bytes, tree: ast.AST) -> list[Fact]:
                 ancestor = parents.get(ancestor)
             if in_callable_body:
                 facts.append(_make_fact(path, source, "algorithm_step", type(node).__name__, start, end, owner))
+                if owner and isinstance(node, (ast.Assign, ast.AnnAssign, ast.AugAssign)):
+                    targets = node.targets if isinstance(node, ast.Assign) else [node.target]
+                    for target in targets:
+                        for binding in binding_names(target):
+                            facts.append(_make_fact(path, source, "local_binding", binding,
+                                                    start, end, owner))
+                elif owner and isinstance(node, ast.NamedExpr):
+                    for binding in binding_names(node.target):
+                        facts.append(_make_fact(path, source, "local_binding", binding,
+                                                start, end, owner))
     return facts
 
 
@@ -276,6 +295,12 @@ def _rust_facts(path: str, source: bytes, root) -> tuple[list[Fact], int, bool]:
                 target = node.child_by_field_name("type")
                 if target:
                     owner_name = source[target.start_byte:target.end_byte].decode()
+        if node.type == "let_declaration":
+            pattern = node.child_by_field_name("pattern")
+            if pattern and pattern.type == "identifier":
+                name = source[pattern.start_byte:pattern.end_byte].decode()
+                facts.append(_make_fact(path, source, "local_binding", name,
+                                        node.start_byte, node.end_byte, owner_name))
         elif node.type == "field_declaration":
             name_node = node.child_by_field_name("name")
             if name_node:

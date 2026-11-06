@@ -164,7 +164,7 @@ class QueryTests(unittest.TestCase):
                             if fact.name in targets or f"{fact.owner}.{fact.name}" in targets}
                 expected = {fact.id for fact in all_facts
                             if fact.subject_id in subjects and fact.kind in
-                            {"function", "behavior_contract", "algorithm_step"}}
+                            {"function", "behavior_contract", "algorithm_step", "local_binding"}}
                 result = query_from_scan(scan, selectors)
                 self.assertTrue(result.complete, project)
                 self.assertEqual({fact.id for fact in result.facts}, expected, project)
@@ -218,13 +218,28 @@ class QueryTests(unittest.TestCase):
                 'def other():\n    return unrelated()\n', encoding="utf-8")
             result = query_project(root, ["function:run"])
             self.assertEqual({fact.kind for fact in result.facts},
-                             {"function", "behavior_contract", "algorithm_step"})
+                             {"function", "behavior_contract", "algorithm_step", "local_binding"})
             self.assertTrue(any(fact.name == "Assign" for fact in result.facts))
             self.assertTrue(any(fact.name == "Return" for fact in result.facts))
             self.assertFalse(any("unrelated" in fact.text for fact in result.facts))
             subjects = {fact.subject_id for fact in result.facts}
             self.assertEqual(len(subjects), 1)
             self.assertTrue(result.complete)
+
+    def test_local_bindings_have_a_dedicated_selector_and_function_projection(self):
+        with TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            (root / "bindings.py").write_text(
+                "def run(value):\n    result = helper(value)\n    return result\n\n"
+                "def other():\n    ignored = unrelated()\n", encoding="utf-8")
+            bindings = query_project(root, ["local-bindings"])
+            self.assertTrue(bindings.complete)
+            self.assertEqual({fact.kind for fact in bindings.facts}, {"local_binding"})
+            self.assertEqual({fact.name for fact in bindings.facts}, {"result", "ignored"})
+            selected = query_project(root, ["function:run"])
+            self.assertIn("local_binding", {fact.kind for fact in selected.facts})
+            self.assertNotIn("ignored", {fact.name for fact in selected.facts
+                                         if fact.kind == "local_binding"})
 
     def test_nested_function_steps_keep_the_nested_function_subject(self):
         with TemporaryDirectory() as temporary:

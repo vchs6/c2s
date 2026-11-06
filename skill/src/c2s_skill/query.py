@@ -13,6 +13,7 @@ SELECTORS = {
     "workspace-members": {"workspace_member"},
     "behavior-contracts": {"behavior_contract"},
     "algorithm-structure": {"algorithm_step"},
+    "local-bindings": {"local_binding"},
     "classes": {"class", "struct", "enum", "trait"},
     "members": {"field", "variant"},
     "functions": {"function"},
@@ -20,7 +21,7 @@ SELECTORS = {
     "imports": {"import"},
     "constants": {"constant", "constant_item", "static_item"},
     "all-declarations": {"class", "struct", "enum", "trait", "field", "variant", "function", "constant", "constant_item", "static_item", "type_alias", "module", "impl", "import"},
-    "all-supported-facts": {"project_name", "language_declared", "workspace_member", "behavior_contract", "algorithm_step",
+    "all-supported-facts": {"project_name", "language_declared", "workspace_member", "behavior_contract", "algorithm_step", "local_binding",
                              "class", "struct", "enum", "trait", "field", "variant", "function",
                              "constant", "constant_item", "static_item", "type_alias", "module", "impl", "import"},
 }
@@ -147,7 +148,7 @@ def query_from_scan(scan: ProjectScan, selectors: list[str],
                           if fact.kind in general_wanted or
                           (fact.kind in {"field", "variant", "function"} and fact.owner in member_owners) or
                           (fact.kind == "function" and (fact.name in function_names or f"{fact.owner}.{fact.name}" in function_names)) or
-                          (fact.kind in {"behavior_contract", "algorithm_step"} and
+                          (fact.kind in {"behavior_contract", "algorithm_step", "local_binding"} and
                            fact.subject_id in function_subjects)
                           ),
                          key=lambda fact: (fact.path, fact.start_byte, fact.kind, fact.id)))

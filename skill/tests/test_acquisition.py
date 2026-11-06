@@ -30,6 +30,21 @@ class AcquisitionTests(unittest.TestCase):
         self.assertIn("let_declaration", {fact.name for fact in rust_steps})
         self.assertIn("binary_expression", {fact.name for fact in rust_steps})
 
+    def test_python_and_rust_emit_explicit_local_binding_facts(self):
+        python = parse_source("src.py", b"def run(x):\n    value = x + 1\n    value += 2\n", "python")
+        python_bindings = [fact for fact in python.facts if fact.kind == "local_binding"]
+        self.assertEqual([fact.name for fact in python_bindings], ["value", "value"])
+        self.assertTrue(all(fact.layer == "E4" and fact.owner == "run" for fact in python_bindings))
+        self.assertIn("value = x + 1", python_bindings[0].text)
+        self.assertIn("value += 2", python_bindings[1].text)
+
+        rust = parse_source("src.rs", b"fn run(x: i32) { let value = x + 1; }", "rust")
+        rust_bindings = [fact for fact in rust.facts if fact.kind == "local_binding"]
+        self.assertEqual([fact.name for fact in rust_bindings], ["value"])
+        self.assertEqual(rust_bindings[0].layer, "E4")
+        self.assertEqual(rust_bindings[0].owner, "run")
+        self.assertIn("let value = x + 1", rust_bindings[0].text)
+
     def test_rust_parser_emits_struct_fields_and_methods(self):
         source = b"pub struct Item { pub value: u32 } impl Item { /// Return the stored value.\n pub fn read(&self) -> u32 { if self.value > 0 { helper() } else { 0 } } }"
         result = parse_source("src/lib.rs", source, "rust")

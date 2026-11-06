@@ -56,7 +56,7 @@ def project_report(name: str) -> tuple[dict, object]:
     subjects = {fact.subject_id for fact in declarations
                 if fact.name in targets or f"{fact.owner}.{fact.name}" in targets}
     expected_function_facts = {fact.id for fact in facts if fact.subject_id in subjects and
-                               fact.kind in {"function", "behavior_contract", "algorithm_step"}}
+                               fact.kind in {"function", "behavior_contract", "algorithm_step", "local_binding"}}
     function_result = query_from_scan(scan, selectors)
     if not function_result.complete or {fact.id for fact in function_result.facts} != expected_function_facts:
         raise RuntimeError(f"{name} per-function fact projection is incomplete")
@@ -113,7 +113,7 @@ def function_example(project: dict) -> str:
              "项目：Click 示例 `examples/naval/naval.py`。",
              f"固定提交：`{git(REAL_ROOT / 'click', 'rev-parse', 'HEAD')}`。",
              "查询：`all-supported-facts`，按共享 `subject_id` 投影目标函数。",
-             "分析器：C2S semantic facts 0.6.1。静态 AST 证据，不代表运行时验证。", ""]
+             "分析器：C2S semantic facts 0.6.2。静态 AST 证据，不代表运行时验证。", ""]
     for name in functions:
         declaration = next(f for f in facts if f.kind == "function" and f.path == path and f.name == name)
         related = [f for f in facts if f.subject_id == declaration.subject_id]
@@ -152,7 +152,7 @@ def main() -> None:
         pass
     payload = {"report_date": "2026-11-06",
                "scope": "all currently supported facts; not exhaustive E0-E4 project semantics",
-               "toolchain": {"analyzer": "c2s-semantic-facts/0.6.1",
+               "toolchain": {"analyzer": "c2s-semantic-facts/0.6.2",
                              "python": f"Python {sys.version.split()[0]}", "cargo": cargo_version},
                "validation": {"inventory_generation": "passed; pinned clean inputs, all source files parsed, "
                                                        "all-supported query complete, unique fact IDs, "
