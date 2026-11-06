@@ -4,6 +4,10 @@
 
 目前还不具备完整E0–E4领域模型、类型/调用绑定、完整源码到结构化算法的提取、来源覆盖验证或完整工程语义。算法描述契约结构校验切片位于`contracts/semantic-algorithm.schema.json`和`c2s_skill.algorithm.validate_algorithms`；它要求输入/输出、前提、正常/错误/终止结果、效果和顺序约束分别记录证据覆盖状态；校验器检查步骤身份、区域/控制/数据引用、计算语义字段及opaque边界。`c2s_skill.algorithm.extract_python_algorithm(...)`和`extract_rust_algorithm(...)`可从指定Python函数或Rust函数生成带源码字节跨度、控制区域和显式缺口的初步算法描述。`algorithm --all-functions`会遍历项目中发现的Python/Rust函数，逐个生成结构化算法结果，并报告解析失败与未处理路径；该模式仍不等于全项目语义完整，也没有接入通用`function:`查询结果；生成物不等于行为完整或源码等价证明。宏展开、条件编译、多态/动态调用、反射、运行时行为和工程配置语义没有完整覆盖；所以当前结果的`complete=true`仅表示所选事实类别的获取没有已知缺口，并不表示项目的所有语义事实均已取得。结果会附带全目录清单和未处理路径；源文件解析目前只覆盖`.py`与`.rs`。`classes`、`functions`和`all-declarations`只返回顶层条目，不附带类型体/函数体；须请求`definitions`、指定`function:名称`或`all-supported-facts`才会附带相应源码体。SQLite结果缓存绑定项目树摘要及分析配置摘要（分析器、Python/平台、Tree-sitter和Cargo版本）；缓存写入失败时事实仍返回，并通过独立持久化状态报告，逐项构造事务恢复和supersedes lineage尚未实现。机器输出契约位于`contracts/semantic-fact-query.schema.json`。请把本原型用于开发与明确范围查询，不作为完整语义验收结论。
 
+## 公共语义模型契约（M1）
+
+仓库根目录的 `contracts/semantic-model/` 与 `src/c2s_semantic_contract/` 提供版本 `1.0.0`、profile `m1-project-discovery-1` 的初始M1身份和事实包契约。开发环境安装使用 `python3 -m pip install -r requirements-semantic-model.txt`；验证使用 `PYTHONPATH=src python3 -m unittest discover -s tests/semantic_model -v`。`register_m1` 按调用方提供的identity domain和sourceKey复用身份并合并证据；`validate_model` 目前只覆盖结构、内部引用和初始身份/字节范围约束，目录闭包、上下文冲突、来源观察、评估基数和完整跨事实规则仍在后续任务中。共享工作区开发测试不是独立验收。
+
 ## 当前实现与测试
 
 实现位于`src/c2s_skill/`，测试位于`tests/`。在仓库根目录运行：

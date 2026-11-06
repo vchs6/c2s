@@ -223,6 +223,7 @@ __marimo__/
 node_modules/
 .worktrees/
 .local/
+.superpowers/
 .codex/auth.json
 .codex/sessions/
 
