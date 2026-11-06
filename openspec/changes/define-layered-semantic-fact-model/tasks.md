@@ -88,7 +88,7 @@
   - 验证：test_undecided_project_mapping接受声明未决/候选映射、拒绝来源域冒Project；test_multiple_workspaces_no_inferred_membership覆盖嵌套独立工程/包映射/根包workspace/无workspace项目；test_alias_recipe_observation覆盖CMake INTERFACE/ALIAS、Python无原生目标、未构建输出和未安装入口。
   - 通过：没有虚构目标/项目/观测，确认映射保单身份，成员不转移所有权；失败：靠目录/同名合并或把任务选择器造为目标。多workspace例标synthetic，不冒真实解析结果。
 
-- [ ] 2.3 完成依赖与有限条件/循环校验并运行T。依赖：2.1–2.2。
+- [x] 2.3 完成依赖与有限条件/循环校验并运行公开回归。依赖记录含path/version、解析状态/配置和独立scopePosition；条件求值实现Kleene三值、SAT/UNSAT见证、4096/4097限额与unknown保留；条件环按配置联合判定并保留原图。测试覆盖共享键互斥环、可满足见证、source条件未定和循环预算。用户已放宽双盲/私有验收隔离门禁；勾选只代表公开代码/测试，不代表独立私有验收。
   - 上游依据：候选“需求解析与范围位置正交”“条件可满足性与循环诊断”；C04、design §3。
   - 交付：独立测试区/suites/semantic-model/fixtures/{dependencies,conditions}.json、validation.py条件判定及需求规则、rules.md片段/4096限额/循环章、test_contracts.py及公共文档范围说明。
   - 验证：test_dependency_scope_orthogonal断言resolved+outside切inside仍同需求；test_path_version_and_resolution_context保留path+version/多配置/歧义；test_condition_truth_tables覆盖Unknown及空All/Any；test_cycle_satisfiability区分共享x=A且x=B为unsat、sat有见证；test_condition_limits覆盖4096可枚举、4097及SourceCondition为undetermined且保原图。
@@ -149,3 +149,8 @@
 
 - Implemented the separate `semantic-fact-model-1` profile with finite context domains, partial context assignments, reference-level context annotations that preserve subject identity, condition satisfiability and contradiction diagnostics, and single-valued claim overlap checks. The M1 project-discovery profile rejects contexts and conditional facts. Unsupported/unknown conditions remain gaps or potential conflicts rather than being treated as false. Forty-six focused contract/solver tests pass. Full repository tests pass 81/81; strict OpenSpec validation passes 21/21; artifact hash checks and Python compilation pass.
 - This is a bounded contract/validator slice over the initial M1 predicate catalog; it does not implement the remaining product-wide E0–E4 extraction, language-specific condition discovery, dependency graph checks, evidence completeness, or algorithm behavior proofs.
+
+
+## Progress — 2026-11-06, condition truth evaluation
+
+- Added `evaluate_condition` for partial assignments with three-valued Kleene semantics, separate from exhaustive `condition_satisfiability`. Missing assignments retain an unknown reason; decisive false in `all` and decisive true in `any` dominate unknown children, and empty All/Any follow Boolean identity. Dependency requirements/resolutions and configuration-separated cycle candidates are integrated into `validate_model`; explicit status and scope position are checked independently. Focused regressions cover SAT/UNSAT, source conditions, enumeration budgets, resolution cardinalities and context conflicts.

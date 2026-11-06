@@ -164,3 +164,7 @@ Final verification: product tests 45/45; repository maintenance tests 35/35; str
 ## Progress — 2026-11-06, bounded negative claims
 
 - Added explicit positive/negative polarity and a finite negative-closure basis restricted to enumerated input or registered catalog membership checks. Validation requires nonempty unique input IDs, exactly one result per listed input, a matching fact condition, human review, no unresolved gaps, and no matching item. M1 rejects negative claims. Tests verify missing closure evidence and incomplete enumeration fail while a reviewed exhaustive record is structurally accepted. This checks only the submitted record; it cannot prove the caller's input list is objectively exhaustive.
+
+## Progress — 2026-11-06, three-valued condition evaluation
+
+- Added a separate `evaluate_condition` API using Kleene `true`/`false`/`unknown` results under partial assignments. Missing assignments return unknown, decisive `false` in `all` and decisive `true` in `any` dominate unknown children, and empty All/Any follow Boolean identity. The existing bounded satisfiability solver remains independent. This completes the bounded condition/cycle validator slice represented by task 2.3; language-specific extraction and broader project semantic extraction remain open.

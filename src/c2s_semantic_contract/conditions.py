@@ -72,6 +72,52 @@ def _evaluate(expression: dict, assignment: dict) -> bool:
     return not _evaluate(expression["condition"], assignment)
 
 
+def evaluate_condition(expression: dict, assignment: dict, domains: dict) -> dict:
+    """Evaluate supported conditions under a partial assignment using Kleene logic."""
+    error = _validate_domains(domains)
+    if error:
+        return {"value": "unknown", "reason": error}
+    if not isinstance(assignment, dict):
+        return {"value": "unknown", "reason": "CONDITION_ASSIGNMENT_INVALID"}
+    for key, value in assignment.items():
+        if (key not in domains or type(value) not in {type(item) for item in domains[key]}
+                or value not in domains[key]):
+            return {"value": "unknown", "reason": "CONDITION_ASSIGNMENT_INVALID"}
+    error = _validate_expression(expression, domains)
+    if error:
+        return {"value": "unknown", "reason": error}
+
+    def evaluate(node: dict) -> tuple[str, str | None]:
+        kind = node["kind"]
+        if kind == "true":
+            return "true", None
+        if kind == "false":
+            return "false", None
+        if kind in {"eq", "neq"}:
+            if node["key"] not in assignment:
+                return "unknown", "CONDITION_ASSIGNMENT_INCOMPLETE"
+            matched = assignment[node["key"]] == node["value"]
+            return ("true" if matched else "false") if kind == "eq" else ("false" if matched else "true"), None
+        if kind == "not":
+            value, reason = evaluate(node["condition"])
+            return {"true": "false", "false": "true", "unknown": "unknown"}[value], reason
+        values = [evaluate(child) for child in node["conditions"]]
+        if kind == "all":
+            if any(value == "false" for value, _ in values):
+                return "false", None
+            if any(value == "unknown" for value, _ in values):
+                return "unknown", next(reason for value, reason in values if value == "unknown")
+            return "true", None
+        if any(value == "true" for value, _ in values):
+            return "true", None
+        if any(value == "unknown" for value, _ in values):
+            return "unknown", next(reason for value, reason in values if value == "unknown")
+        return "false", None
+
+    value, reason = evaluate(expression)
+    return {"value": value, "reason": reason}
+
+
 def condition_satisfiability(conditions: list[dict], domains: dict) -> dict:
     """Return sat with a witness, unsat after exhaustive evaluation, or undetermined."""
     domain_error = _validate_domains(domains)

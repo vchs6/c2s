@@ -8,7 +8,7 @@
 
 仓库根目录的 `contracts/semantic-model/` 与 `src/c2s_semantic_contract/` 提供版本 `1.0.0`、profile `m1-project-discovery-1` 的初始M1身份、事实包及封闭谓词目录契约，含`project.name`、`project.language_declared`和`workspace.member`。开发环境安装使用 `python3 -m pip install -r requirements-semantic-model.txt`；验证使用 `PYTHONPATH=src:skill/src .local/analysis-venv/bin/python -m unittest discover -s tests/semantic_model -v`。`register_m1`按identity domain和sourceKey复用身份并合并证据；`validate_model`检查M1结构、身份/证据引用、assessment基数与lineage、目录闭包、事实角色、来源观察和coverage关系。`scripts/query_m1.py`可按项目根目录运行`project`或`workspace-members`并输出M1 bundle、附件、来源观察和校验结果。Click名称/语言与regex workspace真实查询均已通过投影和校验。Cargo workspace适配器捕获`metadata --no-deps --offline` JSON附件，校验成员清单一致后才标记verified；Cargo缺失或输出不一致时保留unchecked gap。附件持久化、评估判定和完整跨事实规则仍在后续工作中；共享工作区开发测试不是独立验收。
 
-条件求解器位于`src/c2s_semantic_contract/conditions.py`：支持有限Boolean/Enum域上的`true/false/eq/neq/all/any/not`，最多枚举4096种赋值；超过限额、域未知或表达式不支持时返回`undetermined`。`semantic-fact-model-1`现已集成Context/Condition、引用上下文、依赖需求/解析记录和单值声明重叠检查；`validate_model`还会按配置报告显式依赖图的条件环分析，并保留原图；`m1-project-discovery-1`拒绝这些扩展记录。依赖记录当前为显式输入，不会从项目自动推断。求解范围限于显式有限域及已注册M1谓词，不能据此声称项目完整语义分析完成。
+条件求解器位于`src/c2s_semantic_contract/conditions.py`：支持有限Boolean/Enum域上的`true/false/eq/neq/all/any/not`；`evaluate_condition`在部分赋值下按true/false/unknown三值求值，`condition_satisfiability`最多穷举4096种赋值，超过限额、域未知或表达式不支持时返回`undetermined`。`semantic-fact-model-1`现已集成Context/Condition、引用上下文、依赖需求/解析记录和单值声明重叠检查；`validate_model`还会按配置报告显式依赖图的条件环分析，并保留原图；`m1-project-discovery-1`拒绝这些扩展记录。依赖记录当前为显式输入，不会从项目自动推断。求解范围限于显式有限域及已注册M1谓词，不能据此声称项目完整语义分析完成。
 
 完整语义profile也提供六种互不排序的claimMode、带Supports/Refutes/Limits角色的evidenceRefs，以及带前提引用的derivation；缺失前提或推导循环会报错。这些模态/推导目前由调用方提供，分析器不会自动推断运行观测，也不能由此宣称真值已证明。
 

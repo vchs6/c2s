@@ -5,6 +5,7 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).resolve().parents[2] / "src"))
 
 from c2s_semantic_contract.conditions import (classify_claim_overlap, condition_satisfiability,
+                                             evaluate_condition,
                                              diagnose_conditional_cycles)
 
 
@@ -75,6 +76,16 @@ class FiniteConditionTests(unittest.TestCase):
             {"kind": "eq", "key": "enabled", "value": True},
             {"kind": "not", "condition": {"kind": "eq", "key": "enabled", "value": False}}]}
         self.assertEqual(condition_satisfiability([expression], domains)["status"], "sat")
+
+    def test_partial_assignment_evaluates_conditions_with_kleene_truth_tables(self):
+        domains = {"enabled": [False, True]}
+        unknown = {"kind": "eq", "key": "enabled", "value": True}
+        self.assertEqual(evaluate_condition({"kind": "all", "conditions": []}, {}, domains)["value"], "true")
+        self.assertEqual(evaluate_condition({"kind": "any", "conditions": []}, {}, domains)["value"], "false")
+        self.assertEqual(evaluate_condition(unknown, {}, domains)["value"], "unknown")
+        self.assertEqual(evaluate_condition({"kind": "all", "conditions": [unknown, {"kind": "false"}]}, {}, domains)["value"], "false")
+        self.assertEqual(evaluate_condition({"kind": "any", "conditions": [unknown, {"kind": "true"}]}, {}, domains)["value"], "true")
+        self.assertEqual(evaluate_condition({"kind": "not", "condition": unknown}, {}, domains)["value"], "unknown")
 
     def test_unknown_domains_and_budget_overflow_remain_undetermined(self):
         unknown = condition_satisfiability([{"kind": "eq", "key": "missing", "value": "x"}], {})

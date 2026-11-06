@@ -495,6 +495,29 @@ class M1IdentityTests(unittest.TestCase):
         self.assertFalse(result["valid"])
         self.assertIn("DEPENDENCY_CARDINALITY", {item["ruleCode"] for item in result["diagnostics"]})
 
+    def test_dependency_resolution_states_and_configuration_do_not_rekey_requirement(self):
+        bundle = bundle_with_fact()
+        bundle["profile"] = "semantic-fact-model-1"
+        consumer = bundle["facts"][0]["subject"]
+        providers = [
+            {"identity": {"authority": "registry", "domainId": "packages", "localId": "one"},
+             "kind": "PackageSpecification"},
+            {"identity": {"authority": "registry", "domainId": "packages", "localId": "two"},
+             "kind": "PackageSpecification"},
+        ]
+        for index, provider in enumerate(providers):
+            bundle["registrations"].append({"ref": provider, "sourceKey": f"registry:{index}", "evidenceIds": ["ev-1"]})
+        bundle["dependencies"] = [{"dependencyId": "dep-1", "consumer": consumer, "purpose": "build",
+            "stage": "compile", "path": "serde", "version": "^1", "condition": {"kind": "true"},
+            "evidenceIds": ["ev-1"]}]
+        for status, selected in (("resolved", providers[:1]), ("ambiguous", providers), ("unresolved", [])):
+            bundle["dependencyResolutions"] = [{"resolutionId": f"res-{status}", "dependencyId": "dep-1",
+                "status": status, "providers": selected, "configuration": "linux",
+                "visibility": "registry", "scopePosition": "outside", "evidenceIds": ["ev-1"]}]
+            result = validate_model(bundle, fixed_catalogs())
+            self.assertTrue(result["valid"], result["diagnostics"])
+            self.assertEqual(bundle["dependencies"][0]["dependencyId"], "dep-1")
+
     def test_dependency_condition_contradiction_is_not_silently_dropped(self):
         bundle = bundle_with_fact()
         bundle["profile"] = "semantic-fact-model-1"
