@@ -760,6 +760,16 @@ class M1IdentityTests(unittest.TestCase):
         rejected = validate_model(incomplete, semantic_model_catalogs())
         self.assertIn("FACT_ARGUMENT_ROLES_MISMATCH", {item["ruleCode"] for item in rejected["diagnostics"]})
 
+    def test_m1_profile_rejects_full_profile_argument_records(self):
+        bundle = bundle_with_fact()
+        bundle["facts"][0]["value"] = None
+        bundle["facts"][0]["arguments"] = [{"role": "unexpected", "value": "value"}]
+
+        result = validate_model(bundle, fixed_catalogs())
+
+        self.assertEqual(result["stages"]["invariants"], "fail")
+        self.assertIn("FACT_ARGUMENT_SHAPE_MISMATCH", {item["ruleCode"] for item in result["diagnostics"]})
+
     def test_full_semantic_catalog_declares_distinct_program_body_and_region_relations(self):
         catalog = semantic_model_catalogs()
         predicates = {item["predicateId"]: item for item in catalog["predicates"]["predicates"]}
