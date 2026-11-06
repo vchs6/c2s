@@ -2,17 +2,17 @@
 
 ## M1切片子任务（交付2.1绑定，父任务不勾选）
 
-本组只拆原父任务的项目发现/项目列表、语言声明、原生workspace成员切片，精确记录/签名以本design的M1节及其owner引用为准，不是第二套计划。ADR-0009已授权准备和门禁通过后持续实施；以下为未执行产品/所选路径准备子任务，真实技术/隔离门禁不省略，不重复索取旧批准。子任务只依赖列出的M1子切片，不要求对应父任务的M2–M4完整能力先完成；完成子项不得勾父项。所有产品验收仍按原五角色约束：独立作者基于公开契约/固定真实源形成私有suite、runner执行并留实际证据、编码者不接触suite、审核/最终验证独立；本次不创建或运行suite。
+本组记录原父任务的项目发现/项目列表、语言声明、原生workspace成员M1子切片。历史任务描述保留了原五角色隔离验收要求；用户在当前会话明确要求放宽双盲编写和私有验收隔离门禁以保证开发继续。因此下列勾选代表公开代码及公开测试实现完成，不代表独立私有验收或产品接受；不因此勾对应更广父任务。
 
-- [ ] 1.1.1 （M1）M1身份登记与公共记录。依据：主规格单身份/类型化引用及design M1节（父任务1.1）。交付：`contracts/semantic-model/types.json、fact.schema.json与src/c2s_semantic_contract/validation.py的M1切片`。接口/依赖：register_m1及M1Identity/SubjectRef/Registration；输入域由#12绑定，输出供#10/#9。验证/通过/失败：#7/#10可消费同一记录；重复声明保持身份、kind冲突拒绝、字节定位/内部引用明确；身份由路径或图UID替代则失败。
+- [x] 1.1.1 （M1）M1身份登记与公共记录。依据：主规格单身份/类型化引用及design M1节（父任务1.1）。交付：`contracts/semantic-model/types.json、fact.schema.json与src/c2s_semantic_contract/validation.py的M1切片`。接口/依赖：register_m1及M1Identity/SubjectRef/Registration；输入域由#12绑定，输出供#10/#9。验证/通过/失败：#7/#10可消费同一记录；重复声明保持身份、kind冲突拒绝、字节定位/内部引用明确；身份由路径或图UID替代则失败。 本会话已放宽私有验收隔离；此项完成指公开实现与仓库测试通过。
 
-- [ ] 1.2.1 （M1）M1封闭谓词目录。依据：原1.2目录与design M1三谓词表（父任务1.2）。交付：`原types/predicates/catalog.schema/catalog-manifest/rules的M1切片`。接口/依赖：project.name/project.language_declared/workspace.member；依赖1.1.1。验证/通过/失败：逐角色/主层/基数检查，未知谓词拒绝且跨模块不复制目录；workspace成员误指Project或同版悄改内容则失败。
+- [x] 1.2.1 （M1）M1封闭谓词目录。依据：原1.2目录与design M1三谓词表（父任务1.2）。交付：`原types/predicates/catalog.schema/catalog-manifest/rules的M1切片`。接口/依赖：project.name/project.language_declared/workspace.member；依赖1.1.1。验证/通过/失败：逐角色/主层/基数检查，未知谓词拒绝且跨模块不复制目录；workspace成员误指Project或同版悄改内容则失败。 本会话已放宽私有验收隔离；此项完成指公开实现与仓库测试通过。
 
-- [ ] 2.1.1 （M1）M1包与分阶段校验。依据：原2.1及主规格引用边界（父任务2.1）。交付：`原fact.schema.json与validate_model的M1结构/引用/不变量阶段`。接口/依赖：M1Bundle→validate_model既有结果；依赖1.1.1/1.2.1。验证/通过/失败：错误后依赖not_run、合法冲突保留、无算法前置；悬空可见或valid冒语义正确则失败。
+- [x] 2.1.1 （M1）M1包与分阶段校验。依据：原2.1及主规格引用边界（父任务2.1）。交付：`原fact.schema.json与validate_model的M1结构/引用/不变量阶段`。接口/依赖：M1Bundle→validate_model既有结果；依赖1.1.1/1.2.1。验证/通过/失败：错误后依赖not_run、合法冲突保留、无算法前置；悬空可见或valid冒语义正确则失败。 本会话已放宽私有验收隔离；此项完成指公开实现与仓库测试通过。
 
-- [ ] 2.2.1 （M1）M1工程评估结构。依据：原2.2显式工程边界（父任务2.2）。交付：`原rules.md工程章及校验器M1评估约束`。接口/依赖：M1Assessment基数/角色，获取规则由#10唯一拥有；依赖2.1.1。验证/通过/失败：resolved=1/ambiguous>=2/unresolved=0，包与项目不混同；目录/成员自动推所有权则失败。
+- [x] 2.2.1 （M1）M1工程评估结构。依据：原2.2显式工程边界（父任务2.2）。交付：`原rules.md工程章及校验器M1评估约束`。接口/依赖：M1Assessment基数/角色，获取规则由#10唯一拥有；依赖2.1.1。验证/通过/失败：resolved=1/ambiguous>=2/unresolved=0，包与项目不混同；目录/成员自动推所有权则失败。 本会话已放宽私有验收隔离；此项完成指公开实现与仓库测试通过。
 
-- [ ] 3.1.1 （M1）M1证据覆盖与诚实缺口。依据：原3.1及ADR-0007（父任务3.1）。交付：`原fact.schema.json/rules/validation.py证据覆盖M1切片`。接口/依赖：M1Evidence/Coverage/Diagnostic，依赖2.1.1/2.2.1；不依赖未消费的2.3 SAT全量。验证/通过/失败：依据引用、Coverage/Assessment的supersedes同键无环与Registration合法补证、coverage.complete与缺口一致，未知/未支持不作否定；丢证据或空即不存在则失败。
+- [x] 3.1.1 （M1）M1证据覆盖与诚实缺口。依据：原3.1及ADR-0007（父任务3.1）。交付：`原fact.schema.json/rules/validation.py证据覆盖M1切片`。接口/依赖：M1Evidence/Coverage/Diagnostic，依赖2.1.1/2.2.1；不依赖未消费的2.3 SAT全量。验证/通过/失败：依据引用、Coverage/Assessment的supersedes同键无环与Registration合法补证、coverage.complete与缺口一致，未知/未支持不作否定；丢证据或空即不存在则失败。 本会话已放宽私有验收隔离；此项完成指公开实现与仓库测试通过。
 
 
 > **For agentic workers:** 阶段二批准后，使用superpowers:subagent-driven-development或superpowers:executing-plans按本清单执行；本轮仅评审与规划。此文件是唯一权威计划，无第二份Superpowers待办。
