@@ -35,17 +35,14 @@ class AcquisitionTests(unittest.TestCase):
         python_bindings = [fact for fact in python.facts if fact.kind == "local_binding"]
         self.assertEqual([fact.name for fact in python_bindings], ["value", "value"])
         self.assertTrue(all(fact.layer == "E4" and fact.owner == "run" for fact in python_bindings))
-        self.assertIn("value = x + 1", python_bindings[0].text)
-        self.assertIn("value += 2", python_bindings[1].text)
+        self.assertEqual([fact.text for fact in python_bindings], ["value", "value"])
 
         rust = parse_source("src.rs", b"fn run(x: i32) { let value = x + 1; let (left, right) = pair; }", "rust")
         rust_bindings = [fact for fact in rust.facts if fact.kind == "local_binding"]
         self.assertEqual([fact.name for fact in rust_bindings], ["value", "left", "right"])
         self.assertEqual(rust_bindings[0].layer, "E4")
         self.assertEqual(rust_bindings[0].owner, "run")
-        self.assertIn("let value = x + 1", rust_bindings[0].text)
-        self.assertIn("let (left, right) = pair", rust_bindings[1].text)
-        self.assertIn("let (left, right) = pair", rust_bindings[2].text)
+        self.assertEqual([fact.text for fact in rust_bindings], ["value", "left", "right"])
 
     def test_rust_local_binding_facts_cover_struct_tuple_struct_and_slice_patterns(self):
         source = (b"struct Point { x: i32, y: i32 }\n"
@@ -74,6 +71,25 @@ class AcquisitionTests(unittest.TestCase):
         bindings = [fact for fact in result.facts if fact.kind == "local_binding"]
         self.assertEqual([fact.name for fact in bindings], ["shared", "reference", "captured"])
         self.assertTrue(all(fact.owner == "run" and fact.layer == "E4" for fact in bindings))
+
+    def test_python_repeated_local_binding_names_keep_distinct_source_ids(self):
+        source = b"def bind(runner):\n    with runner.isolation() as (out, _, _):\n        pass\n"
+        result = parse_source("src.py", source, "python")
+        bindings = [fact for fact in result.facts if fact.kind == "local_binding"]
+        self.assertEqual([fact.name for fact in bindings], ["out", "_", "_"])
+        self.assertEqual(len({fact.id for fact in bindings}), 3)
+        self.assertEqual([fact.text for fact in bindings], ["out", "_", "_"])
+
+    def test_python_local_binding_facts_cover_loop_with_and_exception_targets(self):
+        source = (b"def bind(items, manager):\n"
+                  b"    for item in items:\n        pass\n"
+                  b"    with manager as resource:\n        pass\n"
+                  b"    try:\n        pass\n"
+                  b"    except ValueError as error:\n        pass\n")
+        result = parse_source("src.py", source, "python")
+        bindings = [fact for fact in result.facts if fact.kind == "local_binding"]
+        self.assertEqual([fact.name for fact in bindings], ["item", "resource", "error"])
+        self.assertTrue(all(fact.owner == "bind" and fact.layer == "E4" for fact in bindings))
 
     def test_rust_parser_emits_struct_fields_and_methods(self):
         source = b"pub struct Item { pub value: u32 } impl Item { /// Return the stored value.\n pub fn read(&self) -> u32 { if self.value > 0 { helper() } else { 0 } } }"

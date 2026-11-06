@@ -98,7 +98,7 @@ def analysis_profile_digest() -> str:
                         for name in ("tree-sitter", "tree-sitter-python", "tree-sitter-rust")}
     except importlib.metadata.PackageNotFoundError as error:
         dependencies = {"missing": error.name or "unknown"}
-    profile = {"analyzer": "c2s-semantic-facts/0.6.4", "python": platform.python_version(),
+    profile = {"analyzer": "c2s-semantic-facts/0.6.5", "python": platform.python_version(),
                "platform": platform.platform(), "parsers": dependencies, "cargo": cargo_version}
     return hashlib.sha256(json.dumps(profile, sort_keys=True, separators=(",", ":")).encode()).hexdigest()
 
@@ -193,14 +193,20 @@ def _python_facts(path: str, source: bytes, tree: ast.AST) -> list[Fact]:
                        ast.BinOp, ast.UnaryOp, ast.NamedExpr, ast.Assert, ast.Match,
                        ast.Assign, ast.AnnAssign, ast.AugAssign, ast.Delete, ast.Yield, ast.YieldFrom)
 
-    def binding_names(target) -> list[str]:
+    def binding_nodes(target) -> list[ast.Name]:
         if isinstance(target, ast.Name):
-            return [target.id]
+            return [target]
         if isinstance(target, (ast.Tuple, ast.List)):
-            return [name for element in target.elts for name in binding_names(element)]
+            return [node for element in target.elts for node in binding_nodes(element)]
         if isinstance(target, ast.Starred):
-            return binding_names(target.value)
+            return binding_nodes(target.value)
         return []
+
+    def byte_span(node) -> tuple[int, int]:
+        lines = source.splitlines(keepends=True)
+        start = sum(len(line) for line in lines[:node.lineno - 1]) + node.col_offset
+        end = sum(len(line) for line in lines[:node.end_lineno - 1]) + node.end_col_offset
+        return start, end
     for node in ast.walk(tree):
         kind = None
         name = None
@@ -254,13 +260,38 @@ def _python_facts(path: str, source: bytes, tree: ast.AST) -> list[Fact]:
                 if owner and isinstance(node, (ast.Assign, ast.AnnAssign, ast.AugAssign)):
                     targets = node.targets if isinstance(node, ast.Assign) else [node.target]
                     for target in targets:
-                        for binding in binding_names(target):
-                            facts.append(_make_fact(path, source, "local_binding", binding,
-                                                    start, end, owner))
+                        for binding in binding_nodes(target):
+                            binding_start, binding_end = byte_span(binding)
+                            facts.append(_make_fact(path, source, "local_binding", binding.id,
+                                                    binding_start, binding_end, owner))
                 elif owner and isinstance(node, ast.NamedExpr):
-                    for binding in binding_names(node.target):
-                        facts.append(_make_fact(path, source, "local_binding", binding,
-                                                start, end, owner))
+                    for binding in binding_nodes(node.target):
+                        binding_start, binding_end = byte_span(binding)
+                        facts.append(_make_fact(path, source, "local_binding", binding.id,
+                                                binding_start, binding_end, owner))
+                elif owner and isinstance(node, (ast.For, ast.AsyncFor)):
+                    for binding in binding_nodes(node.target):
+                        binding_start, binding_end = byte_span(binding)
+                        facts.append(_make_fact(path, source, "local_binding", binding.id,
+                                                binding_start, binding_end, owner))
+                elif owner and isinstance(node, (ast.With, ast.AsyncWith)):
+                    for item in node.items:
+                        if item.optional_vars:
+                            for binding in binding_nodes(item.optional_vars):
+                                binding_start, binding_end = byte_span(binding)
+                                facts.append(_make_fact(path, source, "local_binding", binding.id,
+                                                        binding_start, binding_end, owner))
+                elif owner and isinstance(node, ast.Try):
+                    for handler in node.handlers:
+                        if handler.name:
+                            handler_start, handler_end = byte_span(handler)
+                            colon = source.find(b":", handler_start, handler_end)
+                            alias = source.find(b"as", handler_start, colon)
+                            name_bytes = handler.name.encode("utf-8")
+                            binding_start = source.find(name_bytes, alias + 2, colon)
+                            if colon >= 0 and alias >= 0 and binding_start >= 0:
+                                facts.append(_make_fact(path, source, "local_binding", handler.name,
+                                                        binding_start, binding_start + len(name_bytes), owner))
     return facts
 
 
@@ -279,25 +310,27 @@ def _rust_facts(path: str, source: bytes, root) -> tuple[list[Fact], int, bool]:
                        "break_expression", "assignment_expression", "binary_expression", "await_expression",
                        "let_declaration"}
 
-    def binding_names(pattern) -> list[str]:
+    def binding_nodes(pattern) -> list:
         if pattern.type == "identifier":
-            return [source[pattern.start_byte:pattern.end_byte].decode()]
+            if source[pattern.start_byte:pattern.end_byte] == b"_":
+                return []
+            return [pattern]
         if pattern.type in {"tuple_pattern", "slice_pattern"}:
-            return [name for child in pattern.named_children for name in binding_names(child)]
+            return [node for child in pattern.named_children for node in binding_nodes(child)]
         if pattern.type in {"tuple_struct_pattern", "struct_pattern"}:
-            return [name for child in pattern.named_children[1:] for name in binding_names(child)]
+            return [node for child in pattern.named_children[1:] for node in binding_nodes(child)]
         if pattern.type == "field_pattern":
-            names = []
+            nodes = []
             for child in pattern.named_children:
                 if child.type == "shorthand_field_identifier":
-                    names.append(source[child.start_byte:child.end_byte].decode())
+                    nodes.append(child)
                 elif child.type != "field_identifier":
-                    names.extend(binding_names(child))
-            return names
+                    nodes.extend(binding_nodes(child))
+            return nodes
         if pattern.type == "or_pattern":
-            return binding_names(pattern.named_children[0]) if pattern.named_children else []
+            return binding_nodes(pattern.named_children[0]) if pattern.named_children else []
         if pattern.type in {"mut_pattern", "reference_pattern", "captured_pattern"}:
-            return [name for child in pattern.named_children for name in binding_names(child)]
+            return [node for child in pattern.named_children for node in binding_nodes(child)]
         return []
 
     def walk(node, owner_name: str | None = None) -> None:
@@ -319,9 +352,10 @@ def _rust_facts(path: str, source: bytes, root) -> tuple[list[Fact], int, bool]:
         if node.type == "let_declaration":
             pattern = node.child_by_field_name("pattern")
             if pattern:
-                for name in binding_names(pattern):
+                for binding in binding_nodes(pattern):
+                    name = source[binding.start_byte:binding.end_byte].decode()
                     facts.append(_make_fact(path, source, "local_binding", name,
-                                            node.start_byte, node.end_byte, owner_name))
+                                            binding.start_byte, binding.end_byte, owner_name))
         elif node.type == "field_declaration":
             name_node = node.child_by_field_name("name")
             if name_node:

@@ -113,7 +113,7 @@ def function_example(project: dict) -> str:
              "项目：Click 示例 `examples/naval/naval.py`。",
              f"固定提交：`{git(REAL_ROOT / 'click', 'rev-parse', 'HEAD')}`。",
              "查询：`all-supported-facts`，按共享 `subject_id` 投影目标函数。",
-             "分析器：C2S semantic facts 0.6.4。静态 AST 证据，不代表运行时验证。", ""]
+             "分析器：C2S semantic facts 0.6.5。静态 AST 证据，不代表运行时验证。", ""]
     for name in functions:
         declaration = next(f for f in facts if f.kind == "function" and f.path == path and f.name == name)
         related = [f for f in facts if f.subject_id == declaration.subject_id]
@@ -152,7 +152,7 @@ def main() -> None:
         pass
     payload = {"report_date": "2026-11-06",
                "scope": "all currently supported facts; not exhaustive E0-E4 project semantics",
-               "toolchain": {"analyzer": "c2s-semantic-facts/0.6.4",
+               "toolchain": {"analyzer": "c2s-semantic-facts/0.6.5",
                              "python": f"Python {sys.version.split()[0]}", "cargo": cargo_version},
                "validation": {"inventory_generation": "passed; pinned clean inputs, all source files parsed, "
                                                        "all-supported query complete, unique fact IDs, "
