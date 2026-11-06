@@ -75,6 +75,43 @@ class M1IdentityTests(unittest.TestCase):
         self.assertEqual(result["stages"]["structure"], "not_run")
         self.assertIn("CATALOG_BUNDLE_MISMATCH", {item["ruleCode"] for item in result["diagnostics"]})
 
+    def test_failed_structure_stops_references_and_invariants(self):
+        bundle = empty_bundle()
+        bundle["extra"] = True
+
+        result = validate_model(bundle, fixed_catalogs())
+
+        self.assertEqual(result["stages"], {
+            "catalog": "pass", "structure": "fail", "references": "not_run", "invariants": "not_run"})
+        self.assertFalse(result["valid"])
+        self.assertEqual(result["consistency"], "undetermined")
+
+    def test_reference_failure_stops_invariants_without_hiding_conflict(self):
+        bundle = empty_bundle()
+        ref_a = {"identity": {"authority": "c2s-local", "domainId": "domain-a", "localId": "same"},
+                 "kind": "Project"}
+        ref_b = {"identity": dict(ref_a["identity"]), "kind": "PackageSpecification"}
+        bundle["registrations"] = [
+            {"ref": ref_a, "sourceKey": "source:a", "evidenceIds": ["ev-a"]},
+            {"ref": ref_b, "sourceKey": "source:b", "evidenceIds": ["ev-b"]},
+        ]
+
+        result = validate_model(bundle, fixed_catalogs())
+
+        self.assertEqual(result["stages"]["references"], "fail")
+        self.assertEqual(result["stages"]["invariants"], "not_run")
+        self.assertEqual(result["consistency"], "undetermined")
+        conflict = next(item for item in result["diagnostics"] if item["ruleCode"] == "IDENTITY_KIND_CONFLICT")
+        self.assertEqual(conflict["recordRef"], "registration:1")
+        self.assertEqual(conflict["relatedRefs"], ["registration:0"])
+
+    def test_valid_checked_subset_is_never_reported_as_semantically_consistent(self):
+        result = validate_model(empty_bundle(), fixed_catalogs())
+
+        self.assertTrue(result["valid"])
+        self.assertEqual(result["stages"]["invariants"], "partial")
+        self.assertEqual(result["consistency"], "undetermined")
+
     def test_closed_m1_catalog_accepts_project_name_with_a_project_subject(self):
         result = validate_model(bundle_with_fact(), fixed_catalogs())
         self.assertTrue(result["valid"])

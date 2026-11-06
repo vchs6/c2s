@@ -110,3 +110,7 @@ Final verification: product tests 45/45; repository maintenance tests 35/35; str
 ## Progress — 2026-11-06, M1 closed predicate catalog slice
 
 - Added the closed 1.0.0 M1 catalog bundle for `project.name`, `project.language_declared`, and `workspace.member`, including role types/kinds, layer, cardinality, claim modes, comparison policy, and supported constraint IDs. Added a Draft 2020-12 catalog schema, canonical artifact digests, a pinned manifest digest, and validation for catalog drift, unknown predicates/rules, malformed roles, dangling type references, mixed versions, and fact role/kind mismatches. Seventeen focused semantic-model tests pass; full `npm test` passed 52 tests, strict OpenSpec validation passed 21/21, artifact checks passed, Python compilation and `git diff --check` passed. Task 1.2.1 remains open pending end-to-end cross-module consumption evidence; no independent/private acceptance was performed.
+
+## Progress — 2026-11-06, M1 phased validation slice
+
+- Added regression coverage for stage dependency stopping, preservation of identity-kind conflicts with related registration references, and the rule that a structurally/reference-valid subset remains `consistency=undetermined`. Updated `rules.md` to document the four ordered stages and the distinction between checked validity and semantic consistency. Twenty focused semantic-model tests pass. Task 2.1.1 remains open under the change-level five-role acceptance boundary; no independent/private acceptance was performed.
