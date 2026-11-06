@@ -299,6 +299,16 @@ def validate_model(document: dict, catalogs: dict, source_observations: dict | N
         for provider_index, provider in enumerate(resolution["providers"]):
             check_ref(provider, f"/dependencyResolutions/{index}/providers/{provider_index}", record_ref)
         check_evidence(resolution["evidenceIds"], f"/dependencyResolutions/{index}/evidenceIds", record_ref)
+    for index, state in enumerate(document.get("semanticStates", [])):
+        record_ref = f"semanticState:{state['stateId']}"
+        if state["subject"] is not None:
+            check_ref(state["subject"], f"/semanticStates/{index}/subject", record_ref)
+        check_evidence(state["evidenceIds"], f"/semanticStates/{index}/evidenceIds", record_ref)
+        for fact_id in state["factIds"]:
+            if fact_id not in fact_ids:
+                diagnostics.append(_diagnostic("references", "STATE_FACT_REF_MISSING",
+                    "Semantic state refers to a fact that is not in the bundle.", record_ref=record_ref,
+                    field_path=f"/semanticStates/{index}/factIds"))
     if diagnostics:
         result["stages"]["references"] = "fail"
         result["diagnostics"] = diagnostics
@@ -338,6 +348,10 @@ def validate_model(document: dict, catalogs: dict, source_observations: dict | N
         invariant_diagnostics.append(_diagnostic("invariants", "M1_CONTEXT_UNSUPPORTED",
             "The M1 project-discovery profile does not permit context, conditional facts, or dependency records.",
             field_path="/profile"))
+    if is_m1 and document.get("semanticStates"):
+        invariant_diagnostics.append(_diagnostic("invariants", "M1_STATE_MODEL_UNSUPPORTED",
+            "The M1 project-discovery profile does not support full semantic acquisition/presentation states.",
+            field_path="/semanticStates"))
     if is_m1 and any(fact.get("claimMode") not in {"declaration", "interpretation"}
                      or fact.get("evidenceRefs") or fact.get("derivation") is not None
                      for fact in document.get("facts", [])):
@@ -422,8 +436,56 @@ def validate_model(document: dict, catalogs: dict, source_observations: dict | N
             "Fact derivations must be acyclic; the cyclic dependency chain is retained in the bundle.",
             field_path="/facts"))
 
-    contexts_by_id = {item["contextId"]: item for item in document.get("contexts", [])}
     condition_gaps = []
+    seen_state_ids = set()
+    context_domains_for_states = {item["keyId"]: item["values"] for item in document.get("contextDomains", [])}
+    contexts_for_states = {item["contextId"]: item for item in document.get("contexts", [])}
+    for state_index, state in enumerate(document.get("semanticStates", [])):
+        state_id = state["stateId"]
+        if state_id in seen_state_ids:
+            invariant_diagnostics.append(_diagnostic("invariants", "STATE_ID_DUPLICATE",
+                "Semantic state IDs must be unique.", record_ref=f"semanticState:{state_id}",
+                field_path=f"/semanticStates/{state_index}/stateId"))
+        seen_state_ids.add(state_id)
+        state_ref = f"semanticState:{state_id}"
+        acquisition = state["acquisition"]
+        gap_diagnostics_present = any(item["severity"] == "gap" for item in state["diagnostics"])
+        if acquisition in {"not_acquired", "unsupported"}:
+            if state["factIds"] or not gap_diagnostics_present:
+                invariant_diagnostics.append(_diagnostic("invariants", "STATE_GAP_UNEXPLAINED",
+                    "Not acquired/unsupported states cannot claim facts and must explain their gap.",
+                    record_ref=state_ref, field_path=f"/semanticStates/{state_index}"))
+        elif acquisition == "not_applicable":
+            if (not state["applicabilityReason"] or not state["evidenceIds"] or state["factIds"]):
+                invariant_diagnostics.append(_diagnostic("invariants", "STATE_NOT_APPLICABLE_UNJUSTIFIED",
+                    "Not-applicable states require a reason and evidence and cannot claim facts.",
+                    record_ref=state_ref, field_path=f"/semanticStates/{state_index}"))
+        elif acquisition == "obtained":
+            for fact_id in state["factIds"]:
+                fact = facts_by_id.get(fact_id)
+                if fact is not None and (state["predicate"] not in {None, fact["predicate"]}
+                        or (state["subject"] is not None
+                            and _identity_key(state["subject"]) != _identity_key(fact["subject"]))):
+                    invariant_diagnostics.append(_diagnostic("invariants", "STATE_FACT_SCOPE_MISMATCH",
+                        "Obtained state fact does not match the state's subject and predicate scope.",
+                        record_ref=state_ref, field_path=f"/semanticStates/{state_index}/factIds"))
+        condition_parts = [state["condition"]]
+        context_ref = state["subject"].get("contextRef") if state["subject"] is not None else None
+        if context_ref in contexts_for_states:
+            condition_parts.extend({"kind": "eq", "key": key_id, "value": value}
+                                   for key_id, value in contexts_for_states[context_ref]["assignments"].items())
+        satisfiable = condition_satisfiability([{"kind": "all", "conditions": condition_parts}],
+                                               context_domains_for_states)
+        if satisfiable["status"] == "unsat":
+            invariant_diagnostics.append(_diagnostic("invariants", "STATE_CONDITION_CONTRADICTION",
+                "Semantic state condition contradicts its subject context.", record_ref=state_ref,
+                field_path=f"/semanticStates/{state_index}/condition"))
+        elif satisfiable["status"] == "undetermined":
+            condition_gaps.append(_diagnostic("invariants", satisfiable["reason"] or "CONDITION_UNDETERMINED",
+                "Semantic state condition cannot be decided.", record_ref=state_ref,
+                field_path=f"/semanticStates/{state_index}/condition", severity="gap"))
+
+    contexts_by_id = {item["contextId"]: item for item in document.get("contexts", [])}
     for analysis in result["dependencyCycles"]:
         for code in analysis["diagnostics"]:
             condition_gaps.append(_diagnostic("invariants", code,

@@ -14,6 +14,8 @@
 
 完整profile的negative claim必须引用受限输入闭合集、逐项无匹配、条件相同、人工审定且无未解决缺口；校验器只能核对闭合记录结构，不能证明调用方提供的输入集合客观穷尽。
 
+`semanticStates`分别记录`ref_only/expanded`展示状态和`obtained/not_acquired/unsupported/not_applicable`获取状态，并与事实主张分离；缺口和不适用状态须附理由/证据。由此可以表达“已获取但未展开”，不会把空结果自动解释为不存在。
+
 ```bash
 python3 scripts/query_m1.py --root .local/real-projects/click --select project
 python3 scripts/query_m1.py --root .local/real-projects/regex --select workspace-members

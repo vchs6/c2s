@@ -168,3 +168,7 @@ Final verification: product tests 45/45; repository maintenance tests 35/35; str
 ## Progress — 2026-11-06, three-valued condition evaluation
 
 - Added a separate `evaluate_condition` API using Kleene `true`/`false`/`unknown` results under partial assignments. Missing assignments return unknown, decisive `false` in `all` and decisive `true` in `any` dominate unknown children, and empty All/Any follow Boolean identity. The existing bounded satisfiability solver remains independent. This completes the bounded condition/cycle validator slice represented by task 2.3; language-specific extraction and broader project semantic extraction remain open.
+
+## Progress — 2026-11-06, semantic acquisition and presentation state
+
+- Added a separate `semanticStates` record for `obtained`/`not_acquired`/`unsupported`/`not_applicable` and `ref_only`/`expanded`. States reference optional subject/predicate scope, conditions, acquired fact IDs, evidence, and diagnostics. Unavailable states require a gap and cannot claim facts; not-applicable requires rationale and evidence; obtained fact links must match the declared scope. Acquired-but-not-expanded is valid and does not imply nonexistence. This reports the supplied selector's state and does not prove broader completeness.

@@ -96,7 +96,7 @@
 
 ## 3. 模态来源与覆盖
 
-- [ ] 3.1 完成证据/覆盖/三轴状态及有界否定规则，运行T。依赖：2.1–2.3。
+- [x] 3.1 完成证据/覆盖/状态表达及有界否定规则并运行公开回归。实现独立presentation/acquisition semanticStates、六种claimMode、evidence role、derivation前提/无环、输入闭合negativeBasis、来源核验、coverage缺口和lineage约束。校验只确认结构与已给证据，不能声称调用方输入已穷尽。用户已放宽双盲/私有验收隔离门禁；勾选只代表公开代码/测试，不代表独立私有验收。依赖：2.1–2.3。
   - 上游依据：候选“主张模态证据与推导可追溯”“覆盖与否定的边界”“状态维度独立表达”；C06、design §4。
   - 交付：fact.schema.json的Evidence/Coverage/状态定义、validation.py阶段、rules.md模态/否定/组合矩阵、独立测试区/suites/semantic-model/fixtures/evidence-coverage.json、test_contracts.py及公共文档覆盖报告例。
   - 验证：test_modes_not_truth_rank保留六模态和Supports/Refutes/Limits；test_derivation_missing_premise定位缺前提；test_source_unchecked_vs_mismatch区分无观察和不匹配；test_acquired_ref_only合法；test_negative_requires_closed_scope只接受design两种有限闭合检查且人工审定/输入齐备，未读输入、动态调用缺口和20文件样本不得证明全称否定。
@@ -154,3 +154,8 @@
 ## Progress — 2026-11-06, condition truth evaluation
 
 - Added `evaluate_condition` for partial assignments with three-valued Kleene semantics, separate from exhaustive `condition_satisfiability`. Missing assignments retain an unknown reason; decisive false in `all` and decisive true in `any` dominate unknown children, and empty All/Any follow Boolean identity. Dependency requirements/resolutions and configuration-separated cycle candidates are integrated into `validate_model`; explicit status and scope position are checked independently. Focused regressions cover SAT/UNSAT, source conditions, enumeration budgets, resolution cardinalities and context conflicts.
+
+
+## Progress — 2026-11-06, semantic acquisition/presentation states
+
+- Added full-profile `semanticStates` that separate obtained/not-acquired/unsupported/not-applicable acquisition from ref-only/expanded presentation and from semantic claims. Validation requires explanatory gaps for unavailable states, justification/evidence for not-applicable, registered fact and evidence references, and subject/predicate scope consistency. Existing coverage/supersedes/source-observation checks remain distinct. Tests verify acquired ref-only facts and reject unjustified not-applicable states.

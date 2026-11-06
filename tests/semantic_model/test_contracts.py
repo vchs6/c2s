@@ -631,6 +631,38 @@ class M1IdentityTests(unittest.TestCase):
         self.assertFalse(result["valid"])
         self.assertIn("NEGATIVE_BASIS_INCOMPLETE", {item["ruleCode"] for item in result["diagnostics"]})
 
+    def test_acquisition_and_presentation_states_are_independent(self):
+        bundle = bundle_with_fact()
+        bundle["profile"] = "semantic-fact-model-1"
+        bundle["semanticStates"] = [
+            {"stateId": "state-ref", "selector": "function:alpha", "subject": bundle["facts"][0]["subject"],
+             "predicate": "project.name", "condition": {"kind": "true"}, "presentation": "ref_only",
+             "acquisition": "obtained", "factIds": ["fact-1"], "applicabilityReason": None,
+             "evidenceIds": ["ev-1"], "diagnostics": []},
+            {"stateId": "state-missing", "selector": "function:beta", "subject": None,
+             "predicate": None, "condition": {"kind": "true"}, "presentation": "ref_only",
+             "acquisition": "not_acquired", "factIds": [], "applicabilityReason": None,
+             "evidenceIds": [], "diagnostics": [{"code": "NOT_SCANNED", "severity": "gap",
+                 "recordId": "function:beta", "path": None, "message": "Source has not been scanned."}]},
+        ]
+
+        result = validate_model(bundle, fixed_catalogs())
+
+        self.assertTrue(result["valid"])
+
+    def test_not_applicable_state_requires_a_reason_and_evidence(self):
+        bundle = bundle_with_fact()
+        bundle["profile"] = "semantic-fact-model-1"
+        bundle["semanticStates"] = [{"stateId": "state-na", "selector": "target:windows", "subject": None,
+            "predicate": "project.name", "condition": {"kind": "true"}, "presentation": "ref_only",
+            "acquisition": "not_applicable", "factIds": [], "applicabilityReason": None,
+            "evidenceIds": [], "diagnostics": []}]
+
+        result = validate_model(bundle, fixed_catalogs())
+
+        self.assertFalse(result["valid"])
+        self.assertIn("STATE_NOT_APPLICABLE_UNJUSTIFIED", {item["ruleCode"] for item in result["diagnostics"]})
+
     def test_catalog_rejects_unsupported_constraint_ids(self):
         catalogs = fixed_catalogs()
         catalogs["predicates"]["predicates"][0]["constraints"].append("UNSAFE_EVAL")

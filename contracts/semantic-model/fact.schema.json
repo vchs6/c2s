@@ -16,6 +16,7 @@
     "coverage": {"type": "array", "items": {"$ref": "#/$defs/coverage"}},
     "dependencies": {"type": "array", "items": {"$ref": "#/$defs/dependency"}},
     "dependencyResolutions": {"type": "array", "items": {"$ref": "#/$defs/dependencyResolution"}},
+    "semanticStates": {"type": "array", "items": {"$ref": "#/$defs/semanticState"}},
     "diagnostics": {"type": "array", "items": {"$ref": "#/$defs/diagnostic"}},
     "contextDomains": {"type": "array", "items": {"$ref": "#/$defs/contextDomain"}},
     "contexts": {"type": "array", "items": {"$ref": "#/$defs/context"}}
@@ -148,6 +149,19 @@
         "configuration": {"type": ["string", "null"]}, "visibility": {"type": ["string", "null"]},
         "scopePosition": {"enum": ["inside", "outside", "unknown"]},
         "evidenceIds": {"type": "array", "minItems": 1, "uniqueItems": true, "items": {"$ref": "#/$defs/id"}}}
+    },
+    "semanticState": {
+      "type": "object", "additionalProperties": false,
+      "required": ["stateId", "selector", "subject", "predicate", "condition", "presentation", "acquisition", "factIds", "applicabilityReason", "evidenceIds", "diagnostics"],
+      "properties": {"stateId": {"$ref": "#/$defs/id"}, "selector": {"type": "string", "minLength": 1},
+        "subject": {"oneOf": [{"type": "null"}, {"$ref": "#/$defs/subjectRef"}]},
+        "predicate": {"oneOf": [{"type": "null"}, {"$ref": "#/$defs/id"}]},
+        "condition": {"$ref": "#/$defs/condition"}, "presentation": {"enum": ["ref_only", "expanded"]},
+        "acquisition": {"enum": ["obtained", "not_acquired", "unsupported", "not_applicable"]},
+        "factIds": {"type": "array", "uniqueItems": true, "items": {"$ref": "#/$defs/id"}},
+        "applicabilityReason": {"type": ["string", "null"]},
+        "evidenceIds": {"type": "array", "uniqueItems": true, "items": {"$ref": "#/$defs/id"}},
+        "diagnostics": {"type": "array", "items": {"$ref": "#/$defs/diagnostic"}}}
     },
     "condition": {
       "oneOf": [
