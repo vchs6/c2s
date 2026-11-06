@@ -73,6 +73,7 @@
   - 交付：contracts/semantic-model/predicates.json、catalog.schema.json、catalog-manifest.json（contracts/semantic-model/）、rules.md目录章、独立测试区/suites/semantic-model/fixtures/predicates.json、扩展test_contracts.py及公共文档目录/五层边界。
   - 验证：test_catalog_roles_and_layers遍历每条谓词完整角色/类型/基数/约束/关系种类、Semantic唯一主层、Provenance无主层；test_catalog_input_rejected拒绝畸形目录、悬空目录类型引用、未知constraintId、混合版本及同版本改目录，并断言依赖阶段not_run；test_unknown_predicate_and_record拒绝缺类型/任意字典；test_cross_layer_entry_binding验证E1引用E2不复制。
   - 通过：固定发行包规范JSON摘要匹配、元目录Schema及已知规则通过，首批条目全部展开，program.contains/behavior.has_body/region_member与workspace/依赖/别名关联分开；失败：接受调用方自报manifest绕过核对、静默接受未知规则、漏条目、把层入身份、成员推依赖或内嵌白名单不闭合。
+  - 进展（2026-11-06）：扩展profile目录已新增并固定manifest，当前获取器全部事实种类均有谓词映射；`project_query_to_semantic_model`已在固定版本Click/regex逐项投影。此进展不满足本任务要求的全部组成关系、嵌入白名单及完整目录用例，父任务继续开放。
 
 ## 2. 事实语法与工程关系
 

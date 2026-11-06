@@ -19,7 +19,11 @@ _CATALOG_SCHEMA_PATH = _ROOT / "contracts" / "semantic-model" / "catalog.schema.
 _TYPES_PATH = _ROOT / "contracts" / "semantic-model" / "types.json"
 _PREDICATES_PATH = _ROOT / "contracts" / "semantic-model" / "predicates.json"
 _CATALOG_MANIFEST_PATH = _ROOT / "contracts" / "semantic-model" / "catalog-manifest.json"
-_TRUSTED_MANIFEST_SHA256 = "f089a4ac3dcc4bd403ad31b6a28f4ab99368974a4d723e7c690413577f6c434d"
+_SEMANTIC_TYPES_PATH = _ROOT / "contracts" / "semantic-model" / "semantic-types.json"
+_SEMANTIC_PREDICATES_PATH = _ROOT / "contracts" / "semantic-model" / "semantic-predicates.json"
+_SEMANTIC_CATALOG_MANIFEST_PATH = _ROOT / "contracts" / "semantic-model" / "semantic-catalog-manifest.json"
+_TRUSTED_MANIFEST_SHA256 = "cb5db790f3e3e21fbcdc82981f2ca8b921b7dac5e02502f6fbb71a78b570bfe1"
+_TRUSTED_SEMANTIC_MANIFEST_SHA256 = "b1757a85a7ef2710c4016c13f95887b9ca91122e23f1a0f6ef58a78181a66a7a"
 _SUPPORTED_KINDS = {"Project", "PackageSpecification", "NativeWorkspace", "SourceDeclaration"}
 _SUPPORTED_CONSTRAINTS = {
     "KIND_MATCH", "ROLE_CARDINALITY", "INTERNAL_REF_EXISTS", "DOMAIN_UNIQUE",
@@ -50,24 +54,42 @@ def _diagnostic_key(diagnostic: dict) -> str:
                       ensure_ascii=False, separators=(",", ":"))
 
 
-def _manifest_integrity(manifest: dict) -> bool:
-    return isinstance(manifest, dict) and _canonical_digest(manifest) == _TRUSTED_MANIFEST_SHA256
+def _manifest_integrity(manifest: dict, profile: str = "m1-project-discovery-1") -> bool:
+    expected = (_TRUSTED_MANIFEST_SHA256 if profile == "m1-project-discovery-1"
+                else _TRUSTED_SEMANTIC_MANIFEST_SHA256)
+    return bool(expected) and isinstance(manifest, dict) and _canonical_digest(manifest) == expected
 
 
-def _validate_catalogs(catalogs: dict) -> list[dict]:
+def semantic_model_catalogs() -> dict:
+    """Load the pinned full-profile type and predicate directory shipped with this package."""
+    return {"types": json.loads(_SEMANTIC_TYPES_PATH.read_text(encoding="utf-8")),
+            "predicates": json.loads(_SEMANTIC_PREDICATES_PATH.read_text(encoding="utf-8"))}
+
+
+def _validate_catalogs(catalogs: dict, document_profile: str = "m1-project-discovery-1") -> list[dict]:
     diagnostics = []
     if not isinstance(catalogs, dict) or set(catalogs) != {"types", "predicates"}:
         return [_diagnostic("catalog", "CATALOG_BUNDLE_MISMATCH",
             "Callers must supply exactly the bundled types and predicates records.", field_path="/catalogs")]
+    catalog_profile = catalogs.get("predicates", {}).get("profile") if isinstance(catalogs, dict) else None
+    if (document_profile == "m1-project-discovery-1" and catalog_profile != "m1-project-discovery-1"
+            or document_profile == "semantic-fact-model-1" and catalog_profile not in
+            {"m1-project-discovery-1", "semantic-fact-model-1"}):
+        return [_diagnostic("catalog", "CATALOG_PROFILE_MISMATCH",
+            "Catalog profile is not compatible with the semantic fact bundle profile.", field_path="/catalogs/profile")]
+    full_catalog = catalog_profile == "semantic-fact-model-1"
+    types_path = _SEMANTIC_TYPES_PATH if full_catalog else _TYPES_PATH
+    predicates_path = _SEMANTIC_PREDICATES_PATH if full_catalog else _PREDICATES_PATH
+    manifest_path = _SEMANTIC_CATALOG_MANIFEST_PATH if full_catalog else _CATALOG_MANIFEST_PATH
     try:
-        expected_types = json.loads(_TYPES_PATH.read_text(encoding="utf-8"))
-        expected_predicates = json.loads(_PREDICATES_PATH.read_text(encoding="utf-8"))
+        expected_types = json.loads(types_path.read_text(encoding="utf-8"))
+        expected_predicates = json.loads(predicates_path.read_text(encoding="utf-8"))
         catalog_schema = json.loads(_CATALOG_SCHEMA_PATH.read_text(encoding="utf-8"))
-        manifest = json.loads(_CATALOG_MANIFEST_PATH.read_text(encoding="utf-8"))
+        manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
     except (OSError, ValueError) as error:
         return [_diagnostic("catalog", "CATALOG_INVALID", f"Bundled catalog files cannot be read: {type(error).__name__}.")]
 
-    if not _manifest_integrity(manifest):
+    if not _manifest_integrity(manifest, catalog_profile):
         return [_diagnostic("catalog", "CATALOG_BUNDLE_MISMATCH",
             "The trusted catalog manifest digest does not match this validator release.", field_path="/catalog-manifest")]
     try:
@@ -75,7 +97,7 @@ def _validate_catalogs(catalogs: dict) -> list[dict]:
     except SchemaError as error:
         return [_diagnostic("catalog", "CATALOG_INVALID",
             f"Bundled catalog schema is invalid: {type(error).__name()}.", field_path="/catalog.schema.json")]
-    bundled = {"version": "1.0.0", "profile": "m1-project-discovery-1",
+    bundled = {"version": "1.0.0", "profile": catalog_profile,
                "types": catalogs["types"], "predicates": catalogs["predicates"]}
     errors = sorted(Draft202012Validator(catalog_schema).iter_errors(bundled),
                     key=lambda error: list(error.absolute_path))
@@ -124,16 +146,20 @@ def _validate_catalogs(catalogs: dict) -> list[dict]:
     if diagnostics:
         return diagnostics
 
-    expected_files = {"types.json": expected_types, "predicates.json": expected_predicates,
-                      "catalog.schema.json": catalog_schema}
+    expected_files = ({"semantic-types.json": expected_types, "semantic-predicates.json": expected_predicates,
+                       "catalog.schema.json": catalog_schema} if full_catalog else
+                      {"types.json": expected_types, "predicates.json": expected_predicates,
+                       "catalog.schema.json": catalog_schema})
     expected_digests = {name: _canonical_digest(value) for name, value in expected_files.items()}
-    if manifest.get("version") != "1.0.0" or manifest.get("profile") != "m1-project-discovery-1" \
+    if manifest.get("version") != "1.0.0" or manifest.get("profile") != catalog_profile \
             or manifest.get("ruleSetId") != "semantic-model-1.0.0" \
             or manifest.get("digests") != expected_digests:
         return [_diagnostic("catalog", "CATALOG_BUNDLE_MISMATCH",
             "The trusted catalog manifest does not match the bundled type, predicate, and schema files.", field_path="/catalog-manifest")]
-    if (_canonical_digest(catalogs["types"]) != expected_digests["types.json"]
-            or _canonical_digest(catalogs["predicates"]) != expected_digests["predicates.json"]):
+    type_key, predicate_key = (("semantic-types.json", "semantic-predicates.json") if full_catalog
+                               else ("types.json", "predicates.json"))
+    if (_canonical_digest(catalogs["types"]) != expected_digests[type_key]
+            or _canonical_digest(catalogs["predicates"]) != expected_digests[predicate_key]):
         return [_diagnostic("catalog", "CATALOG_BUNDLE_MISMATCH",
             "Caller-supplied catalogs differ from the fixed 1.0.0 bundle.", field_path="/catalogs")]
     return []
@@ -185,7 +211,8 @@ def validate_model(document: dict, catalogs: dict, source_observations: dict | N
     result = {"valid": False,
               "stages": {"catalog": "not_run", "structure": "not_run", "references": "not_run", "invariants": "not_run"},
               "diagnostics": [], "consistency": "undetermined", "dependencyCycles": []}
-    catalog_errors = _validate_catalogs(catalogs)
+    document_profile = document.get("profile") if isinstance(document, dict) else "m1-project-discovery-1"
+    catalog_errors = _validate_catalogs(catalogs, document_profile)
     if catalog_errors:
         result["stages"]["catalog"] = "fail"
         result["diagnostics"] = catalog_errors
@@ -354,6 +381,7 @@ def validate_model(document: dict, catalogs: dict, source_observations: dict | N
             field_path="/semanticStates"))
     if is_m1 and any(fact.get("claimMode") not in {"declaration", "interpretation"}
                      or fact.get("evidenceRefs") or fact.get("derivation") is not None
+                     or fact.get("sourceMetadata") is not None
                      for fact in document.get("facts", [])):
         invariant_diagnostics.append(_diagnostic("invariants", "M1_MODALITY_UNSUPPORTED",
             "The M1 project-discovery profile supports declaration/interpretation claims without derivation links.",

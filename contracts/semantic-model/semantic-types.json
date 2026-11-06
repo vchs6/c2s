@@ -1,0 +1,72 @@
+{
+  "version": "1.0.0",
+  "profile": "semantic-fact-model-1",
+  "types": [
+    {
+      "typeId": "M1Identity",
+      "fields": {
+        "authority": {
+          "type": "Id",
+          "required": true
+        },
+        "domainId": {
+          "type": "Id",
+          "required": true
+        },
+        "localId": {
+          "type": "Id",
+          "required": true
+        }
+      },
+      "invariants": [
+        "identity_has_no_path_layer_or_digest"
+      ]
+    },
+    {
+      "typeId": "M1SubjectRef",
+      "fields": {
+        "identity": {
+          "type": "M1Identity",
+          "required": true
+        },
+        "kind": {
+          "type": "M1SubjectKind",
+          "required": true
+        }
+      },
+      "invariants": [
+        "same_identity_has_one_kind"
+      ]
+    },
+    {
+      "typeId": "M1Registration",
+      "fields": {
+        "ref": {
+          "type": "M1SubjectRef",
+          "required": true
+        },
+        "sourceKey": {
+          "type": "Id",
+          "required": true
+        },
+        "evidenceIds": {
+          "type": "Id[]",
+          "required": true,
+          "minItems": 1
+        }
+      },
+      "invariants": [
+        "source_key_locates_registration_but_is_not_identity",
+        "evidence_ids_are_a_set"
+      ]
+    }
+  ],
+  "enums": {
+    "M1SubjectKind": [
+      "Project",
+      "PackageSpecification",
+      "NativeWorkspace",
+      "SourceDeclaration"
+    ]
+  }
+}

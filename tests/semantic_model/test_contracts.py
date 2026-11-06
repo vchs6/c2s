@@ -11,7 +11,8 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).resolve().parents[2] / "src"))
 sys.path.insert(0, str(Path(__file__).resolve().parents[2] / "skill" / "src"))
 
-from c2s_semantic_contract.validation import _manifest_integrity, register_m1, validate_model
+from c2s_semantic_contract.validation import (_manifest_integrity, register_m1,
+                                             semantic_model_catalogs, validate_model)
 from c2s_semantic_contract.projection import project_query_to_m1
 from c2s_skill.inventory import source_fingerprint
 
@@ -700,6 +701,17 @@ class M1IdentityTests(unittest.TestCase):
                 self.assertEqual(role_by_position["value"]["valueType"], value_kinds)
             self.assertIn(predicate["claimCardinality"], {"single_value_per_context", "multi_value"})
             self.assertEqual(predicate["comparisonPolicy"], "same_claim_mode_only")
+
+    def test_full_semantic_catalog_is_pinned_and_covers_supported_syntax_layers(self):
+        catalogs = semantic_model_catalogs()
+        self.assertEqual(catalogs["predicates"]["profile"], "semantic-fact-model-1")
+        by_id = {item["predicateId"]: item for item in catalogs["predicates"]["predicates"]}
+        for predicate_id, layer in (("module.declared", "E2"), ("function.declared", "E2"),
+                                    ("behavior.contract", "E3"), ("behavior.algorithm_step", "E4"),
+                                    ("binding.local", "E4")):
+            self.assertEqual(by_id[predicate_id]["primaryLayer"], layer)
+        result = validate_model(empty_bundle() | {"profile": "semantic-fact-model-1"}, catalogs)
+        self.assertTrue(result["valid"], result["diagnostics"])
 
     def test_catalog_rejects_dangling_type_references_and_mixed_versions(self):
         catalogs = fixed_catalogs()

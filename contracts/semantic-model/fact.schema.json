@@ -94,7 +94,8 @@
         "evidenceRefs": {"type": "array", "items": {"$ref": "#/$defs/evidenceRef"}},
         "derivation": {"$ref": "#/$defs/derivation"},
         "polarity": {"enum": ["positive", "negative"]},
-        "negativeBasis": {"$ref": "#/$defs/negativeBasis"}}
+        "negativeBasis": {"$ref": "#/$defs/negativeBasis"},
+        "sourceMetadata": {"$ref": "#/$defs/sourceMetadata"}}
     },
     "evidenceRef": {
       "type": "object", "additionalProperties": false,
@@ -117,6 +118,13 @@
           "required": ["inputId", "matched"], "properties": {"inputId": {"$ref": "#/$defs/id"}, "matched": {"type": "boolean"}}}},
         "humanReviewed": {"type": "boolean"},
         "unresolvedGapIds": {"type": "array", "uniqueItems": true, "items": {"$ref": "#/$defs/id"}}}
+    },
+    "sourceMetadata": {
+      "type": "object", "additionalProperties": false,
+      "required": ["kind", "layer", "owner", "text", "evidenceIncluded"],
+      "properties": {"kind": {"$ref": "#/$defs/id"}, "layer": {"enum": ["E0", "E1", "E2", "E3", "E4"]},
+        "owner": {"type": ["string", "null"]}, "text": {"type": "string"},
+        "evidenceIncluded": {"type": "boolean"}}
     },
     "contextDomain": {
       "type": "object", "additionalProperties": false,

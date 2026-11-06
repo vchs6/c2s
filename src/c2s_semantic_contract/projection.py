@@ -9,7 +9,7 @@ from pathlib import Path
 import shutil
 import subprocess
 
-from .validation import register_m1
+from .validation import register_m1, semantic_model_catalogs
 
 
 def project_query_to_m1(query_result, registrations: list[dict] | None = None) -> dict:
@@ -260,3 +260,175 @@ def check_source_coverage(document: dict, checklist: dict) -> dict:
         if isinstance(gap_reason, str) and gap_reason:
             declared_gaps.append({"itemId": item_id, "reason": gap_reason})
     return {"reviewed": reviewed, "uncoveredItems": uncovered, "declaredGaps": declared_gaps}
+
+
+_QUERY_KIND_PREDICATES = {
+    "project_name": "project.name", "language_declared": "project.language_declared",
+    "workspace_member": "workspace.member", "module": "module.declared",
+    "struct": "type.declared", "class": "type.declared", "enum": "type.declared",
+    "trait": "type.declared", "type_alias": "type.declared", "field": "member.declared",
+    "variant": "member.declared", "impl": "implementation.block", "function": "function.declared",
+    "import": "import.declared", "constant": "constant.declared", "constant_item": "constant.declared",
+    "static_item": "constant.declared", "behavior_contract": "behavior.contract",
+    "algorithm_step": "behavior.algorithm_step", "local_binding": "binding.local",
+}
+
+
+def project_query_to_semantic_model(query_result, catalogs: dict | None = None) -> dict:
+    """Project every currently supported query fact into the full semantic profile.
+
+    This maps existing Python/Rust syntax facts; it does not add type/call binding,
+    project ownership inference, or runtime observations.
+    """
+    root = Path(query_result.root).resolve(strict=True)
+    from c2s_skill.inventory import source_fingerprint
+
+    if source_fingerprint(root) != query_result.source_digest:
+        raise ValueError("project sources changed after the query scan; rerun before semantic projection")
+    catalogs = catalogs or semantic_model_catalogs()
+    supported_predicates = {item["predicateId"] for item in catalogs["predicates"]["predicates"]}
+    domain_id = hashlib.sha256(str(root).encode("utf-8")).hexdigest()
+    registrations_by_key: dict[tuple[str, str], dict] = {}
+    evidence_by_id: dict[str, dict] = {}
+    sources_by_path: dict[str, tuple[bytes, str]] = {}
+    observations_by_id: dict[str, dict] = {}
+    facts = []
+    fact_presentation: dict[str, bool] = {}
+    refs_by_key: dict[tuple[str, str], dict] = {}
+    diagnostics = []
+
+    def subject_ref(kind: str, local_id: str, source_key: str, evidence_id: str) -> dict:
+        key = (kind, local_id)
+        if key not in refs_by_key:
+            refs_by_key[key] = {"identity": {"authority": "c2s-analysis", "domainId": domain_id,
+                                                "localId": local_id}, "kind": kind}
+        ref = refs_by_key[key]
+        registration_key = (kind, source_key)
+        if registration_key not in registrations_by_key:
+            registrations_by_key[registration_key] = {"ref": ref, "sourceKey": source_key,
+                                                       "evidenceIds": []}
+        registration = registrations_by_key[registration_key]
+        if evidence_id not in registration["evidenceIds"]:
+            registration["evidenceIds"].append(evidence_id)
+        return ref
+
+    def evidence_for(fact) -> tuple[str, dict]:
+        source_path = (root / fact.path).resolve(strict=True)
+        if root not in source_path.parents and source_path != root:
+            raise ValueError(f"fact source escapes project root: {fact.path}")
+        cursor = source_path
+        while cursor != root:
+            if cursor.is_symlink():
+                raise ValueError(f"fact source traverses a symlink: {fact.path}")
+            cursor = cursor.parent
+        source_pair = sources_by_path.get(fact.path)
+        if source_pair is None:
+            source = source_path.read_bytes()
+            source_pair = (source, hashlib.sha256(source).hexdigest())
+            sources_by_path[fact.path] = source_pair
+        source, digest = source_pair
+        if not (0 <= fact.start_byte <= fact.end_byte <= len(source)):
+            raise ValueError(f"fact source span is outside source file: {fact.path}")
+        evidence_id = hashlib.sha256(
+            f"{fact.path}\0{fact.start_byte}\0{fact.end_byte}\0{digest}".encode("utf-8")).hexdigest()
+        evidence = {"evidenceId": evidence_id, "source": "input", "path": fact.path,
+                    "artifactId": None, "originalPath": fact.path, "sha256": digest,
+                    "startByte": fact.start_byte, "endByte": fact.end_byte,
+                    "method": fact.claim_mode, "toolName": None, "toolVersion": None}
+        evidence_by_id[evidence_id] = evidence
+        if fact.kind == "workspace_member":
+            observations_by_id[evidence_id] = {"evidenceId": evidence_id, "status": "unchecked",
+                                               "observedSha256": None}
+        else:
+            observations_by_id[evidence_id] = {"evidenceId": evidence_id, "status": "verified",
+                                               "observedSha256": digest}
+        return evidence_id, evidence
+
+    for fact in query_result.facts:
+        predicate_id = _QUERY_KIND_PREDICATES.get(fact.kind)
+        if predicate_id is None or predicate_id not in supported_predicates:
+            diagnostics.append({"code": "FACT_KIND_UNMAPPED", "severity": "gap", "recordId": fact.id,
+                                "path": fact.path, "message": f"No semantic predicate is registered for {fact.kind}."})
+            continue
+        evidence_id, _ = evidence_for(fact)
+        if fact.kind in {"project_name", "language_declared"}:
+            identity_kind = "Project"
+            local_id = fact.subject_id or hashlib.sha256(f"project:{root}".encode()).hexdigest()
+            source_key = "project:" + local_id
+        elif fact.kind == "workspace_member":
+            workspace_local_id = hashlib.sha256(f"workspace:{root}".encode()).hexdigest()
+            subject = subject_ref("NativeWorkspace", workspace_local_id, "workspace:" + str(root), evidence_id)
+            package_key = fact.owner or fact.name
+            package_local_id = hashlib.sha256(f"package:{domain_id}:{package_key}".encode()).hexdigest()
+            value = subject_ref("PackageSpecification", package_local_id, "package:" + package_key, evidence_id)
+            identity_kind = None
+            local_id = None
+            source_key = None
+        else:
+            identity_kind = "SourceDeclaration"
+            local_id = fact.subject_id or hashlib.sha256(
+                f"{fact.kind}\0{fact.path}\0{fact.start_byte}\0{fact.name}".encode()).hexdigest()
+            source_key = "source:" + local_id
+        if fact.kind != "workspace_member":
+            subject = subject_ref(identity_kind, local_id, source_key, evidence_id)
+            value = (fact.text or fact.name) if fact.kind in {"behavior_contract", "algorithm_step"} else fact.name
+        fact_id = hashlib.sha256(f"{fact.id}\0{predicate_id}\0{fact.start_byte}".encode()).hexdigest()
+        claim_mode = {"syntax": "declaration", "documentation": "specification",
+                      "cargo_metadata": "declaration"}.get(fact.claim_mode, "interpretation")
+        facts.append({"factId": fact_id, "predicate": predicate_id, "subject": subject, "value": value,
+            "claimMode": claim_mode, "condition": {"kind": "true"}, "evidenceIds": [evidence_id],
+            "sourceMetadata": {"kind": fact.kind, "layer": fact.layer, "owner": fact.owner,
+                               "text": fact.text, "evidenceIncluded": fact.evidence_included}})
+        fact_presentation[fact_id] = fact.evidence_included
+
+    if source_fingerprint(root) != query_result.source_digest:
+        raise ValueError("project sources changed during semantic projection; rerun the query")
+    for gap in query_result.gaps:
+        diagnostics.append({"code": gap.reason.split(":", 1)[0], "severity": "gap",
+                            "recordId": gap.selector, "path": None, "message": gap.reason})
+    for observation in observations_by_id.values():
+        if observation["status"] == "unchecked":
+            diagnostics.append({"code": "EVIDENCE_UNCHECKED", "severity": "gap",
+                "recordId": observation["evidenceId"], "path": None,
+                "message": "Workspace metadata evidence has no retained tool-output artifact."})
+    if query_result.facts and not facts:
+        diagnostics.append({"code": "NO_SUPPORTED_FACTS_PROJECTED", "severity": "gap", "recordId": None,
+                            "path": None, "message": "No query facts could be represented by the supplied catalog."})
+    if not query_result.facts:
+        diagnostics.append({"code": "NO_FACTS_RETURNED", "severity": "gap", "recordId": None,
+                            "path": None, "message": "An empty query result does not prove semantic absence."})
+    checked_paths = sorted(entry.path for entry in query_result.inventory
+                           if entry.kind == "file" and entry.path.endswith((".py", ".rs"))
+                           and entry.state == "readable")
+    selector = "+".join(query_result.requested)
+    coverage_id = hashlib.sha256(f"{query_result.source_digest}\0{selector}".encode()).hexdigest()
+    complete = query_result.complete and bool(facts) and not any(
+        item["status"] != "verified" for item in observations_by_id.values()) and not diagnostics
+    coverage = {"coverageId": coverage_id, "selector": selector, "subject": None,
+        "checkedPaths": checked_paths, "evidenceIds": sorted(evidence_by_id), "complete": complete,
+        "supersedes": [], "resolvedDiagnosticKeys": [], "diagnostics": diagnostics}
+    state_diagnostics = [item for item in diagnostics if item["severity"] in {"gap", "error"}]
+    semantic_states = []
+    if facts:
+        for included in (True, False):
+            selected_facts = [fact for fact in facts if fact_presentation[fact["factId"]] is included]
+            if not selected_facts:
+                continue
+            semantic_states.append({"stateId": hashlib.sha256(
+                    f"{coverage_id}\0presentation:{included}".encode()).hexdigest(),
+                "selector": selector, "subject": None, "predicate": None, "condition": {"kind": "true"},
+                "presentation": "expanded" if included else "ref_only", "acquisition": "obtained",
+                "factIds": [fact["factId"] for fact in selected_facts], "applicabilityReason": None,
+                "evidenceIds": sorted({evidence_id for fact in selected_facts for evidence_id in fact["evidenceIds"]}),
+                "diagnostics": state_diagnostics})
+    else:
+        semantic_states.append({"stateId": hashlib.sha256(f"{coverage_id}\0empty".encode()).hexdigest(),
+            "selector": selector, "subject": None, "predicate": None, "condition": {"kind": "true"},
+            "presentation": "ref_only", "acquisition": "not_acquired", "factIds": [],
+            "applicabilityReason": None, "evidenceIds": [], "diagnostics": state_diagnostics})
+    bundle = {"version": "1.0.0", "profile": "semantic-fact-model-1",
+        "registrations": sorted(registrations_by_key.values(), key=lambda item: item["sourceKey"]),
+        "assessments": [], "facts": facts, "evidence": list(evidence_by_id.values()),
+        "coverage": [coverage], "diagnostics": [], "semanticStates": semantic_states}
+    return {"bundle": bundle, "artifacts": [],
+            "sourceObservations": {"items": list(observations_by_id.values())}}
