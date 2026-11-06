@@ -1,8 +1,11 @@
 import json
+import hashlib
 import sys
 import unittest
 import tempfile
 from types import SimpleNamespace
+from unittest.mock import patch
+import subprocess
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[2] / "src"))
@@ -84,6 +87,35 @@ class M1IdentityTests(unittest.TestCase):
             self.assertEqual(membership["value"]["kind"], "PackageSpecification")
             self.assertFalse(bundle["coverage"][0]["complete"])
             self.assertIn("EVIDENCE_UNCHECKED", {item["code"] for item in bundle["coverage"][0]["diagnostics"]})
+
+    def test_workspace_projection_captures_and_binds_cargo_metadata_artifact(self):
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            source = b'[workspace]\nmembers = ["crate"]\n'
+            (root / "Cargo.toml").write_bytes(source)
+            fact = SimpleNamespace(path="Cargo.toml", start_byte=0, end_byte=len(source),
+                                   kind="workspace_member", name="crate", subject_id="package-1",
+                                   claim_mode="cargo_metadata", owner="crate/Cargo.toml", id="fact-member")
+            query_result = SimpleNamespace(root=str(root), facts=(fact,), gaps=(), complete=True,
+                                           source_digest=source_fingerprint(root))
+            metadata_output = json.dumps({"packages": [{"name": "crate"}]})
+            cargo_metadata = subprocess.CompletedProcess([], 0, metadata_output, "")
+            cargo_version = subprocess.CompletedProcess([], 0, "cargo 1.0.0\n", "")
+            with patch("c2s_semantic_contract.projection.shutil.which", return_value="/fake/cargo"), \
+                    patch("c2s_semantic_contract.projection.subprocess.run",
+                          side_effect=[cargo_metadata, cargo_version]):
+                projection = project_query_to_m1(query_result)
+
+            bundle = projection["bundle"]
+            evidence = bundle["evidence"][0]
+            attachment = projection["artifacts"][0]
+            validation = validate_model(bundle, fixed_catalogs(), projection["sourceObservations"])
+            self.assertEqual(evidence["source"], "tool_output")
+            self.assertEqual(evidence["artifactId"], attachment["artifactId"])
+            self.assertEqual(hashlib.sha256(attachment["content"].encode()).hexdigest(), evidence["sha256"])
+            self.assertEqual(projection["sourceObservations"]["items"][0]["status"], "verified")
+            self.assertTrue(bundle["coverage"][0]["complete"])
+            self.assertTrue(validation["valid"])
 
     def test_projection_rejects_sources_changed_after_query_scan(self):
         with tempfile.TemporaryDirectory() as directory:

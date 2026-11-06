@@ -3,7 +3,11 @@
 from __future__ import annotations
 
 import hashlib
+import json
+import os
 from pathlib import Path
+import shutil
+import subprocess
 
 from .validation import register_m1
 
@@ -24,7 +28,29 @@ def project_query_to_m1(query_result, registrations: list[dict] | None = None) -
     refs: dict[tuple[str, str], dict] = {}
     evidence_records: dict[str, dict] = {}
     observations: dict[str, dict] = {}
+    artifacts: dict[str, dict] = {}
     facts = []
+    workspace_metadata = None
+
+    workspace_facts = [fact for fact in query_result.facts if fact.kind == "workspace_member"]
+    if workspace_facts:
+        cargo = os.environ.get("CARGO") or shutil.which("cargo")
+        manifest = root / "Cargo.toml"
+        if cargo and manifest.is_file() and not manifest.is_symlink():
+            try:
+                completed = subprocess.run(
+                    [cargo, "metadata", "--format-version", "1", "--no-deps", "--offline",
+                     "--manifest-path", str(manifest)], cwd=root, capture_output=True, text=True,
+                    timeout=20, check=True)
+                metadata = json.loads(completed.stdout)
+                package_names = sorted(item["name"] for item in metadata.get("packages", []))
+                if package_names != sorted(fact.name for fact in workspace_facts):
+                    raise ValueError("Cargo workspace results changed since the query scan")
+                tool_version = subprocess.run([cargo, "--version"], capture_output=True, text=True,
+                                              timeout=3, check=True).stdout.strip()
+                workspace_metadata = (completed.stdout, tool_version)
+            except (OSError, ValueError, KeyError, TypeError, subprocess.SubprocessError):
+                workspace_metadata = None
 
     def register(kind: str, source_key: str, evidence_id: str) -> dict:
         result = register_m1(domain_id, registration_records, kind, source_key, [evidence_id])
@@ -40,6 +66,23 @@ def project_query_to_m1(query_result, registrations: list[dict] | None = None) -
         return result["ref"]
 
     def add_evidence(fact) -> tuple[str, dict]:
+        if fact.kind == "workspace_member" and workspace_metadata is not None:
+            output, tool_version = workspace_metadata
+            output_bytes = output.encode("utf-8")
+            digest = hashlib.sha256(output_bytes).hexdigest()
+            artifact_id = digest
+            artifacts[artifact_id] = {"artifactId": artifact_id, "mediaType": "application/json",
+                                      "sha256": digest, "content": output}
+            evidence_id = hashlib.sha256(
+                f"{fact.id}\0cargo-metadata\0{digest}".encode("utf-8")).hexdigest()
+            evidence = {"evidenceId": evidence_id, "source": "tool_output", "path": None,
+                        "artifactId": artifact_id, "originalPath": "Cargo metadata --no-deps output",
+                        "sha256": digest, "startByte": 0, "endByte": len(output_bytes),
+                        "method": "cargo-metadata", "toolName": "cargo", "toolVersion": tool_version}
+            evidence_records[evidence_id] = evidence
+            observations[evidence_id] = {"evidenceId": evidence_id, "status": "verified",
+                                         "observedSha256": digest}
+            return evidence_id, evidence
         relative = Path(fact.path)
         if relative.is_absolute() or ".." in relative.parts:
             raise ValueError(f"fact source path escapes project root: {fact.path}")
@@ -113,4 +156,5 @@ def project_query_to_m1(query_result, registrations: list[dict] | None = None) -
     bundle = {"version": "1.0.0", "profile": "m1-project-discovery-1",
               "registrations": registration_records, "assessments": [], "facts": facts,
               "evidence": list(evidence_records.values()), "coverage": [coverage], "diagnostics": []}
-    return {"bundle": bundle, "sourceObservations": {"items": list(observations.values())}}
+    return {"bundle": bundle, "artifacts": list(artifacts.values()),
+            "sourceObservations": {"items": list(observations.values())}}

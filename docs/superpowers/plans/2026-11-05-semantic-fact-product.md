@@ -130,3 +130,7 @@ Final verification: product tests 45/45; repository maintenance tests 35/35; str
 ## Progress — 2026-11-06, M1 single-valued claim conflicts
 
 - The validator now compares `project.name` only within the same subject, claim mode, and condition. Different names remain in the bundle with paired conflict diagnostics, `valid=true`, and `consistency=conflicting`; declaration and interpretation claims are not compared. Thirty-one focused semantic-model tests pass. Wider context and multi-predicate conflict rules remain outstanding.
+
+## Progress — 2026-11-06, verified Cargo workspace projection
+
+- The M1 adapter now captures a canonical Cargo `metadata --no-deps --offline` JSON attachment, binds membership evidence to its digest, and checks the package list against the original query before marking evidence verified. If Cargo is unavailable or the repeat differs, evidence remains unchecked. Rust 1.99.1/Cargo 1.99.1 was installed under ignored `.local/`; the real regex workspace returned seven members, one verified attachment, valid M1 records, complete coverage, and no diagnostics. The focused semantic-model suite now has 32 tests.
