@@ -2,7 +2,7 @@
 
 ## Status and scope
 
-The public M1 slice is version `1.0.0`, profile `m1-project-discovery-1`. It establishes explicit subject identity and a bounded JSON exchange shape for registrations, assessments, facts, evidence, coverage, and diagnostics. It does not yet implement the complete E0–E4 model or prove that claims match source behavior.
+Version `1.0.0` exposes two profiles: `m1-project-discovery-1` remains the narrow project/workspace identity contract, and `semantic-fact-model-1` adds contextual claims, finite conditions, dependencies/resolutions, evidence roles, derivations, semantic acquisition/presentation states, and an expanded closed predicate catalog. `project_query_to_semantic_model` projects every fact kind currently returned by the Python/Rust analyzer into that expanded profile. Fixed Click and regex checkouts exercise 23,779 and 54,313 returned facts respectively. Those totals describe the analyzer's supported acquisition surface, not all possible project semantics. Workspace metadata unavailable from Cargo remains a gap. The model validates shape, references, and declared invariants; it does not prove source truth, complete E0–E4 extraction, or runtime behavior.
 
 ## Identity language
 
@@ -14,4 +14,4 @@ The M1 subject kinds are `Project`, `PackageSpecification`, `NativeWorkspace`, a
 
 ## Validation and evidence boundary
 
-`contracts/semantic-model/fact.schema.json` provides JSON Schema 2020-12 structural validation. `src/c2s_semantic_contract/validation.py` adds local reference and identity checks. Contract validity is not source truth. Evidence observations, the closed predicate catalog, project-mapping rules, cross-claim conflict analysis, and later E1–E4 semantics remain separate implementation tasks. Shared-workspace developer tests are not independent or private acceptance evidence.
+`contracts/semantic-model/fact.schema.json` provides JSON Schema 2020-12 structural validation for both profiles. `src/c2s_semantic_contract/validation.py` adds local reference, catalog, identity, condition, dependency, coverage, derivation, and claim consistency checks. `project_query_to_semantic_model` rechecks the scanned source fingerprint, hashes source evidence, preserves original acquisition metadata, and does not turn empty results into negative claims. Contract validity is not source truth; coverage is scoped to the submitted selector and inventory. Full language-mechanism mapping, the complete engineering/build-delivery model, broader composition/reference rules, query execution guarantees, and runtime behavior remain implementation tasks. Shared-workspace tests are implementation evidence, not independent acceptance.
