@@ -18,7 +18,7 @@ from pathlib import Path
 from tree_sitter import Language, Parser
 import tree_sitter_python
 import tree_sitter_rust
-from .inventory import InventoryEntry, inventory_tree
+from .inventory import InventoryEntry, inventory_tree, source_fingerprint
 
 
 @dataclass(frozen=True, slots=True)
@@ -59,28 +59,6 @@ class ProjectScan:
     source_digest: str
     project_facts: tuple[Fact, ...]
     inventory: tuple[InventoryEntry, ...]
-
-
-def source_fingerprint(root: Path) -> str:
-    """Hash the complete visible project tree without following symlinks."""
-    root = root.resolve(strict=True)
-    digest = hashlib.sha256()
-    for entry in inventory_tree(root, excluded_dirs=frozenset({".git"})):
-        path = root / entry.path
-        digest.update(entry.path.encode("utf-8"))
-        digest.update(b"\0" + entry.kind.encode("ascii") + b"\0" + entry.state.encode("ascii") + b"\0")
-        if entry.kind == "file":
-            try:
-                digest.update(hashlib.sha256(path.read_bytes()).hexdigest().encode("ascii"))
-            except OSError as error:
-                digest.update(f"READ_ERROR:{type(error).__name__}".encode("ascii"))
-        elif entry.kind == "symlink":
-            try:
-                digest.update(os.readlink(path).encode("utf-8", errors="surrogateescape"))
-            except OSError as error:
-                digest.update(f"READLINK_ERROR:{type(error).__name__}".encode("ascii"))
-        digest.update(b"\n")
-    return digest.hexdigest()
 
 
 def analysis_profile_digest() -> str:

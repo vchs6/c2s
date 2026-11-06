@@ -122,3 +122,7 @@ Final verification: product tests 45/45; repository maintenance tests 35/35; str
 ## Progress — 2026-11-06, M1 evidence and coverage slice
 
 - Implemented caller-supplied observation validation without source reads/network access, including unchecked gaps, verified digest matching, mismatch errors, evidence references, and malformed/duplicate observation rejection. Coverage now checks evidence references, complete-vs-gap consistency, same-selector/subject supersedes, resolved diagnostic keys, and acyclic lineage. Twenty-six focused semantic-model tests pass. Task 3.1.1 remains open under the change-level acceptance boundary; external tool-output attachment persistence is not represented by this wire bundle and was not claimed.
+
+## Progress — 2026-11-06, M1 query integration
+
+- Added `project_query_to_m1` to adapt current `project.name`, `project.language_declared`, and `workspace.member` query facts into the fixed M1 bundle, with shared Project identity, NativeWorkspace-to-PackageSpecification roles, evidence spans, observations, and coverage. It checks the project tree digest before and after projection. Thirty focused M1 tests pass. A real Click query produced two E0 facts that passed M1 validation with no diagnostics. A real regex workspace query returned the explicit `TOOL_UNAVAILABLE:cargo` gap, so the generated coverage remains incomplete. This is developer-side integration evidence, not independent/private acceptance.

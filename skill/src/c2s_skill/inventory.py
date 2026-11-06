@@ -1,6 +1,8 @@
 """Deterministic, ignore-file-independent filesystem inventory."""
 
 from dataclasses import dataclass
+import hashlib
+import os
 from pathlib import Path
 
 
@@ -47,3 +49,25 @@ def inventory_tree(root: Path, *, excluded_dirs: frozenset[str] = frozenset()) -
 
     visit(root)
     return entries
+
+
+def source_fingerprint(root: Path) -> str:
+    """Hash the complete visible project tree without following symlinks."""
+    root = root.resolve(strict=True)
+    digest = hashlib.sha256()
+    for entry in inventory_tree(root, excluded_dirs=frozenset({".git"})):
+        path = root / entry.path
+        digest.update(entry.path.encode("utf-8"))
+        digest.update(b"\0" + entry.kind.encode("ascii") + b"\0" + entry.state.encode("ascii") + b"\0")
+        if entry.kind == "file":
+            try:
+                digest.update(hashlib.sha256(path.read_bytes()).hexdigest().encode("ascii"))
+            except OSError as error:
+                digest.update(f"READ_ERROR:{type(error).__name__}".encode("ascii"))
+        elif entry.kind == "symlink":
+            try:
+                digest.update(os.readlink(path).encode("utf-8", errors="surrogateescape"))
+            except OSError as error:
+                digest.update(f"READLINK_ERROR:{type(error).__name__}".encode("ascii"))
+        digest.update(b"\n")
+    return digest.hexdigest()

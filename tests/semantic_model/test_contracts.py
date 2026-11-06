@@ -1,11 +1,16 @@
 import json
 import sys
 import unittest
+import tempfile
+from types import SimpleNamespace
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[2] / "src"))
+sys.path.insert(0, str(Path(__file__).resolve().parents[2] / "skill" / "src"))
 
 from c2s_semantic_contract.validation import _manifest_integrity, register_m1, validate_model
+from c2s_semantic_contract.projection import project_query_to_m1
+from c2s_skill.inventory import source_fingerprint
 
 
 def empty_bundle():
@@ -33,6 +38,69 @@ def bundle_with_fact(predicate="project.name", subject_kind="Project", value="Ex
 
 
 class M1IdentityTests(unittest.TestCase):
+    def test_real_query_projection_builds_valid_m1_project_facts(self):
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            source = b'[project]\nname = "sample"\nrequires-python = ">=3.11"\n'
+            (root / "pyproject.toml").write_bytes(source)
+            facts = [SimpleNamespace(path="pyproject.toml", start_byte=10, end_byte=25,
+                                     kind="project_name", name="sample", subject_id="project-1",
+                                     claim_mode="declaration", owner=None, id="fact-name"),
+                     SimpleNamespace(path="pyproject.toml", start_byte=26, end_byte=len(source),
+                                     kind="language_declared", name="Python", subject_id="project-1",
+                                     claim_mode="declaration", owner=None, id="fact-language")]
+            query_result = SimpleNamespace(root=str(root), facts=tuple(facts), gaps=(), complete=True,
+                                           source_digest=source_fingerprint(root))
+
+            projection = project_query_to_m1(query_result)
+            validation = validate_model(projection["bundle"], fixed_catalogs(), projection["sourceObservations"])
+
+            self.assertTrue(validation["valid"])
+            self.assertEqual({fact["predicate"] for fact in projection["bundle"]["facts"]},
+                             {"project.name", "project.language_declared"})
+            self.assertEqual(len({item["ref"]["identity"]["localId"]
+                                  for item in projection["bundle"]["registrations"]}), 1)
+            self.assertEqual(validation["consistency"], "undetermined")
+
+    def test_real_query_projection_keeps_workspace_membership_typed_and_unchecked(self):
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            source = b'[workspace]\nmembers = ["crate"]\n'
+            (root / "Cargo.toml").write_bytes(source)
+            fact = SimpleNamespace(path="Cargo.toml", start_byte=0, end_byte=len(source),
+                                   kind="workspace_member", name="crate", subject_id="package-1",
+                                   claim_mode="cargo_metadata", owner="crate/Cargo.toml", id="fact-member")
+            query_result = SimpleNamespace(root=str(root), facts=(fact,), gaps=(), complete=True,
+                                           source_digest=source_fingerprint(root))
+
+            projection = project_query_to_m1(query_result)
+            bundle = projection["bundle"]
+            membership = bundle["facts"][0]
+            validation = validate_model(bundle, fixed_catalogs(), projection["sourceObservations"])
+
+            self.assertTrue(validation["valid"])
+            self.assertEqual(membership["predicate"], "workspace.member")
+            self.assertEqual(membership["subject"]["kind"], "NativeWorkspace")
+            self.assertEqual(membership["value"]["kind"], "PackageSpecification")
+            self.assertFalse(bundle["coverage"][0]["complete"])
+            self.assertIn("EVIDENCE_UNCHECKED", {item["code"] for item in bundle["coverage"][0]["diagnostics"]})
+
+    def test_projection_rejects_sources_changed_after_query_scan(self):
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            source = b'[project]\nname = "before"\n'
+            manifest = root / "pyproject.toml"
+            manifest.write_bytes(source)
+            fact = SimpleNamespace(path="pyproject.toml", start_byte=10, end_byte=25,
+                                   kind="project_name", name="before", subject_id="project-1",
+                                   claim_mode="declaration", owner=None, id="fact-before")
+            query_result = SimpleNamespace(root=str(root), facts=(fact,), gaps=(), complete=True,
+                                           source_digest=source_fingerprint(root))
+            manifest.write_bytes(b'[project]\nname = "after"\n')
+
+            with self.assertRaisesRegex(ValueError, "sources changed"):
+                project_query_to_m1(query_result)
+
     @staticmethod
     def assessment(assessment_id, declaration, status, projects, *, rule_id="boundary-v1", supersedes=None):
         return {"assessmentId": assessment_id, "declaration": declaration, "status": status,
