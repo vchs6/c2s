@@ -152,3 +152,7 @@ Final verification: product tests 45/45; repository maintenance tests 35/35; str
 ## Progress — 2026-11-06, dependency records
 
 - Extended the full semantic profile with separate dependency requirement and resolution records. Validation checks registered consumer/provider references, evidence references, resolution-to-requirement links, resolved/ambiguous/unresolved provider cardinality, duplicate record IDs, and condition consistency with consumer context. `scopePosition` remains orthogonal to requirement identity and resolution status. Added coverage for a valid out-of-scope resolved provider, cardinality rejection, and contradictory conditions. Requirements remain explicit inputs: project metadata is not yet projected into these records, and the cycle primitive is not yet wired to them.
+
+## Progress — 2026-11-06, dependency-cycle integration
+
+- `validate_model` now builds separate candidate graphs per explicit resolution configuration and attaches conditional cycle analysis to its result. It joins requirement conditions across each candidate cycle, reports infeasible/possible/undetermined distinctly, and never treats a possible cycle as a contract/build error. Enumeration has explicit cycle/search budgets; budget exhaustion and unsupported cycle conditions surface as gaps. Integration regression confirms mutually exclusive edges remain an infeasible candidate cycle while the dependency records and contract stay valid.

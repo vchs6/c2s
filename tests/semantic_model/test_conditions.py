@@ -45,6 +45,19 @@ class FiniteConditionTests(unittest.TestCase):
         self.assertEqual(result["cycles"][0]["status"], "undetermined")
         self.assertEqual(result["cycles"][0]["reason"], "CONDITION_UNSUPPORTED_FRAGMENT")
 
+    def test_cycle_enumeration_budget_is_explicit(self):
+        edges = [
+            {"edgeId": "ab", "source": "a", "target": "b", "condition": {"kind": "true"}},
+            {"edgeId": "ba", "source": "b", "target": "a", "condition": {"kind": "true"}},
+            {"edgeId": "ac", "source": "a", "target": "c", "condition": {"kind": "true"}},
+            {"edgeId": "ca", "source": "c", "target": "a", "condition": {"kind": "true"}},
+        ]
+
+        result = diagnose_conditional_cycles(edges, {}, cycle_budget=1)
+
+        self.assertEqual(len(result["cycles"]), 1)
+        self.assertEqual(result["diagnostics"], ["DEPENDENCY_CYCLE_BUDGET_EXCEEDED"])
+
     def test_shared_enum_key_distinguishes_sat_and_unsat_with_witnesses(self):
         domains = {"target": ["linux", "windows"]}
         same = {"kind": "eq", "key": "target", "value": "linux"}

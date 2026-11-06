@@ -510,6 +510,35 @@ class M1IdentityTests(unittest.TestCase):
         self.assertFalse(result["valid"])
         self.assertIn("DEPENDENCY_CONDITION_CONTRADICTION", {item["ruleCode"] for item in result["diagnostics"]})
 
+    def test_resolved_dependency_cycle_is_reported_without_becoming_contract_error(self):
+        bundle = bundle_with_fact()
+        bundle["profile"] = "semantic-fact-model-1"
+        project = bundle["facts"][0]["subject"]
+        package = {"identity": {"authority": "cargo", "domainId": "registry", "localId": "serde"},
+                   "kind": "PackageSpecification"}
+        bundle["registrations"].append({"ref": package, "sourceKey": "registry:serde", "evidenceIds": ["ev-1"]})
+        bundle["contextDomains"] = [{"keyId": "x", "values": ["A", "B"]}]
+        bundle["dependencies"] = [
+            {"dependencyId": "a-to-b", "consumer": project, "purpose": "build", "stage": "compile",
+             "path": None, "version": None, "condition": {"kind": "eq", "key": "x", "value": "A"},
+             "evidenceIds": ["ev-1"]},
+            {"dependencyId": "b-to-a", "consumer": package, "purpose": "build", "stage": "compile",
+             "path": None, "version": None, "condition": {"kind": "eq", "key": "x", "value": "B"},
+             "evidenceIds": ["ev-1"]},
+        ]
+        bundle["dependencyResolutions"] = [
+            {"resolutionId": "res-a", "dependencyId": "a-to-b", "status": "resolved", "providers": [package],
+             "configuration": "default", "visibility": "local", "scopePosition": "inside", "evidenceIds": ["ev-1"]},
+            {"resolutionId": "res-b", "dependencyId": "b-to-a", "status": "resolved", "providers": [project],
+             "configuration": "default", "visibility": "local", "scopePosition": "inside", "evidenceIds": ["ev-1"]},
+        ]
+
+        result = validate_model(bundle, fixed_catalogs())
+
+        self.assertTrue(result["valid"])
+        self.assertEqual(result["dependencyCycles"][0]["configuration"], "default")
+        self.assertEqual(result["dependencyCycles"][0]["cycles"][0]["status"], "infeasible")
+
     def test_catalog_rejects_unsupported_constraint_ids(self):
         catalogs = fixed_catalogs()
         catalogs["predicates"]["predicates"][0]["constraints"].append("UNSAFE_EVAL")

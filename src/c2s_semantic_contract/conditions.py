@@ -109,13 +109,13 @@ def classify_claim_overlap(left: dict, right: dict, domains: dict) -> dict:
     return {"status": "potential_conflict", "witness": None, "reason": truth["reason"]}
 
 
-def diagnose_conditional_cycles(edges: list[dict], domains: dict) -> dict:
+def diagnose_conditional_cycles(edges: list[dict], domains: dict, *, cycle_budget: int = 4096) -> dict:
     """Enumerate simple directed cycles and jointly solve their edge conditions.
 
     The original edge records are returned unchanged. This diagnoses whether a
     cycle can be active; it does not decide whether a build rule is erroneous.
     """
-    if not isinstance(edges, list):
+    if not isinstance(edges, list) or not isinstance(cycle_budget, int) or cycle_budget < 1:
         return {"edges": edges, "cycles": [], "diagnostics": ["DEPENDENCY_GRAPH_INVALID"]}
     adjacency: dict[str, list[dict]] = {}
     vertices: set[str] = set()
@@ -130,11 +130,23 @@ def diagnose_conditional_cycles(edges: list[dict], domains: dict) -> dict:
         adjacency.setdefault(edge["source"], []).append(edge)
 
     cycles: list[dict] = []
+    exceeded = False
+    explored = 0
+    exploration_budget = max(1024, cycle_budget * 100)
     for start in sorted(vertices):
-        def walk(current: str, visited: set[str], path_edges: list[dict]) -> None:
-            for edge in adjacency.get(current, []):
+        stack: list[tuple[str, set[str], list[dict]]] = [(start, {start}, [])]
+        while stack:
+            current, visited, path_edges = stack.pop()
+            for edge in reversed(adjacency.get(current, [])):
+                explored += 1
+                if explored > exploration_budget:
+                    exceeded = True
+                    break
                 target = edge["target"]
                 if target == start:
+                    if len(cycles) == cycle_budget:
+                        exceeded = True
+                        break
                     cycle_edges = [*path_edges, edge]
                     result = condition_satisfiability(
                         [item.get("condition", {"kind": "true"}) for item in cycle_edges], domains)
@@ -144,7 +156,11 @@ def diagnose_conditional_cycles(edges: list[dict], domains: dict) -> dict:
                                    "status": status, "witness": result["witness"],
                                    "reason": result["reason"]})
                 elif target not in visited and target >= start:
-                    walk(target, visited | {target}, [*path_edges, edge])
-        walk(start, {start}, [])
+                    stack.append((target, visited | {target}, [*path_edges, edge]))
+            if exceeded:
+                break
+        if exceeded:
+            break
     cycles.sort(key=lambda item: tuple(item["edgeIds"]))
-    return {"edges": edges, "cycles": cycles, "diagnostics": []}
+    return {"edges": edges, "cycles": cycles,
+            "diagnostics": ["DEPENDENCY_CYCLE_BUDGET_EXCEEDED"] if exceeded else []}

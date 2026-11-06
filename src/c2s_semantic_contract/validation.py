@@ -10,7 +10,7 @@ from uuid import uuid4
 
 from jsonschema import Draft202012Validator
 from jsonschema.exceptions import SchemaError
-from .conditions import classify_claim_overlap, condition_satisfiability
+from .conditions import classify_claim_overlap, condition_satisfiability, diagnose_conditional_cycles
 
 
 _ROOT = Path(__file__).resolve().parents[2]
@@ -184,7 +184,7 @@ def validate_model(document: dict, catalogs: dict, source_observations: dict | N
     """Validate the M1 wire shape and local references without claiming source truth."""
     result = {"valid": False,
               "stages": {"catalog": "not_run", "structure": "not_run", "references": "not_run", "invariants": "not_run"},
-              "diagnostics": [], "consistency": "undetermined"}
+              "diagnostics": [], "consistency": "undetermined", "dependencyCycles": []}
     catalog_errors = _validate_catalogs(catalogs)
     if catalog_errors:
         result["stages"]["catalog"] = "fail"
@@ -293,6 +293,31 @@ def validate_model(document: dict, catalogs: dict, source_observations: dict | N
         result["diagnostics"] = diagnostics
         return result
     result["stages"]["references"] = "pass"
+    requirements = {item["dependencyId"]: item for item in document.get("dependencies", [])}
+    context_domains_for_graph = {item["keyId"]: item["values"] for item in document.get("contextDomains", [])}
+    contexts_for_graph = {item["contextId"]: item for item in document.get("contexts", [])}
+    graphs_by_configuration: dict[str | None, list[dict]] = {}
+    for resolution in document.get("dependencyResolutions", []):
+        if resolution["status"] == "unresolved":
+            continue
+        requirement = requirements.get(resolution["dependencyId"])
+        if requirement is None:
+            continue
+        condition_parts = [requirement["condition"]]
+        context_ref = requirement["consumer"].get("contextRef")
+        if context_ref in contexts_for_graph:
+            condition_parts.extend({"kind": "eq", "key": key_id, "value": value}
+                                   for key_id, value in contexts_for_graph[context_ref]["assignments"].items())
+        condition = {"kind": "all", "conditions": condition_parts}
+        configuration = resolution["configuration"]
+        graph_edges = graphs_by_configuration.setdefault(configuration, [])
+        for provider_index, provider in enumerate(resolution["providers"]):
+            graph_edges.append({"edgeId": f"{resolution['resolutionId']}:{provider_index}",
+                                "source": json.dumps(_identity_key(requirement["consumer"]), ensure_ascii=False),
+                                "target": json.dumps(_identity_key(provider), ensure_ascii=False), "condition": condition})
+    result["dependencyCycles"] = [
+        {"configuration": configuration, **diagnose_conditional_cycles(edges, context_domains_for_graph)}
+        for configuration, edges in sorted(graphs_by_configuration.items(), key=lambda item: item[0] or "")]
     invariant_diagnostics = []
     context_domains = {item["keyId"]: item["values"] for item in document.get("contextDomains", [])}
     is_m1 = document.get("profile") == "m1-project-discovery-1"
@@ -356,6 +381,17 @@ def validate_model(document: dict, catalogs: dict, source_observations: dict | N
 
     contexts_by_id = {item["contextId"]: item for item in document.get("contexts", [])}
     condition_gaps = []
+    for analysis in result["dependencyCycles"]:
+        for code in analysis["diagnostics"]:
+            condition_gaps.append(_diagnostic("invariants", code,
+                "Dependency cycle enumeration reached its explicit resource limit; remaining cycles are unknown.",
+                field_path="/dependencyResolutions", severity="gap"))
+        for cycle_index, cycle in enumerate(analysis["cycles"]):
+            if cycle["status"] == "undetermined":
+                condition_gaps.append(_diagnostic("invariants", "CYCLE_CONDITION_UNDETERMINED",
+                    f"Cycle conditions could not be decided: {cycle['reason']}.",
+                    record_ref=f"cycle:{','.join(cycle['edgeIds'])}",
+                    field_path=f"/dependencyCycles/{cycle_index}", severity="gap"))
     for fact_index, fact in enumerate(document["facts"]):
         condition = fact["condition"]
         conjuncts = []
@@ -599,7 +635,7 @@ def validate_model(document: dict, catalogs: dict, source_observations: dict | N
     if invariant_diagnostics:
         result["stages"]["invariants"] = ("fail" if any(item["severity"] == "error" for item in invariant_diagnostics)
                                             else "partial")
-        result["diagnostics"] = invariant_diagnostics + gap_diagnostics
+        result["diagnostics"] = invariant_diagnostics + gap_diagnostics + condition_gaps
         result["valid"] = result["stages"]["invariants"] != "fail"
         return result
     result["stages"]["invariants"] = "partial"
