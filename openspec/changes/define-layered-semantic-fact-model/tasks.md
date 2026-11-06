@@ -173,6 +173,7 @@
 ## Progress — 2026-11-06, language mechanism gaps (4.2 partial)
 
 - Added regression cases proving Rust macro invocations remain source-bound opaque steps and Python decorator expressions do not leak into body steps. Lowering now reports decorator/wrapper semantics, closure capture, Rust macro expansion, and `cfg` selection as explicit omissions. This preserves unknowns without inventing expansion or capture bindings. A complete language mechanism mapping, behavior for conditional binding, and broader callback/decorator source relations remain outstanding; task 4.2 stays open.
+- Extended closure regressions: Rust closure expressions now produce a dedicated omission for deferred body/capture semantics and a direct closure expression remains an opaque source-bound step; Python lambda-containing operations explicitly report that the anonymous body is not independently lowered. Tests verify Rust closure operations are not attributed as direct outer-body steps. Conditional binding, Rust macro application-to-generated-binding relations, and Click runtime callback/decorator mapping remain open.
 
 ## Progress — 2026-11-06, algorithm text projection and checklist primitive (4.3 partial)
 

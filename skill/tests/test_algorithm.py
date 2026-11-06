@@ -140,6 +140,23 @@ class AlgorithmContractTests(unittest.TestCase):
         self.assertIsNotNone(macro["source"])
         self.assertTrue(macro["unknowns"])
 
+    def test_rust_closure_body_is_not_misattributed_to_enclosing_operation(self):
+        source = b"fn mapper() { let add = |x| x + 1; consume(move || { send(); }); }"
+        algorithm = extract_rust_algorithm(source, "src/lib.rs", "mapper")["algorithm"]
+        reasons = " ".join(item["reason"] for item in algorithm["omissions"])
+        self.assertIn("closure", reasons.lower())
+        self.assertIn("capture", reasons.lower())
+        self.assertFalse(any(step.get("attributes", {}).get("operation") == "+"
+                             for step in algorithm["body"]["steps"]))
+        self.assertEqual(validate_algorithms({"schema_version": "1.0.0", "algorithms": [algorithm]}), [])
+
+    def test_python_lambda_body_and_capture_are_explicit_omissions(self):
+        source = b"def mapper(x):\n    return lambda y: x + y\n"
+        algorithm = extract_python_algorithm(source, "src/module.py", "mapper")["algorithm"]
+        reasons = " ".join(item["reason"] for item in algorithm["omissions"])
+        self.assertIn("lambda", reasons.lower())
+        self.assertIn("capture", reasons.lower())
+
     def test_real_regex_function_is_lowered_with_rust_syntax_evidence(self):
         root = Path(__file__).resolve().parents[2] / ".local/real-projects/regex"
         path = root / "regex-automata/src/nfa/thompson/backtrack.rs"

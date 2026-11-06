@@ -104,6 +104,20 @@ def extract_python_algorithm(source: bytes, path: str, function_name: str,
                   "impact": "Some normal and cleanup paths are omitted from the structured body."}]
     omissions.append({"reason": "Closure capture and binding resolution are not analyzed.",
                       "impact": "Free-variable reads, writes and conditional binding targets remain unknown."})
+    for candidate in ast.walk(function):
+        if not isinstance(candidate, ast.Lambda):
+            continue
+        ancestor = parents.get(candidate)
+        nested_scope = False
+        while ancestor is not None and ancestor is not function:
+            if isinstance(ancestor, (ast.FunctionDef, ast.AsyncFunctionDef, ast.ClassDef)):
+                nested_scope = True
+                break
+            ancestor = parents.get(ancestor)
+        if not nested_scope:
+            omissions.append({"reason": "Python lambda bodies are retained in source spans but are not lowered as separate callable algorithms.",
+                              "impact": "Anonymous callable steps and their execution/capture semantics remain unresolved."})
+            break
     if function.decorator_list:
         omissions.append({"reason": "Decorator expressions are retained as declaration metadata, not lowered into the function body.",
                           "impact": "Decorator evaluation and wrapper/callback replacement semantics remain unresolved."})
@@ -346,6 +360,7 @@ def extract_rust_algorithm(source: bytes, path: str, function_name: str,
                   "impact": "The structured body is a syntax projection, not a complete CFG."},
                  {"reason": "Attributes such as cfg are not evaluated and conditional compilation is not selected.",
                   "impact": "The emitted syntax may not exist in every target configuration."}]
+    closure_omission_added = False
     next_region = 0
     next_step = 0
 
@@ -359,6 +374,9 @@ def extract_rust_algorithm(source: bytes, path: str, function_name: str,
     def text_of(node) -> str:
         return source[node.start_byte:node.end_byte].decode("utf-8", errors="replace")
 
+    def contains_closure(node) -> bool:
+        return node.type == "closure_expression" or any(contains_closure(child) for child in node.named_children)
+
     def condition_for(node) -> dict:
         return {"kind": "expression", "expression": text_of(node)} if node else {
             "kind": "unknown", "reason": "condition expression is not represented by this syntax node"}
@@ -368,6 +386,11 @@ def extract_rust_algorithm(source: bytes, path: str, function_name: str,
         node = original_node
         if node.type == "expression_statement" and node.named_children:
             node = node.named_children[0]
+        nonlocal closure_omission_added
+        if contains_closure(node) and not closure_omission_added:
+            omissions.append({"reason": "Rust closure bodies are not lowered as separate callables, and capture mode/bindings are unresolved.",
+                              "impact": "Deferred body execution and captured locations remain unknown."})
+            closure_omission_added = True
         next_step += 1
         step_id = f"s{next_step}"
         evidence = evidence_for(node)
@@ -412,7 +435,9 @@ def extract_rust_algorithm(source: bytes, path: str, function_name: str,
             step["attributes"] = {"operation": operator, "type_rule": "unknown (not type-checked)",
                                   "evaluation_order": "unknown (language evaluation details not resolved)"}
         if kind == "opaque":
-            step.update({"impact": f"Rust syntax kind {node.type} requires unsupported semantic analysis.",
+            step.update({"impact": ("Rust closure body and capture semantics are unresolved."
+                                     if node.type == "closure_expression" else
+                                     f"Rust syntax kind {node.type} requires unsupported semantic analysis."),
                          "unknowns": ["expanded operation", "control or call effect"],
                          "boundary": {"inputs": [], "outputs": [], "effects": ["unknown"]}})
         steps.append(step)
