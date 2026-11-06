@@ -47,6 +47,36 @@ class AlgorithmCliTests(unittest.TestCase):
             self.assertEqual(status, 0)
             self.assertEqual(json.loads(output.getvalue())["algorithm"]["problem"], "value")
 
+    def test_cli_all_functions_traverses_python_and_rust_sources(self):
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            (root / "main.py").write_text("def alpha(): return 1\ndef beta(): return 2\n", encoding="utf-8")
+            (root / "lib.rs").write_text("fn gamma() -> i32 { 3 }\n", encoding="utf-8")
+            output, errors = io.StringIO(), io.StringIO()
+            with contextlib.redirect_stdout(output), contextlib.redirect_stderr(errors):
+                status = main(["algorithm", "--root", str(root), "--all-functions"])
+            self.assertEqual(status, 2, errors.getvalue())
+            result = json.loads(output.getvalue())
+            self.assertEqual(result["coverage"]["discovered_functions"], 3)
+            self.assertEqual(result["coverage"]["analyzed_functions"], 3)
+            self.assertEqual({item["function"] for item in result["algorithms"]}, {"alpha", "beta", "gamma"})
+            self.assertTrue(all(item["algorithm"]["omissions"] for item in result["algorithms"]))
+            self.assertFalse(result["complete"])
+
+    def test_cli_all_functions_reports_unhandled_project_files(self):
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            (root / "main.py").write_text("def run(): return 1\n", encoding="utf-8")
+            (root / "notes.md").write_text("not parsed as source\n", encoding="utf-8")
+            output = io.StringIO()
+            with contextlib.redirect_stdout(output), contextlib.redirect_stderr(io.StringIO()):
+                status = main(["algorithm", "--root", str(root), "--all-functions"])
+            result = json.loads(output.getvalue())
+            self.assertEqual(status, 2)
+            self.assertEqual(result["coverage"]["unhandled_paths"], 1)
+            self.assertIn({"path": "notes.md", "reason": "UNHANDLED_PROJECT_PATH",
+                           "state": "readable", "diagnostic": None}, result["gaps"])
+
     def test_cli_rejects_symlinked_source_paths(self):
         with tempfile.TemporaryDirectory() as temporary, tempfile.TemporaryDirectory() as outside:
             root, outside_root = Path(temporary), Path(outside)
@@ -78,6 +108,14 @@ class AlgorithmCliTests(unittest.TestCase):
             with contextlib.redirect_stdout(output), contextlib.redirect_stderr(errors):
                 status = main(["query", "--root", temporary])
             self.assertEqual(status, 64)
+
+    def test_query_mode_rejects_algorithm_project_scan_flag(self):
+        with tempfile.TemporaryDirectory() as temporary:
+            errors = io.StringIO()
+            with contextlib.redirect_stdout(io.StringIO()), contextlib.redirect_stderr(errors):
+                status = main(["query", "--root", temporary, "--all-functions"])
+            self.assertEqual(status, 64)
+            self.assertIn("only valid for algorithm requests", errors.getvalue())
 
 
 if __name__ == "__main__":

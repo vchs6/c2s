@@ -33,13 +33,39 @@ def _source_offset(source: bytes, node: ast.AST) -> tuple[int, int]:
     return start, end
 
 
-def extract_python_algorithm(source: bytes, path: str, function_name: str) -> dict:
+def _index_python_functions(source: bytes) -> tuple[ast.Module, dict[ast.AST, ast.AST], dict[int, ast.AST]]:
+    tree = ast.parse(source)
+    parents = {child: parent for parent in ast.walk(tree) for child in ast.iter_child_nodes(parent)}
+    functions = {_source_offset(source, node)[0]: node for node in ast.walk(tree)
+                  if isinstance(node, (ast.FunctionDef, ast.AsyncFunctionDef)) }
+    return tree, parents, functions
+
+
+def _index_rust_functions(source: bytes):
+    parser = Parser(Language(tree_sitter_rust.language()))
+    root = parser.parse(source).root_node
+    functions = {}
+
+    def visit(node) -> None:
+        if node.type == "function_item":
+            functions[node.start_byte] = node
+        for child in node.named_children:
+            visit(child)
+
+    visit(root)
+    return root, functions
+
+
+def extract_python_algorithm(source: bytes, path: str, function_name: str,
+                             start_byte: int | None = None, *, _tree=None,
+                             _parents=None, _function_node=None) -> dict:
     """Build a source-located, explicitly partial algorithm record for one Python callable."""
     try:
-        tree = ast.parse(source, filename=path)
+        tree = _tree if _tree is not None else ast.parse(source, filename=path)
     except SyntaxError as error:
         raise ValueError(f"invalid Python syntax in {path}:{error.lineno}: {error.msg}") from error
-    parents = {child: parent for parent in ast.walk(tree) for child in ast.iter_child_nodes(parent)}
+    parents = _parents if _parents is not None else {
+        child: parent for parent in ast.walk(tree) for child in ast.iter_child_nodes(parent)}
 
     def qualified_name(node: ast.AST) -> str:
         names = [node.name]
@@ -50,9 +76,10 @@ def extract_python_algorithm(source: bytes, path: str, function_name: str) -> di
             parent = parents.get(parent)
         return ".".join(reversed(names))
 
-    candidates = [node for node in ast.walk(tree)
+    candidates = [_function_node] if _function_node is not None else [node for node in ast.walk(tree)
                   if isinstance(node, (ast.FunctionDef, ast.AsyncFunctionDef)) and
-                  (node.name == function_name or qualified_name(node) == function_name)]
+                  (node.name == function_name or qualified_name(node) == function_name) and
+                  (start_byte is None or _source_offset(source, node)[0] == start_byte)]
     if not candidates:
         raise ValueError(f"Python function not found: {function_name}")
     if len(candidates) != 1:
@@ -262,21 +289,27 @@ def extract_python_algorithm(source: bytes, path: str, function_name: str) -> di
     return {"schema_version": "1.0.0", "algorithm": algorithm}
 
 
-def extract_rust_algorithm(source: bytes, path: str, function_name: str) -> dict:
+def extract_rust_algorithm(source: bytes, path: str, function_name: str,
+                           start_byte: int | None = None, *, _root_node=None,
+                           _function_node=None) -> dict:
     """Build a source-located, explicitly partial algorithm record for one Rust function."""
-    parser = Parser(Language(tree_sitter_rust.language()))
-    root = parser.parse(source).root_node
-    functions = []
+    root = _root_node
+    if root is None:
+        parser = Parser(Language(tree_sitter_rust.language()))
+        root = parser.parse(source).root_node
+    functions = [_function_node] if _function_node is not None else []
 
     def find_functions(node) -> None:
         if node.type == "function_item":
             name_node = node.child_by_field_name("name")
-            if name_node and source[name_node.start_byte:name_node.end_byte].decode() == function_name:
+            if name_node and source[name_node.start_byte:name_node.end_byte].decode() == function_name and \
+                    (start_byte is None or node.start_byte == start_byte):
                 functions.append(node)
         for child in node.named_children:
             find_functions(child)
 
-    find_functions(root)
+    if _function_node is None:
+        find_functions(root)
     if not functions:
         raise ValueError(f"Rust function not found: {function_name}")
     if len(functions) != 1:

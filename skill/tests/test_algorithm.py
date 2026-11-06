@@ -4,7 +4,8 @@ from pathlib import Path
 
 from jsonschema import Draft202012Validator
 
-from c2s_skill.algorithm import extract_python_algorithm, extract_rust_algorithm, validate_algorithms
+from c2s_skill.algorithm import (_index_python_functions, _index_rust_functions,
+                                 extract_python_algorithm, extract_rust_algorithm, validate_algorithms)
 
 
 def _algorithm(steps=None, control_edges=None, data_edges=None):
@@ -55,6 +56,15 @@ def _algorithm(steps=None, control_edges=None, data_edges=None):
 
 
 class AlgorithmContractTests(unittest.TestCase):
+    def test_function_indexes_build_once_and_preserve_source_start_offsets(self):
+        python_source = b"def alpha(): return 1\nclass C:\n    def beta(self): return 2\n"
+        _, _, python_index = _index_python_functions(python_source)
+        self.assertEqual([python_index[offset].name for offset in sorted(python_index)], ["alpha", "beta"])
+        rust_source = b"fn alpha() {}\nimpl C { fn beta(&self) {} }\n"
+        _, rust_index = _index_rust_functions(rust_source)
+        self.assertEqual([rust_index[offset].child_by_field_name("name").text.decode()
+                          for offset in sorted(rust_index)], ["alpha", "beta"])
+
     def test_python_source_produces_located_algorithm_regions_and_explicit_gaps(self):
         source = (b"def answer(flag):\n"
                   b"    if flag:\n"
