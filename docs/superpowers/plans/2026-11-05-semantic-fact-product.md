@@ -148,3 +148,7 @@ Final verification: product tests 45/45; repository maintenance tests 35/35; str
 ## Progress — 2026-11-06, conditional dependency cycle primitive
 
 - Added `diagnose_conditional_cycles` for explicit directed dependency graphs. It enumerates simple cycles, conjoins all edge conditions before evaluating, returns possible cycles with witnesses, proves infeasible cycles only by exhaustive finite-domain solving, and preserves unknown/source expressions and original edges. Tests cover mutually exclusive shared enum values, a satisfiable witness, and unsupported source conditions. This primitive is not yet wired to dependency records in `SemanticFactSet`, and it does not infer build-system violations.
+
+## Progress — 2026-11-06, dependency records
+
+- Extended the full semantic profile with separate dependency requirement and resolution records. Validation checks registered consumer/provider references, evidence references, resolution-to-requirement links, resolved/ambiguous/unresolved provider cardinality, duplicate record IDs, and condition consistency with consumer context. `scopePosition` remains orthogonal to requirement identity and resolution status. Added coverage for a valid out-of-scope resolved provider, cardinality rejection, and contradictory conditions. Requirements remain explicit inputs: project metadata is not yet projected into these records, and the cycle primitive is not yet wired to them.

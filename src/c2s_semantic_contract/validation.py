@@ -274,6 +274,20 @@ def validate_model(document: dict, catalogs: dict, source_observations: dict | N
         if coverage["subject"] is not None:
             check_ref(coverage["subject"], f"/coverage/{index}/subject", f"coverage:{coverage['coverageId']}")
         check_evidence(coverage["evidenceIds"], f"/coverage/{index}/evidenceIds", f"coverage:{coverage['coverageId']}")
+    for index, dependency in enumerate(document.get("dependencies", [])):
+        record_ref = f"dependency:{dependency['dependencyId']}"
+        check_ref(dependency["consumer"], f"/dependencies/{index}/consumer", record_ref)
+        check_evidence(dependency["evidenceIds"], f"/dependencies/{index}/evidenceIds", record_ref)
+    dependency_ids = {item["dependencyId"] for item in document.get("dependencies", [])}
+    for index, resolution in enumerate(document.get("dependencyResolutions", [])):
+        record_ref = f"dependencyResolution:{resolution['resolutionId']}"
+        if resolution["dependencyId"] not in dependency_ids:
+            diagnostics.append(_diagnostic("references", "DEPENDENCY_REF_MISSING",
+                "Dependency resolution does not refer to a declared requirement.", record_ref=record_ref,
+                field_path=f"/dependencyResolutions/{index}/dependencyId"))
+        for provider_index, provider in enumerate(resolution["providers"]):
+            check_ref(provider, f"/dependencyResolutions/{index}/providers/{provider_index}", record_ref)
+        check_evidence(resolution["evidenceIds"], f"/dependencyResolutions/{index}/evidenceIds", record_ref)
     if diagnostics:
         result["stages"]["references"] = "fail"
         result["diagnostics"] = diagnostics
@@ -282,10 +296,11 @@ def validate_model(document: dict, catalogs: dict, source_observations: dict | N
     invariant_diagnostics = []
     context_domains = {item["keyId"]: item["values"] for item in document.get("contextDomains", [])}
     is_m1 = document.get("profile") == "m1-project-discovery-1"
-    if is_m1 and (document.get("contextDomains") or document.get("contexts") or any(
+    if is_m1 and (document.get("contextDomains") or document.get("contexts") or document.get("dependencies")
+                  or document.get("dependencyResolutions") or any(
             fact.get("condition") != {"kind": "true"} for fact in document.get("facts", []))):
         invariant_diagnostics.append(_diagnostic("invariants", "M1_CONTEXT_UNSUPPORTED",
-            "The M1 project-discovery profile does not permit context domains, context records, or conditional facts.",
+            "The M1 project-discovery profile does not permit context, conditional facts, or dependency records.",
             field_path="/profile"))
     seen_context_ids = set()
     for context_index, context in enumerate(document.get("contexts", [])):
@@ -313,6 +328,32 @@ def validate_model(document: dict, catalogs: dict, source_observations: dict | N
                     record_ref=f"context:{context['contextId']}",
                     field_path=f"/contexts/{context_index}/assignments/{key_id}"))
 
+    seen_dependency_ids = set()
+    for dependency_index, dependency in enumerate(document.get("dependencies", [])):
+        dependency_id = dependency["dependencyId"]
+        if dependency_id in seen_dependency_ids:
+            invariant_diagnostics.append(_diagnostic("invariants", "DEPENDENCY_ID_DUPLICATE",
+                "Dependency requirement IDs must be unique.", record_ref=f"dependency:{dependency_id}",
+                field_path=f"/dependencies/{dependency_index}/dependencyId"))
+        seen_dependency_ids.add(dependency_id)
+    seen_resolution_ids = set()
+    for resolution_index, resolution in enumerate(document.get("dependencyResolutions", [])):
+        resolution_id = resolution["resolutionId"]
+        if resolution_id in seen_resolution_ids:
+            invariant_diagnostics.append(_diagnostic("invariants", "DEPENDENCY_RESOLUTION_ID_DUPLICATE",
+                "Dependency resolution IDs must be unique.", record_ref=f"dependencyResolution:{resolution_id}",
+                field_path=f"/dependencyResolutions/{resolution_index}/resolutionId"))
+        seen_resolution_ids.add(resolution_id)
+        count = len(resolution["providers"])
+        cardinality_ok = ((resolution["status"] == "resolved" and count == 1)
+                          or (resolution["status"] == "ambiguous" and count >= 2)
+                          or (resolution["status"] == "unresolved" and count == 0))
+        if not cardinality_ok:
+            invariant_diagnostics.append(_diagnostic("invariants", "DEPENDENCY_CARDINALITY",
+                "Dependency provider count must match resolved/ambiguous/unresolved status.",
+                record_ref=f"dependencyResolution:{resolution_id}",
+                field_path=f"/dependencyResolutions/{resolution_index}/providers"))
+
     contexts_by_id = {item["contextId"]: item for item in document.get("contexts", [])}
     condition_gaps = []
     for fact_index, fact in enumerate(document["facts"]):
@@ -333,6 +374,23 @@ def validate_model(document: dict, catalogs: dict, source_observations: dict | N
             condition_gaps.append(_diagnostic("invariants", satisfiability["reason"] or "POTENTIAL_CONFLICT",
                 "Fact condition cannot be decided within the registered context domains.",
                 record_ref=f"fact:{fact['factId']}", field_path=f"/facts/{fact_index}/condition", severity="gap"))
+    for dependency_index, dependency in enumerate(document.get("dependencies", [])):
+        conjuncts = [dependency["condition"]]
+        context_ref = dependency["consumer"].get("contextRef")
+        if context_ref in contexts_by_id:
+            conjuncts.extend({"kind": "eq", "key": key_id, "value": value}
+                              for key_id, value in contexts_by_id[context_ref]["assignments"].items())
+        satisfiability = condition_satisfiability([{"kind": "all", "conditions": conjuncts}], context_domains)
+        if satisfiability["status"] == "unsat":
+            invariant_diagnostics.append(_diagnostic("invariants", "DEPENDENCY_CONDITION_CONTRADICTION",
+                "Dependency condition contradicts its consumer context.",
+                record_ref=f"dependency:{dependency['dependencyId']}",
+                field_path=f"/dependencies/{dependency_index}/condition"))
+        elif satisfiability["status"] == "undetermined":
+            condition_gaps.append(_diagnostic("invariants", satisfiability["reason"] or "POTENTIAL_CONFLICT",
+                "Dependency condition cannot be decided within the registered context domains.",
+                record_ref=f"dependency:{dependency['dependencyId']}",
+                field_path=f"/dependencies/{dependency_index}/condition", severity="gap"))
     predicates = {predicate["predicateId"]: predicate for predicate in catalogs["predicates"]["predicates"]}
     for index, fact in enumerate(document["facts"]):
         record_ref = f"fact:{fact['factId']}"

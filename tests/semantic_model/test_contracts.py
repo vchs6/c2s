@@ -461,6 +461,55 @@ class M1IdentityTests(unittest.TestCase):
         self.assertFalse(result["valid"])
         self.assertIn("CONTEXT_DOMAIN_INVALID", {item["ruleCode"] for item in result["diagnostics"]})
 
+    def test_dependency_resolution_cardinality_is_explicit_and_scope_is_independent(self):
+        bundle = bundle_with_fact()
+        bundle["profile"] = "semantic-fact-model-1"
+        provider = {"identity": {"authority": "cargo", "domainId": "registry", "localId": "serde"},
+                    "kind": "PackageSpecification"}
+        bundle["registrations"].append({"ref": provider, "sourceKey": "registry:serde", "evidenceIds": ["ev-1"]})
+        requirement = {"dependencyId": "dep-1", "consumer": bundle["facts"][0]["subject"],
+            "purpose": "build", "stage": "compile", "path": None, "version": "^1",
+            "condition": {"kind": "true"}, "evidenceIds": ["ev-1"]}
+        bundle["dependencies"] = [requirement]
+        bundle["dependencyResolutions"] = [{"resolutionId": "res-1", "dependencyId": "dep-1",
+            "status": "resolved", "providers": [provider], "configuration": "linux",
+            "visibility": "registry", "scopePosition": "outside", "evidenceIds": ["ev-1"]}]
+
+        result = validate_model(bundle, fixed_catalogs())
+
+        self.assertTrue(result["valid"])
+        self.assertEqual(result["consistency"], "undetermined")
+
+    def test_dependency_resolution_rejects_status_cardinality_mismatch(self):
+        bundle = bundle_with_fact()
+        bundle["profile"] = "semantic-fact-model-1"
+        bundle["dependencies"] = [{"dependencyId": "dep-1", "consumer": bundle["facts"][0]["subject"],
+            "purpose": "build", "stage": "compile", "path": None, "version": None,
+            "condition": {"kind": "true"}, "evidenceIds": ["ev-1"]}]
+        bundle["dependencyResolutions"] = [{"resolutionId": "res-1", "dependencyId": "dep-1",
+            "status": "resolved", "providers": [], "configuration": None, "visibility": None,
+            "scopePosition": "unknown", "evidenceIds": ["ev-1"]}]
+
+        result = validate_model(bundle, fixed_catalogs())
+
+        self.assertFalse(result["valid"])
+        self.assertIn("DEPENDENCY_CARDINALITY", {item["ruleCode"] for item in result["diagnostics"]})
+
+    def test_dependency_condition_contradiction_is_not_silently_dropped(self):
+        bundle = bundle_with_fact()
+        bundle["profile"] = "semantic-fact-model-1"
+        bundle["contextDomains"] = [{"keyId": "target", "values": ["linux", "windows"]}]
+        bundle["contexts"] = [{"contextId": "linux", "assignments": {"target": "linux"}}]
+        consumer = dict(bundle["facts"][0]["subject"], contextRef="linux")
+        bundle["dependencies"] = [{"dependencyId": "dep-1", "consumer": consumer, "purpose": "build",
+            "stage": "compile", "path": None, "version": None,
+            "condition": {"kind": "eq", "key": "target", "value": "windows"}, "evidenceIds": ["ev-1"]}]
+
+        result = validate_model(bundle, fixed_catalogs())
+
+        self.assertFalse(result["valid"])
+        self.assertIn("DEPENDENCY_CONDITION_CONTRADICTION", {item["ruleCode"] for item in result["diagnostics"]})
+
     def test_catalog_rejects_unsupported_constraint_ids(self):
         catalogs = fixed_catalogs()
         catalogs["predicates"]["predicates"][0]["constraints"].append("UNSAFE_EVAL")
