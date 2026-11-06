@@ -116,6 +116,29 @@ class AlgorithmContractTests(unittest.TestCase):
         self.assertTrue(any(outcome["kind"] == "normal" and "Implicit tail" in outcome["description"]
                             for outcome in tail["contract"]["outcomes"]))
 
+    def test_python_decorator_metadata_and_closure_binding_remain_explicitly_unresolved(self):
+        source = (b"def register(callback):\n"
+                  b"    @framework.command()\n"
+                  b"    def wrapped(value):\n"
+                  b"        return callback(value)\n"
+                  b"    return wrapped\n")
+        outer = extract_python_algorithm(source, "src/cli.py", "register")["algorithm"]
+        algorithm = extract_python_algorithm(source, "src/cli.py", "register.wrapped")["algorithm"]
+        reasons = " ".join(item["reason"] for item in algorithm["omissions"])
+        self.assertIn("decorator", reasons.lower())
+        self.assertIn("closure", " ".join(item["reason"] for item in outer["omissions"]).lower())
+        self.assertFalse(any(step["kind"] == "call" and "framework.command" in
+                             source[step["source"]["start_byte"]:step["source"]["end_byte"]].decode()
+                             for step in algorithm["body"]["steps"]))
+
+    def test_rust_macro_invocation_is_a_source_bound_opaque_step(self):
+        source = b"fn report(value: &str) { println!(\"{value}\"); }"
+        algorithm = extract_rust_algorithm(source, "src/lib.rs", "report")["algorithm"]
+        macro = next(step for step in algorithm["body"]["steps"] if step["kind"] == "opaque")
+        self.assertIn("macro_invocation", macro["impact"])
+        self.assertIsNotNone(macro["source"])
+        self.assertTrue(macro["unknowns"])
+
     def test_real_regex_function_is_lowered_with_rust_syntax_evidence(self):
         root = Path(__file__).resolve().parents[2] / ".local/real-projects/regex"
         path = root / "regex-automata/src/nfa/thompson/backtrack.rs"

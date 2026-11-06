@@ -164,3 +164,7 @@
 ## Progress — 2026-11-06, algorithm contract structure
 
 - Extended the algorithm schema with explicit management mapping state and candidate Project subject IDs, separate from a many-valued implementation reference list. Language lowerers set management unresolved rather than guessing project ownership. Regression coverage enumerates all 15 step kinds, validates ambiguous candidate cardinality, multiple implementations, operation coverage, source spans, and region/control/data refs. The full Skill suite passed after fixing an environment-sensitive Cargo-unavailable test.
+
+## Progress — 2026-11-06, language mechanism gaps (4.2 partial)
+
+- Added regression cases proving Rust macro invocations remain source-bound opaque steps and Python decorator expressions do not leak into body steps. Lowering now reports decorator/wrapper semantics, closure capture, Rust macro expansion, and `cfg` selection as explicit omissions. This preserves unknowns without inventing expansion or capture bindings. A complete language mechanism mapping, behavior for conditional binding, and broader callback/decorator source relations remain outstanding; task 4.2 stays open.

@@ -102,6 +102,11 @@ def extract_python_algorithm(source: bytes, path: str, function_name: str,
                   "impact": "The control graph is a partial projection, not a complete CFG."},
                  {"reason": "Python for/while else blocks and try else/finally blocks are not yet lowered.",
                   "impact": "Some normal and cleanup paths are omitted from the structured body."}]
+    omissions.append({"reason": "Closure capture and binding resolution are not analyzed.",
+                      "impact": "Free-variable reads, writes and conditional binding targets remain unknown."})
+    if function.decorator_list:
+        omissions.append({"reason": "Decorator expressions are retained as declaration metadata, not lowered into the function body.",
+                          "impact": "Decorator evaluation and wrapper/callback replacement semantics remain unresolved."})
     outcomes = []
     nested_regions = 0
     next_step = 0
@@ -338,7 +343,9 @@ def extract_rust_algorithm(source: bytes, path: str, function_name: str,
     omissions = [{"reason": "Rust type checking, macro expansion, and call resolution are not run.",
                   "impact": "Types, indirect effects, generated code and callee outcomes remain unknown."},
                  {"reason": "Data dependencies and some exceptional/early-exit control transfers are not lowered.",
-                  "impact": "The structured body is a syntax projection, not a complete CFG."}]
+                  "impact": "The structured body is a syntax projection, not a complete CFG."},
+                 {"reason": "Attributes such as cfg are not evaluated and conditional compilation is not selected.",
+                  "impact": "The emitted syntax may not exist in every target configuration."}]
     next_region = 0
     next_step = 0
 

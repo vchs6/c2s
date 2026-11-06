@@ -172,3 +172,7 @@ Final verification: product tests 45/45; repository maintenance tests 35/35; str
 ## Progress — 2026-11-06, semantic acquisition and presentation state
 
 - Added a separate `semanticStates` record for `obtained`/`not_acquired`/`unsupported`/`not_applicable` and `ref_only`/`expanded`. States reference optional subject/predicate scope, conditions, acquired fact IDs, evidence, and diagnostics. Unavailable states require a gap and cannot claim facts; not-applicable requires rationale and evidence; obtained fact links must match the declared scope. Acquired-but-not-expanded is valid and does not imply nonexistence. This reports the supplied selector's state and does not prove broader completeness.
+
+## Progress — 2026-11-06, language mechanism gap reporting
+
+- Regression tests cover source-located opaque Rust macro invocation, Python decorator exclusion from function-body steps, and unresolved closure capture. Python/Rust lowerers now report decorator wrapper semantics, closure read/write binding, macro expansion, and cfg selection as omissions. This is partial language-mechanism handling; it does not model macro applications/generated entities, cfg-selected target variants, or decorator callback replacement relations.
