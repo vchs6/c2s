@@ -176,3 +176,7 @@ Final verification: product tests 45/45; repository maintenance tests 35/35; str
 ## Progress — 2026-11-06, language mechanism gap reporting
 
 - Regression tests cover source-located opaque Rust macro invocation, Python decorator exclusion from function-body steps, and unresolved closure capture. Python/Rust lowerers now report decorator wrapper semantics, closure read/write binding, macro expansion, and cfg selection as omissions. This is partial language-mechanism handling; it does not model macro applications/generated entities, cfg-selected target variants, or decorator callback replacement relations.
+
+## Progress — 2026-11-06, algorithm projection/checklist primitives
+
+- Added `project_algorithm(document, algorithm_ref)` and `check_source_coverage(document, checklist)` in the semantic contract package. The renderer maps every emitted step to a text line and preserves control/data edges and partial-contract/omission gaps. The checker requires a reviewed, nonempty checklist and marks missing step/effect mappings uncovered. Tests cover unreviewed checklists and a removed failure-path step. This is only the generic mechanism; fixed, independently reviewed R5/C5/P7 source checklists are still absent, so source exhaustiveness remains unverified.

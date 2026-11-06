@@ -6,6 +6,7 @@ from jsonschema import Draft202012Validator
 
 from c2s_skill.algorithm import (_index_python_functions, _index_rust_functions,
                                  extract_python_algorithm, extract_rust_algorithm, validate_algorithms)
+from c2s_semantic_contract.projection import check_source_coverage, project_algorithm
 
 
 def _algorithm(steps=None, control_edges=None, data_edges=None):
@@ -230,6 +231,35 @@ class AlgorithmContractTests(unittest.TestCase):
         codes = {item["code"] for item in validate_algorithms(document)}
 
         self.assertIn("MANAGEMENT_PROJECT_CARDINALITY", codes)
+
+    def test_algorithm_projection_maps_each_rendered_step_and_keeps_gaps(self):
+        document = _algorithm()
+        algorithm = document["algorithms"][0]
+        algorithm["omissions"] = [{"reason": "Calls are unresolved", "impact": "Effects remain unknown"}]
+        algorithm["contract"]["coverage"][0].update({"state": "partial", "reason": "Only syntax inputs are listed"})
+
+        result = project_algorithm(document, {"algorithm_id": "alg:run"})
+
+        self.assertEqual({item["stepId"] for item in result["stepMappings"]}, {"s1", "s2"})
+        self.assertIn("compute", result["text"])
+        self.assertTrue(result["gaps"])
+
+    def test_source_checklist_review_gate_and_deleted_step_detection(self):
+        document = _algorithm()
+        empty = check_source_coverage(document, {"reviewed": True, "items": []})
+        self.assertTrue(empty["uncoveredItems"])
+        checklist = {"reviewed": False, "items": [{"itemId": "error-exit", "description": "Failure exit",
+            "stepIds": ["s2"], "effectIndices": [], "gapReason": None}]}
+
+        unreviewed = check_source_coverage(document, checklist)
+        self.assertFalse(unreviewed["reviewed"])
+        self.assertEqual([item["itemId"] for item in unreviewed["uncoveredItems"]], ["error-exit"])
+
+        checklist["reviewed"] = True
+        self.assertEqual(check_source_coverage(document, checklist)["uncoveredItems"], [])
+        document["algorithms"][0]["body"]["steps"].pop()
+        deleted = check_source_coverage(document, checklist)
+        self.assertEqual([item["itemId"] for item in deleted["uncoveredItems"]], ["error-exit"])
 
     def test_rejects_duplicate_step_ids_and_dangling_control_and_data_edges(self):
         document = _algorithm()

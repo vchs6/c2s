@@ -168,3 +168,7 @@
 ## Progress — 2026-11-06, language mechanism gaps (4.2 partial)
 
 - Added regression cases proving Rust macro invocations remain source-bound opaque steps and Python decorator expressions do not leak into body steps. Lowering now reports decorator/wrapper semantics, closure capture, Rust macro expansion, and `cfg` selection as explicit omissions. This preserves unknowns without inventing expansion or capture bindings. A complete language mechanism mapping, behavior for conditional binding, and broader callback/decorator source relations remain outstanding; task 4.2 stays open.
+
+## Progress — 2026-11-06, algorithm text projection and checklist primitive (4.3 partial)
+
+- Added `project_algorithm` to render one algorithm's steps, regions, control/data edges, partial contract categories and omissions with per-step line mappings. Added `check_source_coverage` to enforce human review and verify checklist mappings to existing steps/effects or explicit gaps; an omitted step named by the source checklist remains uncovered even if generated text is also changed. These utilities do not read source or prove checklist exhaustiveness. The three fixed R5/C5/P7 source checklists, independent review, and full source-vs-body validation remain open, so task 4.3 stays unchecked.

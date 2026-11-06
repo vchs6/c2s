@@ -46,3 +46,5 @@ Negative claims require a `negativeBasis` using `enumerated_input_membership` or
 ## Language-mechanism boundaries in algorithm lowering
 
 The current Python/Rust lowering is a syntax projection. Rust macro invocations remain source-located `opaque` steps; macro expansion and `cfg` selection are not performed. Python decorator expressions are kept out of function-body steps, with wrapper/callback replacement semantics reported as omissions. Closure capture and read/write binding remain unknown. These records preserve a boundary and do not represent generated, selected, or captured behavior as established facts.
+
+The algorithm contract exposes `project_algorithm(document, algorithm_ref)` to render recorded steps/edges and `check_source_coverage(document, checklist)` to validate reviewed checklist mappings to steps/effects or explicit gaps. Checklist items without review or whose mapped step/effect is missing remain uncovered. These functions do not read source, verify that a checklist is exhaustive, or prove the text equivalent to implementation. Fixed human-reviewed source checklists for Rust/C++/Python acceptance cases remain a separate requirement.
