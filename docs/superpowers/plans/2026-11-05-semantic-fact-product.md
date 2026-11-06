@@ -160,3 +160,7 @@ Final verification: product tests 45/45; repository maintenance tests 35/35; str
 ## Progress — 2026-11-06, claim modality and derivation links
 
 - Expanded the full-profile fact contract to the six distinct claim modes in the design, per-evidence `Supports`/`Refutes`/`Limits` links, and optional rule-backed derivations. Validation checks evidence and premise references and rejects derivation cycles. M1 remains restricted to its two claim modes and unqualified evidence IDs. These records preserve caller assertions; they do not infer runtime observation or prove truth.
+
+## Progress — 2026-11-06, bounded negative claims
+
+- Added explicit positive/negative polarity and a finite negative-closure basis restricted to enumerated input or registered catalog membership checks. Validation requires nonempty unique input IDs, exactly one result per listed input, a matching fact condition, human review, no unresolved gaps, and no matching item. M1 rejects negative claims. Tests verify missing closure evidence and incomplete enumeration fail while a reviewed exhaustive record is structurally accepted. This checks only the submitted record; it cannot prove the caller's input list is objectively exhaustive.

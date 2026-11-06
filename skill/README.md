@@ -12,6 +12,8 @@
 
 完整语义profile也提供六种互不排序的claimMode、带Supports/Refutes/Limits角色的evidenceRefs，以及带前提引用的derivation；缺失前提或推导循环会报错。这些模态/推导目前由调用方提供，分析器不会自动推断运行观测，也不能由此宣称真值已证明。
 
+完整profile的negative claim必须引用受限输入闭合集、逐项无匹配、条件相同、人工审定且无未解决缺口；校验器只能核对闭合记录结构，不能证明调用方提供的输入集合客观穷尽。
+
 ```bash
 python3 scripts/query_m1.py --root .local/real-projects/click --select project
 python3 scripts/query_m1.py --root .local/real-projects/regex --select workspace-members

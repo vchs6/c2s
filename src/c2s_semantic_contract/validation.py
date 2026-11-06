@@ -344,6 +344,10 @@ def validate_model(document: dict, catalogs: dict, source_observations: dict | N
         invariant_diagnostics.append(_diagnostic("invariants", "M1_MODALITY_UNSUPPORTED",
             "The M1 project-discovery profile supports declaration/interpretation claims without derivation links.",
             field_path="/facts"))
+    if is_m1 and any(fact.get("polarity", "positive") != "positive" or fact.get("negativeBasis") is not None
+                     for fact in document.get("facts", [])):
+        invariant_diagnostics.append(_diagnostic("invariants", "M1_NEGATION_UNSUPPORTED",
+            "The M1 project-discovery profile does not support negative claims.", field_path="/facts"))
     seen_context_ids = set()
     for context_index, context in enumerate(document.get("contexts", [])):
         context_id = context["contextId"]
@@ -469,6 +473,30 @@ def validate_model(document: dict, catalogs: dict, source_observations: dict | N
     predicates = {predicate["predicateId"]: predicate for predicate in catalogs["predicates"]["predicates"]}
     for index, fact in enumerate(document["facts"]):
         record_ref = f"fact:{fact['factId']}"
+        polarity = fact.get("polarity", "positive")
+        basis = fact.get("negativeBasis")
+        if polarity == "negative":
+            if basis is None:
+                invariant_diagnostics.append(_diagnostic("invariants", "NEGATIVE_BASIS_REQUIRED",
+                    "A negative claim requires a finite, reviewed closure basis.", record_ref=record_ref,
+                    field_path=f"/facts/{index}/negativeBasis"))
+            else:
+                input_ids = basis["inputIds"]
+                result_ids = [item["inputId"] for item in basis["results"]]
+                if (basis["condition"] != fact["condition"] or not basis["humanReviewed"]
+                        or basis["unresolvedGapIds"] or len(result_ids) != len(set(result_ids))
+                        or set(input_ids) != set(result_ids)):
+                    invariant_diagnostics.append(_diagnostic("invariants", "NEGATIVE_BASIS_INCOMPLETE",
+                        "Negative closure basis must match the fact condition and enumerate every input without unresolved gaps.",
+                        record_ref=record_ref, field_path=f"/facts/{index}/negativeBasis"))
+                if any(item["matched"] for item in basis["results"]):
+                    invariant_diagnostics.append(_diagnostic("invariants", "NEGATIVE_CLAIM_PRESENT",
+                        "The enumerated basis contains an input matching the negative claim.", record_ref=record_ref,
+                        field_path=f"/facts/{index}/negativeBasis/results"))
+        elif basis is not None:
+            invariant_diagnostics.append(_diagnostic("invariants", "NEGATIVE_BASIS_UNEXPECTED",
+                "Positive claims cannot carry a negative closure basis.", record_ref=record_ref,
+                field_path=f"/facts/{index}/negativeBasis"))
         predicate = predicates.get(fact["predicate"])
         if predicate is None:
             invariant_diagnostics.append(_diagnostic("invariants", "UNSUPPORTED_PREDICATE",

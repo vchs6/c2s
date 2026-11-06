@@ -582,6 +582,32 @@ class M1IdentityTests(unittest.TestCase):
         self.assertFalse(result["valid"])
         self.assertIn("M1_MODALITY_UNSUPPORTED", {item["ruleCode"] for item in result["diagnostics"]})
 
+    def test_negative_claim_requires_reviewed_closed_input_basis(self):
+        bundle = bundle_with_fact(predicate="project.language_declared")
+        bundle["profile"] = "semantic-fact-model-1"
+        bundle["facts"][0]["polarity"] = "negative"
+
+        result = validate_model(bundle, fixed_catalogs())
+
+        self.assertFalse(result["valid"])
+        self.assertIn("NEGATIVE_BASIS_REQUIRED", {item["ruleCode"] for item in result["diagnostics"]})
+
+    def test_negative_basis_must_cover_exactly_the_enumerated_inputs(self):
+        bundle = bundle_with_fact(predicate="project.language_declared")
+        bundle["profile"] = "semantic-fact-model-1"
+        bundle["facts"][0].update({"polarity": "negative", "negativeBasis": {
+            "method": "enumerated_input_membership", "scope": "declared languages in manifest",
+            "condition": {"kind": "true"}, "inputIds": ["field-a", "field-b"],
+            "results": [{"inputId": "field-a", "matched": False}, {"inputId": "field-b", "matched": False}],
+            "humanReviewed": True, "unresolvedGapIds": []}})
+        result = validate_model(bundle, fixed_catalogs())
+        self.assertTrue(result["valid"])
+
+        bundle["facts"][0]["negativeBasis"]["results"].pop()
+        result = validate_model(bundle, fixed_catalogs())
+        self.assertFalse(result["valid"])
+        self.assertIn("NEGATIVE_BASIS_INCOMPLETE", {item["ruleCode"] for item in result["diagnostics"]})
+
     def test_catalog_rejects_unsupported_constraint_ids(self):
         catalogs = fixed_catalogs()
         catalogs["predicates"]["predicates"][0]["constraints"].append("UNSAFE_EVAL")
