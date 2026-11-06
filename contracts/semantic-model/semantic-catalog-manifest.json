@@ -4,7 +4,7 @@
   "ruleSetId": "semantic-model-1.0.0",
   "digests": {
     "semantic-types.json": "9543b39538cd07e7b6776165e0600dbf39cc20443d6169ca31845d5261c4dddd",
-    "semantic-predicates.json": "f600995527a44b622f70fa434bd1e0ebdbdd96059a5ad83179f43407f2a289c6",
+    "semantic-predicates.json": "a0743f416564f7e024405854602d1c4fb512856d2402b2e471de0935fea0ff98",
     "catalog.schema.json": "904f731146ef9b4dbb269bd883a287996ad8f2618274021dcc726914fec860ad"
   }
 }

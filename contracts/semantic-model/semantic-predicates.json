@@ -426,6 +426,170 @@
       ]
     },
     {
+      "predicateId": "contract.effect",
+      "category": "Semantic",
+      "primaryLayer": "E3",
+      "description": "A declared state, resource, or external interaction with its observation boundary.",
+      "relationKind": "association",
+      "claimCardinality": "multi_value",
+      "comparisonPolicy": "never",
+      "claimModes": [
+        "declaration",
+        "specification",
+        "static_may",
+        "static_must",
+        "observation",
+        "interpretation"
+      ],
+      "roles": [
+        {
+          "roleId": "subject",
+          "position": "subject",
+          "valueType": "M1SubjectRef",
+          "allowedKinds": [
+            "SourceDeclaration"
+          ],
+          "cardinality": "exactly_one"
+        },
+        {
+          "roleId": "value",
+          "position": "value",
+          "valueType": "string",
+          "allowedKinds": [],
+          "cardinality": "exactly_one"
+        }
+      ],
+      "constraints": [
+        "KIND_MATCH",
+        "ROLE_CARDINALITY",
+        "INTERNAL_REF_EXISTS",
+        "LAYER_CLASSIFICATION"
+      ]
+    },
+    {
+      "predicateId": "contract.ordering",
+      "category": "Semantic",
+      "primaryLayer": "E3",
+      "description": "A declared ordering constraint between participants; it does not imply total order or serial execution.",
+      "relationKind": "association",
+      "claimCardinality": "multi_value",
+      "comparisonPolicy": "never",
+      "claimModes": [
+        "declaration",
+        "specification",
+        "static_may",
+        "static_must",
+        "observation",
+        "interpretation"
+      ],
+      "roles": [
+        {
+          "roleId": "subject",
+          "position": "subject",
+          "valueType": "M1SubjectRef",
+          "allowedKinds": [
+            "SourceDeclaration"
+          ],
+          "cardinality": "exactly_one"
+        },
+        {
+          "roleId": "value",
+          "position": "value",
+          "valueType": "string",
+          "allowedKinds": [],
+          "cardinality": "exactly_one"
+        }
+      ],
+      "constraints": [
+        "KIND_MATCH",
+        "ROLE_CARDINALITY",
+        "INTERNAL_REF_EXISTS",
+        "LAYER_CLASSIFICATION"
+      ]
+    },
+    {
+      "predicateId": "contract.outcome",
+      "category": "Semantic",
+      "primaryLayer": "E3",
+      "description": "A declared normal, error, or termination outcome under a stated condition.",
+      "relationKind": "association",
+      "claimCardinality": "multi_value",
+      "comparisonPolicy": "never",
+      "claimModes": [
+        "declaration",
+        "specification",
+        "static_may",
+        "static_must",
+        "observation",
+        "interpretation"
+      ],
+      "roles": [
+        {
+          "roleId": "subject",
+          "position": "subject",
+          "valueType": "M1SubjectRef",
+          "allowedKinds": [
+            "SourceDeclaration"
+          ],
+          "cardinality": "exactly_one"
+        },
+        {
+          "roleId": "value",
+          "position": "value",
+          "valueType": "string",
+          "allowedKinds": [],
+          "cardinality": "exactly_one"
+        }
+      ],
+      "constraints": [
+        "KIND_MATCH",
+        "ROLE_CARDINALITY",
+        "INTERNAL_REF_EXISTS",
+        "LAYER_CLASSIFICATION"
+      ]
+    },
+    {
+      "predicateId": "contract.precondition",
+      "category": "Semantic",
+      "primaryLayer": "E3",
+      "description": "An explicit condition required for the operation or algorithm contract; it is not evidence that the condition was checked.",
+      "relationKind": "association",
+      "claimCardinality": "multi_value",
+      "comparisonPolicy": "never",
+      "claimModes": [
+        "declaration",
+        "specification",
+        "static_may",
+        "static_must",
+        "observation",
+        "interpretation"
+      ],
+      "roles": [
+        {
+          "roleId": "subject",
+          "position": "subject",
+          "valueType": "M1SubjectRef",
+          "allowedKinds": [
+            "SourceDeclaration"
+          ],
+          "cardinality": "exactly_one"
+        },
+        {
+          "roleId": "value",
+          "position": "value",
+          "valueType": "string",
+          "allowedKinds": [],
+          "cardinality": "exactly_one"
+        }
+      ],
+      "constraints": [
+        "KIND_MATCH",
+        "ROLE_CARDINALITY",
+        "INTERNAL_REF_EXISTS",
+        "LAYER_CLASSIFICATION"
+      ]
+    },
+    {
       "predicateId": "function.declared",
       "category": "Semantic",
       "primaryLayer": "E2",

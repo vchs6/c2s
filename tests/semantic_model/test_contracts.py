@@ -713,6 +713,15 @@ class M1IdentityTests(unittest.TestCase):
         result = validate_model(empty_bundle() | {"profile": "semantic-fact-model-1"}, catalogs)
         self.assertTrue(result["valid"], result["diagnostics"])
 
+    def test_contract_preconditions_outcomes_effects_and_ordering_are_separate_e3_predicates(self):
+        catalog = semantic_model_catalogs()
+        predicates = {item["predicateId"]: item for item in catalog["predicates"]["predicates"]}
+        expected = {"contract.precondition", "contract.outcome", "contract.effect", "contract.ordering"}
+        self.assertTrue(expected <= predicates.keys())
+        for predicate_id in expected:
+            self.assertEqual(predicates[predicate_id]["primaryLayer"], "E3")
+            self.assertEqual(predicates[predicate_id]["roles"][1]["valueType"], "string")
+
     def test_full_semantic_catalog_declares_distinct_program_body_and_region_relations(self):
         catalog = semantic_model_catalogs()
         predicates = {item["predicateId"]: item for item in catalog["predicates"]["predicates"]}

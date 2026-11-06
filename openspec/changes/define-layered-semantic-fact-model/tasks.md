@@ -75,6 +75,7 @@
   - 通过：固定发行包规范JSON摘要匹配、元目录Schema及已知规则通过，首批条目全部展开，program.contains/behavior.has_body/region_member与workspace/依赖/别名关联分开；失败：接受调用方自报manifest绕过核对、静默接受未知规则、漏条目、把层入身份、成员推依赖或内嵌白名单不闭合。
   - 进展（2026-11-06）：扩展profile目录已新增并固定manifest，当前获取器全部事实种类均有谓词映射；`project_query_to_semantic_model`已在固定版本Click/regex逐项投影。此进展不满足本任务要求的全部组成关系、嵌入白名单及完整目录用例，父任务继续开放。
   - 进展（2026-11-06）：再补入独立的`program.contains`、`behavior.has_body`、`region.member`及`BehaviorBody`/`BehaviorRegion`/`BehaviorStep`身份类型；M1明确拒绝扩展类型。其余工程、签名、契约、调用/捕获/读写、数据流及来源关系目录与高阶角色语法仍待实现，故本任务不勾选。
+  - 进展（2026-11-06）：新增E3的precondition/outcome/effect/ordering四类独立谓词；当前值仍为字符串主张，结构化主体/偏序参与者与实际源提取未实现。
 
 ## 2. 事实语法与工程关系
 
