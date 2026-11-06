@@ -22,8 +22,8 @@ _CATALOG_MANIFEST_PATH = _ROOT / "contracts" / "semantic-model" / "catalog-manif
 _SEMANTIC_TYPES_PATH = _ROOT / "contracts" / "semantic-model" / "semantic-types.json"
 _SEMANTIC_PREDICATES_PATH = _ROOT / "contracts" / "semantic-model" / "semantic-predicates.json"
 _SEMANTIC_CATALOG_MANIFEST_PATH = _ROOT / "contracts" / "semantic-model" / "semantic-catalog-manifest.json"
-_TRUSTED_MANIFEST_SHA256 = "2b76c3df82e5459529da0b00a67dd2d123a7ba6320f540841b2e00d60bc3a6fe"
-_TRUSTED_SEMANTIC_MANIFEST_SHA256 = "1cd78e53b78836f3fe14ccf0215b0deac118db3fae451b8adefe92586b35ab81"
+_TRUSTED_MANIFEST_SHA256 = "34e533b34af5fdb135e2fd8cea22de95a964b702b714619f314a30bd4cd49c2b"
+_TRUSTED_SEMANTIC_MANIFEST_SHA256 = "de477542fdcc6dd9f8b4d0e331f4a7486cd9b5d599b003f60ba3b606efc2d84d"
 _M1_SUPPORTED_KINDS = {"Project", "PackageSpecification", "NativeWorkspace", "SourceDeclaration"}
 _SUPPORTED_KINDS = _M1_SUPPORTED_KINDS | {"BehaviorBody", "BehaviorRegion", "BehaviorStep",
     "BuildTarget", "BuildRecipe", "BuildAlias", "OutputSpecification", "ArtifactObservation",
@@ -135,9 +135,13 @@ def _validate_catalogs(catalogs: dict, document_profile: str = "m1-project-disco
                 "Provenance predicates must not declare a primary layer.", field_path=f"/catalogs/predicates/predicates/{index}/primaryLayer"))
         role_ids = [role["roleId"] for role in predicate["roles"]]
         positions = [role["position"] for role in predicate["roles"]]
-        if len(set(role_ids)) != len(role_ids) or set(positions) != {"subject", "value"} or len(positions) != 2:
+        binary_positions = positions == ["subject", "value"] or positions == ["value", "subject"]
+        nary_positions = (full_catalog and positions.count("subject") == 1 and "value" not in positions
+                          and positions.count("argument") >= 2)
+        if len(set(role_ids)) != len(role_ids) or not (binary_positions or nary_positions):
             diagnostics.append(_diagnostic("catalog", "ROLE_CARDINALITY",
-                "Every M1 predicate must declare one subject role and one value role.", field_path=f"/catalogs/predicates/predicates/{index}/roles"))
+                "Predicate roles must declare either one subject/value pair or one subject and multiple full-profile arguments.",
+                field_path=f"/catalogs/predicates/predicates/{index}/roles"))
         for role_index, role in enumerate(predicate["roles"]):
             if role["valueType"] not in types_by_id | enum_ids | {"string", "bool", "int", "Path"}:
                 diagnostics.append(_diagnostic("catalog", "CATALOG_TYPE_REF_MISSING",
@@ -315,6 +319,9 @@ def validate_model(document: dict, catalogs: dict, source_observations: dict | N
         check_ref(fact["subject"], f"/facts/{index}/subject", record_ref)
         if isinstance(fact["value"], dict):
             check_ref(fact["value"], f"/facts/{index}/value", record_ref)
+        for argument_index, argument in enumerate(fact.get("arguments", [])):
+            if isinstance(argument["value"], dict):
+                check_ref(argument["value"], f"/facts/{index}/arguments/{argument_index}/value", record_ref)
         check_evidence(fact["evidenceIds"], f"/facts/{index}/evidenceIds", record_ref)
         for evidence_ref_index, evidence_ref in enumerate(fact.get("evidenceRefs", [])):
             check_evidence([evidence_ref["evidenceId"]],
@@ -629,9 +636,28 @@ def validate_model(document: dict, catalogs: dict, source_observations: dict | N
             invariant_diagnostics.append(_diagnostic("invariants", "CLAIM_MODE_UNSUPPORTED",
                 "Claim mode is not supported by this predicate.", record_ref=record_ref,
                 field_path=f"/facts/{index}/claimMode"))
+        arguments = fact.get("arguments", [])
+        argument_values = {item["role"]: item["value"] for item in arguments}
+        if len(argument_values) != len(arguments):
+            invariant_diagnostics.append(_diagnostic("invariants", "FACT_ARGUMENT_ROLE_DUPLICATE",
+                "A fact may supply each argument role at most once.", record_ref=record_ref,
+                field_path=f"/facts/{index}/arguments"))
+        uses_nary = any(role["position"] == "argument" for role in predicate["roles"])
+        if (uses_nary != bool(arguments) or (uses_nary and fact["value"] is not None)
+                or (not uses_nary and fact["value"] is None) or (is_m1 and arguments)):
+            invariant_diagnostics.append(_diagnostic("invariants", "FACT_ARGUMENT_SHAPE_MISMATCH",
+                "Fact value/arguments shape must match its catalog predicate and profile.", record_ref=record_ref,
+                field_path=f"/facts/{index}"))
+        expected_arguments = {role["roleId"] for role in predicate["roles"] if role["position"] == "argument"}
+        if set(argument_values) != expected_arguments:
+            invariant_diagnostics.append(_diagnostic("invariants", "FACT_ARGUMENT_ROLES_MISMATCH",
+                "A fact must supply exactly the argument roles declared by its predicate.", record_ref=record_ref,
+                field_path=f"/facts/{index}/arguments"))
         for role in predicate["roles"]:
-            value = fact["subject"] if role["position"] == "subject" else fact["value"]
-            path = f"/facts/{index}/" + role["position"]
+            value = (fact["subject"] if role["position"] == "subject" else
+                     fact["value"] if role["position"] == "value" else argument_values.get(role["roleId"]))
+            path = (f"/facts/{index}/arguments/{role['roleId']}" if role["position"] == "argument"
+                    else f"/facts/{index}/{role['position']}")
             if role["valueType"] == "M1SubjectRef":
                 if not isinstance(value, dict) or value.get("kind") not in role["allowedKinds"]:
                     invariant_diagnostics.append(_diagnostic("invariants", "ROLE_TYPE_MISMATCH",

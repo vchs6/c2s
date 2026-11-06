@@ -147,7 +147,7 @@
       ],
       "roles": [
         {
-          "roleId": "subject",
+          "roleId": "callSite",
           "position": "subject",
           "valueType": "M1SubjectRef",
           "allowedKinds": [
@@ -156,12 +156,19 @@
           "cardinality": "exactly_one"
         },
         {
-          "roleId": "value",
-          "position": "value",
+          "roleId": "callee",
+          "position": "argument",
           "valueType": "M1SubjectRef",
           "allowedKinds": [
             "SourceDeclaration"
           ],
+          "cardinality": "exactly_one"
+        },
+        {
+          "roleId": "dispatch",
+          "position": "argument",
+          "valueType": "string",
+          "allowedKinds": [],
           "cardinality": "exactly_one"
         }
       ],
@@ -190,7 +197,7 @@
       ],
       "roles": [
         {
-          "roleId": "subject",
+          "roleId": "closure",
           "position": "subject",
           "valueType": "M1SubjectRef",
           "allowedKinds": [
@@ -199,12 +206,19 @@
           "cardinality": "exactly_one"
         },
         {
-          "roleId": "value",
-          "position": "value",
+          "roleId": "binding",
+          "position": "argument",
           "valueType": "M1SubjectRef",
           "allowedKinds": [
             "Binding"
           ],
+          "cardinality": "exactly_one"
+        },
+        {
+          "roleId": "mode",
+          "position": "argument",
+          "valueType": "string",
+          "allowedKinds": [],
           "cardinality": "exactly_one"
         }
       ],
@@ -244,6 +258,106 @@
         {
           "roleId": "value",
           "position": "value",
+          "valueType": "string",
+          "allowedKinds": [],
+          "cardinality": "exactly_one"
+        }
+      ],
+      "constraints": [
+        "KIND_MATCH",
+        "ROLE_CARDINALITY",
+        "INTERNAL_REF_EXISTS",
+        "LAYER_CLASSIFICATION"
+      ]
+    },
+    {
+      "predicateId": "behavior.control_edge",
+      "category": "Semantic",
+      "primaryLayer": "E4",
+      "description": "A behavior step transfers control to a target step with an explicit edge kind.",
+      "relationKind": "association",
+      "claimCardinality": "multi_value",
+      "comparisonPolicy": "never",
+      "claimModes": [
+        "declaration",
+        "specification",
+        "static_may",
+        "static_must",
+        "observation",
+        "interpretation"
+      ],
+      "roles": [
+        {
+          "roleId": "source",
+          "position": "subject",
+          "valueType": "M1SubjectRef",
+          "allowedKinds": [
+            "BehaviorStep"
+          ],
+          "cardinality": "exactly_one"
+        },
+        {
+          "roleId": "target",
+          "position": "argument",
+          "valueType": "M1SubjectRef",
+          "allowedKinds": [
+            "BehaviorStep"
+          ],
+          "cardinality": "exactly_one"
+        },
+        {
+          "roleId": "edgeKind",
+          "position": "argument",
+          "valueType": "string",
+          "allowedKinds": [],
+          "cardinality": "exactly_one"
+        }
+      ],
+      "constraints": [
+        "KIND_MATCH",
+        "ROLE_CARDINALITY",
+        "INTERNAL_REF_EXISTS",
+        "LAYER_CLASSIFICATION"
+      ]
+    },
+    {
+      "predicateId": "behavior.data_edge",
+      "category": "Semantic",
+      "primaryLayer": "E4",
+      "description": "A behavior step transfers a named data role to a target step.",
+      "relationKind": "association",
+      "claimCardinality": "multi_value",
+      "comparisonPolicy": "never",
+      "claimModes": [
+        "declaration",
+        "specification",
+        "static_may",
+        "static_must",
+        "observation",
+        "interpretation"
+      ],
+      "roles": [
+        {
+          "roleId": "source",
+          "position": "subject",
+          "valueType": "M1SubjectRef",
+          "allowedKinds": [
+            "BehaviorStep"
+          ],
+          "cardinality": "exactly_one"
+        },
+        {
+          "roleId": "target",
+          "position": "argument",
+          "valueType": "M1SubjectRef",
+          "allowedKinds": [
+            "BehaviorStep"
+          ],
+          "cardinality": "exactly_one"
+        },
+        {
+          "roleId": "dataRole",
+          "position": "argument",
           "valueType": "string",
           "allowedKinds": [],
           "cardinality": "exactly_one"

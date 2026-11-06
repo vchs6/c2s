@@ -471,8 +471,17 @@
             },
             {
               "$ref": "#/$defs/subjectRef"
+            },
+            {
+              "type": "null"
             }
           ]
+        },
+        "arguments": {
+          "type": "array",
+          "minItems": 1,
+          "uniqueItems": true,
+          "items": {"$ref": "#/$defs/argument"}
         },
         "claimMode": {
           "enum": [
@@ -534,6 +543,20 @@
             "Supports",
             "Refutes",
             "Limits"
+          ]
+        }
+      }
+    },
+    "argument": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["role", "value"],
+      "properties": {
+        "role": {"$ref": "#/$defs/id"},
+        "value": {
+          "oneOf": [
+            {"type": "string", "minLength": 1},
+            {"$ref": "#/$defs/subjectRef"}
           ]
         }
       }

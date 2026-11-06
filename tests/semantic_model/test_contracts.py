@@ -736,6 +736,30 @@ class M1IdentityTests(unittest.TestCase):
         self.assertNotEqual(predicates["behavior.reads"]["predicateId"],
                             predicates["behavior.writes"]["predicateId"])
 
+    def test_full_profile_nary_call_claim_preserves_callee_and_dispatch_roles(self):
+        bundle = empty_bundle() | {"profile": "semantic-fact-model-1"}
+        callsite = {"identity": {"authority": "test", "domainId": "d", "localId": "call"},
+                    "kind": "BehaviorStep"}
+        callee = {"identity": {"authority": "test", "domainId": "d", "localId": "callee"},
+                  "kind": "SourceDeclaration"}
+        bundle["evidence"].append({"evidenceId": "ev", "source": "input", "path": "src.py",
+            "artifactId": None, "originalPath": "src.py", "sha256": "a" * 64, "startByte": 0,
+            "endByte": 1, "method": "fixture", "toolName": None, "toolVersion": None})
+        for ref in (callsite, callee):
+            bundle["registrations"].append({"ref": ref, "sourceKey": ref["identity"]["localId"],
+                                             "evidenceIds": ["ev"]})
+        bundle["facts"].append({"factId": "call-fact", "predicate": "behavior.calls", "subject": callsite,
+            "value": None, "arguments": [{"role": "callee", "value": callee},
+                                           {"role": "dispatch", "value": "unresolved"}],
+            "claimMode": "static_may", "condition": {"kind": "true"}, "evidenceIds": ["ev"]})
+
+        result = validate_model(bundle, semantic_model_catalogs())
+
+        self.assertTrue(result["valid"], result["diagnostics"])
+        incomplete = bundle | {"facts": [bundle["facts"][0] | {"arguments": [bundle["facts"][0]["arguments"][0]]}]}
+        rejected = validate_model(incomplete, semantic_model_catalogs())
+        self.assertIn("FACT_ARGUMENT_ROLES_MISMATCH", {item["ruleCode"] for item in rejected["diagnostics"]})
+
     def test_full_semantic_catalog_declares_distinct_program_body_and_region_relations(self):
         catalog = semantic_model_catalogs()
         predicates = {item["predicateId"]: item for item in catalog["predicates"]["predicates"]}

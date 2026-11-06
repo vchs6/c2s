@@ -251,7 +251,8 @@
         "position": {
           "enum": [
             "subject",
-            "value"
+            "value",
+            "argument"
           ]
         },
         "valueType": {

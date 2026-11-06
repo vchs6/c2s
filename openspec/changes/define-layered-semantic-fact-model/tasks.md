@@ -86,6 +86,7 @@
   - 交付：完成fact.schema.json、扩展validation.py、rules.md结构/引用章、独立测试区/suites/semantic-model/fixtures/{facts-valid,facts-invalid,top-level-shape}.json、test_contracts.py及公共文档完整包/引用例。
   - 验证：test_invalid_role_and_internal_ref拒绝算法作为alias目标及悬空内部引用；test_external_stub不强造本地提供方；test_nested_payload_rejected覆盖Sequence/Record藏Fact/主体/body、复杂签名；test_shared_composition_and_cycle保持共享引用且顶层形状不递归；test_stages_not_run验证结构失败后依赖阶段not_run。
   - 通过：合法显式缺口可保留，错误含阶段/记录/字段/规则，完整包与示意顶层边界不同；失败：外部标记绕开全部身份/来源约束或把静态形状测试称查询流程实现。
+  - 进展（2026-11-06）：full profile新增命名`arguments`多元角色表，按固定谓词目录逐角色验证类型与内部引用；二元M1语法未变。参数可变基数、嵌套Fact禁止与完整组成图/循环白名单仍未全部实现，父任务保持开放。
 
 - [ ] 2.2 落实工程组织、目标与交付正反例并运行T。依赖：2.1。
   - 上游依据：候选“显式工程边界与组织关系”“目标配方别名与交付边界”；Issue二.3；C02。
