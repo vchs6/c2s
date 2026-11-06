@@ -1,0 +1,21 @@
+{
+  "version": "1.0.0",
+  "profile": "m1-project-discovery-1",
+  "expectedPredicateIds": ["project.name", "project.language_declared", "workspace.member"],
+  "primaryLayer": "E0",
+  "relationKinds": {
+    "project.name": "attribute",
+    "project.language_declared": "attribute",
+    "workspace.member": "association"
+  },
+  "subjectKinds": {
+    "project.name": ["Project"],
+    "project.language_declared": ["Project"],
+    "workspace.member": ["NativeWorkspace"]
+  },
+  "valueKinds": {
+    "project.name": "string",
+    "project.language_declared": "string",
+    "workspace.member": ["PackageSpecification"]
+  }
+}

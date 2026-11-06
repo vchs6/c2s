@@ -4,15 +4,28 @@ from __future__ import annotations
 
 import json
 from copy import deepcopy
+import hashlib
 from pathlib import Path
 from uuid import uuid4
 
 from jsonschema import Draft202012Validator
+from jsonschema.exceptions import SchemaError
 
 
 _ROOT = Path(__file__).resolve().parents[2]
 _SCHEMA_PATH = _ROOT / "contracts" / "semantic-model" / "fact.schema.json"
+_CATALOG_SCHEMA_PATH = _ROOT / "contracts" / "semantic-model" / "catalog.schema.json"
+_TYPES_PATH = _ROOT / "contracts" / "semantic-model" / "types.json"
+_PREDICATES_PATH = _ROOT / "contracts" / "semantic-model" / "predicates.json"
+_CATALOG_MANIFEST_PATH = _ROOT / "contracts" / "semantic-model" / "catalog-manifest.json"
+_TRUSTED_MANIFEST_SHA256 = "f089a4ac3dcc4bd403ad31b6a28f4ab99368974a4d723e7c690413577f6c434d"
 _SUPPORTED_KINDS = {"Project", "PackageSpecification", "NativeWorkspace", "SourceDeclaration"}
+_SUPPORTED_CONSTRAINTS = {
+    "KIND_MATCH", "ROLE_CARDINALITY", "INTERNAL_REF_EXISTS", "DOMAIN_UNIQUE",
+    "CONTEXT_KEYS_SINGLE_VALUED", "PROJECT_MAPPING_CARDINALITY", "LAYER_CLASSIFICATION",
+    "INLINE_WHITELIST", "STATE_COMBINATION", "CLOSED_NEGATIVE_BASIS", "ALGORITHM_STEP_REFS",
+    "CONDITION_SUPPORTED_FRAGMENT",
+}
 
 
 def _diagnostic(stage: str, rule_code: str, message: str, *, record_ref: str | None = None,
@@ -24,6 +37,100 @@ def _diagnostic(stage: str, rule_code: str, message: str, *, record_ref: str | N
 def _identity_key(ref: dict) -> tuple[str, str, str]:
     identity = ref["identity"]
     return identity["authority"], identity["domainId"], identity["localId"]
+
+
+def _canonical_digest(value: dict) -> str:
+    payload = json.dumps(value, ensure_ascii=False, sort_keys=True, separators=(",", ":")).encode("utf-8")
+    return hashlib.sha256(payload).hexdigest()
+
+
+def _manifest_integrity(manifest: dict) -> bool:
+    return isinstance(manifest, dict) and _canonical_digest(manifest) == _TRUSTED_MANIFEST_SHA256
+
+
+def _validate_catalogs(catalogs: dict) -> list[dict]:
+    diagnostics = []
+    if not isinstance(catalogs, dict) or set(catalogs) != {"types", "predicates"}:
+        return [_diagnostic("catalog", "CATALOG_BUNDLE_MISMATCH",
+            "Callers must supply exactly the bundled types and predicates records.", field_path="/catalogs")]
+    try:
+        expected_types = json.loads(_TYPES_PATH.read_text(encoding="utf-8"))
+        expected_predicates = json.loads(_PREDICATES_PATH.read_text(encoding="utf-8"))
+        catalog_schema = json.loads(_CATALOG_SCHEMA_PATH.read_text(encoding="utf-8"))
+        manifest = json.loads(_CATALOG_MANIFEST_PATH.read_text(encoding="utf-8"))
+    except (OSError, ValueError) as error:
+        return [_diagnostic("catalog", "CATALOG_INVALID", f"Bundled catalog files cannot be read: {type(error).__name__}.")]
+
+    if not _manifest_integrity(manifest):
+        return [_diagnostic("catalog", "CATALOG_BUNDLE_MISMATCH",
+            "The trusted catalog manifest digest does not match this validator release.", field_path="/catalog-manifest")]
+    try:
+        Draft202012Validator.check_schema(catalog_schema)
+    except SchemaError as error:
+        return [_diagnostic("catalog", "CATALOG_INVALID",
+            f"Bundled catalog schema is invalid: {type(error).__name()}.", field_path="/catalog.schema.json")]
+    bundled = {"version": "1.0.0", "profile": "m1-project-discovery-1",
+               "types": catalogs["types"], "predicates": catalogs["predicates"]}
+    errors = sorted(Draft202012Validator(catalog_schema).iter_errors(bundled),
+                    key=lambda error: list(error.absolute_path))
+    if errors:
+        return [_diagnostic("catalog", "CATALOG_INVALID", error.message,
+                            field_path="/catalogs/" + "/".join(map(str, error.absolute_path)))
+                for error in errors]
+
+    types_by_id = {item["typeId"] for item in catalogs["types"]["types"]}
+    enum_ids = set(catalogs["types"]["enums"])
+    for type_index, type_record in enumerate(catalogs["types"]["types"]):
+        for field_name, field_record in type_record["fields"].items():
+            ref = field_record["type"]
+            if ref not in types_by_id | enum_ids | {"Id", "Id[]", "string", "bool", "int", "Path"}:
+                diagnostics.append(_diagnostic("catalog", "CATALOG_TYPE_REF_MISSING",
+                    f"Type field references unknown type {ref}.", field_path=f"/catalogs/types/types/{type_index}/fields/{field_name}/type"))
+
+    predicate_ids = set()
+    for index, predicate in enumerate(catalogs["predicates"]["predicates"]):
+        predicate_id = predicate["predicateId"]
+        if predicate_id in predicate_ids:
+            diagnostics.append(_diagnostic("catalog", "PREDICATE_ID_DUPLICATE",
+                "Predicate IDs must be unique.", field_path=f"/catalogs/predicates/predicates/{index}/predicateId"))
+        predicate_ids.add(predicate_id)
+        if predicate["category"] == "Semantic" and predicate["primaryLayer"] is None:
+            diagnostics.append(_diagnostic("catalog", "LAYER_CLASSIFICATION",
+                "Semantic predicates require exactly one primary layer.", field_path=f"/catalogs/predicates/predicates/{index}/primaryLayer"))
+        if predicate["category"] == "Provenance" and predicate["primaryLayer"] is not None:
+            diagnostics.append(_diagnostic("catalog", "LAYER_CLASSIFICATION",
+                "Provenance predicates must not declare a primary layer.", field_path=f"/catalogs/predicates/predicates/{index}/primaryLayer"))
+        role_ids = [role["roleId"] for role in predicate["roles"]]
+        positions = [role["position"] for role in predicate["roles"]]
+        if len(set(role_ids)) != len(role_ids) or set(positions) != {"subject", "value"} or len(positions) != 2:
+            diagnostics.append(_diagnostic("catalog", "ROLE_CARDINALITY",
+                "Every M1 predicate must declare one subject role and one value role.", field_path=f"/catalogs/predicates/predicates/{index}/roles"))
+        for role_index, role in enumerate(predicate["roles"]):
+            if role["valueType"] not in types_by_id | enum_ids | {"string", "bool", "int", "Path"}:
+                diagnostics.append(_diagnostic("catalog", "CATALOG_TYPE_REF_MISSING",
+                    f"Role references unknown type {role['valueType']}.",
+                    field_path=f"/catalogs/predicates/predicates/{index}/roles/{role_index}/valueType"))
+        for rule_index, rule_id in enumerate(predicate["constraints"]):
+            if rule_id not in _SUPPORTED_CONSTRAINTS:
+                diagnostics.append(_diagnostic("catalog", "RULE_UNSUPPORTED",
+                    f"Constraint {rule_id} is not implemented by this contract version.",
+                    field_path=f"/catalogs/predicates/predicates/{index}/constraints/{rule_index}"))
+    if diagnostics:
+        return diagnostics
+
+    expected_files = {"types.json": expected_types, "predicates.json": expected_predicates,
+                      "catalog.schema.json": catalog_schema}
+    expected_digests = {name: _canonical_digest(value) for name, value in expected_files.items()}
+    if manifest.get("version") != "1.0.0" or manifest.get("profile") != "m1-project-discovery-1" \
+            or manifest.get("ruleSetId") != "semantic-model-1.0.0" \
+            or manifest.get("digests") != expected_digests:
+        return [_diagnostic("catalog", "CATALOG_BUNDLE_MISMATCH",
+            "The trusted catalog manifest does not match the bundled type, predicate, and schema files.", field_path="/catalog-manifest")]
+    if (_canonical_digest(catalogs["types"]) != expected_digests["types.json"]
+            or _canonical_digest(catalogs["predicates"]) != expected_digests["predicates.json"]):
+        return [_diagnostic("catalog", "CATALOG_BUNDLE_MISMATCH",
+            "Caller-supplied catalogs differ from the fixed 1.0.0 bundle.", field_path="/catalogs")]
+    return []
 
 
 def register_m1(domain_id: str, registrations: list[dict], kind: str,
@@ -69,10 +176,16 @@ def register_m1(domain_id: str, registrations: list[dict], kind: str,
 
 def validate_model(document: dict, catalogs: dict, source_observations: dict | None = None) -> dict:
     """Validate the M1 wire shape and local references without claiming source truth."""
-    del catalogs, source_observations  # catalog and evidence observation checks are added by their owning slices.
+    del source_observations  # source observation checks are added by their owning slice.
     result = {"valid": False,
-              "stages": {"catalog": "partial", "structure": "not_run", "references": "not_run", "invariants": "not_run"},
+              "stages": {"catalog": "not_run", "structure": "not_run", "references": "not_run", "invariants": "not_run"},
               "diagnostics": [], "consistency": "undetermined"}
+    catalog_errors = _validate_catalogs(catalogs)
+    if catalog_errors:
+        result["stages"]["catalog"] = "fail"
+        result["diagnostics"] = catalog_errors
+        return result
+    result["stages"]["catalog"] = "pass"
     schema = json.loads(_SCHEMA_PATH.read_text(encoding="utf-8"))
     validator = Draft202012Validator(schema)
     errors = sorted(validator.iter_errors(document), key=lambda error: list(error.absolute_path))
@@ -153,6 +266,31 @@ def validate_model(document: dict, catalogs: dict, source_observations: dict | N
         return result
     result["stages"]["references"] = "pass"
     invariant_diagnostics = []
+    predicates = {predicate["predicateId"]: predicate for predicate in catalogs["predicates"]["predicates"]}
+    for index, fact in enumerate(document["facts"]):
+        record_ref = f"fact:{fact['factId']}"
+        predicate = predicates.get(fact["predicate"])
+        if predicate is None:
+            invariant_diagnostics.append(_diagnostic("invariants", "UNSUPPORTED_PREDICATE",
+                "Fact predicate is not registered in the fixed M1 catalog.", record_ref=record_ref,
+                field_path=f"/facts/{index}/predicate"))
+            continue
+        if fact["claimMode"] not in predicate["claimModes"]:
+            invariant_diagnostics.append(_diagnostic("invariants", "CLAIM_MODE_UNSUPPORTED",
+                "Claim mode is not supported by this predicate.", record_ref=record_ref,
+                field_path=f"/facts/{index}/claimMode"))
+        for role in predicate["roles"]:
+            value = fact["subject"] if role["position"] == "subject" else fact["value"]
+            path = f"/facts/{index}/" + role["position"]
+            if role["valueType"] == "M1SubjectRef":
+                if not isinstance(value, dict) or value.get("kind") not in role["allowedKinds"]:
+                    invariant_diagnostics.append(_diagnostic("invariants", "ROLE_TYPE_MISMATCH",
+                        f"Role {role['roleId']} requires a subject of kind {', '.join(role['allowedKinds'])}.",
+                        record_ref=record_ref, field_path=path))
+            elif role["valueType"] == "string" and (not isinstance(value, str) or not value):
+                invariant_diagnostics.append(_diagnostic("invariants", "ROLE_TYPE_MISMATCH",
+                    f"Role {role['roleId']} requires a non-empty string.", record_ref=record_ref,
+                    field_path=path))
     for index, evidence in enumerate(document["evidence"]):
         if evidence["endByte"] < evidence["startByte"]:
             invariant_diagnostics.append(_diagnostic("invariants", "BYTE_RANGE_INVALID",

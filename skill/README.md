@@ -6,7 +6,7 @@
 
 ## 公共语义模型契约（M1）
 
-仓库根目录的 `contracts/semantic-model/` 与 `src/c2s_semantic_contract/` 提供版本 `1.0.0`、profile `m1-project-discovery-1` 的初始M1身份和事实包契约。开发环境安装使用 `python3 -m pip install -r requirements-semantic-model.txt`；验证使用 `PYTHONPATH=src python3 -m unittest discover -s tests/semantic_model -v`。`register_m1` 按调用方提供的identity domain和sourceKey复用身份并合并证据；`validate_model` 目前只覆盖结构、内部引用和初始身份/字节范围约束，目录闭包、上下文冲突、来源观察、评估基数和完整跨事实规则仍在后续任务中。共享工作区开发测试不是独立验收。
+仓库根目录的 `contracts/semantic-model/` 与 `src/c2s_semantic_contract/` 提供版本 `1.0.0`、profile `m1-project-discovery-1` 的初始M1身份、事实包及封闭谓词目录契约，含`project.name`、`project.language_declared`和`workspace.member`。开发环境安装使用 `python3 -m pip install -r requirements-semantic-model.txt`；验证使用 `PYTHONPATH=src python3 -m unittest discover -s tests/semantic_model -v`。`register_m1` 按调用方提供的identity domain和sourceKey复用身份并合并证据；`validate_model`覆盖M1包结构、内部身份/证据引用、初始身份/字节范围约束、封闭目录及事实角色类型/种类检查。来源观察验证、上下文冲突、评估基数、完整跨事实规则与现有查询分析器的端到端消费仍未完成。共享工作区开发测试不是独立验收。
 
 ## 当前实现与测试
 
