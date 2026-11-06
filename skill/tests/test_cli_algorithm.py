@@ -59,6 +59,19 @@ class AlgorithmCliTests(unittest.TestCase):
             self.assertEqual(status, 64)
             self.assertIn("symlinks", errors.getvalue())
 
+    def test_cli_reports_malformed_python_without_a_traceback(self):
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            (root / "broken.py").write_text("def broken(:\n", encoding="utf-8")
+            output, errors = io.StringIO(), io.StringIO()
+            with contextlib.redirect_stdout(output), contextlib.redirect_stderr(errors):
+                status = main(["algorithm", "--root", str(root), "--source", "broken.py",
+                               "--function", "broken"])
+            self.assertEqual(status, 64)
+            self.assertEqual(output.getvalue(), "")
+            self.assertIn("invalid Python syntax", errors.getvalue())
+            self.assertNotIn("Traceback", errors.getvalue())
+
     def test_query_mode_still_requires_exactly_one_query_form(self):
         with tempfile.TemporaryDirectory() as temporary:
             output, errors = io.StringIO(), io.StringIO()

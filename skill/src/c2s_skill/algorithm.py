@@ -35,7 +35,10 @@ def _source_offset(source: bytes, node: ast.AST) -> tuple[int, int]:
 
 def extract_python_algorithm(source: bytes, path: str, function_name: str) -> dict:
     """Build a source-located, explicitly partial algorithm record for one Python callable."""
-    tree = ast.parse(source, filename=path)
+    try:
+        tree = ast.parse(source, filename=path)
+    except SyntaxError as error:
+        raise ValueError(f"invalid Python syntax in {path}:{error.lineno}: {error.msg}") from error
     parents = {child: parent for parent in ast.walk(tree) for child in ast.iter_child_nodes(parent)}
 
     def qualified_name(node: ast.AST) -> str:
