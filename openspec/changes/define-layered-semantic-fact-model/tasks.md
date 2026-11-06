@@ -104,7 +104,7 @@
 
 ## 4. 契约算法与语言机制
 
-- [ ] 4.1 完成操作契约、受限算法结构和引用校验，运行T算法正反例。依赖：1.1–3.1。
+- [x] 4.1 完成操作契约、受限算法结构和引用校验并运行公开算法测试。JSON Schema与校验器覆盖15种步骤构造、源跨度、区域/控制/数据引用、契约六类别、compute未知语义、opaque边界、管理项目状态基数及多实现引用；Python/Rust lowering保留结构与缺口。真实click/regex函数样本均通过结构校验。用户已放宽私有验收隔离门禁；本状态代表公开实现/测试，不代表私有独立审查。
   - 上游依据：算法delta“操作契约独立表达”“算法描述身份目的与实现关联”“结构化行为体与引用完整性”“求值错误资源与并发语义保持”；C03/C05、design §5。
   - 交付：algorithm.schema.json、validation.py算法阶段、rules.md算法章、独立测试区/suites/semantic-model/fixtures/algorithms.json、test_algorithms.py及公共文档契约/算法例。
   - 验证：test_algorithm_kinds_and_refs覆盖design列出的14种构造、重复stepId、悬空边/循环出口、局部步骤可独立定位；test_algorithm_multi_project保持管理归属未决和多实现；test_numeric_resource_concurrency_unknown不默认整数/次序/串行，opaque缺来源/影响/未知项拒绝；test_body_reference_boundary拒绝顶层示例偷带步骤。
@@ -159,3 +159,8 @@
 ## Progress — 2026-11-06, semantic acquisition/presentation states
 
 - Added full-profile `semanticStates` that separate obtained/not-acquired/unsupported/not-applicable acquisition from ref-only/expanded presentation and from semantic claims. Validation requires explanatory gaps for unavailable states, justification/evidence for not-applicable, registered fact and evidence references, and subject/predicate scope consistency. Existing coverage/supersedes/source-observation checks remain distinct. Tests verify acquired ref-only facts and reject unjustified not-applicable states.
+
+
+## Progress — 2026-11-06, algorithm contract structure
+
+- Extended the algorithm schema with explicit management mapping state and candidate Project subject IDs, separate from a many-valued implementation reference list. Language lowerers set management unresolved rather than guessing project ownership. Regression coverage enumerates all 15 step kinds, validates ambiguous candidate cardinality, multiple implementations, operation coverage, source spans, and region/control/data refs. The full Skill suite passed after fixing an environment-sensitive Cargo-unavailable test.

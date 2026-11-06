@@ -70,7 +70,7 @@
     },
     "algorithm": {
       "type": "object", "additionalProperties": false,
-      "required": ["algorithm_id", "purpose", "problem", "body", "contract", "implementation_refs", "evidence_refs", "omissions"],
+      "required": ["algorithm_id", "purpose", "problem", "body", "contract", "management", "implementation_refs", "evidence_refs", "omissions"],
       "properties": {
         "algorithm_id": {"type": "string", "minLength": 1},
         "purpose": {"enum": ["normative", "current_implementation", "abstract"]},
@@ -100,6 +100,11 @@
               }}}
           }
         },
+        "management": {"type": "object", "additionalProperties": false,
+          "required": ["status", "project_subject_ids"], "properties": {
+            "status": {"enum": ["resolved", "ambiguous", "unresolved"]},
+            "project_subject_ids": {"type": "array", "uniqueItems": true, "items": {"type": "string", "minLength": 1}}
+          }},
         "contract": {
           "type": "object", "additionalProperties": false,
           "required": ["inputs", "outputs", "preconditions", "outcomes", "effects", "ordering_constraints", "coverage"],

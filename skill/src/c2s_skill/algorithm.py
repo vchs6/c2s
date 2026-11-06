@@ -283,6 +283,7 @@ def extract_python_algorithm(source: bytes, path: str, function_name: str,
                                   "condition": {"kind": "unknown", "reason": "calls and aliases unresolved"},
                                   "evidence_refs": [function_evidence]}],
                      "ordering_constraints": [], "coverage": coverage},
+        "management": {"status": "unresolved", "project_subject_ids": []},
         "implementation_refs": [{"subject_id": implementation_id}],
         "evidence_refs": sorted(evidence_refs), "omissions": omissions,
     }
@@ -527,6 +528,7 @@ def extract_rust_algorithm(source: bytes, path: str, function_name: str,
                                   "condition": {"kind": "unknown", "reason": "no type/call analysis"},
                                   "evidence_refs": [function_evidence]}],
                      "ordering_constraints": [], "coverage": coverage},
+        "management": {"status": "unresolved", "project_subject_ids": []},
         "implementation_refs": [{"subject_id": implementation_id}],
         "evidence_refs": sorted(evidence_refs), "omissions": omissions,
     }
@@ -536,6 +538,17 @@ def extract_rust_algorithm(source: bytes, path: str, function_name: str,
 def _algorithm_diagnostics(algorithm: dict, index: int) -> list[dict[str, str]]:
     diagnostics: list[dict[str, str]] = []
     base = f"algorithms[{index}]"
+    management = algorithm.get("management")
+    if isinstance(management, dict):
+        status = management.get("status")
+        project_ids = management.get("project_subject_ids", [])
+        valid = ((status == "resolved" and len(project_ids) == 1)
+                 or (status == "ambiguous" and len(project_ids) >= 2)
+                 or (status == "unresolved" and len(project_ids) == 0))
+        if not valid:
+            diagnostics.append(_diagnostic("MANAGEMENT_PROJECT_CARDINALITY",
+                                           f"{base}.management.project_subject_ids",
+                                           "Project candidate count must match resolved/ambiguous/unresolved status"))
     body = algorithm.get("body")
     if not isinstance(body, dict):
         return diagnostics

@@ -16,6 +16,7 @@ def _algorithm(steps=None, control_edges=None, data_edges=None):
             "algorithm_id": "alg:run",
             "purpose": "current_implementation",
             "problem": "Compute a result",
+            "management": {"status": "unresolved", "project_subject_ids": []},
             "body": {
                 "regions": [{"region_id": "root", "parent_region_id": None}],
                 "steps": steps if steps is not None else [
@@ -179,6 +180,33 @@ class AlgorithmContractTests(unittest.TestCase):
         document = _algorithm()
         document["algorithms"].append({**document["algorithms"][0], "algorithm_id": "alg:other"})
         self.assertEqual(validate_algorithms(document), [])
+
+    def test_algorithm_constructor_catalog_and_ownership_are_explicit(self):
+        kinds = ("sequence", "bind", "assign", "compute", "select", "loop", "call", "return", "raise",
+                 "handle", "resource", "concurrent", "synchronize", "unknown", "opaque")
+        steps = []
+        for index, kind in enumerate(kinds):
+            step = {"step_id": f"s{index}", "kind": kind, "region_id": "root", "evidence_refs": ["ev"],
+                    "source": {"path": "src.py", "start_byte": index, "end_byte": index + 1}}
+            if kind == "compute":
+                step["attributes"] = {"operation": "unknown", "type_rule": "unknown", "evaluation_order": "unknown"}
+            if kind == "opaque":
+                step.update({"impact": "Unknown syntax", "unknowns": ["semantics"],
+                             "boundary": {"inputs": [], "outputs": [], "effects": ["unknown"]}})
+            steps.append(step)
+        document = _algorithm(steps=steps, control_edges=[], data_edges=[])
+        document["algorithms"][0]["management"] = {"status": "ambiguous", "project_subject_ids": ["project:a", "project:b"]}
+        document["algorithms"][0]["implementation_refs"].append({"subject_id": "subject:other"})
+
+        self.assertEqual(validate_algorithms(document), [])
+
+    def test_algorithm_management_candidate_cardinality_is_validated(self):
+        document = _algorithm()
+        document["algorithms"][0]["management"] = {"status": "ambiguous", "project_subject_ids": ["project:a"]}
+
+        codes = {item["code"] for item in validate_algorithms(document)}
+
+        self.assertIn("MANAGEMENT_PROJECT_CARDINALITY", codes)
 
     def test_rejects_duplicate_step_ids_and_dangling_control_and_data_edges(self):
         document = _algorithm()

@@ -196,7 +196,9 @@ class QueryTests(unittest.TestCase):
         with TemporaryDirectory() as temporary:
             root = Path(temporary)
             (root / "Cargo.toml").write_text('[workspace]\nmembers = ["crates/*"]\n')
-            result = query_project(root, ["workspace-members"])
+            with patch.dict(os.environ, {"CARGO": ""}), \
+                    patch("c2s_skill.acquisition.shutil.which", return_value=None):
+                result = query_project(root, ["workspace-members"])
             self.assertFalse(result.complete)
             self.assertTrue(any("TOOL_UNAVAILABLE:cargo" == gap.reason for gap in result.gaps))
 
