@@ -169,6 +169,222 @@
       ]
     },
     {
+      "predicateId": "build.alias_of",
+      "category": "Semantic",
+      "primaryLayer": "E1",
+      "description": "A build alias resolves to a target without becoming a second implementation.",
+      "relationKind": "association",
+      "claimCardinality": "multi_value",
+      "comparisonPolicy": "never",
+      "claimModes": [
+        "declaration",
+        "specification",
+        "static_may",
+        "static_must",
+        "observation",
+        "interpretation"
+      ],
+      "roles": [
+        {
+          "roleId": "subject",
+          "position": "subject",
+          "valueType": "M1SubjectRef",
+          "allowedKinds": [
+            "BuildAlias"
+          ],
+          "cardinality": "exactly_one"
+        },
+        {
+          "roleId": "value",
+          "position": "value",
+          "valueType": "M1SubjectRef",
+          "allowedKinds": [
+            "BuildTarget"
+          ],
+          "cardinality": "exactly_one"
+        }
+      ],
+      "constraints": [
+        "KIND_MATCH",
+        "ROLE_CARDINALITY",
+        "INTERNAL_REF_EXISTS",
+        "LAYER_CLASSIFICATION"
+      ]
+    },
+    {
+      "predicateId": "build.declares_output",
+      "category": "Semantic",
+      "primaryLayer": "E1",
+      "description": "A target or recipe declares an output specification; this does not claim an artifact exists.",
+      "relationKind": "association",
+      "claimCardinality": "multi_value",
+      "comparisonPolicy": "never",
+      "claimModes": [
+        "declaration",
+        "specification",
+        "static_may",
+        "static_must",
+        "observation",
+        "interpretation"
+      ],
+      "roles": [
+        {
+          "roleId": "subject",
+          "position": "subject",
+          "valueType": "M1SubjectRef",
+          "allowedKinds": [
+            "BuildTarget",
+            "BuildRecipe"
+          ],
+          "cardinality": "exactly_one"
+        },
+        {
+          "roleId": "value",
+          "position": "value",
+          "valueType": "M1SubjectRef",
+          "allowedKinds": [
+            "OutputSpecification"
+          ],
+          "cardinality": "exactly_one"
+        }
+      ],
+      "constraints": [
+        "KIND_MATCH",
+        "ROLE_CARDINALITY",
+        "INTERNAL_REF_EXISTS",
+        "LAYER_CLASSIFICATION"
+      ]
+    },
+    {
+      "predicateId": "build.declares_recipe",
+      "category": "Semantic",
+      "primaryLayer": "E1",
+      "description": "A Project declares a build recipe, which may exist without a native build target.",
+      "relationKind": "association",
+      "claimCardinality": "multi_value",
+      "comparisonPolicy": "never",
+      "claimModes": [
+        "declaration",
+        "specification",
+        "static_may",
+        "static_must",
+        "observation",
+        "interpretation"
+      ],
+      "roles": [
+        {
+          "roleId": "subject",
+          "position": "subject",
+          "valueType": "M1SubjectRef",
+          "allowedKinds": [
+            "Project"
+          ],
+          "cardinality": "exactly_one"
+        },
+        {
+          "roleId": "value",
+          "position": "value",
+          "valueType": "M1SubjectRef",
+          "allowedKinds": [
+            "BuildRecipe"
+          ],
+          "cardinality": "exactly_one"
+        }
+      ],
+      "constraints": [
+        "KIND_MATCH",
+        "ROLE_CARDINALITY",
+        "INTERNAL_REF_EXISTS",
+        "LAYER_CLASSIFICATION"
+      ]
+    },
+    {
+      "predicateId": "build.declares_target",
+      "category": "Semantic",
+      "primaryLayer": "E1",
+      "description": "A Project declares a build target; declaration does not claim that it was built.",
+      "relationKind": "association",
+      "claimCardinality": "multi_value",
+      "comparisonPolicy": "never",
+      "claimModes": [
+        "declaration",
+        "specification",
+        "static_may",
+        "static_must",
+        "observation",
+        "interpretation"
+      ],
+      "roles": [
+        {
+          "roleId": "subject",
+          "position": "subject",
+          "valueType": "M1SubjectRef",
+          "allowedKinds": [
+            "Project"
+          ],
+          "cardinality": "exactly_one"
+        },
+        {
+          "roleId": "value",
+          "position": "value",
+          "valueType": "M1SubjectRef",
+          "allowedKinds": [
+            "BuildTarget"
+          ],
+          "cardinality": "exactly_one"
+        }
+      ],
+      "constraints": [
+        "KIND_MATCH",
+        "ROLE_CARDINALITY",
+        "INTERNAL_REF_EXISTS",
+        "LAYER_CLASSIFICATION"
+      ]
+    },
+    {
+      "predicateId": "build.observed_artifact",
+      "category": "Semantic",
+      "primaryLayer": "E1",
+      "description": "An output specification is linked to an artifact observation backed by acquisition evidence.",
+      "relationKind": "association",
+      "claimCardinality": "multi_value",
+      "comparisonPolicy": "never",
+      "claimModes": [
+        "declaration",
+        "specification",
+        "static_may",
+        "static_must",
+        "observation",
+        "interpretation"
+      ],
+      "roles": [
+        {
+          "roleId": "subject",
+          "position": "subject",
+          "valueType": "M1SubjectRef",
+          "allowedKinds": [
+            "OutputSpecification"
+          ],
+          "cardinality": "exactly_one"
+        },
+        {
+          "roleId": "value",
+          "position": "value",
+          "valueType": "M1SubjectRef",
+          "allowedKinds": [
+            "ArtifactObservation"
+          ],
+          "cardinality": "exactly_one"
+        }
+      ],
+      "constraints": [
+        "KIND_MATCH",
+        "ROLE_CARDINALITY",
+        "INTERNAL_REF_EXISTS",
+        "LAYER_CLASSIFICATION"
+      ]
+    },
+    {
       "predicateId": "constant.declared",
       "category": "Semantic",
       "primaryLayer": "E2",

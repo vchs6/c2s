@@ -76,7 +76,12 @@
       "SourceDeclaration",
       "BehaviorBody",
       "BehaviorRegion",
-      "BehaviorStep"
+      "BehaviorStep",
+      "BuildTarget",
+      "BuildRecipe",
+      "BuildAlias",
+      "OutputSpecification",
+      "ArtifactObservation"
     ]
   }
 }

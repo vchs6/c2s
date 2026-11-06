@@ -3,8 +3,8 @@
   "profile": "semantic-fact-model-1",
   "ruleSetId": "semantic-model-1.0.0",
   "digests": {
-    "semantic-types.json": "f268fc53a7d6b6eeee030273b76bf6b34f50ecebaf72d4828b7c19a5252929c4",
-    "semantic-predicates.json": "73e2545003796e7c65c3832e2dc8659ad9c34176df08359359bf79881be89629",
-    "catalog.schema.json": "a4c4dde3f6c51c34dd4f0efce26456048d394ce071a1ec108d63185c50a9636f"
+    "semantic-types.json": "9543b39538cd07e7b6776165e0600dbf39cc20443d6169ca31845d5261c4dddd",
+    "semantic-predicates.json": "f600995527a44b622f70fa434bd1e0ebdbdd96059a5ad83179f43407f2a289c6",
+    "catalog.schema.json": "904f731146ef9b4dbb269bd883a287996ad8f2618274021dcc726914fec860ad"
   }
 }

@@ -755,6 +755,17 @@ class M1IdentityTests(unittest.TestCase):
         self.assertEqual(rejected["stages"]["references"], "fail")
         self.assertIn("M1_KIND_UNSUPPORTED", {item["ruleCode"] for item in rejected["diagnostics"]})
 
+    def test_build_target_recipe_alias_and_artifact_relations_remain_distinct(self):
+        catalogs = semantic_model_catalogs()
+        predicates = {item["predicateId"] for item in catalogs["predicates"]["predicates"]}
+        self.assertTrue({"build.declares_target", "build.declares_recipe", "build.alias_of",
+                         "build.declares_output", "build.observed_artifact"} <= predicates)
+        by_id = {item["predicateId"]: item for item in catalogs["predicates"]["predicates"]}
+        self.assertEqual(by_id["build.observed_artifact"]["primaryLayer"], "E1")
+        self.assertIn("BuildRecipe", by_id["build.declares_recipe"]["roles"][1]["allowedKinds"])
+        self.assertIn("BuildTarget", by_id["build.alias_of"]["roles"][1]["allowedKinds"])
+        self.assertIn("OutputSpecification", by_id["build.observed_artifact"]["roles"][0]["allowedKinds"])
+
     def test_catalog_rejects_dangling_type_references_and_mixed_versions(self):
         catalogs = fixed_catalogs()
         catalogs["types"]["types"][0]["fields"]["authority"]["type"] = "MissingType"
