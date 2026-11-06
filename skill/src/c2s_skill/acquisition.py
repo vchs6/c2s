@@ -98,7 +98,7 @@ def analysis_profile_digest() -> str:
                         for name in ("tree-sitter", "tree-sitter-python", "tree-sitter-rust")}
     except importlib.metadata.PackageNotFoundError as error:
         dependencies = {"missing": error.name or "unknown"}
-    profile = {"analyzer": "c2s-semantic-facts/0.6.3", "python": platform.python_version(),
+    profile = {"analyzer": "c2s-semantic-facts/0.6.4", "python": platform.python_version(),
                "platform": platform.platform(), "parsers": dependencies, "cargo": cargo_version}
     return hashlib.sha256(json.dumps(profile, sort_keys=True, separators=(",", ":")).encode()).hexdigest()
 
@@ -282,7 +282,21 @@ def _rust_facts(path: str, source: bytes, root) -> tuple[list[Fact], int, bool]:
     def binding_names(pattern) -> list[str]:
         if pattern.type == "identifier":
             return [source[pattern.start_byte:pattern.end_byte].decode()]
-        if pattern.type == "tuple_pattern":
+        if pattern.type in {"tuple_pattern", "slice_pattern"}:
+            return [name for child in pattern.named_children for name in binding_names(child)]
+        if pattern.type in {"tuple_struct_pattern", "struct_pattern"}:
+            return [name for child in pattern.named_children[1:] for name in binding_names(child)]
+        if pattern.type == "field_pattern":
+            names = []
+            for child in pattern.named_children:
+                if child.type == "shorthand_field_identifier":
+                    names.append(source[child.start_byte:child.end_byte].decode())
+                elif child.type != "field_identifier":
+                    names.extend(binding_names(child))
+            return names
+        if pattern.type == "or_pattern":
+            return binding_names(pattern.named_children[0]) if pattern.named_children else []
+        if pattern.type in {"mut_pattern", "reference_pattern", "captured_pattern"}:
             return [name for child in pattern.named_children for name in binding_names(child)]
         return []
 

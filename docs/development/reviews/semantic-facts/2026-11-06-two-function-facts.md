@@ -3,7 +3,7 @@
 项目：Click 示例 `examples/naval/naval.py`。
 固定提交：`2247b35ea1c47c727d7a06e51fa280e12a863ff6`。
 查询：`all-supported-facts`，按共享 `subject_id` 投影目标函数。
-分析器：C2S semantic facts 0.6.3。静态 AST 证据，不代表运行时验证。
+分析器：C2S semantic facts 0.6.4。静态 AST 证据，不代表运行时验证。
 
 ## `ship_move`
 
