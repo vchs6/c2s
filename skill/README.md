@@ -2,7 +2,7 @@
 
 状态：原型实现中。当前可对Python与Rust源文件进行全目录语法遍历，提取类/结构体、字段、函数、导入、常量、源码文档行为说明及常见控制流/调用/运算步骤，并按selector或有限自然语言请求查询，返回JSON或Markdown。每条记录带项目根命名空间内的稳定fact ID、主体ID、源路径和UTF-8字节范围；同一函数的声明、文档契约和算法步骤共享`subject_id`。`evidence_included`标明本次请求是否附带源码片段。`claim_mode`区分语法、声明、Cargo元数据和文档陈述，不代表已验证运行时行为。fact/subject ID绑定分析根路径，移动检出目录后会改变。
 
-目前还不具备完整E0–E4领域模型、类型/调用绑定、行为契约验证、源码到结构化算法的提取或完整工程语义。算法描述契约结构校验切片位于`contracts/semantic-algorithm.schema.json`和`c2s_skill.algorithm.validate_algorithms`；它还要求输入/输出、前提、正常/错误/终止结果、效果和顺序约束分别记录证据覆盖状态；校验器检查步骤身份、区域/控制/数据引用、计算语义字段及opaque边界，但不证明描述与源码一致。宏展开、条件编译、多态/动态调用、反射、运行时行为和工程配置语义没有完整覆盖；所以当前结果的`complete=true`仅表示所选事实类别的获取没有已知缺口，并不表示项目的所有语义事实均已取得。结果会附带全目录清单和未处理路径；源文件解析目前只覆盖`.py`与`.rs`。`classes`、`functions`和`all-declarations`只返回顶层条目，不附带类型体/函数体；须请求`definitions`、指定`function:名称`或`all-supported-facts`才会附带相应源码体。SQLite结果缓存绑定项目树摘要及分析配置摘要（分析器、Python/平台、Tree-sitter和Cargo版本）；缓存写入失败时事实仍返回，并通过独立持久化状态报告，逐项构造事务恢复和supersedes lineage尚未实现。机器输出契约位于`contracts/semantic-fact-query.schema.json`。请把本原型用于开发与明确范围查询，不作为完整语义验收结论。
+目前还不具备完整E0–E4领域模型、类型/调用绑定、完整源码到结构化算法的提取、来源覆盖验证或完整工程语义。算法描述契约结构校验切片位于`contracts/semantic-algorithm.schema.json`和`c2s_skill.algorithm.validate_algorithms`；它要求输入/输出、前提、正常/错误/终止结果、效果和顺序约束分别记录证据覆盖状态；校验器检查步骤身份、区域/控制/数据引用、计算语义字段及opaque边界。`c2s_skill.algorithm.extract_python_algorithm(...)`和`extract_rust_algorithm(...)`可从指定Python函数或Rust函数生成带源码字节跨度、控制区域和显式缺口的初步算法描述，目前没有接入通用查询结果；生成物不等于行为完整或源码等价证明。宏展开、条件编译、多态/动态调用、反射、运行时行为和工程配置语义没有完整覆盖；所以当前结果的`complete=true`仅表示所选事实类别的获取没有已知缺口，并不表示项目的所有语义事实均已取得。结果会附带全目录清单和未处理路径；源文件解析目前只覆盖`.py`与`.rs`。`classes`、`functions`和`all-declarations`只返回顶层条目，不附带类型体/函数体；须请求`definitions`、指定`function:名称`或`all-supported-facts`才会附带相应源码体。SQLite结果缓存绑定项目树摘要及分析配置摘要（分析器、Python/平台、Tree-sitter和Cargo版本）；缓存写入失败时事实仍返回，并通过独立持久化状态报告，逐项构造事务恢复和supersedes lineage尚未实现。机器输出契约位于`contracts/semantic-fact-query.schema.json`。请把本原型用于开发与明确范围查询，不作为完整语义验收结论。
 
 ## 当前实现与测试
 
@@ -71,3 +71,7 @@ CI账户配置与公开容器探针的命令、最小权限、安装来源及安
 开发健康检查另有一次公开输入的gpt-5-mini Responses请求（最大256输出Token、store=false、不重试）；它不是产品语义后端选择。当前实际返回credit_balance_exhausted，推理未通过，usage未知。开发按任务选模型、按需选专用Skill及实际使用回报见../docs/workflow/agent-governance.md和本轮skill-usage.md。
 
 工作授权与访问现状见`../docs/decisions/0011-development-without-isolation-gate.md`及`../docs/workflow/blind-development.md`。公开维护测试不消耗模型Token；实际语义理解/模型调用流程尚未实现。
+
+## 初步算法描述请求
+
+可用`PYTHONPATH=skill/src .local/analysis-venv/bin/python -m c2s_skill algorithm --root .local/real-projects/click --source examples/naval/naval.py --function ship_move`或将根目录换成regex、源文件换成`.rs`路径，按需获得单个Python/Rust函数的JSON算法描述。请求只读取根目录内的一个常规源码文件，拒绝越界路径和符号链接；响应带源码摘要、结构校验、`complete=false`及来源/类型/调用/数据流等显式缺口。该输出是静态语法投影，不能当作完整CFG、类型检查结果、测试结论或行为等价证明。

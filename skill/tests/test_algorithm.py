@@ -4,7 +4,7 @@ from pathlib import Path
 
 from jsonschema import Draft202012Validator
 
-from c2s_skill.algorithm import validate_algorithms
+from c2s_skill.algorithm import extract_python_algorithm, extract_rust_algorithm, validate_algorithms
 
 
 def _algorithm(steps=None, control_edges=None, data_edges=None):
@@ -55,6 +55,77 @@ def _algorithm(steps=None, control_edges=None, data_edges=None):
 
 
 class AlgorithmContractTests(unittest.TestCase):
+    def test_python_source_produces_located_algorithm_regions_and_explicit_gaps(self):
+        source = (b"def answer(flag):\n"
+                  b"    if flag:\n"
+                  b"        return helper(1)\n"
+                  b"    raise ValueError('missing')\n")
+        algorithm = extract_python_algorithm(source, "src/app.py", "answer")
+        self.assertEqual(algorithm["algorithm"]["purpose"], "current_implementation")
+        body = algorithm["algorithm"]["body"]
+        self.assertEqual([step["kind"] for step in body["steps"]], ["select", "return", "raise"])
+        self.assertTrue(all(step["source"]["path"] == "src/app.py" for step in body["steps"]))
+        self.assertTrue(any(edge["kind"] == "branch_true" for edge in body["control_edges"]))
+        self.assertTrue(any(outcome["kind"] == "error" for outcome in algorithm["algorithm"]["contract"]["outcomes"]))
+        self.assertIn("outputs", {gap["category"] for gap in algorithm["algorithm"]["contract"]["coverage"]
+                                  if gap["state"] == "unknown"})
+        self.assertEqual(validate_algorithms({"schema_version": "1.0.0", "algorithms": [algorithm["algorithm"]]}), [])
+
+    def test_python_if_fallthrough_has_a_conditional_target_not_an_unconditional_edge(self):
+        source = b"def choose(flag):\n    if flag:\n        return 1\n    return 0\n"
+        body = extract_python_algorithm(source, "src.py", "choose")["algorithm"]["body"]
+        select = next(step["step_id"] for step in body["steps"] if step["kind"] == "select")
+        following_return = body["steps"][-1]["step_id"]
+        edges = [edge for edge in body["control_edges"] if edge["from_step"] == select and
+                 edge["to_step"] == following_return]
+        self.assertEqual([edge["kind"] for edge in edges], ["branch_false"])
+
+    def test_loop_does_not_add_implicit_continue_after_a_terminal_return(self):
+        source = b"def first(items):\n    for item in items:\n        return item\n"
+        body = extract_python_algorithm(source, "src.py", "first")["algorithm"]["body"]
+        returned = next(step["step_id"] for step in body["steps"] if step["kind"] == "return")
+        self.assertFalse(any(edge["from_step"] == returned and edge["kind"] == "continue"
+                             for edge in body["control_edges"]))
+
+    def test_rust_source_produces_located_control_regions_and_signature_contract(self):
+        source = b"fn choose(flag: bool) -> i32 { if flag { return 1; } 0 }"
+        algorithm = extract_rust_algorithm(source, "src/lib.rs", "choose")["algorithm"]
+        self.assertEqual([port["name"] for port in algorithm["contract"]["inputs"]], ["flag"])
+        self.assertEqual(algorithm["contract"]["outputs"][0]["name"], "return")
+        self.assertTrue(any(step["kind"] == "select" for step in algorithm["body"]["steps"]))
+        self.assertTrue(any(edge["kind"] == "branch_true" for edge in algorithm["body"]["control_edges"]))
+        self.assertEqual(validate_algorithms({"schema_version": "1.0.0", "algorithms": [algorithm]}), [])
+
+    def test_rust_only_treats_the_block_tail_expression_as_an_implicit_return(self):
+        discarded = extract_rust_algorithm(b"fn discarded() { 1; }", "src.rs", "discarded")["algorithm"]
+        tail = extract_rust_algorithm(b"fn tail() -> i32 { 1 }", "src.rs", "tail")["algorithm"]
+        self.assertFalse(any(step["kind"] == "return" for step in discarded["body"]["steps"]))
+        self.assertFalse(any(outcome["kind"] == "normal" and "Implicit tail" in outcome["description"]
+                             for outcome in discarded["contract"]["outcomes"]))
+        self.assertTrue(any(outcome["kind"] == "normal" and "Implicit tail" in outcome["description"]
+                            for outcome in tail["contract"]["outcomes"]))
+
+    def test_real_regex_function_is_lowered_with_rust_syntax_evidence(self):
+        root = Path(__file__).resolve().parents[2] / ".local/real-projects/regex"
+        path = root / "regex-automata/src/nfa/thompson/backtrack.rs"
+        algorithm = extract_rust_algorithm(path.read_bytes(), "regex-automata/src/nfa/thompson/backtrack.rs",
+                                           "min_visited_capacity")["algorithm"]
+        self.assertEqual(validate_algorithms({"schema_version": "1.0.0", "algorithms": [algorithm]}), [])
+        self.assertTrue(algorithm["contract"]["inputs"])
+        source = path.read_bytes()
+        self.assertTrue(all(source[step["source"]["start_byte"]:step["source"]["end_byte"]]
+                            for step in algorithm["body"]["steps"]))
+
+    def test_real_click_function_is_lowered_with_source_checked_step_spans(self):
+        root = Path(__file__).resolve().parents[2] / ".local/real-projects/click"
+        path = root / "examples/naval/naval.py"
+        algorithm = extract_python_algorithm(path.read_bytes(), "examples/naval/naval.py", "ship_move")["algorithm"]
+        self.assertEqual(validate_algorithms({"schema_version": "1.0.0", "algorithms": [algorithm]}), [])
+        source = path.read_bytes()
+        self.assertTrue(algorithm["body"]["steps"])
+        self.assertTrue(all(source[step["source"]["start_byte"]:step["source"]["end_byte"]]
+                            for step in algorithm["body"]["steps"]))
+
     def test_schema_is_valid_2020_12_and_rejects_unknown_fields(self):
         schema_path = Path(__file__).resolve().parents[1] / "contracts/semantic-algorithm.schema.json"
         schema = json.loads(schema_path.read_text(encoding="utf-8"))
