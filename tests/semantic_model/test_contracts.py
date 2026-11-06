@@ -766,6 +766,44 @@ class M1IdentityTests(unittest.TestCase):
         self.assertIn("BuildTarget", by_id["build.alias_of"]["roles"][1]["allowedKinds"])
         self.assertIn("OutputSpecification", by_id["build.observed_artifact"]["roles"][0]["allowedKinds"])
 
+    def test_build_target_cannot_have_two_overlapping_project_owners(self):
+        bundle = empty_bundle() | {"profile": "semantic-fact-model-1"}
+        project_a = {"identity": {"authority": "test", "domainId": "d", "localId": "project-a"},
+                     "kind": "Project"}
+        project_b = {"identity": {"authority": "test", "domainId": "d", "localId": "project-b"},
+                     "kind": "Project"}
+        target = {"identity": {"authority": "test", "domainId": "d", "localId": "target"},
+                  "kind": "BuildTarget"}
+        evidence = {"evidenceId": "ev", "source": "input", "path": "build.py", "artifactId": None,
+                    "originalPath": "build.py", "sha256": "a" * 64, "startByte": 0, "endByte": 1,
+                    "method": "fixture", "toolName": None, "toolVersion": None}
+        bundle["evidence"].append(evidence)
+        for ref in (project_a, project_b, target):
+            bundle["registrations"].append({"ref": ref, "sourceKey": ref["identity"]["localId"],
+                                             "evidenceIds": ["ev"]})
+        bundle["facts"] = [{"factId": f"owner-{index}", "predicate": "build.declares_target",
+                            "subject": project, "value": target, "claimMode": "declaration",
+                            "condition": {"kind": "true"}, "evidenceIds": ["ev"]}
+                           for index, project in enumerate((project_a, project_b))]
+
+        result = validate_model(bundle, semantic_model_catalogs())
+
+        self.assertFalse(result["valid"])
+        self.assertIn("BUILD_TARGET_OWNER_CONFLICT", {item["ruleCode"] for item in result["diagnostics"]})
+
+        alias = {"identity": {"authority": "test", "domainId": "d", "localId": "alias"},
+                 "kind": "BuildAlias"}
+        bundle["registrations"].append({"ref": alias, "sourceKey": "alias", "evidenceIds": ["ev"]})
+        bundle["facts"] = [bundle["facts"][0], {"factId": "alias-fact", "predicate": "build.alias_of",
+            "subject": alias, "value": target, "claimMode": "declaration", "condition": {"kind": "true"},
+            "evidenceIds": ["ev"]}]
+        declared_alias = validate_model(bundle, semantic_model_catalogs())
+        self.assertTrue(declared_alias["valid"], declared_alias["diagnostics"])
+
+        bundle["facts"] = [bundle["facts"][1]]
+        undeclared_alias = validate_model(bundle, semantic_model_catalogs())
+        self.assertIn("ALIAS_TARGET_UNDECLARED", {item["ruleCode"] for item in undeclared_alias["diagnostics"]})
+
     def test_catalog_rejects_dangling_type_references_and_mixed_versions(self):
         catalogs = fixed_catalogs()
         catalogs["types"]["types"][0]["fields"]["authority"]["type"] = "MissingType"

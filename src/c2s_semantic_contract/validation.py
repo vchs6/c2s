@@ -638,6 +638,52 @@ def validate_model(document: dict, catalogs: dict, source_observations: dict | N
                 invariant_diagnostics.append(_diagnostic("invariants", "ROLE_TYPE_MISMATCH",
                     f"Role {role['roleId']} requires a non-empty string.", record_ref=record_ref,
                     field_path=path))
+    if not is_m1:
+        contexts_by_id = {item["contextId"]: item for item in document.get("contexts", [])}
+
+        def effective_condition(fact):
+            conditions = [fact["condition"]]
+            for ref in (fact["subject"], fact["value"] if isinstance(fact["value"], dict) else None):
+                context = contexts_by_id.get(ref.get("contextRef")) if ref else None
+                if context:
+                    conditions.extend({"kind": "eq", "key": key, "value": value}
+                                       for key, value in context["assignments"].items())
+            return {"kind": "all", "conditions": conditions}
+
+        target_claims: dict[tuple[str, str, str], list[dict]] = {}
+        declared_targets = set()
+        for fact in document["facts"]:
+            if fact["predicate"] == "build.declares_target" and isinstance(fact["value"], dict):
+                target_key = _identity_key(fact["value"])
+                declared_targets.add(target_key)
+                target_claims.setdefault(target_key, []).append(fact)
+        for target_key, claims in target_claims.items():
+            for index, left in enumerate(claims):
+                for right in claims[index + 1:]:
+                    if _identity_key(left["subject"]) == _identity_key(right["subject"]):
+                        continue
+                    overlap = classify_claim_overlap(
+                        {"value": _identity_key(left["subject"]), "condition": effective_condition(left)},
+                        {"value": _identity_key(right["subject"]), "condition": effective_condition(right)},
+                        context_domains)
+                    if overlap["status"] == "compatible":
+                        continue
+                    code = ("BUILD_TARGET_OWNER_CONFLICT" if overlap["status"] == "conflict"
+                            else "BUILD_TARGET_OWNER_UNDETERMINED")
+                    severity = "error" if overlap["status"] == "conflict" else "gap"
+                    for current, other in ((left, right), (right, left)):
+                        invariant_diagnostics.append(_diagnostic("invariants", code,
+                            "A build target has overlapping claims from different Project owners."
+                            if severity == "error" else
+                            "Build target owner conditions cannot be proven disjoint or overlapping.",
+                            record_ref=f"fact:{current['factId']}", severity=severity,
+                            related_refs=[f"fact:{other['factId']}"]))
+        for index, fact in enumerate(document["facts"]):
+            if fact["predicate"] == "build.alias_of" and isinstance(fact["value"], dict) \
+                    and _identity_key(fact["value"]) not in declared_targets:
+                invariant_diagnostics.append(_diagnostic("invariants", "ALIAS_TARGET_UNDECLARED",
+                    "A build alias must resolve to a target declared in this fact set.",
+                    record_ref=f"fact:{fact['factId']}", field_path=f"/facts/{index}/value"))
     assessments = {item["assessmentId"]: item for item in document["assessments"]}
     supersedes_edges: dict[str, list[str]] = {}
     for index, assessment in enumerate(document["assessments"]):
