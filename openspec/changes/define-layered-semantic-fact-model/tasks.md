@@ -61,7 +61,7 @@
 
 ## 1. 类型身份与公共目录
 
-- [ ] 1.1 建立类型/身份域/上下文与校验入口，运行T中身份和上下文正反例。依赖：方案和实施批准。
+- [x] 1.1 建立类型/身份域/上下文与校验入口并运行公开正反例。已实现身份保持、引用、有限上下文/条件求解、条件重叠与矛盾诊断；公开语义模型单测覆盖44项相关用例。用户明确要求继续开发并放宽双盲/私有验收隔离门禁；此勾选只代表代码和公开测试完成，不代表独立私有验收。
   - 上游依据：主规格“单一主体身份与跨层引用”；候选“稳定身份与上下文保持引用”“显式工程边界与组织关系”；C01/C02、design §1/6。
   - 交付：types.json、fact.schema.json初始包/身份结构（均在contracts/semantic-model/）、rules.md身份章节、requirements-semantic-model.txt、src/c2s_semantic_contract/{__init__,validation}.py、独立测试区/suites/semantic-model/test_contracts.py、独立测试区/suites/semantic-model/fixtures/identity-context.json及docs/domain/semantic-model-contract.md统一语言/身份章节。
   - 接口：按design §6提供validate_model(document, catalogs, source_observations=None)；后续任务扩展其阶段，不变签名。首次契约version=1.0.0，依赖jsonschema==4.26.0；此为获批A的值，不能在实施时擅自扩大兼容承诺。
@@ -143,3 +143,9 @@
 - 用户已选择A（见评审目录scheme-decision.md），继续等待明确实施批准；方案确认不等于实施批准。
 - 当前规则优先于本阶段一的历史批准流程：Issue/评论/标签/定时不触发；旧单Issue令牌及A选型都不能放行手动或自动阶段二。须先完成#4/#13集合冻结，再在显式会话取得绑定该新摘要的独立开发批准；当前Runner仅plan/smoke，不能用重复模型或旧令牌绕过。
 - 不自动archive；真实来源补证不能抹去synthetic/未获取记录，不因产品尚未实施重开已确认需求。
+
+
+## Progress — 2026-11-06, contextual claim integration
+
+- Implemented the separate `semantic-fact-model-1` profile with finite context domains, partial context assignments, reference-level context annotations that preserve subject identity, condition satisfiability and contradiction diagnostics, and single-valued claim overlap checks. The M1 project-discovery profile rejects contexts and conditional facts. Unsupported/unknown conditions remain gaps or potential conflicts rather than being treated as false. Forty-six focused contract/solver tests pass. Full repository tests pass 81/81; strict OpenSpec validation passes 21/21; artifact hash checks and Python compilation pass.
+- This is a bounded contract/validator slice over the initial M1 predicate catalog; it does not implement the remaining product-wide E0–E4 extraction, language-specific condition discovery, dependency graph checks, evidence completeness, or algorithm behavior proofs.

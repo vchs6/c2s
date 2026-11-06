@@ -1,20 +1,22 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "urn:c2s:semantic-model:fact:1.0.0:m1-project-discovery-1",
-  "title": "C2S M1 Semantic Fact Bundle",
-  "description": "Structural contract for the bounded M1 project discovery slice; structural validity does not prove source truth.",
+  "title": "C2S Semantic Fact Bundle",
+  "description": "Structural contract for M1 project discovery and the initial context-aware semantic model; validity does not prove source truth.",
   "type": "object",
   "additionalProperties": false,
   "required": ["version", "profile", "registrations", "assessments", "facts", "evidence", "coverage", "diagnostics"],
   "properties": {
     "version": {"const": "1.0.0"},
-    "profile": {"const": "m1-project-discovery-1"},
+    "profile": {"enum": ["m1-project-discovery-1", "semantic-fact-model-1"]},
     "registrations": {"type": "array", "items": {"$ref": "#/$defs/registration"}},
     "assessments": {"type": "array", "items": {"$ref": "#/$defs/assessment"}},
     "facts": {"type": "array", "items": {"$ref": "#/$defs/fact"}},
     "evidence": {"type": "array", "items": {"$ref": "#/$defs/evidence"}},
     "coverage": {"type": "array", "items": {"$ref": "#/$defs/coverage"}},
-    "diagnostics": {"type": "array", "items": {"$ref": "#/$defs/diagnostic"}}
+    "diagnostics": {"type": "array", "items": {"$ref": "#/$defs/diagnostic"}},
+    "contextDomains": {"type": "array", "items": {"$ref": "#/$defs/contextDomain"}},
+    "contexts": {"type": "array", "items": {"$ref": "#/$defs/context"}}
   },
   "$defs": {
     "id": {"type": "string", "minLength": 1},
@@ -30,7 +32,8 @@
       "required": ["identity", "kind"],
       "properties": {
         "identity": {"$ref": "#/$defs/identity"},
-        "kind": {"enum": ["Project", "PackageSpecification", "NativeWorkspace", "SourceDeclaration"]}
+        "kind": {"enum": ["Project", "PackageSpecification", "NativeWorkspace", "SourceDeclaration"]},
+        "contextRef": {"$ref": "#/$defs/id"}
       }
     },
     "registration": {
@@ -82,9 +85,36 @@
       "required": ["factId", "predicate", "subject", "value", "claimMode", "condition", "evidenceIds"],
       "properties": {"factId": {"$ref": "#/$defs/id"}, "predicate": {"$ref": "#/$defs/id"}, "subject": {"$ref": "#/$defs/subjectRef"},
         "value": {"oneOf": [{"type": "string", "minLength": 1}, {"$ref": "#/$defs/subjectRef"}]},
-        "claimMode": {"enum": ["declaration", "interpretation"]}, "condition": {"type": "object", "additionalProperties": false,
-          "required": ["kind"], "properties": {"kind": {"const": "true"}}},
+        "claimMode": {"enum": ["declaration", "interpretation"]}, "condition": {"$ref": "#/$defs/condition"},
         "evidenceIds": {"type": "array", "minItems": 1, "uniqueItems": true, "items": {"$ref": "#/$defs/id"}}}
+    },
+    "contextDomain": {
+      "type": "object", "additionalProperties": false,
+      "required": ["keyId", "values"],
+      "properties": {"keyId": {"$ref": "#/$defs/id"},
+        "values": {"type": "array", "minItems": 1, "uniqueItems": true,
+          "items": {"type": ["string", "boolean"]}}}
+    },
+    "context": {
+      "type": "object", "additionalProperties": false,
+      "required": ["contextId", "assignments"],
+      "properties": {"contextId": {"$ref": "#/$defs/id"},
+        "assignments": {"type": "object", "additionalProperties": {"type": ["string", "boolean"]}}}
+    },
+    "condition": {
+      "oneOf": [
+        {"type": "object", "additionalProperties": false, "required": ["kind"],
+          "properties": {"kind": {"enum": ["true", "false"]}}},
+        {"type": "object", "additionalProperties": false, "required": ["kind", "key", "value"],
+          "properties": {"kind": {"enum": ["eq", "neq"]}, "key": {"$ref": "#/$defs/id"},
+            "value": {"type": ["string", "boolean"]}}},
+        {"type": "object", "additionalProperties": false, "required": ["kind", "conditions"],
+          "properties": {"kind": {"enum": ["all", "any"]}, "conditions": {"type": "array", "items": {"$ref": "#/$defs/condition"}}}},
+        {"type": "object", "additionalProperties": false, "required": ["kind", "condition"],
+          "properties": {"kind": {"const": "not"}, "condition": {"$ref": "#/$defs/condition"}}},
+        {"type": "object", "additionalProperties": false, "required": ["kind", "expression"],
+          "properties": {"kind": {"const": "source"}, "expression": {"type": "string", "minLength": 1}}}
+      ]
     },
     "coverage": {
       "type": "object", "additionalProperties": false,

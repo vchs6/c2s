@@ -10,6 +10,7 @@ from uuid import uuid4
 
 from jsonschema import Draft202012Validator
 from jsonschema.exceptions import SchemaError
+from .conditions import classify_claim_overlap, condition_satisfiability
 
 
 _ROOT = Path(__file__).resolve().parents[2]
@@ -201,6 +202,7 @@ def validate_model(document: dict, catalogs: dict, source_observations: dict | N
     result["stages"]["structure"] = "pass"
 
     registrations = document["registrations"]
+    context_ids = {item["contextId"] for item in document.get("contexts", [])}
     identity_kinds: dict[tuple[str, str, str], tuple[str, str]] = {}
     sources: dict[str, dict] = {}
     diagnostics = []
@@ -237,6 +239,11 @@ def validate_model(document: dict, catalogs: dict, source_observations: dict | N
             diagnostics.append(_diagnostic("references", "IDENTITY_KIND_CONFLICT",
                 "Subject reference kind does not match its registered identity.", record_ref=record_ref,
                 field_path=field_path))
+        context_ref = ref.get("contextRef")
+        if context_ref is not None and context_ref not in context_ids:
+            diagnostics.append(_diagnostic("references", "CONTEXT_REF_MISSING",
+                "Subject reference context does not resolve to a context record.", record_ref=record_ref,
+                field_path=f"{field_path}/contextRef"))
 
     def check_evidence(refs: list[str], field_path: str, record_ref: str) -> None:
         for evidence_id in refs:
@@ -273,6 +280,59 @@ def validate_model(document: dict, catalogs: dict, source_observations: dict | N
         return result
     result["stages"]["references"] = "pass"
     invariant_diagnostics = []
+    context_domains = {item["keyId"]: item["values"] for item in document.get("contextDomains", [])}
+    is_m1 = document.get("profile") == "m1-project-discovery-1"
+    if is_m1 and (document.get("contextDomains") or document.get("contexts") or any(
+            fact.get("condition") != {"kind": "true"} for fact in document.get("facts", []))):
+        invariant_diagnostics.append(_diagnostic("invariants", "M1_CONTEXT_UNSUPPORTED",
+            "The M1 project-discovery profile does not permit context domains, context records, or conditional facts.",
+            field_path="/profile"))
+    seen_context_ids = set()
+    for context_index, context in enumerate(document.get("contexts", [])):
+        context_id = context["contextId"]
+        if context_id in seen_context_ids:
+            invariant_diagnostics.append(_diagnostic("invariants", "CONTEXT_ID_DUPLICATE",
+                "Context IDs must be unique.", record_ref=f"context:{context_id}",
+                field_path=f"/contexts/{context_index}/contextId"))
+        seen_context_ids.add(context_id)
+    for key_id, values in context_domains.items():
+        if (not values or any(type(value) not in {str, bool} for value in values)
+                or len({type(value) for value in values}) != 1):
+            invariant_diagnostics.append(_diagnostic("invariants", "CONTEXT_DOMAIN_INVALID",
+                "A context domain must contain one or more unique values of one scalar type.",
+                field_path=f"/contextDomains/{key_id}/values"))
+    if len(context_domains) != len(document.get("contextDomains", [])):
+        invariant_diagnostics.append(_diagnostic("invariants", "CONTEXT_KEY_DUPLICATE",
+            "Context domain key IDs must be unique.", field_path="/contextDomains"))
+    for context_index, context in enumerate(document.get("contexts", [])):
+        for key_id, value in context["assignments"].items():
+            if key_id not in context_domains or type(value) not in {type(item) for item in context_domains.get(key_id, [])} \
+                    or value not in context_domains.get(key_id, []):
+                invariant_diagnostics.append(_diagnostic("invariants", "CONTEXT_ASSIGNMENT_INVALID",
+                    "Context assignment must use a registered key and a value in its finite domain.",
+                    record_ref=f"context:{context['contextId']}",
+                    field_path=f"/contexts/{context_index}/assignments/{key_id}"))
+
+    contexts_by_id = {item["contextId"]: item for item in document.get("contexts", [])}
+    condition_gaps = []
+    for fact_index, fact in enumerate(document["facts"]):
+        condition = fact["condition"]
+        conjuncts = []
+        for ref in (fact["subject"], fact["value"] if isinstance(fact["value"], dict) else None):
+            if ref is not None and ref.get("contextRef") in contexts_by_id:
+                assignments = contexts_by_id[ref["contextRef"]]["assignments"]
+                conjuncts.extend({"kind": "eq", "key": key_id, "value": value}
+                                  for key_id, value in assignments.items())
+        conjuncts.append(condition)
+        satisfiability = condition_satisfiability([{"kind": "all", "conditions": conjuncts}], context_domains)
+        if satisfiability["status"] == "unsat":
+            invariant_diagnostics.append(_diagnostic("invariants", "CTX_CONTRADICTION",
+                "Fact condition contains contradictory context assignments.",
+                record_ref=f"fact:{fact['factId']}", field_path=f"/facts/{fact_index}/condition"))
+        elif satisfiability["status"] == "undetermined":
+            condition_gaps.append(_diagnostic("invariants", satisfiability["reason"] or "POTENTIAL_CONFLICT",
+                "Fact condition cannot be decided within the registered context domains.",
+                record_ref=f"fact:{fact['factId']}", field_path=f"/facts/{fact_index}/condition", severity="gap"))
     predicates = {predicate["predicateId"]: predicate for predicate in catalogs["predicates"]["predicates"]}
     for index, fact in enumerate(document["facts"]):
         record_ref = f"fact:{fact['factId']}"
@@ -485,28 +545,48 @@ def validate_model(document: dict, catalogs: dict, source_observations: dict | N
         result["valid"] = result["stages"]["invariants"] != "fail"
         return result
     result["stages"]["invariants"] = "partial"
-    claim_groups: dict[tuple, list[tuple[str, object]]] = {}
+    claim_groups: dict[tuple, list[dict]] = {}
     predicates_by_id = {item["predicateId"]: item for item in catalogs["predicates"]["predicates"]}
     for fact in document["facts"]:
         predicate = predicates_by_id.get(fact["predicate"])
         if predicate is None or predicate["claimCardinality"] != "single_value_per_context":
             continue
         value_key = _identity_key(fact["value"]) if isinstance(fact["value"], dict) else fact["value"]
-        key = (fact["predicate"], _identity_key(fact["subject"]), fact["claimMode"],
-               json.dumps(fact["condition"], sort_keys=True, separators=(",", ":")))
-        claim_groups.setdefault(key, []).append((f"fact:{fact['factId']}", value_key))
+        key = (fact["predicate"], _identity_key(fact["subject"]), fact["claimMode"])
+        claim_groups.setdefault(key, []).append({"recordRef": f"fact:{fact['factId']}",
+            "value": value_key, "condition": fact["condition"], "fact": fact})
     conflict_diagnostics = []
     for claims in claim_groups.values():
-        values = {value for _, value in claims}
-        if len(values) <= 1:
-            continue
-        refs = [record_ref for record_ref, _ in claims]
-        for record_ref in refs:
-            conflict_diagnostics.append(_diagnostic("invariants", "SINGLE_VALUE_CONFLICT",
-                "Different values are retained for a single-valued predicate in the same claim context.",
-                record_ref=record_ref, severity="conflict",
-                related_refs=[other for other in refs if other != record_ref]))
-    result["diagnostics"] = gap_diagnostics + conflict_diagnostics
+        for index, left in enumerate(claims):
+            for right in claims[index + 1:]:
+                if left["value"] == right["value"]:
+                    continue
+                left_condition = {"kind": "all", "conditions": [left["condition"]]}
+                right_condition = {"kind": "all", "conditions": [right["condition"]]}
+                for ref in (left["fact"]["subject"], left["fact"]["value"] if isinstance(left["fact"]["value"], dict) else None):
+                    if ref is not None and ref.get("contextRef") in contexts_by_id:
+                        left_condition["conditions"].extend({"kind": "eq", "key": key_id, "value": value}
+                            for key_id, value in contexts_by_id[ref["contextRef"]]["assignments"].items())
+                for ref in (right["fact"]["subject"], right["fact"]["value"] if isinstance(right["fact"]["value"], dict) else None):
+                    if ref is not None and ref.get("contextRef") in contexts_by_id:
+                        right_condition["conditions"].extend({"kind": "eq", "key": key_id, "value": value}
+                            for key_id, value in contexts_by_id[ref["contextRef"]]["assignments"].items())
+                overlap = classify_claim_overlap({"value": left["value"], "condition": left_condition},
+                                                 {"value": right["value"], "condition": right_condition},
+                                                 context_domains)
+                if overlap["status"] not in {"conflict", "potential_conflict"}:
+                    continue
+                conflict = overlap["status"] == "conflict"
+                code = "SINGLE_VALUE_CONFLICT" if conflict else "POTENTIAL_CONFLICT"
+                severity = "conflict" if conflict else "gap"
+                for current, other in ((left, right), (right, left)):
+                    conflict_diagnostics.append(_diagnostic("invariants", code,
+                        "Different values are retained for overlapping single-valued claims." if conflict
+                        else "Different single-valued claims may overlap under an unsupported condition.",
+                        record_ref=current["recordRef"], severity=severity,
+                        related_refs=[other["recordRef"]]))
+    result["diagnostics"] = gap_diagnostics + condition_gaps + conflict_diagnostics
     result["valid"] = True
-    result["consistency"] = "conflicting" if conflict_diagnostics else "undetermined"
+    result["consistency"] = "conflicting" if any(item["severity"] == "conflict"
+                                                  for item in conflict_diagnostics) else "undetermined"
     return result

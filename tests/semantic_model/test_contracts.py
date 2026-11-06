@@ -367,6 +367,100 @@ class M1IdentityTests(unittest.TestCase):
         self.assertEqual(result["consistency"], "undetermined")
         self.assertNotIn("SINGLE_VALUE_CONFLICT", {item["ruleCode"] for item in result["diagnostics"]})
 
+    def test_single_value_conflict_detection_respects_disjoint_contexts(self):
+        bundle = bundle_with_fact(value="linux-name")
+        bundle["profile"] = "semantic-fact-model-1"
+        second = dict(bundle["facts"][0], factId="fact-2", value="windows-name",
+                       subject=dict(bundle["facts"][0]["subject"]))
+        bundle["facts"].append(second)
+        bundle["contextDomains"] = [{"keyId": "target", "values": ["linux", "windows"]}]
+        bundle["facts"][0]["condition"] = {"kind": "eq", "key": "target", "value": "linux"}
+        second["condition"] = {"kind": "eq", "key": "target", "value": "windows"}
+
+        result = validate_model(bundle, fixed_catalogs())
+
+        self.assertTrue(result["valid"])
+        self.assertEqual(result["consistency"], "undetermined")
+        self.assertNotIn("SINGLE_VALUE_CONFLICT", {item["ruleCode"] for item in result["diagnostics"]})
+
+    def test_overlapping_unknown_conditions_yield_potential_conflict(self):
+        bundle = bundle_with_fact(value="first")
+        bundle["profile"] = "semantic-fact-model-1"
+        second = dict(bundle["facts"][0], factId="fact-2", value="second")
+        bundle["facts"].append(second)
+        bundle["facts"][0]["condition"] = {"kind": "source", "expression": "target feature"}
+        second["condition"] = {"kind": "true"}
+
+        result = validate_model(bundle, fixed_catalogs())
+
+        self.assertTrue(result["valid"])
+        potential = [item for item in result["diagnostics"] if item["ruleCode"] == "POTENTIAL_CONFLICT"]
+        self.assertEqual({item["recordRef"] for item in potential}, {"fact:fact-1", "fact:fact-2"})
+        self.assertEqual(result["consistency"], "undetermined")
+
+    def test_contradictory_fact_condition_is_a_contract_error(self):
+        bundle = bundle_with_fact()
+        bundle["profile"] = "semantic-fact-model-1"
+        bundle["contextDomains"] = [{"keyId": "target", "values": ["linux", "windows"]}]
+        bundle["facts"][0]["condition"] = {"kind": "all", "conditions": [
+            {"kind": "eq", "key": "target", "value": "linux"},
+            {"kind": "eq", "key": "target", "value": "windows"}]}
+
+        result = validate_model(bundle, fixed_catalogs())
+
+        self.assertFalse(result["valid"])
+        self.assertIn("CTX_CONTRADICTION", {item["ruleCode"] for item in result["diagnostics"]})
+
+    def test_contextual_references_do_not_duplicate_subject_identity(self):
+        bundle = bundle_with_fact(value="linux-name")
+        bundle["profile"] = "semantic-fact-model-1"
+        second = dict(bundle["facts"][0], factId="fact-2", value="windows-name",
+                       subject=dict(bundle["facts"][0]["subject"]))
+        bundle["facts"].append(second)
+        bundle["contextDomains"] = [{"keyId": "target", "values": ["linux", "windows"]}]
+        bundle["contexts"] = [
+            {"contextId": "context-linux", "assignments": {"target": "linux"}},
+            {"contextId": "context-windows", "assignments": {"target": "windows"}},
+        ]
+        bundle["facts"][0]["subject"]["contextRef"] = "context-linux"
+        second["subject"]["contextRef"] = "context-windows"
+
+        result = validate_model(bundle, fixed_catalogs())
+
+        self.assertTrue(result["valid"])
+        self.assertEqual(bundle["facts"][0]["subject"]["identity"],
+                         bundle["facts"][1]["subject"]["identity"])
+        self.assertNotIn("SINGLE_VALUE_CONFLICT", {item["ruleCode"] for item in result["diagnostics"]})
+
+    def test_unknown_context_reference_fails_reference_stage(self):
+        bundle = bundle_with_fact()
+        bundle["profile"] = "semantic-fact-model-1"
+        bundle["facts"][0]["subject"]["contextRef"] = "missing-context"
+
+        result = validate_model(bundle, fixed_catalogs())
+
+        self.assertEqual(result["stages"]["references"], "fail")
+        self.assertIn("CONTEXT_REF_MISSING", {item["ruleCode"] for item in result["diagnostics"]})
+
+    def test_m1_profile_rejects_context_features(self):
+        bundle = bundle_with_fact()
+        bundle["facts"][0]["condition"] = {"kind": "false"}
+
+        result = validate_model(bundle, fixed_catalogs())
+
+        self.assertFalse(result["valid"])
+        self.assertIn("M1_CONTEXT_UNSUPPORTED", {item["ruleCode"] for item in result["diagnostics"]})
+
+    def test_context_domain_rejects_mixed_value_types(self):
+        bundle = bundle_with_fact()
+        bundle["profile"] = "semantic-fact-model-1"
+        bundle["contextDomains"] = [{"keyId": "target", "values": ["linux", True]}]
+
+        result = validate_model(bundle, fixed_catalogs())
+
+        self.assertFalse(result["valid"])
+        self.assertIn("CONTEXT_DOMAIN_INVALID", {item["ruleCode"] for item in result["diagnostics"]})
+
     def test_catalog_rejects_unsupported_constraint_ids(self):
         catalogs = fixed_catalogs()
         catalogs["predicates"]["predicates"][0]["constraints"].append("UNSAFE_EVAL")

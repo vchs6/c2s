@@ -139,3 +139,8 @@ Final verification: product tests 45/45; repository maintenance tests 35/35; str
 ## Progress — 2026-11-06, finite condition solver foundation
 
 - Added `src/c2s_semantic_contract/conditions.py` for Boolean and finite-enum `true`/`false`, equality/inequality, `all`/`any`, and `not`. It returns exhaustive `sat`/`unsat` results up to 4,096 assignments, concrete witnesses for `sat`, and `undetermined` for unsupported fragments, unknown domains, malformed domains, and budget overflow. Claim overlap distinguishes disjoint, conflicting, and potential conflict cases. Seven focused tests pass. This is a reusable solver foundation, not complete context-record or SemanticFactSet integration.
+
+## Progress — 2026-11-06, contextual claim integration
+
+- Added the separate `semantic-fact-model-1` profile with finite context domains, partial context assignments, identity-preserving reference annotations, Boolean/enum condition solving, contradiction diagnostics, and overlap-aware single-valued claim conflicts. M1 project-discovery explicitly rejects context and conditional facts. Unknown or unsupported condition reasoning remains a gap/potential conflict. Forty-six focused contract/solver tests pass; the full repository suite passes 81/81, strict OpenSpec validation 21/21, artifact hashes, Python compilation, and `git diff --check` pass.
+- This remains a bounded validator over the initial M1 predicate catalog. It does not complete project-wide E0–E4 extraction, language-specific condition discovery, dependency graph validation, broader evidence completeness, or behavioral algorithm proof.

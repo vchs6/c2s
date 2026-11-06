@@ -6,9 +6,9 @@
 
 ## 公共语义模型契约（M1）
 
-仓库根目录的 `contracts/semantic-model/` 与 `src/c2s_semantic_contract/` 提供版本 `1.0.0`、profile `m1-project-discovery-1` 的初始M1身份、事实包及封闭谓词目录契约，含`project.name`、`project.language_declared`和`workspace.member`。开发环境安装使用 `python3 -m pip install -r requirements-semantic-model.txt`；验证使用 `PYTHONPATH=src:skill/src .local/analysis-venv/bin/python -m unittest discover -s tests/semantic_model -v`。`register_m1`按identity domain和sourceKey复用身份并合并证据；`validate_model`检查M1结构、身份/证据引用、assessment基数与lineage、目录闭包、事实角色、来源观察和coverage关系。`scripts/query_m1.py`可按项目根目录运行`project`或`workspace-members`并输出M1 bundle、附件、来源观察和校验结果。Click名称/语言与regex workspace真实查询均已通过投影和校验。Cargo workspace适配器捕获`metadata --no-deps --offline` JSON附件，校验成员清单一致后才标记verified；Cargo缺失或输出不一致时保留unchecked gap。附件持久化、评估判定、上下文冲突和完整跨事实规则仍在后续工作中；共享工作区开发测试不是独立验收。
+仓库根目录的 `contracts/semantic-model/` 与 `src/c2s_semantic_contract/` 提供版本 `1.0.0`、profile `m1-project-discovery-1` 的初始M1身份、事实包及封闭谓词目录契约，含`project.name`、`project.language_declared`和`workspace.member`。开发环境安装使用 `python3 -m pip install -r requirements-semantic-model.txt`；验证使用 `PYTHONPATH=src:skill/src .local/analysis-venv/bin/python -m unittest discover -s tests/semantic_model -v`。`register_m1`按identity domain和sourceKey复用身份并合并证据；`validate_model`检查M1结构、身份/证据引用、assessment基数与lineage、目录闭包、事实角色、来源观察和coverage关系。`scripts/query_m1.py`可按项目根目录运行`project`或`workspace-members`并输出M1 bundle、附件、来源观察和校验结果。Click名称/语言与regex workspace真实查询均已通过投影和校验。Cargo workspace适配器捕获`metadata --no-deps --offline` JSON附件，校验成员清单一致后才标记verified；Cargo缺失或输出不一致时保留unchecked gap。附件持久化、评估判定和完整跨事实规则仍在后续工作中；共享工作区开发测试不是独立验收。
 
-独立的条件求解基础位于`src/c2s_semantic_contract/conditions.py`：支持有限Boolean/Enum域上的`true/false/eq/neq/all/any/not`，最多枚举4096种赋值；超过限额、域未知或表达式不支持时返回`undetermined`。当前尚未接入完整语义事实包中的Context/Condition记录。
+条件求解器位于`src/c2s_semantic_contract/conditions.py`：支持有限Boolean/Enum域上的`true/false/eq/neq/all/any/not`，最多枚举4096种赋值；超过限额、域未知或表达式不支持时返回`undetermined`。`semantic-fact-model-1`现已集成Context/Condition、引用上下文和单值声明重叠检查；`m1-project-discovery-1`拒绝上下文和条件事实。求解范围限于显式有限域及已注册M1谓词，不能据此声称项目完整语义分析完成。
 
 ```bash
 python3 scripts/query_m1.py --root .local/real-projects/click --select project
