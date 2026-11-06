@@ -126,3 +126,7 @@ Final verification: product tests 45/45; repository maintenance tests 35/35; str
 ## Progress — 2026-11-06, M1 query integration
 
 - Added `project_query_to_m1` to adapt current `project.name`, `project.language_declared`, and `workspace.member` query facts into the fixed M1 bundle, with shared Project identity, NativeWorkspace-to-PackageSpecification roles, evidence spans, observations, and coverage. It checks the project tree digest before and after projection. Thirty focused M1 tests pass. A real Click query produced two E0 facts that passed M1 validation with no diagnostics. A real regex workspace query returned the explicit `TOOL_UNAVAILABLE:cargo` gap, so the generated coverage remains incomplete. This is developer-side integration evidence, not independent/private acceptance.
+
+## Progress — 2026-11-06, M1 single-valued claim conflicts
+
+- The validator now compares `project.name` only within the same subject, claim mode, and condition. Different names remain in the bundle with paired conflict diagnostics, `valid=true`, and `consistency=conflicting`; declaration and interpretation claims are not compared. Thirty-one focused semantic-model tests pass. Wider context and multi-predicate conflict rules remain outstanding.

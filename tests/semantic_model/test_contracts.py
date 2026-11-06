@@ -310,6 +310,31 @@ class M1IdentityTests(unittest.TestCase):
         self.assertFalse(result["valid"])
         self.assertIn("ROLE_TYPE_MISMATCH", {item["ruleCode"] for item in result["diagnostics"]})
 
+    def test_single_value_claim_conflicts_remain_valid_and_preserve_both_facts(self):
+        bundle = bundle_with_fact(value="first")
+        conflicting = dict(bundle["facts"][0], factId="fact-2", value="second")
+        bundle["facts"].append(conflicting)
+
+        result = validate_model(bundle, fixed_catalogs())
+
+        self.assertTrue(result["valid"])
+        self.assertEqual(result["consistency"], "conflicting")
+        self.assertEqual(len(bundle["facts"]), 2)
+        conflicts = [item for item in result["diagnostics"] if item["ruleCode"] == "SINGLE_VALUE_CONFLICT"]
+        self.assertEqual({item["recordRef"] for item in conflicts}, {"fact:fact-1", "fact:fact-2"})
+        self.assertTrue(all(item["severity"] == "conflict" for item in conflicts))
+
+    def test_single_value_comparison_does_not_cross_claim_modes(self):
+        bundle = bundle_with_fact(value="declared name")
+        second = dict(bundle["facts"][0], factId="fact-2", value="interpreted name", claimMode="interpretation")
+        bundle["facts"].append(second)
+
+        result = validate_model(bundle, fixed_catalogs())
+
+        self.assertTrue(result["valid"])
+        self.assertEqual(result["consistency"], "undetermined")
+        self.assertNotIn("SINGLE_VALUE_CONFLICT", {item["ruleCode"] for item in result["diagnostics"]})
+
     def test_catalog_rejects_unsupported_constraint_ids(self):
         catalogs = fixed_catalogs()
         catalogs["predicates"]["predicates"][0]["constraints"].append("UNSAFE_EVAL")

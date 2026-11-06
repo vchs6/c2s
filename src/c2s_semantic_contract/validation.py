@@ -485,7 +485,28 @@ def validate_model(document: dict, catalogs: dict, source_observations: dict | N
         result["valid"] = result["stages"]["invariants"] != "fail"
         return result
     result["stages"]["invariants"] = "partial"
-    result["diagnostics"] = gap_diagnostics
+    claim_groups: dict[tuple, list[tuple[str, object]]] = {}
+    predicates_by_id = {item["predicateId"]: item for item in catalogs["predicates"]["predicates"]}
+    for fact in document["facts"]:
+        predicate = predicates_by_id.get(fact["predicate"])
+        if predicate is None or predicate["claimCardinality"] != "single_value_per_context":
+            continue
+        value_key = _identity_key(fact["value"]) if isinstance(fact["value"], dict) else fact["value"]
+        key = (fact["predicate"], _identity_key(fact["subject"]), fact["claimMode"],
+               json.dumps(fact["condition"], sort_keys=True, separators=(",", ":")))
+        claim_groups.setdefault(key, []).append((f"fact:{fact['factId']}", value_key))
+    conflict_diagnostics = []
+    for claims in claim_groups.values():
+        values = {value for _, value in claims}
+        if len(values) <= 1:
+            continue
+        refs = [record_ref for record_ref, _ in claims]
+        for record_ref in refs:
+            conflict_diagnostics.append(_diagnostic("invariants", "SINGLE_VALUE_CONFLICT",
+                "Different values are retained for a single-valued predicate in the same claim context.",
+                record_ref=record_ref, severity="conflict",
+                related_refs=[other for other in refs if other != record_ref]))
+    result["diagnostics"] = gap_diagnostics + conflict_diagnostics
     result["valid"] = True
-    result["consistency"] = "undetermined"
+    result["consistency"] = "conflicting" if conflict_diagnostics else "undetermined"
     return result

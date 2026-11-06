@@ -15,7 +15,7 @@ A new registration receives an explicit UUID local identifier under authority `c
 
 ## Structural validation boundary
 
-`validate_model` runs four dependent stages in order: fixed catalog integrity, versioned wire structure, internal subject/evidence references, then the available M1 invariants. A failed stage leaves its dependent stages `not_run`; reference diagnostics retain identity/source conflicts and related record references. A successful result means only that the checked contract rules hold (`valid=true`, `invariants=partial`); `consistency` remains `undetermined` and does not establish source truth, project ownership, semantic completeness, or runtime behavior. Evidence-source observation checks and broader cross-fact rules remain outside this M1 slice.
+`validate_model` runs four dependent stages in order: fixed catalog integrity, versioned wire structure, internal subject/evidence references, then the available M1 invariants. A failed stage leaves its dependent stages `not_run`; reference diagnostics retain identity/source conflicts and related record references. `valid` reports contract errors only. Different values for a single-valued predicate in the same subject/claim-mode/condition are preserved as paired `conflict` diagnostics and return `valid=true`, `consistency=conflicting`; otherwise a successful checked subset has `invariants=partial`, `consistency=undetermined`. Neither result establishes source truth, project ownership, semantic completeness, or runtime behavior. Evidence-source observation checks and broader cross-fact rules remain outside this M1 slice.
 
 ## Project-boundary assessment invariants
 
