@@ -70,7 +70,7 @@
     },
     "algorithm": {
       "type": "object", "additionalProperties": false,
-      "required": ["algorithm_id", "purpose", "problem", "body", "implementation_refs", "evidence_refs", "omissions"],
+      "required": ["algorithm_id", "purpose", "problem", "body", "contract", "implementation_refs", "evidence_refs", "omissions"],
       "properties": {
         "algorithm_id": {"type": "string", "minLength": 1},
         "purpose": {"enum": ["normative", "current_implementation", "abstract"]},
@@ -100,14 +100,66 @@
               }}}
           }
         },
+        "contract": {
+          "type": "object", "additionalProperties": false,
+          "required": ["inputs", "outputs", "preconditions", "outcomes", "effects", "ordering_constraints", "coverage"],
+          "properties": {
+            "inputs": {"type": "array", "items": {"$ref": "#/$defs/port"}},
+            "outputs": {"type": "array", "items": {"$ref": "#/$defs/port"}},
+            "preconditions": {"type": "array", "items": {"$ref": "#/$defs/condition_claim"}},
+            "outcomes": {"type": "array", "items": {"type": "object", "additionalProperties": false,
+              "required": ["kind", "description", "condition", "evidence_refs"], "properties": {
+                "kind": {"enum": ["normal", "error", "termination"]},
+                "description": {"type": "string", "minLength": 1},
+                "condition": {"$ref": "#/$defs/condition"},
+                "evidence_refs": {"$ref": "#/$defs/evidence_refs"}
+              }}},
+            "effects": {"type": "array", "items": {"type": "object", "additionalProperties": false,
+              "required": ["kind", "description", "condition", "evidence_refs"], "properties": {
+                "kind": {"enum": ["state", "resource", "external", "protocol", "unknown"]},
+                "description": {"type": "string", "minLength": 1},
+                "condition": {"$ref": "#/$defs/condition"},
+                "evidence_refs": {"$ref": "#/$defs/evidence_refs"}
+              }}},
+            "ordering_constraints": {"type": "array", "items": {"type": "object", "additionalProperties": false,
+              "required": ["participants", "relation", "evidence_refs"], "properties": {
+                "participants": {"type": "array", "minItems": 2, "items": {"type": "string", "minLength": 1}},
+                "relation": {"enum": ["before", "unordered", "synchronizes_with", "unknown"]},
+                "evidence_refs": {"$ref": "#/$defs/evidence_refs"}
+              }}},
+            "coverage": {"type": "array", "items": {"type": "object", "additionalProperties": false,
+              "required": ["category", "state", "evidence_refs"], "properties": {
+                "category": {"enum": ["inputs", "outputs", "preconditions", "outcomes", "effects", "ordering"]},
+                "state": {"enum": ["complete", "partial", "unknown", "not_applicable", "not_checked"]},
+                "evidence_refs": {"$ref": "#/$defs/evidence_refs"},
+                "reason": {"type": "string", "minLength": 1}
+              }, "allOf": [
+                {"if": {"properties": {"state": {"enum": ["partial", "unknown", "not_applicable", "not_checked"]}}},
+                 "then": {"required": ["reason"]}}
+              ]}}
+          }
+        },
         "implementation_refs": {"type": "array", "items": {"type": "object", "additionalProperties": false,
           "required": ["subject_id"], "properties": {"subject_id": {"type": "string", "minLength": 1}}}},
         "evidence_refs": {"type": "array", "minItems": 1, "items": {"type": "string", "minLength": 1}},
         "omissions": {"type": "array", "items": {"type": "object", "additionalProperties": false,
           "required": ["reason", "impact"], "properties": {
             "reason": {"type": "string", "minLength": 1}, "impact": {"type": "string", "minLength": 1}
-          }}}
-      }
-    }
+              }}}
+          }
+    },
+    "evidence_refs": {"type": "array", "minItems": 1, "items": {"type": "string", "minLength": 1}},
+    "port": {"type": "object", "additionalProperties": false,
+      "required": ["name", "description", "evidence_refs"], "properties": {
+        "name": {"type": "string", "minLength": 1},
+        "description": {"type": "string", "minLength": 1},
+        "type_rule": {"type": "string", "minLength": 1},
+        "evidence_refs": {"$ref": "#/$defs/evidence_refs"}
+      }},
+    "condition_claim": {"type": "object", "additionalProperties": false,
+      "required": ["condition", "evidence_refs"], "properties": {
+        "condition": {"$ref": "#/$defs/condition"},
+        "evidence_refs": {"$ref": "#/$defs/evidence_refs"}
+      }}
   }
 }

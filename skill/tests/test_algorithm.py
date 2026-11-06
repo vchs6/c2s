@@ -8,6 +8,7 @@ from c2s_skill.algorithm import validate_algorithms
 
 
 def _algorithm(steps=None, control_edges=None, data_edges=None):
+    contract_categories = ("inputs", "outputs", "preconditions", "outcomes", "effects", "ordering")
     return {
         "schema_version": "1.0.0",
         "algorithms": [{
@@ -30,6 +31,22 @@ def _algorithm(steps=None, control_edges=None, data_edges=None):
                     {"from_step": "s1", "to_step": "s2", "role": "return_value"}
                 ],
             },
+            "contract": {
+                "inputs": [{"name": "x", "description": "Input value", "evidence_refs": ["ev:1"]}],
+                "outputs": [{"name": "result", "description": "Computed value", "evidence_refs": ["ev:2"]}],
+                "preconditions": [],
+                "outcomes": [{"kind": "normal", "description": "Returns result",
+                              "condition": {"kind": "true"}, "evidence_refs": ["ev:2"]},
+                             {"kind": "error", "description": "May fail",
+                              "condition": {"kind": "unknown", "reason": "callee behavior not expanded"},
+                              "evidence_refs": ["ev:2"]}],
+                "effects": [{"kind": "unknown", "description": "Effects of callees not resolved",
+                             "condition": {"kind": "unknown", "reason": "callee behavior not expanded"},
+                             "evidence_refs": ["ev:1"]}],
+                "ordering_constraints": [],
+                "coverage": [{"category": category, "state": "complete", "evidence_refs": ["ev:1"]}
+                             for category in contract_categories],
+            },
             "implementation_refs": [{"subject_id": "subject:run"}],
             "evidence_refs": ["ev:1", "ev:2"],
             "omissions": [],
@@ -45,6 +62,25 @@ class AlgorithmContractTests(unittest.TestCase):
         document = _algorithm()
         document["algorithms"][0]["body"]["steps"][0]["untyped_guess"] = True
         self.assertTrue(any(item["code"] == "SCHEMA_INVALID" for item in validate_algorithms(document)))
+
+    def test_operation_contract_requires_evidence_state_for_every_category(self):
+        document = _algorithm()
+        contract = document["algorithms"][0]["contract"]
+        contract["coverage"] = [entry for entry in contract["coverage"] if entry["category"] != "effects"]
+        self.assertIn("CONTRACT_COVERAGE_INCOMPLETE",
+                      {item["code"] for item in validate_algorithms(document)})
+
+    def test_unknown_contract_category_requires_reason_and_keeps_error_distinct(self):
+        document = _algorithm()
+        contract = document["algorithms"][0]["contract"]
+        contract["coverage"][2] = {"category": "preconditions", "state": "unknown",
+                                    "evidence_refs": ["ev:1"], "reason": "dynamic input validation"}
+        contract["outcomes"].append({"kind": "termination", "description": "May exit process",
+                                     "condition": {"kind": "unknown", "reason": "indirect call"},
+                                     "evidence_refs": ["ev:2"]})
+        self.assertEqual(validate_algorithms(document), [])
+        contract["coverage"][2].pop("reason")
+        self.assertIn("SCHEMA_INVALID", {item["code"] for item in validate_algorithms(document)})
 
     def test_malformed_identifier_values_return_diagnostics_instead_of_raising(self):
         document = _algorithm()

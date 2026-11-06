@@ -33,6 +33,23 @@ def _algorithm_diagnostics(algorithm: dict, index: int) -> list[dict[str, str]]:
     if not isinstance(regions, list) or not isinstance(steps, list):
         return diagnostics
 
+    contract = algorithm.get("contract")
+    if isinstance(contract, dict):
+        categories = {"inputs", "outputs", "preconditions", "outcomes", "effects", "ordering"}
+        coverage = contract.get("coverage", [])
+        seen_categories: set[str] = set()
+        if isinstance(coverage, list):
+            for coverage_index, item in enumerate(coverage):
+                if not isinstance(item, dict) or not isinstance(item.get("category"), str):
+                    continue
+                category = item["category"]
+                if category in seen_categories:
+                    diagnostics.append(_diagnostic("CONTRACT_COVERAGE_DUPLICATE",
+                                                    f"{base}.contract.coverage[{coverage_index}].category", category))
+                seen_categories.add(category)
+            for category in categories - seen_categories:
+                diagnostics.append(_diagnostic("CONTRACT_COVERAGE_INCOMPLETE", f"{base}.contract.coverage", category))
+
     region_ids = [region.get("region_id") for region in regions
                   if isinstance(region, dict) and isinstance(region.get("region_id"), str)]
     step_ids = [step.get("step_id") for step in steps
