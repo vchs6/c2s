@@ -50,6 +50,16 @@ def project_report(name: str) -> tuple[dict, object]:
         raise RuntimeError(f"{name} source parse coverage is incomplete")
     if not result.complete or len(ids) != len(set(ids)):
         raise RuntimeError(f"{name} query is incomplete or contains duplicate fact IDs")
+    declarations = [fact for fact in facts if fact.kind == "function"]
+    targets = {(f"{fact.owner}.{fact.name}" if fact.owner else fact.name) for fact in declarations}
+    selectors = [f"function:{target}" for target in sorted(targets)]
+    subjects = {fact.subject_id for fact in declarations
+                if fact.name in targets or f"{fact.owner}.{fact.name}" in targets}
+    expected_function_facts = {fact.id for fact in facts if fact.subject_id in subjects and
+                               fact.kind in {"function", "behavior_contract", "algorithm_step"}}
+    function_result = query_from_scan(scan, selectors)
+    if not function_result.complete or {fact.id for fact in function_result.facts} != expected_function_facts:
+        raise RuntimeError(f"{name} per-function fact projection is incomplete")
     counts = Counter(f.kind for f in facts)
     layers = Counter(f.layer for f in facts)
     by_subject: dict[str, list] = defaultdict(list)
@@ -77,6 +87,9 @@ def project_report(name: str) -> tuple[dict, object]:
         "whole_project_semantics_complete": False,
         "source_files": scan.source_files, "parsed_files": scan.parsed_files,
         "syntax_node_count": scan.syntax_node_count, "parser_fact_count": parser_count,
+        "function_declaration_count": len(declarations),
+        "function_selector_count": len(selectors),
+        "function_projection_fact_count": len(function_result.facts),
         "workspace_fact_count": len(workspace), "returned_fact_count": len(facts),
         "unique_returned_fact_ids": len(set(returned_ids)),
         "duplicate_fact_ids": len(returned_ids) - len(set(returned_ids)),
@@ -142,7 +155,8 @@ def main() -> None:
                "toolchain": {"analyzer": "c2s-semantic-facts/0.6.1",
                              "python": f"Python {sys.version.split()[0]}", "cargo": cargo_version},
                "validation": {"inventory_generation": "passed; pinned clean inputs, all source files parsed, "
-                                                       "query complete, unique fact IDs",
+                                                       "all-supported query complete, unique fact IDs, "
+                                                       "all function selectors return their expected subject facts",
                               "external_checks": "not run by this inventory generator",
                               "private_acceptance": "not_run"},
                "projects": reports}

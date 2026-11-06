@@ -7,7 +7,7 @@ from unittest.mock import patch
 from jsonschema import Draft202012Validator
 
 from c2s_skill.acquisition import cargo_workspace_facts, scan_project
-from c2s_skill.query import normalize_request, query_project, result_to_dict, result_to_markdown
+from c2s_skill.query import normalize_request, query_from_scan, query_project, result_to_dict, result_to_markdown
 
 
 class QueryTests(unittest.TestCase):
@@ -147,6 +147,27 @@ class QueryTests(unittest.TestCase):
                 schema_path = Path(__file__).resolve().parents[1] / "contracts/semantic-fact-query.schema.json"
                 schema = json.loads(schema_path.read_text(encoding="utf-8"))
                 Draft202012Validator(schema).validate(result_to_dict(result))
+
+    def test_function_selector_projects_every_real_function_subject_completely(self):
+        repository = Path(__file__).resolve().parents[2]
+        for project in ("click", "regex"):
+            with self.subTest(project=project):
+                root = repository / ".local/real-projects" / project
+                scan = scan_project(root)
+                all_facts = [fact for parsed in scan.files for fact in parsed.facts] + list(scan.project_facts)
+                declarations = [fact for fact in all_facts if fact.kind == "function"]
+                self.assertTrue(declarations)
+                targets = {(f"{fact.owner}.{fact.name}" if fact.owner else fact.name)
+                           for fact in declarations}
+                selectors = [f"function:{target}" for target in sorted(targets)]
+                subjects = {fact.subject_id for fact in declarations
+                            if fact.name in targets or f"{fact.owner}.{fact.name}" in targets}
+                expected = {fact.id for fact in all_facts
+                            if fact.subject_id in subjects and fact.kind in
+                            {"function", "behavior_contract", "algorithm_step"}}
+                result = query_from_scan(scan, selectors)
+                self.assertTrue(result.complete, project)
+                self.assertEqual({fact.id for fact in result.facts}, expected, project)
 
     def test_members_selector_scopes_fields_and_methods_to_the_requested_class(self):
         with TemporaryDirectory() as temporary:

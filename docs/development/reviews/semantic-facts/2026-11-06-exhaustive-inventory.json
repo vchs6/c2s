@@ -7,7 +7,7 @@
     "cargo": "cargo 1.99.1 (5f94df478 2026-08-27)"
   },
   "validation": {
-    "inventory_generation": "passed; pinned clean inputs, all source files parsed, query complete, unique fact IDs",
+    "inventory_generation": "passed; pinned clean inputs, all source files parsed, all-supported query complete, unique fact IDs, all function selectors return their expected subject facts",
     "external_checks": "not run by this inventory generator",
     "private_acceptance": "not_run"
   },
@@ -25,6 +25,9 @@
       "parsed_files": 227,
       "syntax_node_count": 1178011,
       "parser_fact_count": 49516,
+      "function_declaration_count": 4342,
+      "function_selector_count": 3395,
+      "function_projection_fact_count": 44342,
       "workspace_fact_count": 7,
       "returned_fact_count": 49525,
       "unique_returned_fact_ids": 49525,
@@ -55,7 +58,7 @@
         "E3": 2403,
         "E4": 37880
       },
-      "elapsed_seconds": 3.246,
+      "elapsed_seconds": 6.482,
       "files": [
         {
           "path": "fuzz/fuzz_targets/ast_fuzz_match.rs",
@@ -141738,6 +141741,9 @@
       "parsed_files": 91,
       "syntax_node_count": 128806,
       "parser_fact_count": 21322,
+      "function_declaration_count": 1897,
+      "function_selector_count": 1797,
+      "function_projection_fact_count": 16763,
       "workspace_fact_count": 0,
       "returned_fact_count": 21324,
       "unique_returned_fact_ids": 21324,
@@ -141760,7 +141766,7 @@
         "E3": 628,
         "E4": 15130
       },
-      "elapsed_seconds": 4.389,
+      "elapsed_seconds": 4.78,
       "files": [
         {
           "path": "docs/conf.py",
