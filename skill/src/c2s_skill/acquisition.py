@@ -98,7 +98,7 @@ def analysis_profile_digest() -> str:
                         for name in ("tree-sitter", "tree-sitter-python", "tree-sitter-rust")}
     except importlib.metadata.PackageNotFoundError as error:
         dependencies = {"missing": error.name or "unknown"}
-    profile = {"analyzer": "c2s-semantic-facts/0.6.2", "python": platform.python_version(),
+    profile = {"analyzer": "c2s-semantic-facts/0.6.3", "python": platform.python_version(),
                "platform": platform.platform(), "parsers": dependencies, "cargo": cargo_version}
     return hashlib.sha256(json.dumps(profile, sort_keys=True, separators=(",", ":")).encode()).hexdigest()
 
@@ -279,6 +279,13 @@ def _rust_facts(path: str, source: bytes, root) -> tuple[list[Fact], int, bool]:
                        "break_expression", "assignment_expression", "binary_expression", "await_expression",
                        "let_declaration"}
 
+    def binding_names(pattern) -> list[str]:
+        if pattern.type == "identifier":
+            return [source[pattern.start_byte:pattern.end_byte].decode()]
+        if pattern.type == "tuple_pattern":
+            return [name for child in pattern.named_children for name in binding_names(child)]
+        return []
+
     def walk(node, owner_name: str | None = None) -> None:
         nonlocal syntax_nodes, parse_complete
         syntax_nodes += 1
@@ -297,10 +304,10 @@ def _rust_facts(path: str, source: bytes, root) -> tuple[list[Fact], int, bool]:
                     owner_name = source[target.start_byte:target.end_byte].decode()
         if node.type == "let_declaration":
             pattern = node.child_by_field_name("pattern")
-            if pattern and pattern.type == "identifier":
-                name = source[pattern.start_byte:pattern.end_byte].decode()
-                facts.append(_make_fact(path, source, "local_binding", name,
-                                        node.start_byte, node.end_byte, owner_name))
+            if pattern:
+                for name in binding_names(pattern):
+                    facts.append(_make_fact(path, source, "local_binding", name,
+                                            node.start_byte, node.end_byte, owner_name))
         elif node.type == "field_declaration":
             name_node = node.child_by_field_name("name")
             if name_node:

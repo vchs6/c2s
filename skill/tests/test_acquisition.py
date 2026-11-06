@@ -38,12 +38,14 @@ class AcquisitionTests(unittest.TestCase):
         self.assertIn("value = x + 1", python_bindings[0].text)
         self.assertIn("value += 2", python_bindings[1].text)
 
-        rust = parse_source("src.rs", b"fn run(x: i32) { let value = x + 1; }", "rust")
+        rust = parse_source("src.rs", b"fn run(x: i32) { let value = x + 1; let (left, right) = pair; }", "rust")
         rust_bindings = [fact for fact in rust.facts if fact.kind == "local_binding"]
-        self.assertEqual([fact.name for fact in rust_bindings], ["value"])
+        self.assertEqual([fact.name for fact in rust_bindings], ["value", "left", "right"])
         self.assertEqual(rust_bindings[0].layer, "E4")
         self.assertEqual(rust_bindings[0].owner, "run")
         self.assertIn("let value = x + 1", rust_bindings[0].text)
+        self.assertIn("let (left, right) = pair", rust_bindings[1].text)
+        self.assertIn("let (left, right) = pair", rust_bindings[2].text)
 
     def test_rust_parser_emits_struct_fields_and_methods(self):
         source = b"pub struct Item { pub value: u32 } impl Item { /// Return the stored value.\n pub fn read(&self) -> u32 { if self.value > 0 { helper() } else { 0 } } }"

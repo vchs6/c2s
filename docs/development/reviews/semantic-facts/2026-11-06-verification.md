@@ -1,6 +1,6 @@
 # 语义事实原型验证记录
 
-日期：2026-11-06。分析器：`c2s-semantic-facts/0.6.2`。
+日期：2026-11-06。分析器：`c2s-semantic-facts/0.6.3`。
 
 ## 测试与检查
 
@@ -11,7 +11,7 @@
 | OpenSpec严格校验 | `npm run validate` | 21/21通过 |
 | 制品完整性 | `npm run check:artifacts` | 通过：4个制品哈希、workflow文件和Superpowers版本 |
 | Click上游测试 | 在`.local/real-projects/click`目录执行`PYTHONPATH=src /workspace/c2s/.local/analysis-venv/bin/python -m pytest -q .` | 2262通过、24跳过、31,000 deselected、1 xfailed |
-| 全量真实项目事实遍历 | `PYTHONPATH=skill/src .local/analysis-venv/bin/python scripts/generate_semantic_fact_inventory.py` | regex：227/227源文件、53,539条事实、4,342个函数声明/3,395种查询目标；Click：91/91源文件、23,466条事实、1,897个函数声明/1,797种查询目标；批量按主体ID比对函数查询返回集合，全部匹配预期且事实ID唯一，输入检出干净；详情见同目录`2026-11-06-exhaustive-inventory.json` |
+| 全量真实项目事实遍历 | `PYTHONPATH=skill/src .local/analysis-venv/bin/python scripts/generate_semantic_fact_inventory.py` | regex：227/227源文件、54,178条事实、4,342个函数声明/3,395种查询目标；Click：91/91源文件、23,466条事实、1,897个函数声明/1,797种查询目标；批量按主体ID比对函数查询返回集合，全部匹配预期且事实ID唯一，输入检出干净；详情见同目录`2026-11-06-exhaustive-inventory.json` |
 | Rust workspace元数据 | Cargo `metadata --no-deps --offline`，regex | 7个workspace成员成功解析 |
 | Rust依赖测试 | `cargo test --workspace --all-targets`，regex | 未开始编译：配置代理`proxy:8080`不可达，离线缓存缺少`aho-corasick`；不算测试通过 |
 | 隔离私有验收 | 当前环境 | 未运行；没有独立私有验收身份/用例环境 |
