@@ -722,6 +722,20 @@ class M1IdentityTests(unittest.TestCase):
             self.assertEqual(predicates[predicate_id]["primaryLayer"], "E3")
             self.assertEqual(predicates[predicate_id]["roles"][1]["valueType"], "string")
 
+    def test_e4_catalog_keeps_calls_bindings_captures_and_dataflow_relations_distinct(self):
+        catalog = semantic_model_catalogs()
+        predicates = {item["predicateId"]: item for item in catalog["predicates"]["predicates"]}
+        expected = {"behavior.implemented_by", "behavior.calls", "behavior.binds", "behavior.captures",
+                    "behavior.reads", "behavior.writes", "behavior.algorithm_described_by",
+                    "behavior.projects_to_pseudocode", "provenance.generated_from"}
+        self.assertTrue(expected <= predicates.keys())
+        for predicate_id in expected - {"provenance.generated_from"}:
+            self.assertEqual(predicates[predicate_id]["primaryLayer"], "E4")
+        self.assertIsNone(predicates["provenance.generated_from"]["primaryLayer"])
+        self.assertEqual(predicates["behavior.reads"]["predicateId"], "behavior.reads")
+        self.assertNotEqual(predicates["behavior.reads"]["predicateId"],
+                            predicates["behavior.writes"]["predicateId"])
+
     def test_full_semantic_catalog_declares_distinct_program_body_and_region_relations(self):
         catalog = semantic_model_catalogs()
         predicates = {item["predicateId"]: item for item in catalog["predicates"]["predicates"]}

@@ -273,7 +273,12 @@
               "BuildRecipe",
               "BuildAlias",
               "OutputSpecification",
-              "ArtifactObservation"
+              "ArtifactObservation",
+              "Binding",
+              "AlgorithmDescription",
+              "PseudocodeView",
+              "Signature",
+              "AccessConstraint"
             ]
           }
         },

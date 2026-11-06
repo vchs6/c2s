@@ -3,6 +3,49 @@
   "profile": "semantic-fact-model-1",
   "predicates": [
     {
+      "predicateId": "behavior.algorithm_described_by",
+      "category": "Semantic",
+      "primaryLayer": "E4",
+      "description": "An operation or implementation is referenced by a separately identified algorithm description.",
+      "relationKind": "association",
+      "claimCardinality": "multi_value",
+      "comparisonPolicy": "never",
+      "claimModes": [
+        "declaration",
+        "specification",
+        "static_may",
+        "static_must",
+        "observation",
+        "interpretation"
+      ],
+      "roles": [
+        {
+          "roleId": "subject",
+          "position": "subject",
+          "valueType": "M1SubjectRef",
+          "allowedKinds": [
+            "SourceDeclaration"
+          ],
+          "cardinality": "exactly_one"
+        },
+        {
+          "roleId": "value",
+          "position": "value",
+          "valueType": "M1SubjectRef",
+          "allowedKinds": [
+            "AlgorithmDescription"
+          ],
+          "cardinality": "exactly_one"
+        }
+      ],
+      "constraints": [
+        "KIND_MATCH",
+        "ROLE_CARDINALITY",
+        "INTERNAL_REF_EXISTS",
+        "LAYER_CLASSIFICATION"
+      ]
+    },
+    {
       "predicateId": "behavior.algorithm_step",
       "category": "Semantic",
       "primaryLayer": "E4",
@@ -33,6 +76,135 @@
           "position": "value",
           "valueType": "string",
           "allowedKinds": [],
+          "cardinality": "exactly_one"
+        }
+      ],
+      "constraints": [
+        "KIND_MATCH",
+        "ROLE_CARDINALITY",
+        "INTERNAL_REF_EXISTS",
+        "LAYER_CLASSIFICATION"
+      ]
+    },
+    {
+      "predicateId": "behavior.binds",
+      "category": "Semantic",
+      "primaryLayer": "E4",
+      "description": "A behavior step introduces a separately identified binding.",
+      "relationKind": "association",
+      "claimCardinality": "multi_value",
+      "comparisonPolicy": "never",
+      "claimModes": [
+        "declaration",
+        "specification",
+        "static_may",
+        "static_must",
+        "observation",
+        "interpretation"
+      ],
+      "roles": [
+        {
+          "roleId": "subject",
+          "position": "subject",
+          "valueType": "M1SubjectRef",
+          "allowedKinds": [
+            "BehaviorStep"
+          ],
+          "cardinality": "exactly_one"
+        },
+        {
+          "roleId": "value",
+          "position": "value",
+          "valueType": "M1SubjectRef",
+          "allowedKinds": [
+            "Binding"
+          ],
+          "cardinality": "exactly_one"
+        }
+      ],
+      "constraints": [
+        "KIND_MATCH",
+        "ROLE_CARDINALITY",
+        "INTERNAL_REF_EXISTS",
+        "LAYER_CLASSIFICATION"
+      ]
+    },
+    {
+      "predicateId": "behavior.calls",
+      "category": "Semantic",
+      "primaryLayer": "E4",
+      "description": "A source-located behavior step calls a named callable candidate; dispatch resolution may remain unknown.",
+      "relationKind": "association",
+      "claimCardinality": "multi_value",
+      "comparisonPolicy": "never",
+      "claimModes": [
+        "declaration",
+        "specification",
+        "static_may",
+        "static_must",
+        "observation",
+        "interpretation"
+      ],
+      "roles": [
+        {
+          "roleId": "subject",
+          "position": "subject",
+          "valueType": "M1SubjectRef",
+          "allowedKinds": [
+            "BehaviorStep"
+          ],
+          "cardinality": "exactly_one"
+        },
+        {
+          "roleId": "value",
+          "position": "value",
+          "valueType": "M1SubjectRef",
+          "allowedKinds": [
+            "SourceDeclaration"
+          ],
+          "cardinality": "exactly_one"
+        }
+      ],
+      "constraints": [
+        "KIND_MATCH",
+        "ROLE_CARDINALITY",
+        "INTERNAL_REF_EXISTS",
+        "LAYER_CLASSIFICATION"
+      ]
+    },
+    {
+      "predicateId": "behavior.captures",
+      "category": "Semantic",
+      "primaryLayer": "E4",
+      "description": "A behavior body captures a separately identified binding; capture mode is not represented by this binary relation.",
+      "relationKind": "association",
+      "claimCardinality": "multi_value",
+      "comparisonPolicy": "never",
+      "claimModes": [
+        "declaration",
+        "specification",
+        "static_may",
+        "static_must",
+        "observation",
+        "interpretation"
+      ],
+      "roles": [
+        {
+          "roleId": "subject",
+          "position": "subject",
+          "valueType": "M1SubjectRef",
+          "allowedKinds": [
+            "BehaviorBody"
+          ],
+          "cardinality": "exactly_one"
+        },
+        {
+          "roleId": "value",
+          "position": "value",
+          "valueType": "M1SubjectRef",
+          "allowedKinds": [
+            "Binding"
+          ],
           "cardinality": "exactly_one"
         }
       ],
@@ -116,6 +288,178 @@
           "valueType": "M1SubjectRef",
           "allowedKinds": [
             "BehaviorBody"
+          ],
+          "cardinality": "exactly_one"
+        }
+      ],
+      "constraints": [
+        "KIND_MATCH",
+        "ROLE_CARDINALITY",
+        "INTERNAL_REF_EXISTS",
+        "LAYER_CLASSIFICATION"
+      ]
+    },
+    {
+      "predicateId": "behavior.implemented_by",
+      "category": "Semantic",
+      "primaryLayer": "E4",
+      "description": "A declared behavior or operation is associated with an implementation body; this does not prove equivalence.",
+      "relationKind": "association",
+      "claimCardinality": "multi_value",
+      "comparisonPolicy": "never",
+      "claimModes": [
+        "declaration",
+        "specification",
+        "static_may",
+        "static_must",
+        "observation",
+        "interpretation"
+      ],
+      "roles": [
+        {
+          "roleId": "subject",
+          "position": "subject",
+          "valueType": "M1SubjectRef",
+          "allowedKinds": [
+            "SourceDeclaration"
+          ],
+          "cardinality": "exactly_one"
+        },
+        {
+          "roleId": "value",
+          "position": "value",
+          "valueType": "M1SubjectRef",
+          "allowedKinds": [
+            "BehaviorBody"
+          ],
+          "cardinality": "exactly_one"
+        }
+      ],
+      "constraints": [
+        "KIND_MATCH",
+        "ROLE_CARDINALITY",
+        "INTERNAL_REF_EXISTS",
+        "LAYER_CLASSIFICATION"
+      ]
+    },
+    {
+      "predicateId": "behavior.projects_to_pseudocode",
+      "category": "Semantic",
+      "primaryLayer": "E4",
+      "description": "An algorithm description is rendered as a separately identified pseudocode view.",
+      "relationKind": "association",
+      "claimCardinality": "multi_value",
+      "comparisonPolicy": "never",
+      "claimModes": [
+        "declaration",
+        "specification",
+        "static_may",
+        "static_must",
+        "observation",
+        "interpretation"
+      ],
+      "roles": [
+        {
+          "roleId": "subject",
+          "position": "subject",
+          "valueType": "M1SubjectRef",
+          "allowedKinds": [
+            "AlgorithmDescription"
+          ],
+          "cardinality": "exactly_one"
+        },
+        {
+          "roleId": "value",
+          "position": "value",
+          "valueType": "M1SubjectRef",
+          "allowedKinds": [
+            "PseudocodeView"
+          ],
+          "cardinality": "exactly_one"
+        }
+      ],
+      "constraints": [
+        "KIND_MATCH",
+        "ROLE_CARDINALITY",
+        "INTERNAL_REF_EXISTS",
+        "LAYER_CLASSIFICATION"
+      ]
+    },
+    {
+      "predicateId": "behavior.reads",
+      "category": "Semantic",
+      "primaryLayer": "E4",
+      "description": "A behavior step reads a location represented by a binding.",
+      "relationKind": "association",
+      "claimCardinality": "multi_value",
+      "comparisonPolicy": "never",
+      "claimModes": [
+        "declaration",
+        "specification",
+        "static_may",
+        "static_must",
+        "observation",
+        "interpretation"
+      ],
+      "roles": [
+        {
+          "roleId": "subject",
+          "position": "subject",
+          "valueType": "M1SubjectRef",
+          "allowedKinds": [
+            "BehaviorStep"
+          ],
+          "cardinality": "exactly_one"
+        },
+        {
+          "roleId": "value",
+          "position": "value",
+          "valueType": "M1SubjectRef",
+          "allowedKinds": [
+            "Binding"
+          ],
+          "cardinality": "exactly_one"
+        }
+      ],
+      "constraints": [
+        "KIND_MATCH",
+        "ROLE_CARDINALITY",
+        "INTERNAL_REF_EXISTS",
+        "LAYER_CLASSIFICATION"
+      ]
+    },
+    {
+      "predicateId": "behavior.writes",
+      "category": "Semantic",
+      "primaryLayer": "E4",
+      "description": "A behavior step writes a location represented by a binding.",
+      "relationKind": "association",
+      "claimCardinality": "multi_value",
+      "comparisonPolicy": "never",
+      "claimModes": [
+        "declaration",
+        "specification",
+        "static_may",
+        "static_must",
+        "observation",
+        "interpretation"
+      ],
+      "roles": [
+        {
+          "roleId": "subject",
+          "position": "subject",
+          "valueType": "M1SubjectRef",
+          "allowedKinds": [
+            "BehaviorStep"
+          ],
+          "cardinality": "exactly_one"
+        },
+        {
+          "roleId": "value",
+          "position": "value",
+          "valueType": "M1SubjectRef",
+          "allowedKinds": [
+            "Binding"
           ],
           "cardinality": "exactly_one"
         }
@@ -795,6 +1139,49 @@
       ]
     },
     {
+      "predicateId": "program.accessible_under",
+      "category": "Semantic",
+      "primaryLayer": "E2",
+      "description": "A declaration is available under an explicit access constraint.",
+      "relationKind": "association",
+      "claimCardinality": "multi_value",
+      "comparisonPolicy": "never",
+      "claimModes": [
+        "declaration",
+        "specification",
+        "static_may",
+        "static_must",
+        "observation",
+        "interpretation"
+      ],
+      "roles": [
+        {
+          "roleId": "subject",
+          "position": "subject",
+          "valueType": "M1SubjectRef",
+          "allowedKinds": [
+            "SourceDeclaration"
+          ],
+          "cardinality": "exactly_one"
+        },
+        {
+          "roleId": "value",
+          "position": "value",
+          "valueType": "M1SubjectRef",
+          "allowedKinds": [
+            "AccessConstraint"
+          ],
+          "cardinality": "exactly_one"
+        }
+      ],
+      "constraints": [
+        "KIND_MATCH",
+        "ROLE_CARDINALITY",
+        "INTERNAL_REF_EXISTS",
+        "LAYER_CLASSIFICATION"
+      ]
+    },
+    {
       "predicateId": "program.contains",
       "category": "Semantic",
       "primaryLayer": "E2",
@@ -826,6 +1213,49 @@
           "valueType": "M1SubjectRef",
           "allowedKinds": [
             "SourceDeclaration"
+          ],
+          "cardinality": "exactly_one"
+        }
+      ],
+      "constraints": [
+        "KIND_MATCH",
+        "ROLE_CARDINALITY",
+        "INTERNAL_REF_EXISTS",
+        "LAYER_CLASSIFICATION"
+      ]
+    },
+    {
+      "predicateId": "program.has_signature",
+      "category": "Semantic",
+      "primaryLayer": "E2",
+      "description": "A callable declaration is associated with an independently identified signature.",
+      "relationKind": "composition",
+      "claimCardinality": "multi_value",
+      "comparisonPolicy": "never",
+      "claimModes": [
+        "declaration",
+        "specification",
+        "static_may",
+        "static_must",
+        "observation",
+        "interpretation"
+      ],
+      "roles": [
+        {
+          "roleId": "subject",
+          "position": "subject",
+          "valueType": "M1SubjectRef",
+          "allowedKinds": [
+            "SourceDeclaration"
+          ],
+          "cardinality": "exactly_one"
+        },
+        {
+          "roleId": "value",
+          "position": "value",
+          "valueType": "M1SubjectRef",
+          "allowedKinds": [
+            "Signature"
           ],
           "cardinality": "exactly_one"
         }
@@ -909,6 +1339,49 @@
           "position": "value",
           "valueType": "string",
           "allowedKinds": [],
+          "cardinality": "exactly_one"
+        }
+      ],
+      "constraints": [
+        "KIND_MATCH",
+        "ROLE_CARDINALITY",
+        "INTERNAL_REF_EXISTS",
+        "LAYER_CLASSIFICATION"
+      ]
+    },
+    {
+      "predicateId": "provenance.generated_from",
+      "category": "Provenance",
+      "primaryLayer": null,
+      "description": "A generated subject is linked to a source declaration through provenance evidence.",
+      "relationKind": "association",
+      "claimCardinality": "multi_value",
+      "comparisonPolicy": "never",
+      "claimModes": [
+        "declaration",
+        "specification",
+        "static_may",
+        "static_must",
+        "observation",
+        "interpretation"
+      ],
+      "roles": [
+        {
+          "roleId": "subject",
+          "position": "subject",
+          "valueType": "M1SubjectRef",
+          "allowedKinds": [
+            "SourceDeclaration"
+          ],
+          "cardinality": "exactly_one"
+        },
+        {
+          "roleId": "value",
+          "position": "value",
+          "valueType": "M1SubjectRef",
+          "allowedKinds": [
+            "SourceDeclaration"
+          ],
           "cardinality": "exactly_one"
         }
       ],
