@@ -135,3 +135,7 @@ Final verification: product tests 45/45; repository maintenance tests 35/35; str
 
 - The M1 adapter now captures a canonical Cargo `metadata --no-deps --offline` JSON attachment, binds membership evidence to its digest, and checks the package list against the original query before marking evidence verified. If Cargo is unavailable or the repeat differs, evidence remains unchecked. Rust 1.99.1/Cargo 1.99.1 was installed under ignored `.local/`; the real regex workspace returned seven members, one verified attachment, valid M1 records, complete coverage, and no diagnostics. The focused semantic-model suite now has 32 tests.
 - Added `scripts/query_m1.py` as a direct query→M1→validation entry point. Running it against the real Click checkout emits two complete E0 facts with no attachment; against regex it emits seven workspace members and one digest-checked Cargo attachment. Both JSON responses validate and report complete coverage.
+
+## Progress — 2026-11-06, finite condition solver foundation
+
+- Added `src/c2s_semantic_contract/conditions.py` for Boolean and finite-enum `true`/`false`, equality/inequality, `all`/`any`, and `not`. It returns exhaustive `sat`/`unsat` results up to 4,096 assignments, concrete witnesses for `sat`, and `undetermined` for unsupported fragments, unknown domains, malformed domains, and budget overflow. Claim overlap distinguishes disjoint, conflicting, and potential conflict cases. Seven focused tests pass. This is a reusable solver foundation, not complete context-record or SemanticFactSet integration.
