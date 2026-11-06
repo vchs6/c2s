@@ -156,3 +156,7 @@ Final verification: product tests 45/45; repository maintenance tests 35/35; str
 ## Progress — 2026-11-06, dependency-cycle integration
 
 - `validate_model` now builds separate candidate graphs per explicit resolution configuration and attaches conditional cycle analysis to its result. It joins requirement conditions across each candidate cycle, reports infeasible/possible/undetermined distinctly, and never treats a possible cycle as a contract/build error. Enumeration has explicit cycle/search budgets; budget exhaustion and unsupported cycle conditions surface as gaps. Integration regression confirms mutually exclusive edges remain an infeasible candidate cycle while the dependency records and contract stay valid.
+
+## Progress — 2026-11-06, claim modality and derivation links
+
+- Expanded the full-profile fact contract to the six distinct claim modes in the design, per-evidence `Supports`/`Refutes`/`Limits` links, and optional rule-backed derivations. Validation checks evidence and premise references and rejects derivation cycles. M1 remains restricted to its two claim modes and unqualified evidence IDs. These records preserve caller assertions; they do not infer runtime observation or prove truth.

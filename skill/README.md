@@ -10,6 +10,8 @@
 
 条件求解器位于`src/c2s_semantic_contract/conditions.py`：支持有限Boolean/Enum域上的`true/false/eq/neq/all/any/not`，最多枚举4096种赋值；超过限额、域未知或表达式不支持时返回`undetermined`。`semantic-fact-model-1`现已集成Context/Condition、引用上下文、依赖需求/解析记录和单值声明重叠检查；`validate_model`还会按配置报告显式依赖图的条件环分析，并保留原图；`m1-project-discovery-1`拒绝这些扩展记录。依赖记录当前为显式输入，不会从项目自动推断。求解范围限于显式有限域及已注册M1谓词，不能据此声称项目完整语义分析完成。
 
+完整语义profile也提供六种互不排序的claimMode、带Supports/Refutes/Limits角色的evidenceRefs，以及带前提引用的derivation；缺失前提或推导循环会报错。这些模态/推导目前由调用方提供，分析器不会自动推断运行观测，也不能由此宣称真值已证明。
+
 ```bash
 python3 scripts/query_m1.py --root .local/real-projects/click --select project
 python3 scripts/query_m1.py --root .local/real-projects/regex --select workspace-members

@@ -539,6 +539,49 @@ class M1IdentityTests(unittest.TestCase):
         self.assertEqual(result["dependencyCycles"][0]["configuration"], "default")
         self.assertEqual(result["dependencyCycles"][0]["cycles"][0]["status"], "infeasible")
 
+    def test_full_claim_modalities_keep_evidence_roles_and_derivation_premises(self):
+        bundle = bundle_with_fact()
+        bundle["profile"] = "semantic-fact-model-1"
+        bundle["facts"][0]["claimMode"] = "static_may"
+        bundle["facts"][0]["evidenceRefs"] = [{"evidenceId": "ev-1", "role": "Supports"}]
+        bundle["facts"][0]["derivation"] = {"ruleId": "rule-1", "premiseFactIds": []}
+
+        result = validate_model(bundle, fixed_catalogs())
+
+        self.assertTrue(result["valid"])
+
+    def test_missing_derivation_premise_is_a_reference_error(self):
+        bundle = bundle_with_fact()
+        bundle["profile"] = "semantic-fact-model-1"
+        bundle["facts"][0]["derivation"] = {"ruleId": "rule-1", "premiseFactIds": ["missing-fact"]}
+
+        result = validate_model(bundle, fixed_catalogs())
+
+        self.assertEqual(result["stages"]["references"], "fail")
+        self.assertIn("DERIVATION_PREMISE_MISSING", {item["ruleCode"] for item in result["diagnostics"]})
+
+    def test_derivation_cycles_are_contract_errors(self):
+        bundle = bundle_with_fact()
+        bundle["profile"] = "semantic-fact-model-1"
+        second = dict(bundle["facts"][0], factId="fact-2", subject=dict(bundle["facts"][0]["subject"]))
+        bundle["facts"].append(second)
+        bundle["facts"][0]["derivation"] = {"ruleId": "rule-a", "premiseFactIds": ["fact-2"]}
+        second["derivation"] = {"ruleId": "rule-b", "premiseFactIds": ["fact-1"]}
+
+        result = validate_model(bundle, fixed_catalogs())
+
+        self.assertFalse(result["valid"])
+        self.assertIn("DERIVATION_CYCLE", {item["ruleCode"] for item in result["diagnostics"]})
+
+    def test_m1_profile_does_not_accept_full_semantic_modalities(self):
+        bundle = bundle_with_fact()
+        bundle["facts"][0]["claimMode"] = "observation"
+
+        result = validate_model(bundle, fixed_catalogs())
+
+        self.assertFalse(result["valid"])
+        self.assertIn("M1_MODALITY_UNSUPPORTED", {item["ruleCode"] for item in result["diagnostics"]})
+
     def test_catalog_rejects_unsupported_constraint_ids(self):
         catalogs = fixed_catalogs()
         catalogs["predicates"]["predicates"][0]["constraints"].append("UNSAFE_EVAL")

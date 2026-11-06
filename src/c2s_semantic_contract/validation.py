@@ -252,12 +252,23 @@ def validate_model(document: dict, catalogs: dict, source_observations: dict | N
                     "Evidence reference does not resolve to an evidence record.", record_ref=record_ref,
                     field_path=field_path))
 
+    fact_ids = {item["factId"] for item in document["facts"]}
     for index, fact in enumerate(document["facts"]):
         record_ref = f"fact:{fact['factId']}"
         check_ref(fact["subject"], f"/facts/{index}/subject", record_ref)
         if isinstance(fact["value"], dict):
             check_ref(fact["value"], f"/facts/{index}/value", record_ref)
         check_evidence(fact["evidenceIds"], f"/facts/{index}/evidenceIds", record_ref)
+        for evidence_ref_index, evidence_ref in enumerate(fact.get("evidenceRefs", [])):
+            check_evidence([evidence_ref["evidenceId"]],
+                           f"/facts/{index}/evidenceRefs/{evidence_ref_index}/evidenceId", record_ref)
+        derivation = fact.get("derivation")
+        if derivation is not None:
+            for premise_index, premise_id in enumerate(derivation["premiseFactIds"]):
+                if premise_id not in fact_ids:
+                    diagnostics.append(_diagnostic("references", "DERIVATION_PREMISE_MISSING",
+                        "Derivation premise does not resolve to a fact in the bundle.", record_ref=record_ref,
+                        field_path=f"/facts/{index}/derivation/premiseFactIds/{premise_index}"))
     for index, registration in enumerate(registrations):
         check_evidence(registration["evidenceIds"], f"/registrations/{index}/evidenceIds",
                        f"registration:{index}")
@@ -327,6 +338,12 @@ def validate_model(document: dict, catalogs: dict, source_observations: dict | N
         invariant_diagnostics.append(_diagnostic("invariants", "M1_CONTEXT_UNSUPPORTED",
             "The M1 project-discovery profile does not permit context, conditional facts, or dependency records.",
             field_path="/profile"))
+    if is_m1 and any(fact.get("claimMode") not in {"declaration", "interpretation"}
+                     or fact.get("evidenceRefs") or fact.get("derivation") is not None
+                     for fact in document.get("facts", [])):
+        invariant_diagnostics.append(_diagnostic("invariants", "M1_MODALITY_UNSUPPORTED",
+            "The M1 project-discovery profile supports declaration/interpretation claims without derivation links.",
+            field_path="/facts"))
     seen_context_ids = set()
     for context_index, context in enumerate(document.get("contexts", [])):
         context_id = context["contextId"]
@@ -378,6 +395,28 @@ def validate_model(document: dict, catalogs: dict, source_observations: dict | N
                 "Dependency provider count must match resolved/ambiguous/unresolved status.",
                 record_ref=f"dependencyResolution:{resolution_id}",
                 field_path=f"/dependencyResolutions/{resolution_index}/providers"))
+
+    facts_by_id = {fact["factId"]: fact for fact in document["facts"]}
+    pending_premises = {fact_id: set(fact.get("derivation", {}).get("premiseFactIds", []))
+                        for fact_id, fact in facts_by_id.items()}
+    dependents: dict[str, set[str]] = {fact_id: set() for fact_id in facts_by_id}
+    for fact_id, premises in pending_premises.items():
+        for premise_id in premises:
+            if premise_id in dependents:
+                dependents[premise_id].add(fact_id)
+    ready = [fact_id for fact_id, premises in pending_premises.items() if not premises]
+    resolved_premises = set()
+    while ready:
+        resolved_id = ready.pop()
+        resolved_premises.add(resolved_id)
+        for dependent_id in dependents[resolved_id]:
+            pending_premises[dependent_id].discard(resolved_id)
+            if not pending_premises[dependent_id]:
+                ready.append(dependent_id)
+    if len(resolved_premises) != len(facts_by_id):
+        invariant_diagnostics.append(_diagnostic("invariants", "DERIVATION_CYCLE",
+            "Fact derivations must be acyclic; the cyclic dependency chain is retained in the bundle.",
+            field_path="/facts"))
 
     contexts_by_id = {item["contextId"]: item for item in document.get("contexts", [])}
     condition_gaps = []
@@ -436,7 +475,9 @@ def validate_model(document: dict, catalogs: dict, source_observations: dict | N
                 "Fact predicate is not registered in the fixed M1 catalog.", record_ref=record_ref,
                 field_path=f"/facts/{index}/predicate"))
             continue
-        if fact["claimMode"] not in predicate["claimModes"]:
+        supported_modes = (predicate["claimModes"] if is_m1 else
+                           {"declaration", "specification", "static_may", "static_must", "observation", "interpretation"})
+        if fact["claimMode"] not in supported_modes:
             invariant_diagnostics.append(_diagnostic("invariants", "CLAIM_MODE_UNSUPPORTED",
                 "Claim mode is not supported by this predicate.", record_ref=record_ref,
                 field_path=f"/facts/{index}/claimMode"))
