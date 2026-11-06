@@ -167,6 +167,65 @@ class M1IdentityTests(unittest.TestCase):
         result = validate_model(self.assessment_bundle([cycle_base, cycle_replacement]), fixed_catalogs())
         self.assertIn("SUPERSEDES_CYCLE", {item["ruleCode"] for item in result["diagnostics"]})
 
+    def test_source_observations_distinguish_unchecked_matching_and_mismatched_evidence(self):
+        bundle = bundle_with_fact()
+        unchecked = validate_model(bundle, fixed_catalogs())
+        self.assertTrue(unchecked["valid"])
+        self.assertIn("EVIDENCE_UNCHECKED", {item["ruleCode"] for item in unchecked["diagnostics"]})
+        matching = validate_model(bundle, fixed_catalogs(), {"items": [
+            {"evidenceId": "ev-1", "status": "verified", "observedSha256": "a" * 64}]})
+        self.assertNotIn("EVIDENCE_UNCHECKED", {item["ruleCode"] for item in matching["diagnostics"]})
+        mismatch = validate_model(bundle, fixed_catalogs(), {"items": [
+            {"evidenceId": "ev-1", "status": "mismatch", "observedSha256": "b" * 64}]})
+        self.assertFalse(mismatch["valid"])
+        self.assertIn("INPUT_MISMATCH", {item["ruleCode"] for item in mismatch["diagnostics"]})
+
+    def test_invalid_source_observation_shapes_fail_invariants(self):
+        bundle = bundle_with_fact()
+        observations = {"items": [{"evidenceId": "ev-1", "status": "verified", "observedSha256": None}]}
+        result = validate_model(bundle, fixed_catalogs(), observations)
+        self.assertFalse(result["valid"])
+        self.assertIn("OBSERVATION_INVALID", {item["ruleCode"] for item in result["diagnostics"]})
+
+        malformed_status = {"items": [{"evidenceId": "ev-1", "status": [], "observedSha256": None}]}
+        result = validate_model(bundle, fixed_catalogs(), malformed_status)
+        self.assertIn("OBSERVATION_INVALID", {item["ruleCode"] for item in result["diagnostics"]})
+
+    def test_coverage_complete_cannot_hide_gap_diagnostics(self):
+        bundle = empty_bundle()
+        bundle["coverage"] = [{"coverageId": "coverage-1", "selector": "project", "subject": None,
+            "checkedPaths": [], "evidenceIds": [], "complete": True, "supersedes": [],
+            "resolvedDiagnosticKeys": [], "diagnostics": [{"code": "READ_FAILED", "severity": "gap",
+            "recordId": "file:a.py", "path": "a.py", "message": "Could not read file."}]}]
+        result = validate_model(bundle, fixed_catalogs())
+        self.assertFalse(result["valid"])
+        self.assertIn("COVERAGE_COMPLETE_WITH_GAPS", {item["ruleCode"] for item in result["diagnostics"]})
+
+    def test_coverage_lineage_requires_same_selector_and_subject_and_is_acyclic(self):
+        bundle = empty_bundle()
+        bundle["registrations"].append({"ref": {"identity": {"authority": "c2s-local", "domainId": "d", "localId": "p"},
+            "kind": "Project"}, "sourceKey": "project:p", "evidenceIds": ["ev"]})
+        bundle["evidence"].append({"evidenceId": "ev", "source": "input", "path": "x", "artifactId": None,
+            "originalPath": "x", "sha256": "a" * 64, "startByte": 0, "endByte": 1, "method": "test",
+            "toolName": None, "toolVersion": None})
+        subject = bundle["registrations"][0]["ref"]
+        old = {"coverageId": "coverage-old", "selector": "project", "subject": subject, "checkedPaths": [],
+            "evidenceIds": [], "complete": False, "supersedes": [], "resolvedDiagnosticKeys": [],
+            "diagnostics": [{"code": "READ_FAILED", "severity": "gap", "recordId": "x", "path": "x",
+                             "message": "read failed"}]}
+        new = dict(old, coverageId="coverage-new", complete=True, supersedes=["coverage-old"],
+                   resolvedDiagnosticKeys=['["READ_FAILED","x","x"]'], diagnostics=[])
+        bundle["coverage"] = [old, new]
+        self.assertTrue(validate_model(bundle, fixed_catalogs())["valid"])
+
+        wrong_key = dict(new, selector="functions")
+        result = validate_model(dict(bundle, coverage=[old, wrong_key]), fixed_catalogs())
+        self.assertIn("SUPERSEDES_KEY_MISMATCH", {item["ruleCode"] for item in result["diagnostics"]})
+
+        cycle_old = dict(old, supersedes=["coverage-new"])
+        result = validate_model(dict(bundle, coverage=[cycle_old, new]), fixed_catalogs())
+        self.assertIn("SUPERSEDES_CYCLE", {item["ruleCode"] for item in result["diagnostics"]})
+
     def test_closed_m1_catalog_accepts_project_name_with_a_project_subject(self):
         result = validate_model(bundle_with_fact(), fixed_catalogs())
         self.assertTrue(result["valid"])

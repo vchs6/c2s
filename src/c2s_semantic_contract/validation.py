@@ -44,6 +44,11 @@ def _canonical_digest(value: dict) -> str:
     return hashlib.sha256(payload).hexdigest()
 
 
+def _diagnostic_key(diagnostic: dict) -> str:
+    return json.dumps([diagnostic["code"], diagnostic["recordId"], diagnostic["path"]],
+                      ensure_ascii=False, separators=(",", ":"))
+
+
 def _manifest_integrity(manifest: dict) -> bool:
     return isinstance(manifest, dict) and _canonical_digest(manifest) == _TRUSTED_MANIFEST_SHA256
 
@@ -176,7 +181,6 @@ def register_m1(domain_id: str, registrations: list[dict], kind: str,
 
 def validate_model(document: dict, catalogs: dict, source_observations: dict | None = None) -> dict:
     """Validate the M1 wire shape and local references without claiming source truth."""
-    del source_observations  # source observation checks are added by their owning slice.
     result = {"valid": False,
               "stages": {"catalog": "not_run", "structure": "not_run", "references": "not_run", "invariants": "not_run"},
               "diagnostics": [], "consistency": "undetermined"}
@@ -256,6 +260,9 @@ def validate_model(document: dict, catalogs: dict, source_observations: dict | N
         for project_index, project in enumerate(assessment["projects"]):
             check_ref(project, f"/assessments/{index}/projects/{project_index}", record_ref)
         check_evidence(assessment["evidenceIds"], f"/assessments/{index}/evidenceIds", record_ref)
+    for index, coverage in enumerate(document["coverage"]):
+        check_evidence(coverage["evidenceIds"], f"/coverage/{index}/evidenceIds",
+                       f"coverage:{coverage['coverageId']}")
     for index, coverage in enumerate(document["coverage"]):
         if coverage["subject"] is not None:
             check_ref(coverage["subject"], f"/coverage/{index}/subject", f"coverage:{coverage['coverageId']}")
@@ -342,6 +349,114 @@ def validate_model(document: dict, catalogs: dict, source_observations: dict | N
                 "Assessment supersedes lineage must be acyclic.", record_ref=f"assessment:{assessment_id}",
                 field_path=f"/assessments/{list(supersedes_edges).index(assessment_id)}/supersedes"))
             break
+    observation_errors = []
+    observations_by_id = {}
+    if source_observations is not None:
+        if (not isinstance(source_observations, dict) or set(source_observations) != {"items"}
+                or not isinstance(source_observations.get("items"), list)):
+            observation_errors.append(_diagnostic("invariants", "OBSERVATION_INVALID",
+                "Source observations must have exactly one items array.", field_path="/source_observations"))
+        else:
+            for index, item in enumerate(source_observations["items"]):
+                if (not isinstance(item, dict) or set(item) != {"evidenceId", "status", "observedSha256"}
+                        or not isinstance(item.get("evidenceId"), str) or not item["evidenceId"]
+                        or not isinstance(item.get("status"), str)
+                        or item.get("status") not in {"verified", "unchecked", "mismatch"}
+                        or (item.get("observedSha256") is not None and
+                            (not isinstance(item["observedSha256"], str)
+                             or len(item["observedSha256"]) != 64
+                             or any(char not in "0123456789abcdef" for char in item["observedSha256"])) )):
+                    observation_errors.append(_diagnostic("invariants", "OBSERVATION_INVALID",
+                        "Observation item has an invalid shape or digest.", field_path=f"/source_observations/items/{index}"))
+                    continue
+                if item["evidenceId"] in observations_by_id:
+                    observation_errors.append(_diagnostic("invariants", "OBSERVATION_INVALID",
+                        "Observation evidence IDs must be unique.", field_path=f"/source_observations/items/{index}/evidenceId"))
+                observations_by_id[item["evidenceId"]] = item
+                if (item["status"] == "verified") != (item["observedSha256"] is not None):
+                    if item["status"] != "mismatch" or item["observedSha256"] is None:
+                        observation_errors.append(_diagnostic("invariants", "OBSERVATION_INVALID",
+                            "verified and mismatch require an observed digest; unchecked requires null.",
+                            field_path=f"/source_observations/items/{index}"))
+                elif item["status"] == "mismatch" and item["observedSha256"] is None:
+                    observation_errors.append(_diagnostic("invariants", "OBSERVATION_INVALID",
+                        "mismatch requires an observed digest.", field_path=f"/source_observations/items/{index}"))
+    evidence_by_id = {item["evidenceId"]: item for item in document["evidence"]}
+    for evidence_id, observation in observations_by_id.items():
+        evidence = evidence_by_id.get(evidence_id)
+        if evidence is None:
+            observation_errors.append(_diagnostic("invariants", "OBSERVATION_REF_MISSING",
+                "Observation must reference evidence in this bundle.", record_ref=f"evidence:{evidence_id}",
+                field_path="/source_observations/items"))
+        elif observation["status"] == "verified" and observation["observedSha256"] != evidence["sha256"]:
+            observation_errors.append(_diagnostic("invariants", "INPUT_MISMATCH",
+                "Verified source digest does not match the evidence record.", record_ref=f"evidence:{evidence_id}"))
+        elif observation["status"] == "mismatch" and observation["observedSha256"] == evidence["sha256"]:
+            observation_errors.append(_diagnostic("invariants", "OBSERVATION_INVALID",
+                "A mismatch observation must differ from the evidence digest.", record_ref=f"evidence:{evidence_id}"))
+        elif observation["status"] == "mismatch":
+            observation_errors.append(_diagnostic("invariants", "INPUT_MISMATCH",
+                "Observed source digest differs from the evidence record.", record_ref=f"evidence:{evidence_id}"))
+    if observation_errors:
+        invariant_diagnostics.extend(observation_errors)
+    gap_diagnostics = []
+    for evidence_id in evidence_by_id:
+        observation = observations_by_id.get(evidence_id)
+        if observation is None or observation["status"] == "unchecked":
+            gap_diagnostics.append(_diagnostic("invariants", "EVIDENCE_UNCHECKED",
+                "Evidence source was not verified by the caller.", record_ref=f"evidence:{evidence_id}", severity="gap"))
+
+    coverage_by_id = {item["coverageId"]: item for item in document["coverage"]}
+    coverage_edges = {}
+    for index, coverage in enumerate(document["coverage"]):
+        record_ref = f"coverage:{coverage['coverageId']}"
+        path = f"/coverage/{index}"
+        coverage_edges[coverage["coverageId"]] = list(coverage["supersedes"])
+        unchecked_coverage_evidence = [evidence_id for evidence_id in coverage["evidenceIds"]
+                                       if evidence_id not in observations_by_id
+                                       or observations_by_id[evidence_id]["status"] == "unchecked"]
+        if coverage["complete"] and (unchecked_coverage_evidence
+                                      or any(item["severity"] in {"gap", "error"} for item in coverage["diagnostics"])):
+            invariant_diagnostics.append(_diagnostic("invariants", "COVERAGE_COMPLETE_WITH_GAPS",
+                "Complete coverage cannot contain gap or error diagnostics.", record_ref=record_ref,
+                field_path=f"{path}/complete"))
+        for old_id in coverage["supersedes"]:
+            old = coverage_by_id.get(old_id)
+            if old is not None and (old["selector"] != coverage["selector"]
+                                    or (None if old["subject"] is None else _identity_key(old["subject"]))
+                                    != (None if coverage["subject"] is None else _identity_key(coverage["subject"]))):
+                invariant_diagnostics.append(_diagnostic("invariants", "SUPERSEDES_KEY_MISMATCH",
+                    "Coverage may supersede only coverage for the same selector and subject.",
+                    record_ref=record_ref, field_path=f"{path}/supersedes"))
+            if old is not None:
+                available_keys = {_diagnostic_key(item) for item in old["diagnostics"]
+                                  if item["severity"] in {"gap", "error"}}
+                if not set(coverage["resolvedDiagnosticKeys"]).issubset(available_keys):
+                    invariant_diagnostics.append(_diagnostic("invariants", "COVERAGE_DIAGNOSTIC_KEY_MISMATCH",
+                        "Resolved diagnostic keys must identify diagnostics on a superseded coverage record.",
+                        record_ref=record_ref, field_path=f"{path}/resolvedDiagnosticKeys"))
+
+    visiting = set()
+    visited = set()
+
+    def has_coverage_cycle(coverage_id):
+        if coverage_id in visiting:
+            return True
+        if coverage_id in visited:
+            return False
+        visiting.add(coverage_id)
+        for old_id in coverage_edges.get(coverage_id, []):
+            if old_id in coverage_edges and has_coverage_cycle(old_id):
+                return True
+        visiting.remove(coverage_id)
+        visited.add(coverage_id)
+        return False
+
+    for coverage_id in coverage_edges:
+        if has_coverage_cycle(coverage_id):
+            invariant_diagnostics.append(_diagnostic("invariants", "SUPERSEDES_CYCLE",
+                "Coverage supersedes lineage must be acyclic.", record_ref=f"coverage:{coverage_id}"))
+            break
     for index, evidence in enumerate(document["evidence"]):
         if evidence["endByte"] < evidence["startByte"]:
             invariant_diagnostics.append(_diagnostic("invariants", "BYTE_RANGE_INVALID",
@@ -364,10 +479,13 @@ def validate_model(document: dict, catalogs: dict, source_observations: dict | N
                 seen_ids[record_id] = f"{prefix}:{record_id}"
 
     if invariant_diagnostics:
-        result["stages"]["invariants"] = "fail"
-        result["diagnostics"] = invariant_diagnostics
+        result["stages"]["invariants"] = ("fail" if any(item["severity"] == "error" for item in invariant_diagnostics)
+                                            else "partial")
+        result["diagnostics"] = invariant_diagnostics + gap_diagnostics
+        result["valid"] = result["stages"]["invariants"] != "fail"
         return result
     result["stages"]["invariants"] = "partial"
+    result["diagnostics"] = gap_diagnostics
     result["valid"] = True
     result["consistency"] = "undetermined"
     return result

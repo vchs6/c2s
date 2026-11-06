@@ -20,3 +20,7 @@ A new registration receives an explicit UUID local identifier under authority `c
 ## Project-boundary assessment invariants
 
 An assessment declaration must reference a `SourceDeclaration`, and every candidate must reference a `Project`. `resolved` has exactly one candidate, `ambiguous` has at least two, and `unresolved` has none. An assessment may supersede only assessments with the same declaration identity and `ruleId`; the in-bundle supersedes graph must be acyclic. These constraints validate explicit assessments only: package or workspace membership does not infer project ownership.
+
+## Evidence and coverage invariants
+
+`source_observations` is caller-supplied and is never obtained by reading files or contacting a network. A missing observation or `unchecked` status yields a `gap` diagnostic and does not make the contract invalid. `verified` requires an observed SHA-256 equal to the evidence digest; `mismatch` requires an observed, different digest and produces an `INPUT_MISMATCH` contract error. Observation entries must be unique and reference evidence in the bundle. A coverage record marked complete cannot carry gap/error diagnostics or cite unchecked evidence. In-bundle coverage supersedes links must preserve selector and subject identity, resolved diagnostic keys use compact JSON `[code,recordId,path]` values referring to gap/error diagnostics on a superseded record, and lineage must be acyclic.

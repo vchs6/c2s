@@ -118,3 +118,7 @@ Final verification: product tests 45/45; repository maintenance tests 35/35; str
 ## Progress — 2026-11-06, M1 project-boundary assessment slice
 
 - Implemented explicit assessment invariants: declaration and candidate kinds, resolved/ambiguous/unresolved candidate cardinalities, same-declaration-and-rule supersedes, and acyclic in-bundle lineage. Added tests for all three valid states, invalid cardinalities, incompatible rule lineage, cycles, and the valid lineage case. Twenty-two focused semantic-model tests pass. Task 2.2.1 remains open under the change-level acceptance boundary; no independent/private acceptance was performed.
+
+## Progress — 2026-11-06, M1 evidence and coverage slice
+
+- Implemented caller-supplied observation validation without source reads/network access, including unchecked gaps, verified digest matching, mismatch errors, evidence references, and malformed/duplicate observation rejection. Coverage now checks evidence references, complete-vs-gap consistency, same-selector/subject supersedes, resolved diagnostic keys, and acyclic lineage. Twenty-six focused semantic-model tests pass. Task 3.1.1 remains open under the change-level acceptance boundary; external tool-output attachment persistence is not represented by this wire bundle and was not claimed.
