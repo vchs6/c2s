@@ -686,6 +686,49 @@
       ]
     },
     {
+      "predicateId": "build.entry_binds",
+      "category": "Semantic",
+      "primaryLayer": "E1",
+      "description": "An entry-point name is statically or dynamically associated with a source declaration; runtime binding remains a distinct observation.",
+      "relationKind": "association",
+      "claimCardinality": "multi_value",
+      "comparisonPolicy": "never",
+      "claimModes": [
+        "declaration",
+        "specification",
+        "static_may",
+        "static_must",
+        "observation",
+        "interpretation"
+      ],
+      "roles": [
+        {
+          "roleId": "subject",
+          "position": "subject",
+          "valueType": "M1SubjectRef",
+          "allowedKinds": [
+            "EntryPoint"
+          ],
+          "cardinality": "exactly_one"
+        },
+        {
+          "roleId": "value",
+          "position": "value",
+          "valueType": "M1SubjectRef",
+          "allowedKinds": [
+            "SourceDeclaration"
+          ],
+          "cardinality": "exactly_one"
+        }
+      ],
+      "constraints": [
+        "KIND_MATCH",
+        "ROLE_CARDINALITY",
+        "INTERNAL_REF_EXISTS",
+        "LAYER_CLASSIFICATION"
+      ]
+    },
+    {
       "predicateId": "build.observed_artifact",
       "category": "Semantic",
       "primaryLayer": "E1",
@@ -717,6 +760,178 @@
           "valueType": "M1SubjectRef",
           "allowedKinds": [
             "ArtifactObservation"
+          ],
+          "cardinality": "exactly_one"
+        }
+      ],
+      "constraints": [
+        "KIND_MATCH",
+        "ROLE_CARDINALITY",
+        "INTERNAL_REF_EXISTS",
+        "LAYER_CLASSIFICATION"
+      ]
+    },
+    {
+      "predicateId": "build.precedes",
+      "category": "Semantic",
+      "primaryLayer": "E1",
+      "description": "A build task is ordered before another build task in an orchestration context; this edge is not a call or link.",
+      "relationKind": "association",
+      "claimCardinality": "multi_value",
+      "comparisonPolicy": "never",
+      "claimModes": [
+        "declaration",
+        "specification",
+        "static_may",
+        "static_must",
+        "observation",
+        "interpretation"
+      ],
+      "roles": [
+        {
+          "roleId": "subject",
+          "position": "subject",
+          "valueType": "M1SubjectRef",
+          "allowedKinds": [
+            "BuildTask"
+          ],
+          "cardinality": "exactly_one"
+        },
+        {
+          "roleId": "value",
+          "position": "value",
+          "valueType": "M1SubjectRef",
+          "allowedKinds": [
+            "BuildTask"
+          ],
+          "cardinality": "exactly_one"
+        }
+      ],
+      "constraints": [
+        "KIND_MATCH",
+        "ROLE_CARDINALITY",
+        "INTERNAL_REF_EXISTS",
+        "LAYER_CLASSIFICATION"
+      ]
+    },
+    {
+      "predicateId": "build.provides_usage",
+      "category": "Semantic",
+      "primaryLayer": "E1",
+      "description": "A build target provides an explicitly identified usage requirement such as include paths or language capabilities.",
+      "relationKind": "association",
+      "claimCardinality": "multi_value",
+      "comparisonPolicy": "never",
+      "claimModes": [
+        "declaration",
+        "specification",
+        "static_may",
+        "static_must",
+        "observation",
+        "interpretation"
+      ],
+      "roles": [
+        {
+          "roleId": "subject",
+          "position": "subject",
+          "valueType": "M1SubjectRef",
+          "allowedKinds": [
+            "BuildTarget"
+          ],
+          "cardinality": "exactly_one"
+        },
+        {
+          "roleId": "value",
+          "position": "value",
+          "valueType": "M1SubjectRef",
+          "allowedKinds": [
+            "UsageRequirement"
+          ],
+          "cardinality": "exactly_one"
+        }
+      ],
+      "constraints": [
+        "KIND_MATCH",
+        "ROLE_CARDINALITY",
+        "INTERNAL_REF_EXISTS",
+        "LAYER_CLASSIFICATION"
+      ]
+    },
+    {
+      "predicateId": "build.requires",
+      "category": "Semantic",
+      "primaryLayer": "E1",
+      "description": "A consumer declares a build or runtime dependency requirement, retained separately from its provider resolution.",
+      "relationKind": "association",
+      "claimCardinality": "multi_value",
+      "comparisonPolicy": "never",
+      "claimModes": [
+        "declaration",
+        "specification",
+        "static_may",
+        "static_must",
+        "observation",
+        "interpretation"
+      ],
+      "roles": [
+        {
+          "roleId": "subject",
+          "position": "subject",
+          "valueType": "M1SubjectRef",
+          "allowedKinds": [
+            "SourceDeclaration"
+          ],
+          "cardinality": "exactly_one"
+        },
+        {
+          "roleId": "value",
+          "position": "value",
+          "valueType": "M1SubjectRef",
+          "allowedKinds": [
+            "DependencyRequirement"
+          ],
+          "cardinality": "exactly_one"
+        }
+      ],
+      "constraints": [
+        "KIND_MATCH",
+        "ROLE_CARDINALITY",
+        "INTERNAL_REF_EXISTS",
+        "LAYER_CLASSIFICATION"
+      ]
+    },
+    {
+      "predicateId": "build.resolves_to",
+      "category": "Semantic",
+      "primaryLayer": "E1",
+      "description": "A dependency requirement is associated with a candidate provider; status and configuration remain explicit in its resolution record.",
+      "relationKind": "association",
+      "claimCardinality": "multi_value",
+      "comparisonPolicy": "never",
+      "claimModes": [
+        "declaration",
+        "specification",
+        "static_may",
+        "static_must",
+        "observation",
+        "interpretation"
+      ],
+      "roles": [
+        {
+          "roleId": "subject",
+          "position": "subject",
+          "valueType": "M1SubjectRef",
+          "allowedKinds": [
+            "DependencyRequirement"
+          ],
+          "cardinality": "exactly_one"
+        },
+        {
+          "roleId": "value",
+          "position": "value",
+          "valueType": "M1SubjectRef",
+          "allowedKinds": [
+            "DependencyProvider"
           ],
           "cardinality": "exactly_one"
         }
@@ -923,6 +1138,92 @@
           "position": "value",
           "valueType": "string",
           "allowedKinds": [],
+          "cardinality": "exactly_one"
+        }
+      ],
+      "constraints": [
+        "KIND_MATCH",
+        "ROLE_CARDINALITY",
+        "INTERNAL_REF_EXISTS",
+        "LAYER_CLASSIFICATION"
+      ]
+    },
+    {
+      "predicateId": "engineering.defines_project",
+      "category": "Semantic",
+      "primaryLayer": "E0",
+      "description": "An explicit boundary declaration or assessment links source declarations to a Project without inferring ownership from paths.",
+      "relationKind": "association",
+      "claimCardinality": "multi_value",
+      "comparisonPolicy": "never",
+      "claimModes": [
+        "declaration",
+        "specification",
+        "static_may",
+        "static_must",
+        "observation",
+        "interpretation"
+      ],
+      "roles": [
+        {
+          "roleId": "subject",
+          "position": "subject",
+          "valueType": "M1SubjectRef",
+          "allowedKinds": [
+            "SourceDeclaration"
+          ],
+          "cardinality": "exactly_one"
+        },
+        {
+          "roleId": "value",
+          "position": "value",
+          "valueType": "M1SubjectRef",
+          "allowedKinds": [
+            "Project"
+          ],
+          "cardinality": "exactly_one"
+        }
+      ],
+      "constraints": [
+        "KIND_MATCH",
+        "ROLE_CARDINALITY",
+        "INTERNAL_REF_EXISTS",
+        "LAYER_CLASSIFICATION"
+      ]
+    },
+    {
+      "predicateId": "engineering.group_member",
+      "category": "Semantic",
+      "primaryLayer": "E0",
+      "description": "A coordination group explicitly contains a Project; this does not imply native workspace membership.",
+      "relationKind": "composition",
+      "claimCardinality": "multi_value",
+      "comparisonPolicy": "never",
+      "claimModes": [
+        "declaration",
+        "specification",
+        "static_may",
+        "static_must",
+        "observation",
+        "interpretation"
+      ],
+      "roles": [
+        {
+          "roleId": "subject",
+          "position": "subject",
+          "valueType": "M1SubjectRef",
+          "allowedKinds": [
+            "CoordinationGroup"
+          ],
+          "cardinality": "exactly_one"
+        },
+        {
+          "roleId": "value",
+          "position": "value",
+          "valueType": "M1SubjectRef",
+          "allowedKinds": [
+            "Project"
+          ],
           "cardinality": "exactly_one"
         }
       ],

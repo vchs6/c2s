@@ -788,6 +788,8 @@ class M1IdentityTests(unittest.TestCase):
         self.assertIn("BuildRecipe", by_id["build.declares_recipe"]["roles"][1]["allowedKinds"])
         self.assertIn("BuildTarget", by_id["build.alias_of"]["roles"][1]["allowedKinds"])
         self.assertIn("OutputSpecification", by_id["build.observed_artifact"]["roles"][0]["allowedKinds"])
+        self.assertTrue({"engineering.defines_project", "engineering.group_member", "build.provides_usage",
+                         "build.entry_binds", "build.precedes", "build.requires", "build.resolves_to"} <= predicates)
 
     def test_build_target_cannot_have_two_overlapping_project_owners(self):
         bundle = empty_bundle() | {"profile": "semantic-fact-model-1"}

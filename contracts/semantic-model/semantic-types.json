@@ -86,7 +86,13 @@
       "AlgorithmDescription",
       "PseudocodeView",
       "Signature",
-      "AccessConstraint"
+      "AccessConstraint",
+      "CoordinationGroup",
+      "UsageRequirement",
+      "EntryPoint",
+      "BuildTask",
+      "DependencyRequirement",
+      "DependencyProvider"
     ]
   }
 }

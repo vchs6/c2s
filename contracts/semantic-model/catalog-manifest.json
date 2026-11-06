@@ -5,6 +5,6 @@
   "digests": {
     "types.json": "33b487ead83699b4b6289624ad04fe6b879d5380793f2986df6ed29857246d71",
     "predicates.json": "0514ffc02d599ef65b490e9bea7328fd74003e52f485fa285f7bbd0857705340",
-    "catalog.schema.json": "2e021f6d839f0ce293865a988dcfe4f6ba4146f11c5090ae2176c2a576cf59c5"
+    "catalog.schema.json": "b9cbad2f4eb20fb3b34846c48031309690a2d4c3688733c84482bd81c98a5ecf"
   }
 }

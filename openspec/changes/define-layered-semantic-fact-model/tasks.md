@@ -77,6 +77,7 @@
   - 进展（2026-11-06）：再补入独立的`program.contains`、`behavior.has_body`、`region.member`及`BehaviorBody`/`BehaviorRegion`/`BehaviorStep`身份类型；M1明确拒绝扩展类型。其余工程、签名、契约、调用/捕获/读写、数据流及来源关系目录与高阶角色语法仍待实现，故本任务不勾选。
   - 进展（2026-11-06）：新增E3的precondition/outcome/effect/ordering四类独立谓词；当前值仍为字符串主张，结构化主体/偏序参与者与实际源提取未实现。
   - 进展（2026-11-06）：E2新增signature/access关系；E4新增implementation/call/bind/capture/read/write/algorithm-description/pseudocode关系及无层Provenance generated_from。捕获模式、调用候选集合等高阶参数目前超出二元值结构，且这些关系尚无语言提取器。
+  - 进展（2026-11-06）：补入E0 project-boundary/group-member与E1 usage/entry/order/dependency/provider谓词。目录并未把新增候选等同于已有跨事实校验，且高阶参数/来源获取尚缺，1.2继续未完成。
 
 ## 2. 事实语法与工程关系
 

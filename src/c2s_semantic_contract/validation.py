@@ -22,12 +22,14 @@ _CATALOG_MANIFEST_PATH = _ROOT / "contracts" / "semantic-model" / "catalog-manif
 _SEMANTIC_TYPES_PATH = _ROOT / "contracts" / "semantic-model" / "semantic-types.json"
 _SEMANTIC_PREDICATES_PATH = _ROOT / "contracts" / "semantic-model" / "semantic-predicates.json"
 _SEMANTIC_CATALOG_MANIFEST_PATH = _ROOT / "contracts" / "semantic-model" / "semantic-catalog-manifest.json"
-_TRUSTED_MANIFEST_SHA256 = "e00b4c9fcd196a4e701d41fa6b054b407c439e07b19a097ce74112d1b86378ce"
-_TRUSTED_SEMANTIC_MANIFEST_SHA256 = "952f35f58c1a7b50e56f9efddc5e3c522ad4fac4b03fd57af1bbeb6f05188d7d"
+_TRUSTED_MANIFEST_SHA256 = "2b76c3df82e5459529da0b00a67dd2d123a7ba6320f540841b2e00d60bc3a6fe"
+_TRUSTED_SEMANTIC_MANIFEST_SHA256 = "1cd78e53b78836f3fe14ccf0215b0deac118db3fae451b8adefe92586b35ab81"
 _M1_SUPPORTED_KINDS = {"Project", "PackageSpecification", "NativeWorkspace", "SourceDeclaration"}
 _SUPPORTED_KINDS = _M1_SUPPORTED_KINDS | {"BehaviorBody", "BehaviorRegion", "BehaviorStep",
     "BuildTarget", "BuildRecipe", "BuildAlias", "OutputSpecification", "ArtifactObservation",
-    "Binding", "AlgorithmDescription", "PseudocodeView", "Signature", "AccessConstraint"}
+    "Binding", "AlgorithmDescription", "PseudocodeView", "Signature", "AccessConstraint",
+    "CoordinationGroup", "UsageRequirement", "EntryPoint", "BuildTask", "DependencyRequirement",
+    "DependencyProvider"}
 _SUPPORTED_CONSTRAINTS = {
     "KIND_MATCH", "ROLE_CARDINALITY", "INTERNAL_REF_EXISTS", "DOMAIN_UNIQUE",
     "CONTEXT_KEYS_SINGLE_VALUED", "PROJECT_MAPPING_CARDINALITY", "LAYER_CLASSIFICATION",
