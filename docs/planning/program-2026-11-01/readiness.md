@@ -1,5 +1,9 @@
 # 开发准备与阻塞状态
 
+## 2026-11-05 用户放宽开发门禁
+
+依据ADR-0011，双向盲编写、正式AI角色入口和私有验收隔离不再阻塞产品开发。继续按原有OpenSpec tasks推进实现、开发侧测试、公开CI和可完成的审查。当前工作区角色权限仍未隔离，故工作成果不得标作盲编写或私有验收通过；不可用suite/交接明确记为未运行，相关发布质量声明须说明。此决定改变启动门槛，不改变本文件以下历史证据和技术状态。
+
 当前权威：ADR-0009。development_authorized=true；readiness_complete=false；isolation_ready=false；implementation_started=false。授权已具备，不能重复要求同一批准；真实门禁仍须满足。
 
 ## 当前证据

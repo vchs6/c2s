@@ -1,6 +1,6 @@
 # c2s — Code to Semantics
 
-按DDD和规格驱动开发的软件项目语义事实提取Skill项目。已取得准备后连续开发的授权（ADR-0009），正在完成准备，尚未实现提取Skill；真实隔离门禁未通过，状态见[readiness](docs/planning/program-2026-11-01/readiness.md)。
+按DDD和规格驱动开发的软件项目语义事实提取Skill项目。已取得连续开发授权（ADR-0009）；依据ADR-0011，未验证的双向盲编写和私有验收隔离不再阻塞开发。隔离现状与报告边界见[readiness](docs/planning/program-2026-11-01/readiness.md)。
 
 已确认五层方向见[ADR-0001](docs/decisions/0001-five-semantic-layers.md)。已确认主规格见[事实模型](openspec/specs/semantic-fact-model/spec.md)和[查询响应](openspec/specs/semantic-fact-query/spec.md)，批准范围见[ADR-0002](docs/decisions/0002-confirmed-specification-baseline.md)。完整候选定义、证据和旧稿见[会话资料索引](docs/session/README.md)，不能将其全部视为已生效规格。
 

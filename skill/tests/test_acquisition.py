@@ -1,0 +1,124 @@
+import unittest
+import tempfile
+from pathlib import Path
+
+from c2s_skill.acquisition import parse_source, scan_project
+
+
+class AcquisitionTests(unittest.TestCase):
+    def test_python_parser_emits_nested_declarations_and_byte_spans(self):
+        source = "class Café:\n    value: int\n    def read(self) -> int:\n        return 1\n"
+        result = parse_source("src.py", source.encode(), "python")
+        self.assertTrue(result.parse_complete)
+        self.assertTrue({"class", "field", "function"} <= {fact.kind for fact in result.facts})
+        method = next(f for f in result.facts if f.kind == "function" and f.name == "read")
+        self.assertEqual(source.encode()[method.start_byte:method.end_byte], b"def read(self) -> int:\n        return 1")
+
+    def test_python_parser_emits_control_flow_and_call_steps(self):
+        source = b"def run(x):\n    if x:\n        return helper(x + 1)\n    return None\n"
+        result = parse_source("src.py", source, "python")
+        steps = [fact for fact in result.facts if fact.kind == "algorithm_step"]
+        self.assertEqual({fact.name for fact in steps}, {"If", "Call", "BinOp", "Return"})
+
+    def test_python_and_rust_emit_local_binding_and_assignment_steps(self):
+        python = parse_source("src.py", b"def run(x):\n    value = x + 1\n    value += 2\n    return value\n", "python")
+        python_steps = [fact for fact in python.facts if fact.kind == "algorithm_step"]
+        self.assertEqual({fact.name for fact in python_steps}, {"Assign", "AugAssign", "BinOp", "Return"})
+
+        rust = parse_source("src.rs", b"fn run(x: i32) -> i32 { let value = x + 1; value }", "rust")
+        rust_steps = [fact for fact in rust.facts if fact.kind == "algorithm_step"]
+        self.assertIn("let_declaration", {fact.name for fact in rust_steps})
+        self.assertIn("binary_expression", {fact.name for fact in rust_steps})
+
+    def test_rust_parser_emits_struct_fields_and_methods(self):
+        source = b"pub struct Item { pub value: u32 } impl Item { /// Return the stored value.\n pub fn read(&self) -> u32 { if self.value > 0 { helper() } else { 0 } } }"
+        result = parse_source("src/lib.rs", source, "rust")
+        self.assertTrue(result.parse_complete)
+        self.assertEqual({fact.kind for fact in result.facts}, {"struct", "field", "impl", "function", "behavior_contract", "algorithm_step"})
+        method = next(f for f in result.facts if f.kind == "function" and f.name == "read")
+        self.assertEqual(method.owner, "Item")
+        self.assertEqual(method.layer, "E2")
+        self.assertEqual(next(f for f in result.facts if f.name == "value").owner, "Item")
+        contract = next(f for f in result.facts if f.kind == "behavior_contract")
+        self.assertEqual(contract.name, "read")
+        self.assertEqual(contract.claim_mode, "documentation")
+        self.assertTrue(any(f.kind == "algorithm_step" and f.name == "if_expression" for f in result.facts))
+        self.assertTrue(any(f.kind == "algorithm_step" and f.name == "call_expression" for f in result.facts))
+        method_subject = next(f.subject_id for f in result.facts if f.kind == "function" and f.name == "read")
+        self.assertEqual({f.subject_id for f in result.facts
+                          if f.kind in {"function", "behavior_contract", "algorithm_step"}
+                          and (f.name == "read" or f.owner == "Item.read")}, {method_subject})
+
+    def test_python_function_contract_and_algorithm_facts_share_subject_identity(self):
+        source = b'class Component:\n    def run(self):\n        """Return a value."""\n        return helper()\n'
+        result = parse_source("api.py", source, "python")
+        declaration = next(f for f in result.facts if f.kind == "function" and f.name == "run")
+        related = [f for f in result.facts if f.kind in {"behavior_contract", "algorithm_step"}]
+        self.assertTrue(related)
+        self.assertTrue(all(f.subject_id == declaration.subject_id for f in related))
+
+    def test_python_algorithm_facts_exclude_decorator_calls(self):
+        source = b'@command("move")\n@option("--speed", default=10)\ndef move():\n    return helper()\n'
+        result = parse_source("api.py", source, "python")
+        calls = [fact.text for fact in result.facts if fact.kind == "algorithm_step" and fact.name == "Call"]
+        self.assertEqual(calls, ["helper()"])
+
+    def test_real_click_project_has_parse_coverage_for_every_python_source(self):
+        root = Path(__file__).resolve().parents[2] / ".local/real-projects/click"
+        if not (root / ".git").exists():
+            self.skipTest("pinned click project is unavailable")
+        report = scan_project(root)
+        python_files = [path for path in root.rglob("*.py") if ".git" not in path.parts]
+        self.assertEqual(report.source_files, len(python_files))
+        self.assertEqual(report.parsed_files, len(python_files))
+        self.assertGreater(report.fact_count, 0)
+
+    def test_real_regex_project_has_parse_coverage_for_every_rust_source(self):
+        root = Path(__file__).resolve().parents[2] / ".local/real-projects/regex"
+        if not (root / ".git").exists():
+            self.skipTest("pinned regex project is unavailable")
+        report = scan_project(root)
+        rust_files = [path for path in root.rglob("*.rs") if ".git" not in path.parts]
+        self.assertEqual(report.source_files, len(rust_files))
+        self.assertEqual(report.parsed_files, len(rust_files))
+        self.assertGreater(report.fact_count, 0)
+
+    def test_scan_inventory_reports_unparsed_resources_and_tracks_them_in_digest(self):
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            (root / "module.py").write_text("value = 1\n", encoding="utf-8")
+            (root / "notes.md").write_text("first", encoding="utf-8")
+            outside = root.parent / f"{root.name}-outside.txt"
+            outside.write_text("outside", encoding="utf-8")
+            (root / "link.txt").symlink_to(outside)
+            first = scan_project(root)
+            inventory = {entry.path: entry for entry in first.inventory}
+            self.assertEqual(inventory["notes.md"].state, "readable")
+            self.assertEqual(inventory["link.txt"].state, "unfollowed")
+            self.assertNotIn("outside.txt", inventory)
+            (root / "notes.md").write_text("changed", encoding="utf-8")
+            second = scan_project(root)
+            self.assertNotEqual(first.source_digest, second.source_digest)
+            outside.unlink()
+
+    def test_fact_ids_are_namespaced_by_project_root(self):
+        with tempfile.TemporaryDirectory() as temporary:
+            first = Path(temporary) / "first"
+            second = Path(temporary) / "second"
+            first.mkdir()
+            second.mkdir()
+            source = "def answer(): return 42\n"
+            (first / "main.py").write_text(source, encoding="utf-8")
+            (second / "main.py").write_text(source, encoding="utf-8")
+            first_ids = {fact.id for parsed in scan_project(first).files for fact in parsed.facts}
+            second_ids = {fact.id for parsed in scan_project(second).files for fact in parsed.facts}
+            self.assertTrue(first_ids)
+            self.assertTrue(first_ids.isdisjoint(second_ids))
+
+
+if __name__ == "__main__":
+    unittest.main()
+
+
+if __name__ == "__main__":
+    unittest.main()

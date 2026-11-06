@@ -1,16 +1,32 @@
 # c2s语义事实查询Skill
 
-状态：开发准备说明，产品尚未实现，当前没有可用的SKILL.md或查询入口。本文件是最终Skill README的维护位置；依赖是否进入发行包以实际实现及验证结果为准，不把试验工具全部当必需运行依赖。
+状态：原型实现中。当前可对Python与Rust源文件进行全目录语法遍历，提取类/结构体、字段、函数、导入、常量、源码文档行为说明及常见控制流/调用/运算步骤，并按selector或有限自然语言请求查询，返回JSON或Markdown。每条记录带项目根命名空间内的稳定fact ID、主体ID、源路径和UTF-8字节范围；同一函数的声明、文档契约和算法步骤共享`subject_id`。`evidence_included`标明本次请求是否附带源码片段。`claim_mode`区分语法、声明、Cargo元数据和文档陈述，不代表已验证运行时行为。fact/subject ID绑定分析根路径，移动检出目录后会改变。
 
-## 当前已安装与用途
+目前还不具备完整E0–E4领域模型、类型/调用绑定、行为契约验证、算法语义解释或完整工程语义。宏展开、条件编译、多态/动态调用、反射、运行时行为和工程配置语义没有完整覆盖；所以当前结果的`complete=true`仅表示所选事实类别的获取没有已知缺口，并不表示项目的所有语义事实均已取得。结果会附带全目录清单和未处理路径；源文件解析目前只覆盖`.py`与`.rs`。`classes`、`functions`和`all-declarations`只返回顶层条目，不附带类型体/函数体；须请求`definitions`、指定`function:名称`或`all-supported-facts`才会附带相应源码体。SQLite结果缓存绑定项目树摘要及分析配置摘要（分析器、Python/平台、Tree-sitter和Cargo版本）；缓存写入失败时事实仍返回，并通过独立持久化状态报告，逐项构造事务恢复和supersedes lineage尚未实现。机器输出契约位于`contracts/semantic-fact-query.schema.json`。请把本原型用于开发与明确范围查询，不作为完整语义验收结论。
+
+## 当前实现与测试
+
+实现位于`src/c2s_skill/`，测试位于`tests/`。在仓库根目录运行：
+
+```bash
+PYTHONPATH=skill/src .local/analysis-venv/bin/python -m c2s_skill query \
+  --root .local/real-projects/click --select all-supported-facts --format json
+PYTHONPATH=skill/src .local/analysis-venv/bin/python -m unittest discover -s skill/tests -v
+```
+
+支持的查询：`project`、`workspace-members`、`classes`、`members:类型名`、`functions`、`function:名称`、`definitions`、`imports`、`constants`、`behavior-contracts`、`algorithm-structure`、`all-declarations`、`all-supported-facts`。自然语言暂支持“有哪些类”“Command 的成员有哪些”“函数 run”等明确形式；不能识别的请求会作为gap返回。`function:名称`返回所选函数声明、源码文档及同一主体的算法步骤；嵌套函数是独立主体，需单独查询，避免把内层函数的执行步骤误归到外层函数。`workspace-members`通过Cargo metadata解析，不需要依赖下载；Cargo不可用或元数据失败会明确报告gap。未知selector以退出码2返回；结构错误或读取失败使用退出码64。JSON和Markdown包含相同事实ID，并标明源码片段是否因本次请求省略。可用`--store /path/outside/project/facts.sqlite`启用SQLite缓存，缓存键绑定项目树摘要、分析配置摘要和请求。输出及缓存目录在读取或创建前必须位于分析项目之外。遍历包含测试、示例、隐藏及忽略文件中的`.py`/`.rs`源；`.git`对象库和非源文件不作为程序语法解析，并在结果覆盖中列为未处理路径。
+
+已对固定真实项目做全源遍历：regex commit `94ac45b2a6e7b1c30927feb5b66c5ded5b7ad447`：227/227 Rust文件解析，49,525条当前支持事实（含7条Cargo工作区成员）；click commit `2247b35ea1c47c727d7a06e51fa280e12a863ff6`：91/91 Python文件解析，21,324条当前支持事实。函数声明归E2，函数体算法步骤归E4，当前覆盖部分赋值/局部绑定、控制结构、运算、调用及返回/异常语法；Python装饰器不会计入函数体算法步骤。两项目全量查询事实ID均无重复，并列出224/155个非源或未处理路径。全量selector返回所有当前支持事实。这些仍不是完整语义真值。逐文件、逐事实ID清单见`../docs/development/reviews/semantic-facts/2026-11-06-exhaustive-inventory.json`；验证记录见`../docs/development/reviews/semantic-facts/2026-11-06-verification.md`；两个函数的具体示例见`../docs/development/reviews/semantic-facts/2026-11-06-two-function-facts.md`。使用`PYTHONPATH=skill/src .local/analysis-venv/bin/python scripts/generate_semantic_fact_inventory.py`可重建清单和函数示例。
+
+## 开发依赖与来源
 
 | 工具/能力 | 实际版本 | 用途及当前边界 |
 | --- | --- | --- |
-| Python | 3.12.14 | 本轮Linux宿主、AST与自维护脚本；未测试其他Python版本 |
-| tree-sitter / Python grammar / Rust grammar | 0.26.0 / 0.25.0 / 0.24.2 | 结构解析候选，不证明类型绑定或完整行为语义 |
-| jsonschema | 4.26.0 | 已安装的公共契约验证依赖候选；产品契约尚未实施 |
+| Python | 3.12.14 | Linux实现与AST；其他Python版本未测试 |
+| tree-sitter / Python grammar / Rust grammar | 0.26.0 / 0.25.0 / 0.24.2 | Rust结构解析依赖；Python使用标准库AST |
+| jsonschema | 4.26.0 | 校验JSON Schema 2020-12查询输出契约 |
 | Code Review Graph | 2.3.9 | 已实际建图/查询，默认覆盖不能当全目录完整；外置图缓存，无模型嵌入 |
-| Rust工具链 | rustc 1.99.1，Cargo实际版本见环境档案 | 已安装，实际运行no-deps/offline metadata；不是依赖全解析或构建验证 |
+| Rust工具链 | rustc 1.99.1，Cargo 1.99.1 | 已安装至`.local`；Cargo workspace metadata可离线取得，Rust依赖测试仍未通过下载阶段 |
 | GitHub CLI | 2.103.3 | 备用账户配置工具，官方归档摘要核验；仅CI开发准备，需独立GitHub授权 |
 | OpenSpec / Codex / Superpowers | 1.16.0 / 0.166.0 / 7.0.1 | 开发流程工具，不当产品运行依赖；Superpowers在当前环境可读 |
 
@@ -18,16 +34,16 @@ Python包来自包索引；Rust安装来源为官方https://rust-lang.org/tools/
 
 CRG包自带build-graph/explore-codebase等Skill文件可读取，但本轮没有执行自动install去覆盖客户端MCP/AGENTS/hooks，也未把这些文件注册为新的个人Skill。Serena、GitNexus、CodeGraph仍是调查候选，未安装，不声称已支持。
 
-## 复现本轮开发环境
+## 重建当前开发环境
 
 ```bash
 uv venv .local/analysis-venv
 uv pip install --python .local/analysis-venv/bin/python tree-sitter==0.26.0 tree-sitter-python==0.25.0 tree-sitter-rust==0.24.2 jsonschema==4.26.0 code-review-graph==2.3.9
 ```
 
-这不是最终产品安装命令。Windows解释器路径及Rust前置工具按官方平台方式配置；当前只在Linux x86_64实际验证，不外推Windows/macOS或项目交叉target。
+依赖安装在被忽略的`.local/analysis-venv`，不随Skill发行。Python查询运行需Python 3.12+及`tree-sitter`、`tree-sitter-rust`固定版本。Windows/macOS及其他Python/Rust版本尚未验证。
 
-自检可读取包版本、CRG `--help`及Rust `--version`。本轮真实输入为固定regex/click提交，工具试验记录在`../docs/development/reviews/issues/10/acquisition-survey-2026-11-02/experiment-results.json`。没有产品查询示例或验收命令可供运行。
+运行上面的真实项目测试命令可验证安装和遍历。
 
 本轮Rust安装在项目本地，Linux自检必须显式指定两处home（不能直接调用默认home的rustup代理）：
 
@@ -42,9 +58,9 @@ CRG建图使用`--data-dir`外置图数据库及`--skip-postprocess`，未启用
 
 安装及克隆需要联网；本轮解析/图查询没有调用LLM，不据此宣称未来端到端零Token。最终模型参与的凭据只通过环境/宿主安全配置提供，不写入Skill、日志或仓库。必要依赖不可用或工具无法覆盖时必须报告原因，不伪造结果。
 
-## 当前限制
+## 尚未完成的能力与验证限制
 
-真实五角色权限隔离未就绪，隐藏用例和产品流水线尚未运行。用户已授权准备后连续开发，环境阻塞消除后可继续，无需重新批准同一范围；当前不声明产品版本发布、不自动归档。
+真实五角色权限隔离未就绪，私有独立验收未运行。依据ADR-0011，这不阻止开发，但本原型不能宣称通过盲编写或私有验收。E3行为契约验证、E4算法语义、Python workspace/打包边界、类型/调用解析、逐项懒构造和崩溃后事务恢复仍未完成；产品版本未发布。Click上游测试套件已运行。Rust workspace元数据查询及no-deps离线Cargo metadata已实际运行；`cargo test --workspace --all-targets`未开始编译，因为当前HTTP代理`proxy:8080`不可连接，离线缓存缺少`aho-corasick`。
 
 CI账户配置与公开容器探针的命令、最小权限、安装来源及安全输入方法见`../docs/workflow/ci-setup.md`；gh不是产品运行依赖。Docker仅供GitHub托管Ubuntu探针使用，本地未安装或验证。
 
@@ -54,4 +70,4 @@ CI账户配置与公开容器探针的命令、最小权限、安装来源及安
 
 开发健康检查另有一次公开输入的gpt-5-mini Responses请求（最大256输出Token、store=false、不重试）；它不是产品语义后端选择。当前实际返回credit_balance_exhausted，推理未通过，usage未知。开发按任务选模型、按需选专用Skill及实际使用回报见../docs/workflow/agent-governance.md和本轮skill-usage.md。
 
-开发环境采用ADR-0010双向独立编写与确定性CI，见`../docs/workflow/blind-development.md`。GitHub托管Linux probe的Docker仅为可信CI准备依赖，不是最终Skill或所有开发宿主必装依赖；普通测试执行不消耗模型Token。正式AI编写工具入口尚未部署验证。
+工作授权与访问现状见`../docs/decisions/0011-development-without-isolation-gate.md`及`../docs/workflow/blind-development.md`。公开维护测试不消耗模型Token；实际语义理解/模型调用流程尚未实现。
