@@ -66,7 +66,7 @@ CRG建图使用`--data-dir`外置图数据库及`--skip-postprocess`，未启用
 
 ## 尚未完成的能力与验证限制
 
-真实五角色权限隔离未就绪，私有独立验收未运行。依据ADR-0011，这不阻止开发，但本原型不能宣称通过盲编写或私有验收。E3行为契约验证、E4算法语义、Python workspace/打包边界、类型/调用解析、逐项懒构造和崩溃后事务恢复仍未完成；产品版本未发布。Click上游测试套件已运行。Rust workspace元数据查询及no-deps离线Cargo metadata已实际运行；`cargo test --workspace --all-targets`未开始编译，因为当前HTTP代理`proxy:8080`不可连接，离线缓存缺少`aho-corasick`。
+真实五角色权限隔离未就绪，私有独立验收未运行。依据ADR-0011，这不阻止开发，但本原型不能宣称通过盲编写或私有验收。E3行为契约验证、E4算法语义、Python workspace/打包边界、类型/调用解析、逐项懒构造和崩溃后事务恢复仍未完成；产品版本未发布。Click上游测试套件已运行。Rust workspace元数据及7成员M1投影已在真实regex项目验证；稳定工具链下`cargo test --workspace --offline`通过1,405项、忽略6项。`--all-targets`因regex-syntax基准使用nightly-only `#![feature(test)]`而失败，未把基准算作通过。
 
 CI账户配置与公开容器探针的命令、最小权限、安装来源及安全输入方法见`../docs/workflow/ci-setup.md`；gh不是产品运行依赖。Docker仅供GitHub托管Ubuntu探针使用，本地未安装或验证。
 
