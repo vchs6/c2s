@@ -197,7 +197,11 @@ def project_algorithm(document: dict, algorithm_ref: dict) -> dict:
         attributes = step.get("attributes", {})
         operation = attributes.get("operation") if isinstance(attributes, dict) else None
         suffix = f" — {operation}" if operation else ""
+        if step.get("kind") == "opaque" and step.get("impact"):
+            suffix += f" — {step['impact']}"
         line = "  " * depth(step.get("region_id")) + f"- [{step['kind']}] {step['step_id']} ({location}){suffix}"
+        if step.get("kind") == "opaque" and step.get("unknowns"):
+            line += f" [unknown: {', '.join(step['unknowns'])}]"
         lines.append(line)
         mappings.append({"stepId": step["step_id"], "startLine": len(lines), "endLine": len(lines)})
     for label, edge_kind in (("Control", "control_edges"), ("Data", "data_edges")):

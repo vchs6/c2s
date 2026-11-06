@@ -1,0 +1,44 @@
+{
+  "R5": {
+    "reviewed": true,
+    "project": ".local/real-projects/regex",
+    "commit": "94ac45b2a6e7b1c30927feb5b66c5ded5b7ad447",
+    "path": "regex-syntax/src/ast/visitor.rs",
+    "items": [
+      {"itemId":"clear-stacks","description":"Clear both traversal stacks","startLine":210,"endLine":212,"needles":["self.stack.clear()","self.stack_class.clear()"],"stepIds":["s1","s2"],"effectIndices":[],"gapReason":null},
+      {"itemId":"start-callback","description":"Invoke visitor start before traversal","startLine":213,"endLine":213,"needles":["visitor.start()"],"stepIds":["s3"],"effectIndices":[],"gapReason":null},
+      {"itemId":"pre-and-induct-errors","description":"Propagate pre-visit and induct failures","startLine":215,"endLine":220,"needles":["visitor.visit_pre(ast)?","self.induct(ast, &mut visitor)?","continue;"],"stepIds":["s5","s6","s10"],"effectIndices":[],"gapReason":null},
+      {"itemId":"base-post-error","description":"Propagate post-visit failure on a base node","startLine":222,"endLine":224,"needles":["base case","visitor.visit_post(ast)?"],"stepIds":["s13"],"effectIndices":[],"gapReason":null},
+      {"itemId":"empty-stack-finish","description":"Finish callback is returned when the stack empties","startLine":229,"endLine":231,"needles":["None => return visitor.finish()"],"stepIds":["s17"],"effectIndices":[],"gapReason":null},
+      {"itemId":"frame-callbacks-and-child","description":"Dispatch frame-specific callbacks then visit the next child","startLine":235,"endLine":247,"needles":["self.pop(frame)","visitor.visit_alternation_in()?","visitor.visit_concat_in()?","ast = x.child()","break;"],"stepIds":["s20","s21","s22","s23","s24","s26"],"effectIndices":[],"gapReason":null},
+      {"itemId":"parent-post-error","description":"Propagate parent post-visit failure after all children","startLine":249,"endLine":251,"needles":["visitor.visit_post(post_ast)?"],"stepIds":["s29"],"effectIndices":[],"gapReason":null}
+    ]
+  },
+  "C5": {
+    "reviewed": true,
+    "project": ".local/real-projects/nlohmann-json",
+    "commit": "9c349b1d7c393c6bc6dbbe4191e332e3bb4100b8",
+    "path": "include/nlohmann/detail/input/parser.hpp",
+    "items": [
+      {"itemId":"sax-entry","description":"Call SAX parser and branch on its result","startLine":161,"endLine":171,"needles":["sax_parse_internal(sax)","if (result)","return false;"],"stepIds":["sax-entry","sax-failure"],"effectIndices":[],"gapReason":null},
+      {"itemId":"strict-trailing-input","description":"Strict mode rejects trailing input through syntax_error","startLine":207,"endLine":214,"needles":["if (strict)","token_type::end_of_input","return syntax_error"],"stepIds":["strict-error"],"effectIndices":[],"gapReason":null},
+      {"itemId":"non-strict-lookahead","description":"Non-strict mode releases lookahead and preserves input continuation","startLine":215,"endLine":222,"needles":["release_lookahead()","return true;"],"stepIds":["lookahead-release"],"effectIndices":[],"gapReason":null},
+      {"itemId":"receiver-error-result","description":"Return the receiver parse_error result unchanged","startLine":565,"endLine":572,"needles":["return sax.parse_error(position","parse_error::create"],"stepIds":["receiver-error-result"],"effectIndices":[],"gapReason":null}
+    ]
+  },
+  "P7": {
+    "reviewed": true,
+    "project": ".local/real-projects/click",
+    "commit": "2247b35ea1c47c727d7a06e51fa280e12a863ff6",
+    "path": "src/click/parser.py",
+    "items": [
+      {"itemId":"copy-inputs","description":"Copy argument and count specifications into deques","startLine":63,"endLine":66,"needles":["args = deque(args)","nargs_spec = deque(nargs_spec)"],"stepIds":["s2","s3","s4"],"effectIndices":[],"gapReason":null},
+      {"itemId":"fetch-direction-helper","description":"Fetch from the front normally and back after wildcard","startLine":68,"endLine":75,"needles":["c.popleft()","c.pop()","return UNSET"],"stepIds":[],"effectIndices":[],"gapReason":"Nested helper body is excluded from this callable's direct algorithm steps."},
+      {"itemId":"spec-direction","description":"Consume count specifications from opposite ends after wildcard","startLine":77,"endLine":82,"needles":["while nargs_spec","nargs_spec.popleft()","nargs_spec.pop()"],"stepIds":["s6","s7","s8","s9"],"effectIndices":[],"gapReason":null},
+      {"itemId":"single-and-group-counts","description":"Fetch one argument or a fixed-size tuple and reverse reversed groups","startLine":83,"endLine":96,"needles":["nargs == 1","nargs > 1","x.reverse()","nargs < 0"],"stepIds":["s10","s11","s12","s13","s14","s15","s16","s17"],"effectIndices":[],"gapReason":null},
+      {"itemId":"second-wildcard-error","description":"Reject a second negative count with TypeError","startLine":94,"endLine":100,"needles":["if spos is not None","raise TypeError","spos = len(rv)"],"stepIds":["s18","s19","s20","s21"],"effectIndices":[],"gapReason":null},
+      {"itemId":"zero-count-no-op","description":"A zero count consumes the specification but not an argument","startLine":77,"endLine":100,"needles":["if nargs == 1","elif nargs > 1","elif nargs < 0"],"stepIds":[],"effectIndices":[],"gapReason":"The zero-count fallthrough is implicit in the current syntax lowering and is not represented as a dedicated step."},
+      {"itemId":"wildcard-and-result-order","description":"Collect remaining arguments, reverse trailing values, and return both results","startLine":101,"endLine":108,"needles":["rv[spos] = tuple(args)","reversed(rv[spos + 1 :])","return tuple(rv), list(args)"],"stepIds":["s22","s23","s24","s25","s26"],"effectIndices":[],"gapReason":null}
+    ]
+  }
+}

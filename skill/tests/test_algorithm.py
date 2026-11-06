@@ -258,6 +258,10 @@ class AlgorithmContractTests(unittest.TestCase):
         checklist["reviewed"] = True
         self.assertEqual(check_source_coverage(document, checklist)["uncoveredItems"], [])
         document["algorithms"][0]["body"]["steps"].pop()
+        document["algorithms"][0]["body"]["control_edges"] = []
+        document["algorithms"][0]["body"]["data_edges"] = []
+        text = project_algorithm(document, {"algorithm_id": "alg:run"})["text"]
+        self.assertNotIn("s2", text)
         deleted = check_source_coverage(document, checklist)
         self.assertEqual([item["itemId"] for item in deleted["uncoveredItems"]], ["error-exit"])
 

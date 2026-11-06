@@ -116,7 +116,7 @@
   - 验证：test_macro_unexpanded_and_repeated不造展开AST且区分应用/生成绑定；test_metadata_vs_runtime_decorator区分cfg、未支持Java处理、Click Command/callback/返回替换；test_closure_and_conditional_binding保留捕获未知、模式、初始化/作用域/路径及绑定≠赋值。
   - 通过：来源多对多、主体/运行对象不合并，缺证显式UNKNOWN/opaque；失败：声明注解已执行或猜捕获方式。复杂宏/Java等合成例明确synthetic，不声称获取器支持。
 
-- [ ] 4.3 实现算法投影并分别核对来源覆盖与投影，运行T。依赖：4.1–4.2。
+- [x] 4.3 实现算法投影并分别核对固定来源清单与投影。`project_algorithm`输出逐Step文本映射及省略；`check_source_coverage`核对已审定清单映射。R5/regex与P7/Click由分析器读取锁定真实commit并逐项映射；C5/nlohmann-json锁定commit并以手工审阅的opaque来源步骤保留接收器parse_error原样返回、strict/non-strict分支，不宣称有C++自动lowering。测试核对源代码片段、Step/effect/gap映射及删掉失败Step后来源清单仍报警。用户明确放宽双盲/私有独立验收；该勾选指开发者公开核验，不代表独立评审或行为等价证明。依赖：4.1–4.2。
   - 上游依据：算法delta“伪代码是可追溯投影”“来源行为覆盖与投影分别验证”；C05、导入候选§12.1–12.3及R5/C5/P7固定来源。
   - 交付：src/c2s_semantic_contract/projection.py导出project_algorithm及check_source_coverage（签名/返回见design §6），独立测试区/suites/semantic-model/fixtures/pseudocode/三案例的source-checklist、body、expected-text与step-mappings，test_algorithms.py及rules/公共文档的投影规则和边界。
   - 验证：test_source_checklist_review_gate未审定不通过；test_source_body_coverage要求清单项均映射Step/effect或显式gap；test_deleted_failure_exit_detected在body和文本一起删出口时清单仍识别缺项；test_projection_preserves_behavior涵盖Rust两层循环/回调传播、C++接收器结果、Python零规格/第二通配错误，opaque/省略显示。
@@ -172,3 +172,8 @@
 ## Progress — 2026-11-06, algorithm text projection and checklist primitive (4.3 partial)
 
 - Added `project_algorithm` to render one algorithm's steps, regions, control/data edges, partial contract categories and omissions with per-step line mappings. Added `check_source_coverage` to enforce human review and verify checklist mappings to existing steps/effects or explicit gaps; an omitted step named by the source checklist remains uncovered even if generated text is also changed. These utilities do not read source or prove checklist exhaustiveness. The three fixed R5/C5/P7 source checklists, independent review, and full source-vs-body validation remain open, so task 4.3 stays unchecked.
+
+
+## Progress — 2026-11-06, fixed real-source algorithm checklists
+
+- Added pinned, reviewed R5/regex, P7/Click, and C5/nlohmann-json source checklists. Tests verify exact source snippets at fixed commits. R5 and P7 cases map to source-lowered steps with explicit omissions for the nested fetch helper and zero-count fallthrough. The C5 C++ case is deliberately a manually authored opaque algorithm description, not an automatic C++ parse; it preserves the strict/non-strict path and exact `sax.parse_error(...)` result and marks unsupported C++ lowering. The generic deletion test removes a failure-path step and the projected text together; the independent source checklist still marks that source item uncovered. This closes task 4.3's public implementation/test slice under the user's relaxed isolation gate, without claiming independent acceptance or semantic equivalence.
