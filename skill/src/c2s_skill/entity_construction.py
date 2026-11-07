@@ -144,7 +144,6 @@ def construct_semantic_entity_candidates(root: Path, scan: ProjectScan | None = 
         raise ValueError("项目源码在扫描后发生变化；请重新扫描后再构造语义候选")
 
     constructs = [construct for parsed in scan.files for construct in parsed.constructs]
-    constructs_by_id = {item.construct_id: item for item in constructs}
     evidence: dict[str, dict] = {}
     candidates: list[dict] = []
     mappings: list[dict] = []
@@ -170,6 +169,8 @@ def construct_semantic_entity_candidates(root: Path, scan: ProjectScan | None = 
         if construct.parent_id:
             constructs_by_parent.setdefault(construct.parent_id, []).append(construct)
     enum_values: dict[str, tuple[list[str], list[str]]] = {}
+    computation_candidates_by_name: dict[str, list[dict]] = {}
+    diagnostics: list[dict] = []
     for construct in constructs:
         if construct.syntax_kind == "enum_declaration":
             variants = [item for item in constructs_by_parent.get(construct.construct_id, [])
@@ -227,10 +228,59 @@ def construct_semantic_entity_candidates(root: Path, scan: ProjectScan | None = 
                 "epistemicStatus": "provisional", "evidenceIds": [record["evidenceId"]],
                 "sourceConstructIds": [construct.construct_id], "attributes": [],
                 "uncertainties": ["函数边界和名称不等同业务能力边界。"]})
+            computation_candidates_by_name.setdefault(construct.name, []).append(candidates[-1])
             mappings.append({"candidateId": candidate_id, "sourceConstructId": construct.construct_id,
                              "role": "implements"})
 
-    diagnostics: list[dict] = []
+    for construct in constructs:
+        rust_test_attribute = (construct.language == "rust" and any(
+            item.parent_id == construct.construct_id and item.syntax_kind == "attribute_application"
+            and ("test" in item.text or "cfg(test)" in item.text) for item in constructs))
+        if (construct.syntax_kind != "function_declaration"
+                or not (construct.name.startswith("test_") or rust_test_attribute)):
+            continue
+        record = _construct_evidence(root, construct, description="测试函数入口及其断言/调用源码")
+        evidence[record["evidenceId"]] = record
+        called_names: set[str] = set()
+        assertion_signals: set[str] = set()
+        if construct.language == "python":
+            try:
+                tree = ast.parse(construct.text)
+            except SyntaxError:
+                tree = None
+            if tree is not None:
+                for node in ast.walk(tree):
+                    if isinstance(node, ast.Call):
+                        called_names.add(node.func.id if isinstance(node.func, ast.Name) else
+                                         node.func.attr if isinstance(node.func, ast.Attribute) else "")
+                    if isinstance(node, ast.Assert):
+                        assertion_signals.add("assert")
+            if re.search(r"\b(?:pytest\.)?raises\s*\(", construct.text):
+                assertion_signals.add("raises")
+        else:
+            called_names.update(re.findall(r"\b([A-Za-z_][A-Za-z0-9_]*)\s*\(", construct.text))
+            assertion_signals.update(re.findall(r"\b(assert(?:_eq|_ne|_matches|_contains)?)!", construct.text))
+        candidate_id = _digest(f"candidate\0TestEntity\0{construct.construct_id}")
+        candidates.append({"candidateId": candidate_id, "kind": "TestEntity", "name": construct.name,
+            "description": "由测试函数声明提出的独立测试实体候选。",
+            "epistemicStatus": "provisional", "evidenceIds": [record["evidenceId"]],
+            "sourceConstructIds": [construct.construct_id], "attributes": [],
+            "validationSignals": sorted(assertion_signals),
+            "uncertainties": ["测试源码中的调用/断言不单独证明业务主张已被完整验证。"]})
+        mappings.append({"candidateId": candidate_id, "sourceConstructId": construct.construct_id,
+                         "role": "test_entry"})
+        matches = [item for name in called_names for item in computation_candidates_by_name.get(name, [])]
+        if len({item["candidateId"] for item in matches}) == 1:
+            target = matches[0]
+            relation_candidates.append({"predicate": "verified_by", "subjectCandidateId": target["candidateId"],
+                "targetCandidateId": candidate_id, "epistemicStatus": "provisional",
+                "evidenceIds": [record["evidenceId"]]})
+        else:
+            diagnostics.append({"code": "TEST_TARGET_UNRESOLVED", "candidateKind": "TestEntity",
+                "candidateId": candidate_id,
+                "reason": "测试入口没有唯一、可由源码调用证据解析的计算实体目标。",
+                "evidenceId": record["evidenceId"]})
+
     _markdown_candidates(root, scan, candidates, evidence, relation_candidates, diagnostics,
                          project_candidate_id)
     if source_fingerprint(root) != scan.source_digest:

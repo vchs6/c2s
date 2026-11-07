@@ -88,6 +88,40 @@ class SemanticEntityConstructionTests(unittest.TestCase):
         self.assertTrue(any(item["candidateKind"] == "Module" for item in result["diagnostics"]))
         self.assertTrue(any(item["candidateKind"] == "Capability" for item in result["diagnostics"]))
 
+    def test_test_function_is_a_distinct_entity_linked_only_to_a_unique_called_target(self):
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            (root / "pyproject.toml").write_text('[project]\nname = "sample"\n', encoding="utf-8")
+            (root / "logic.py").write_text("def calculate_total(order):\n    return order.total\n", encoding="utf-8")
+            (root / "test_logic.py").write_text(
+                "from logic import calculate_total\n"
+                "def test_calculate_total():\n    assert calculate_total({'total': 4}) == 4\n\n"
+                "def test_calculate_total_empty():\n    assert calculate_total({'total': 0}) == 0\n", encoding="utf-8")
+            result = construct_semantic_entity_candidates(root)
+        tests = [item for item in result["candidates"] if item["kind"] == "TestEntity"]
+        computation = next(item for item in result["candidates"] if item["name"] == "calculate_total")
+        self.assertEqual({item["name"] for item in tests},
+                         {"test_calculate_total", "test_calculate_total_empty"})
+        self.assertTrue(all(item["candidateId"] != computation["candidateId"] for item in tests))
+        relations = [item for item in result["relationCandidates"] if item["predicate"] == "verified_by"]
+        self.assertEqual(len(relations), 2)
+        self.assertTrue(all(item["subjectCandidateId"] == computation["candidateId"] for item in relations))
+        self.assertEqual({item["targetCandidateId"] for item in relations},
+                         {item["candidateId"] for item in tests})
+
+    def test_test_without_resolvable_target_remains_a_gap(self):
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            (root / "pyproject.toml").write_text('[project]\nname = "sample"\n', encoding="utf-8")
+            (root / "test_external.py").write_text(
+                "def test_external_service():\n    assert external_call()\n", encoding="utf-8")
+            result = construct_semantic_entity_candidates(root)
+        test_entity = next(item for item in result["candidates"] if item["kind"] == "TestEntity")
+        self.assertFalse(any(item["predicate"] == "verified_by" for item in result["relationCandidates"]))
+        self.assertTrue(any(item.get("candidateId") == test_entity["candidateId"]
+                            and item["code"] == "TEST_TARGET_UNRESOLVED"
+                            for item in result["diagnostics"]))
+
 
 if __name__ == "__main__":
     unittest.main()
