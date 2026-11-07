@@ -15,9 +15,6 @@ import subprocess
 from dataclasses import dataclass, replace
 from pathlib import Path
 
-from tree_sitter import Language, Parser
-import tree_sitter_python
-import tree_sitter_rust
 from .inventory import InventoryEntry, inventory_tree, source_fingerprint
 
 
@@ -76,8 +73,11 @@ def analysis_profile_digest() -> str:
                         for name in ("tree-sitter", "tree-sitter-python", "tree-sitter-rust")}
     except importlib.metadata.PackageNotFoundError as error:
         dependencies = {"missing": error.name or "unknown"}
+    matrix_path = Path(__file__).resolve().parents[2] / "contracts" / "tool-capabilities.json"
+    matrix_digest = hashlib.sha256(matrix_path.read_bytes()).hexdigest() if matrix_path.is_file() else "unavailable"
     profile = {"analyzer": "c2s-semantic-facts/0.6.5", "python": platform.python_version(),
-               "platform": platform.platform(), "parsers": dependencies, "cargo": cargo_version}
+               "platform": platform.platform(), "parsers": dependencies, "cargo": cargo_version,
+               "tool_capability_matrix": matrix_digest}
     return hashlib.sha256(json.dumps(profile, sort_keys=True, separators=(",", ":")).encode()).hexdigest()
 
 
@@ -391,6 +391,8 @@ def parse_source(path: str, source: bytes, language: str) -> ParseResult:
             facts, syntax_nodes, complete = [], 0, False
             diagnostics.append(f"PARSE_ERROR:{type(error).__name__}:{getattr(error, 'lineno', '')}")
     elif language == "rust":
+        from tree_sitter import Language, Parser
+        import tree_sitter_rust
         parser = Parser(Language(tree_sitter_rust.language()))
         tree = parser.parse(source)
         facts, syntax_nodes, complete = _rust_facts(path, source, tree.root_node)
@@ -402,17 +404,21 @@ def parse_source(path: str, source: bytes, language: str) -> ParseResult:
                        syntax_nodes, complete, tuple(diagnostics))
 
 
-def scan_project(root: Path) -> ProjectScan:
-    """Parse every regular .py/.rs file below root, including tests and ignored paths."""
+def scan_project(root: Path, source_languages: set[str] | None = None,
+                 inventory: tuple | None = None) -> ProjectScan:
+    """Parse selected regular source languages and inventory all project paths."""
     root = root.resolve(strict=True)
     parsed: list[ParseResult] = []
-    inventory = tuple(inventory_tree(root, excluded_dirs=frozenset({".git"})))
+    inventory = tuple(inventory if inventory is not None
+                       else inventory_tree(root, excluded_dirs=frozenset({".git"})))
     for entry in inventory:
         relative = entry.path
         path = root / relative
         if entry.kind != "file" or path.suffix not in {".py", ".rs"}:
             continue
         language = "python" if path.suffix == ".py" else "rust"
+        if source_languages is not None and language not in source_languages:
+            continue
         try:
             parsed.append(parse_source(relative, path.read_bytes(), language))
         except OSError as error:

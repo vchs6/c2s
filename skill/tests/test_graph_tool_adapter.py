@@ -3,9 +3,34 @@ from pathlib import Path
 from tempfile import TemporaryDirectory
 
 from c2s_skill.graph_tool_adapter import parse_code_review_graph_response
+from c2s_skill.capability_matrix import (ToolSelection, host_environment, load_tool_matrix,
+                                         parse_selected_tool_output, select_tools)
 
 
 class CodeReviewGraphAdapterTests(unittest.TestCase):
+    def test_real_output_parser_is_dispatched_only_through_matrix_selection(self):
+        with TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            (root / "run.py").write_text("def run():\n    parse()\n", encoding="utf-8")
+            (root / "parse.py").write_text("def parse():\n    pass\n", encoding="utf-8")
+            response = {"status": "ok", "pattern": "callees_of", "target": "run.py::run",
+                "result_count": 1, "results_omitted": 0,
+                "results": [{"name": "parse", "qualified_name": "parse.py::parse",
+                    "file_path": "parse.py", "call_site": {"line": 2, "file": "run.py"}}],
+                "edges": [{"source": "run.py::run", "target": "parse.py::parse"}]}
+            matrix = load_tool_matrix()
+            selection = select_tools(["calls.cross_file.candidates"], matrix,
+                available_tools={"code-review-graph"}, environment=host_environment())
+
+            parsed = parse_selected_tool_output(selection, "code-review-graph", response,
+                                                root, "2.3.9", matrix)
+
+            self.assertEqual(parsed.call_sites[0].callee_path, "parse.py")
+            self.assertIn("GRAPH_INDEX_FRESHNESS_UNVERIFIED", {item.code for item in parsed.diagnostics})
+            with self.assertRaisesRegex(ValueError, "was not selected"):
+                parse_selected_tool_output(ToolSelection((), ("calls.cross_file.candidates",)),
+                    "code-review-graph", response, root, "2.3.9", matrix)
+
     def test_parses_call_site_rows_and_keeps_resolution_and_source_locations(self):
         with TemporaryDirectory() as temporary:
             root = Path(temporary)

@@ -13,7 +13,8 @@ import subprocess
 from .validation import register_m1, semantic_model_catalogs
 
 
-def project_query_to_m1(query_result, registrations: list[dict] | None = None) -> dict:
+def project_query_to_m1(query_result, registrations: list[dict] | None = None,
+                        identity_domain: str | None = None) -> dict:
     """Project E0 project and workspace facts without inventing evidence or ownership.
 
     Workspace membership currently comes from Cargo metadata, whose output artifact is
@@ -25,7 +26,7 @@ def project_query_to_m1(query_result, registrations: list[dict] | None = None) -
     if source_fingerprint(root) != query_result.source_digest:
         raise ValueError("project sources changed after the query scan; rerun the query before projecting M1")
     registration_records = list(registrations or [])
-    domain_id = "c2s-m1-project-discovery"
+    domain_id = identity_domain or "c2s-m1-project-discovery"
     refs: dict[tuple[str, str], dict] = {}
     evidence_records: dict[str, dict] = {}
     observations: dict[str, dict] = {}

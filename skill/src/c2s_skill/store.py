@@ -9,7 +9,8 @@ from .inventory import InventoryEntry
 from .query import Gap, PersistenceResult, QueryResult, result_to_dict
 
 
-class FactStore:
+class QueryResultCache:
+    """Cache rendered query projections; this is not the semantic fact repository."""
     def __init__(self, path: Path):
         self.path = path.resolve()
 
@@ -61,4 +62,10 @@ class FactStore:
                                item["path"], item["kind"], item["size_bytes"], item["state"], item["diagnostic"])
                                for item in data.get("inventory", [])), data["profile_digest"],
                            PersistenceResult(data.get("persistence", {}).get("status", "saved"),
-                                             data.get("persistence", {}).get("diagnostic")))
+                                             data.get("persistence", {}).get("diagnostic")),
+                           tuple(data.get("tools_used", [])))
+
+
+# Kept for source compatibility with early callers. New code should use the
+# name that describes this table's actual contents.
+FactStore = QueryResultCache

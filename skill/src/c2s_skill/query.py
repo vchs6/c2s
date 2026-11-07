@@ -4,8 +4,11 @@ from dataclasses import dataclass, replace
 from pathlib import Path
 import sqlite3
 
-from .acquisition import Fact, ProjectScan, analysis_profile_digest, cargo_workspace_facts, scan_project, source_fingerprint
-from .inventory import InventoryEntry
+from .acquisition import (Fact, ProjectScan, analysis_profile_digest, cargo_workspace_facts,
+                          scan_project, source_fingerprint)
+from .capability_matrix import (detect_available_tools, execute_native_selection, host_environment,
+                                load_tool_matrix, needs_for_query, select_tools)
+from .inventory import InventoryEntry, inventory_tree
 
 
 SELECTORS = {
@@ -98,17 +101,20 @@ class QueryResult:
     inventory: tuple[InventoryEntry, ...]
     profile_digest: str
     persistence: PersistenceResult = PersistenceResult("not_requested")
+    tools_used: tuple[str, ...] = ()
 
 
 def query_from_scan(scan: ProjectScan, selectors: list[str],
                     workspace_facts: tuple[Fact, ...] = (),
                     workspace_gap: str | None = None,
                     workspace_loaded: bool = False,
-                    profile_digest: str | None = None) -> QueryResult:
+                    profile_digest: str | None = None,
+                    tool_gaps: tuple[Gap, ...] = (),
+                    tools_used: tuple[str, ...] = ()) -> QueryResult:
     selectors = validate_selectors(selectors)
     wanted: set[str] = set()
     general_wanted: set[str] = set()
-    gaps: list[Gap] = []
+    gaps: list[Gap] = list(tool_gaps)
     for selector in selectors:
         if selector.startswith("function:") and selector.removeprefix("function:"):
             wanted.add("function")
@@ -186,7 +192,7 @@ def query_from_scan(scan: ProjectScan, selectors: list[str],
         gaps.extend(Gap(selectors[0], f"PARSE_INCOMPLETE:{parsed.path}") for parsed in failed)
     return QueryResult(scan.root, tuple(selectors), facts, tuple(gaps), not gaps, scan.source_files,
                        scan.parsed_files, scan.source_digest, scan.inventory,
-                       profile_digest or analysis_profile_digest())
+                       profile_digest or analysis_profile_digest(), tools_used=tools_used)
 
 
 def query_project(root: Path, selectors: list[str], store=None) -> QueryResult:
@@ -206,18 +212,32 @@ def query_project(root: Path, selectors: list[str], store=None) -> QueryResult:
             persistence_read_error = None
         if cached is not None:
             return replace(cached, persistence=PersistenceResult("cache_hit"))
-    scan = scan_project(root)
+    inventory = tuple(inventory_tree(root, excluded_dirs=frozenset({".git"})))
+    source_languages = {"python" if Path(entry.path).suffix == ".py" else "rust"
+                        for entry in inventory if entry.kind == "file" and
+                        Path(entry.path).suffix in {".py", ".rs"}}
+    matrix = load_tool_matrix()
+    available_tools = detect_available_tools(matrix)
+    selection = select_tools(needs_for_query(selectors, source_languages,
+                                             (root / "Cargo.toml").is_file()), matrix,
+                             available_tools=available_tools,
+                             environment=host_environment())
+    run = execute_native_selection(root, inventory, selection, matrix,
+                                   scan_runner=scan_project, cargo_runner=cargo_workspace_facts)
+    scan = run.scan
     if store is not None and source_fingerprint(root) != scan.source_digest:
         raise ValueError("project sources changed during analysis; retry the request")
     needs_workspace = any(selector in {"workspace-members", "all-supported-facts"} for selector in selectors)
-    workspace_facts: list[Fact] = []
+    workspace_loaded = "cargo-metadata" in run.tools
     workspace_gap = None
-    workspace_loaded = False
-    if needs_workspace and (root / "Cargo.toml").is_file():
-        workspace_loaded = True
-        workspace_facts, workspace_gap = cargo_workspace_facts(root)
-    result = query_from_scan(scan, selectors, tuple(workspace_facts), workspace_gap,
-                             workspace_loaded, profile_digest)
+    if needs_workspace and (root / "Cargo.toml").is_file() and not workspace_loaded:
+        workspace_gap = ("TOOL_UNAVAILABLE:cargo" if "cargo-metadata" not in available_tools
+                         else "TOOL_CAPABILITY_UNAVAILABLE:workspace.rust.members")
+    tool_gaps = tuple(Gap(selectors[0], f"TOOL_CAPABILITY_UNAVAILABLE:{need}")
+                      for need in selection.uncovered
+                      if need != "workspace.rust.members")
+    result = query_from_scan(scan, selectors, run.workspace_facts, workspace_gap,
+                             workspace_loaded, profile_digest, tool_gaps, run.tools)
     if store is not None:
         recovered = replace(result, persistence=PersistenceResult(
             "saved_after_read_failure" if persistence_read_error else "saved", persistence_read_error))
@@ -251,8 +271,10 @@ def result_to_dict(result: QueryResult) -> dict:
                       for entry in result.inventory],
         "source_digest": result.source_digest,
         "profile_digest": result.profile_digest,
+        "tools_used": list(result.tools_used),
         "persistence": {"status": result.persistence.status,
                         "diagnostic": result.persistence.diagnostic},
+        "tools_used": list(result.tools_used),
         "facts": [fact.__dict__ if hasattr(fact, "__dict__") else {
             "id": fact.id, "kind": fact.kind, "name": fact.name, "path": fact.path,
             "start_byte": fact.start_byte, "end_byte": fact.end_byte, "layer": fact.layer,
@@ -269,6 +291,7 @@ def result_to_markdown(result: QueryResult) -> str:
                  if entry.state != "readable" or (entry.kind == "file" and
                     Path(entry.path).suffix not in {".py", ".rs"})]
     lines = [f"# Semantic facts: {', '.join(result.requested)}", "",
+             f"Acquisition tools: {', '.join(result.tools_used) if result.tools_used else 'none'},",
              f"Coverage: {result.parsed_files}/{result.source_files} source files parsed; "
              f"{len(result.inventory)} inventory entries, {len(unhandled)} unhandled paths; "
              f"selected syntax projection complete={str(result.complete).lower()}; full project semantics=false",

@@ -65,10 +65,16 @@ def _manifest_integrity(manifest: dict, profile: str = "m1-project-discovery-1")
     return bool(expected) and isinstance(manifest, dict) and _canonical_digest(manifest) == expected
 
 
-def semantic_model_catalogs() -> dict:
-    """Load the pinned full-profile type and predicate directory shipped with this package."""
-    return {"types": json.loads(_SEMANTIC_TYPES_PATH.read_text(encoding="utf-8")),
-            "predicates": json.loads(_SEMANTIC_PREDICATES_PATH.read_text(encoding="utf-8"))}
+def semantic_model_catalogs(profile: str = "semantic-fact-model-1") -> dict:
+    """Load pinned catalogs for the requested supported semantic bundle profile."""
+    if profile == "m1-project-discovery-1":
+        types_path, predicates_path = _TYPES_PATH, _PREDICATES_PATH
+    elif profile == "semantic-fact-model-1":
+        types_path, predicates_path = _SEMANTIC_TYPES_PATH, _SEMANTIC_PREDICATES_PATH
+    else:
+        raise ValueError(f"unsupported semantic catalog profile: {profile}")
+    return {"types": json.loads(types_path.read_text(encoding="utf-8")),
+            "predicates": json.loads(predicates_path.read_text(encoding="utf-8"))}
 
 
 def _validate_catalogs(catalogs: dict, document_profile: str = "m1-project-discovery-1") -> list[dict]:
