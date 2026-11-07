@@ -4,7 +4,7 @@ from unittest.mock import patch
 from pathlib import Path
 from tempfile import TemporaryDirectory
 
-from c2s_skill.capability_matrix import (describe_tools_used, load_tool_matrix, select_tools,
+from c2s_skill.capability_matrix import (ToolRun, describe_tools_used, load_tool_matrix, select_tools,
                                          validate_matrix_evidence)
 from c2s_skill.query import query_project
 
@@ -16,6 +16,13 @@ def provider(tool_id, provides, *, status="lit", evidence=True):
 
 
 class CapabilitySelectionTests(unittest.TestCase):
+    def test_tool_run_exposes_constructs_from_selected_language_parsers(self):
+        first = object()
+        second = object()
+        run = ToolRun(scan=type("Scan", (), {"files": [type("File", (), {"constructs": (first, second)})()]})(),
+                      workspace_facts=(), workspace_gap=None, tools=("python-ast",))
+        self.assertEqual(run.source_constructs, (first, second))
+
     def test_selects_smallest_tool_set_that_covers_every_need(self):
         matrix = {"tools": [
             provider("python", ["declarations", "definitions"]),

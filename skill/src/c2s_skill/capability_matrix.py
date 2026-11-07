@@ -35,6 +35,12 @@ class ToolRun:
     workspace_gap: str | None
     tools: tuple[str, ...]
 
+    @property
+    def source_constructs(self) -> tuple[Any, ...]:
+        """Return normalized source constructs emitted by the selected parsers."""
+        return tuple(construct for parsed_file in getattr(self.scan, "files", ())
+                     for construct in getattr(parsed_file, "constructs", ()))
+
 
 def load_tool_matrix(path: Path | None = None) -> dict[str, Any]:
     """Load the checked-in registry of tools, parser contracts and evidence."""

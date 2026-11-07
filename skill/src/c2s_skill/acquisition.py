@@ -35,6 +35,24 @@ class Fact:
 
 
 @dataclass(frozen=True, slots=True)
+class SourceConstruct:
+    construct_id: str
+    source_key: str
+    language: str
+    syntax_kind: str
+    name: str
+    path: str
+    start_byte: int
+    end_byte: int
+    parent_id: str | None
+    source_sha256: str
+    parser_id: str
+    parser_version: str
+    opaque: bool
+    text: str
+
+
+@dataclass(frozen=True, slots=True)
 class ParseResult:
     path: str
     language: str
@@ -43,6 +61,7 @@ class ParseResult:
     syntax_node_count: int
     parse_complete: bool
     diagnostics: tuple[str, ...]
+    constructs: tuple[SourceConstruct, ...] = ()
 
 
 @dataclass(frozen=True, slots=True)
@@ -122,6 +141,15 @@ def _namespace_fact(fact: Fact, project_root: Path) -> Fact:
     identity = hashlib.sha256(namespace + b"\0" + fact.id.encode("ascii")).hexdigest()
     subject_identity = hashlib.sha256(namespace + b"\0" + fact.subject_id.encode("ascii")).hexdigest()
     return replace(fact, id=identity, subject_id=subject_identity)
+
+
+def _namespace_construct(construct: SourceConstruct, project_root: Path) -> SourceConstruct:
+    namespace = str(project_root.resolve(strict=True)).encode("utf-8")
+    return replace(construct,
+        construct_id=hashlib.sha256(namespace + b"\0" + construct.construct_id.encode("ascii")).hexdigest(),
+        source_key=hashlib.sha256(namespace + b"\0" + construct.source_key.encode("ascii")).hexdigest(),
+        parent_id=(hashlib.sha256(namespace + b"\0" + construct.parent_id.encode("ascii")).hexdigest()
+                   if construct.parent_id else None))
 
 
 def cargo_workspace_facts(root: Path) -> tuple[list[Fact], str | None]:
@@ -273,6 +301,149 @@ def _python_facts(path: str, source: bytes, tree: ast.AST) -> list[Fact]:
     return facts
 
 
+def _construct_parser_version(language: str) -> tuple[str, str]:
+    if language == "python":
+        return "python-ast", platform.python_version()
+    try:
+        version = importlib.metadata.version("tree-sitter-rust")
+    except importlib.metadata.PackageNotFoundError:
+        version = "unknown"
+    return "tree-sitter-rust", version
+
+
+def _source_construct(path: str, source: bytes, language: str, syntax_kind: str,
+                      name: str, start: int, end: int, parent_id: str | None,
+                      parser_id: str, parser_version: str, *, opaque: bool = False) -> SourceConstruct:
+    source_digest = hashlib.sha256(source).hexdigest()
+    key = f"{language}:{path}:{syntax_kind}:{start}:{end}"
+    construct_id = hashlib.sha256(key.encode("utf-8")).hexdigest()
+    source_key = hashlib.sha256(f"{path}\0{syntax_kind}\0{start}".encode("utf-8")).hexdigest()
+    return SourceConstruct(construct_id, source_key, language, syntax_kind, name, path,
+                          start, end, parent_id, source_digest, parser_id, parser_version,
+                          opaque, source[start:end].decode("utf-8", errors="replace"))
+
+
+def _python_source_constructs(path: str, source: bytes, tree: ast.AST) -> tuple[SourceConstruct, ...]:
+    parents = {child: parent for parent in ast.walk(tree) for child in ast.iter_child_nodes(parent)}
+    parser_id, parser_version = _construct_parser_version("python")
+    lines = source.splitlines(keepends=True)
+
+    def byte_span(node) -> tuple[int, int]:
+        return (sum(len(line) for line in lines[:node.lineno - 1]) + node.col_offset,
+                sum(len(line) for line in lines[:node.end_lineno - 1]) + node.end_col_offset)
+
+    candidates: list[tuple[ast.AST | None, str, str, int, int, bool]] = [
+        (None, "module", Path(path).name, 0, len(source), False)]
+    for node in ast.walk(tree):
+        kind = None
+        name = getattr(node, "name", type(node).__name__)
+        if isinstance(node, ast.ClassDef):
+            kind = "class_declaration"
+        elif isinstance(node, (ast.FunctionDef, ast.AsyncFunctionDef)):
+            kind = "function_declaration"
+        elif isinstance(node, ast.Lambda):
+            kind = "lambda_expression"
+        elif isinstance(node, (ast.Assign, ast.AnnAssign)) and isinstance(parents.get(node), ast.ClassDef):
+            targets = node.targets if isinstance(node, ast.Assign) else [node.target]
+            for target in targets:
+                if isinstance(target, (ast.Tuple, ast.List)):
+                    target_nodes = [item for item in target.elts if isinstance(item, ast.Name)]
+                else:
+                    target_nodes = [target]
+                for target_node in target_nodes:
+                    field_name = (target_node.id if isinstance(target_node, ast.Name) else
+                                  target_node.attr if isinstance(target_node, ast.Attribute) else
+                                  type(target_node).__name__)
+                    start, end = byte_span(target_node)
+                    candidates.append((target_node, "field_declaration", field_name, start, end, False))
+            continue
+        if kind:
+            start, end = byte_span(node)
+            candidates.append((node, kind, name, start, end, False))
+        if isinstance(node, (ast.FunctionDef, ast.AsyncFunctionDef, ast.ClassDef)):
+            for decorator in node.decorator_list:
+                start, end = byte_span(decorator)
+                candidates.append((decorator, "decorator_application", ast.unparse(decorator), start, end, False))
+            for parameter in getattr(node, "type_params", ()):
+                start, end = byte_span(parameter)
+                candidates.append((parameter, "generic_parameter", getattr(parameter, "name", type(parameter).__name__),
+                                   start, end, False))
+
+    parent_lookup: dict[ast.AST, list[tuple[ast.AST | None, str, str, int, int, bool]]] = {}
+    for candidate in candidates:
+        node = candidate[0]
+        if node is not None:
+            parent_lookup.setdefault(node, []).append(candidate)
+    construct_ids = {(candidate[0], candidate[1]): _source_construct(
+        path, source, "python", candidate[1], candidate[2], candidate[3], candidate[4], None,
+        parser_id, parser_version, opaque=candidate[5]).construct_id for candidate in candidates}
+    constructs = []
+    for node, kind, name, start, end, opaque in candidates:
+        ancestor = parents.get(node) if node is not None else None
+        parent_id = construct_ids[(None, "module")]
+        while ancestor is not None:
+            matches = parent_lookup.get(ancestor, [])
+            if matches:
+                parent_candidate = matches[0]
+                parent_id = construct_ids[(ancestor, parent_candidate[1])]
+                break
+            ancestor = parents.get(ancestor)
+        if node is None:
+            parent_id = None
+        constructs.append(_source_construct(path, source, "python", kind, name, start, end,
+                                            parent_id, parser_id, parser_version, opaque=opaque))
+    return tuple(constructs)
+
+
+def _rust_source_constructs(path: str, source: bytes, root) -> tuple[SourceConstruct, ...]:
+    parser_id, parser_version = _construct_parser_version("rust")
+    syntax_kinds = {"struct_item": "struct_declaration", "enum_item": "enum_declaration",
+                    "trait_item": "trait_declaration", "function_item": "function_declaration",
+                    "type_item": "type_alias_declaration", "mod_item": "module_declaration",
+                    "const_item": "constant_declaration", "static_item": "static_declaration",
+                    "use_declaration": "import_declaration", "impl_item": "implementation_block",
+                    "field_declaration": "field_declaration", "enum_variant": "enum_variant",
+                    "macro_definition": "macro_definition", "macro_invocation": "macro_invocation",
+                    "attribute_item": "attribute_application", "type_parameters": "generic_parameter_list",
+                    "type_parameter": "generic_parameter", "closure_expression": "closure_expression"}
+    raw: list[tuple[object, str, str, int, int, bool]] = []
+    for node in _walk_syntax(root):
+        if node.type in syntax_kinds:
+            name_node = node.child_by_field_name("name")
+            name = (source[name_node.start_byte:name_node.end_byte].decode("utf-8", errors="replace")
+                    if name_node is not None else node.type)
+            raw.append((node, syntax_kinds[node.type], name, node.start_byte, node.end_byte, False))
+        elif node.type == "ERROR" or node.is_missing:
+            raw.append((node, "opaque_error", node.type, node.start_byte, node.end_byte, True))
+
+    by_node = {item[0]: item for item in raw}
+    ids = {item[0]: _source_construct(path, source, "rust", item[1], item[2], item[3], item[4],
+                                        None, parser_id, parser_version, opaque=item[5]).construct_id
+           for item in raw}
+    constructs = [_source_construct(path, source, "rust", "module", path, 0, len(source), None,
+                                    parser_id, parser_version)]
+    module_id = constructs[0].construct_id
+    for node, kind, name, start, end, opaque in raw:
+        parent = node.parent
+        parent_id = module_id
+        while parent is not None:
+            if parent in by_node:
+                parent_id = ids[parent]
+                break
+            parent = parent.parent
+        constructs.append(_source_construct(path, source, "rust", kind, name, start, end,
+                                            parent_id, parser_id, parser_version, opaque=opaque))
+    return tuple(constructs)
+
+
+def _walk_syntax(root):
+    stack = [root]
+    while stack:
+        node = stack.pop()
+        yield node
+        stack.extend(reversed(node.children))
+
+
 def _rust_facts(path: str, source: bytes, root) -> tuple[list[Fact], int, bool]:
     facts: list[Fact] = []
     syntax_nodes = 0
@@ -385,10 +556,14 @@ def parse_source(path: str, source: bytes, language: str) -> ParseResult:
         try:
             tree = ast.parse(source, filename=path)
             facts = _python_facts(path, source, tree)
+            constructs = _python_source_constructs(path, source, tree)
             syntax_nodes = sum(1 for _ in ast.walk(tree))
             complete = True
         except (SyntaxError, UnicodeDecodeError) as error:
             facts, syntax_nodes, complete = [], 0, False
+            parser_id, parser_version = _construct_parser_version("python")
+            constructs = (_source_construct(path, source, "python", "opaque_file", Path(path).name,
+                                            0, len(source), None, parser_id, parser_version, opaque=True),)
             diagnostics.append(f"PARSE_ERROR:{type(error).__name__}:{getattr(error, 'lineno', '')}")
     elif language == "rust":
         from tree_sitter import Language, Parser
@@ -396,12 +571,13 @@ def parse_source(path: str, source: bytes, language: str) -> ParseResult:
         parser = Parser(Language(tree_sitter_rust.language()))
         tree = parser.parse(source)
         facts, syntax_nodes, complete = _rust_facts(path, source, tree.root_node)
+        constructs = _rust_source_constructs(path, source, tree.root_node)
         if not complete:
             diagnostics.append("PARSE_ERROR:tree-sitter-error-node")
     else:
         raise ValueError(f"unsupported language: {language}")
     return ParseResult(path, language, hashlib.sha256(source).hexdigest(), tuple(facts),
-                       syntax_nodes, complete, tuple(diagnostics))
+                       syntax_nodes, complete, tuple(diagnostics), constructs)
 
 
 def scan_project(root: Path, source_languages: set[str] | None = None,
@@ -445,7 +621,9 @@ def scan_project(root: Path, source_languages: set[str] | None = None,
             match = re.search(rb"(?m)^\s*(?:requires-python|classifiers)\s*=.*$", source)
             if match:
                 project_facts.append(_make_fact(manifest_name, source, "language_declared", "Python", match.start(), match.end()))
-    parsed = [replace(result, facts=tuple(_namespace_fact(fact, root) for fact in result.facts))
+    parsed = [replace(result,
+                      facts=tuple(_namespace_fact(fact, root) for fact in result.facts),
+                      constructs=tuple(_namespace_construct(item, root) for item in result.constructs))
               for result in parsed]
     project_facts = [_namespace_fact(fact, root) for fact in project_facts]
     return ProjectScan(str(root), len(parsed), sum(result.parse_complete for result in parsed),

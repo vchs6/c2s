@@ -6,6 +6,60 @@ from c2s_skill.acquisition import parse_source, scan_project
 
 
 class AcquisitionTests(unittest.TestCase):
+    def test_python_source_constructs_cover_declarations_fields_generics_decorators_and_lambda(self):
+        source = (b"@decorate(flag=True)\n"
+                  b"class Box[T]:\n"
+                  b"    value: str\n"
+                  b"    def map(self, fn):\n"
+                  b"        return lambda item: fn(item)\n")
+        result = parse_source("box.py", source, "python")
+        constructs = {item.syntax_kind: item for item in result.constructs}
+        self.assertTrue({"class_declaration", "field_declaration", "function_declaration",
+                         "generic_parameter", "decorator_application", "lambda_expression"} <= set(constructs))
+        self.assertEqual(source[constructs["lambda_expression"].start_byte:
+                                constructs["lambda_expression"].end_byte], b"lambda item: fn(item)")
+        self.assertEqual(constructs["function_declaration"].parent_id,
+                         constructs["class_declaration"].construct_id)
+
+    def test_python_chained_class_assignments_have_one_field_construct_per_member(self):
+        source = b"class Pair:\n    left = right = 1\n"
+        result = parse_source("pair.py", source, "python")
+        fields = [item for item in result.constructs if item.syntax_kind == "field_declaration"]
+        self.assertEqual([item.name for item in fields], ["left", "right"])
+        self.assertEqual([item.text for item in fields], ["left", "right"])
+
+    def test_rust_source_constructs_cover_items_members_generics_macros_attributes_and_closures(self):
+        source = (b"#[derive(Debug)] struct Box<T> { value: T }\n"
+                  b"enum State { Ready }\n"
+                  b"macro_rules! check { () => {} }\n"
+                  b"fn run() { let f = |x: i32| x + 1; check!(); }\n")
+        result = parse_source("src/lib.rs", source, "rust")
+        kinds = {item.syntax_kind for item in result.constructs}
+        self.assertTrue({"struct_declaration", "field_declaration", "generic_parameter_list", "enum_declaration",
+                         "enum_variant", "macro_definition", "macro_invocation", "attribute_application",
+                         "function_declaration", "closure_expression"} <= kinds)
+        self.assertNotIn("struct_item", kinds)
+        for item in result.constructs:
+            self.assertEqual(source[item.start_byte:item.end_byte], item.text.encode("utf-8"))
+
+    def test_source_construct_records_language_parser_version_and_byte_location(self):
+        source = "class Café:\n    value: str\n".encode("utf-8")
+        result = parse_source("src.py", source, "python")
+        construct = next(item for item in result.constructs if item.syntax_kind == "class_declaration")
+        self.assertEqual(construct.language, "python")
+        self.assertTrue(construct.parser_id)
+        self.assertTrue(construct.parser_version)
+        self.assertEqual(source[construct.start_byte:construct.end_byte], construct.text.encode("utf-8"))
+
+    def test_unparseable_source_retains_an_opaque_construct_boundary(self):
+        python = parse_source("broken.py", b"def broken(:\n", "python")
+        self.assertFalse(python.parse_complete)
+        self.assertTrue(any(item.opaque and item.syntax_kind == "opaque_file" for item in python.constructs))
+
+        rust = parse_source("broken.rs", b"fn broken( {", "rust")
+        self.assertFalse(rust.parse_complete)
+        self.assertTrue(any(item.opaque and item.syntax_kind == "opaque_error" for item in rust.constructs))
+
     def test_python_parser_emits_nested_declarations_and_byte_spans(self):
         source = "class Café:\n    value: int\n    def read(self) -> int:\n        return 1\n"
         result = parse_source("src.py", source.encode(), "python")
@@ -173,6 +227,20 @@ class AcquisitionTests(unittest.TestCase):
             (second / "main.py").write_text(source, encoding="utf-8")
             first_ids = {fact.id for parsed in scan_project(first).files for fact in parsed.facts}
             second_ids = {fact.id for parsed in scan_project(second).files for fact in parsed.facts}
+            self.assertTrue(first_ids)
+            self.assertTrue(first_ids.isdisjoint(second_ids))
+
+    def test_source_construct_ids_are_namespaced_by_project_root(self):
+        with tempfile.TemporaryDirectory() as temporary:
+            first = Path(temporary) / "first"
+            second = Path(temporary) / "second"
+            first.mkdir()
+            second.mkdir()
+            source = "class Box:\n    value: str\n"
+            (first / "main.py").write_text(source, encoding="utf-8")
+            (second / "main.py").write_text(source, encoding="utf-8")
+            first_ids = {item.construct_id for parsed in scan_project(first).files for item in parsed.constructs}
+            second_ids = {item.construct_id for parsed in scan_project(second).files for item in parsed.constructs}
             self.assertTrue(first_ids)
             self.assertTrue(first_ids.isdisjoint(second_ids))
 
