@@ -165,7 +165,7 @@ class FullSemanticProjectionTests(unittest.TestCase):
                     self.assertTrue(any(diagnostic["severity"] == "gap"
                                         for diagnostic in coverage_diagnostics))
                 with tempfile.TemporaryDirectory() as temporary:
-                    from c2s_skill.semantic_store import commit_bundle, query_bundle, read_bundle
+                    from c2s_skill.semantic_store import _commit_legacy_bundle_for_migration as commit_bundle, query_bundle, read_bundle
                     store_path = Path(temporary) / "semantic-facts.sqlite"
                     input_id = str(uuid5(NAMESPACE_URL,
                         f"c2s-input:{query.source_digest}:{query.profile_digest}"))

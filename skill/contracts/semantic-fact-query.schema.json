@@ -48,7 +48,19 @@
         "generation": {"type": "integer", "minimum": 0},
         "addedIds": {"type": "array", "items": {"type": "string"}},
         "existingIds": {"type": "array", "items": {"type": "string"}},
-        "diagnostics": {"type": "array", "items": {"type": "object"}}}}
+        "diagnostics": {"type": "array", "items": {"type": "object"}}}},
+    "semantic_entity_query": {"type": "object", "additionalProperties": true,
+      "required": ["status", "selector", "scopeId", "members", "gaps", "constructionStatus"],
+      "properties": {"status": {"type": "string"}, "selector": {"type": "string"},
+        "scopeId": {"type": "string"}, "members": {"type": "array"}, "gaps": {"type": "array"},
+        "constructionStatus": {"enum": ["constructed", "reused"]}}},
+    "semantic_entity_validation": {"type": "object", "required": ["valid", "diagnostics"],
+      "properties": {"valid": {"const": true}, "diagnostics": {"type": "array"}},
+      "additionalProperties": true},
+    "semantic_entity_store": {"type": "object", "additionalProperties": false,
+      "required": ["profile", "scopeId", "state"],
+      "properties": {"profile": {"const": "semantic-entity-model-1"}, "scopeId": {"type": "string"},
+        "state": {"enum": ["stored", "already_stored"]}}}
   },
   "$defs": {
     "m1Bundle": {"type": "object", "additionalProperties": false,

@@ -4,7 +4,7 @@
 
 当前领域模型以`semantic-entity-model-1`为权威profile，包含语义实体、实体属性、类型化关系、主张、证据、覆盖、源码构造、实现映射和测试验证映射。项目及其语义模块也按实体表达；E0–E4保留为事实观察视角，不是实体类别或身份组成部分。
 
-`m1-project-discovery-1`继续作为独立的窄范围项目/workspace发现profile。`semantic-fact-model-1`保留为旧完整档案兼容格式和迁移输入；在实体重构切换任务完成前，其当前写入路径尚未全面切换，不能描述为已只读。切换时点和回滚门槛以`openspec/changes/redesign-semantic-entity-domain-model/tasks.md`为准。
+`m1-project-discovery-1`继续作为独立的窄范围项目/workspace发现profile。`semantic-fact-model-1`现为旧完整档案只读兼容格式和迁移输入；运行时`commit_bundle`拒绝新写入，`read_bundle`/`query_bundle`保留旧档案读取能力。默认CLI查询和算法档案写入均转向`semantic-entity-model-1`，M1接口不变。实现与切换验证记录见`openspec/changes/redesign-semantic-entity-domain-model/tasks.md`及同目录实体模型验证报告。
 
 既有`project_query_to_semantic_model`把Python/Rust分析器当时支持的事实投影到旧`semantic-fact-model-1`档案。固定Click和regex检出曾分别产生23,779与54,313条旧事实；这些数量只表示该分析器的支持范围，不表示项目全部语义。Cargo元数据不可用时仍有明确缺口。旧校验可检查结构、引用和声明的不变量，不能证明源码解释为真、完整还原E0–E4内容或运行时行为正确。
 

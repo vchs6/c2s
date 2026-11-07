@@ -1,6 +1,7 @@
 import contextlib
 import io
 import json
+import sqlite3
 import tempfile
 import unittest
 from pathlib import Path
@@ -23,6 +24,26 @@ class AlgorithmCliTests(unittest.TestCase):
             self.assertEqual(result["status"], "obtained")
             self.assertTrue(result["members"])
             self.assertEqual(result["constructionStatus"], "constructed")
+
+    def test_query_store_and_entities_command_share_the_same_entity_archive(self):
+        with tempfile.TemporaryDirectory() as temporary, tempfile.TemporaryDirectory() as data:
+            root = Path(temporary)
+            store = Path(data) / "shared.sqlite"
+            (root / "main.py").write_text("def choose(flag):\n    return flag\n", encoding="utf-8")
+            first_output, errors = io.StringIO(), io.StringIO()
+            with contextlib.redirect_stdout(first_output), contextlib.redirect_stderr(errors):
+                first_status = main(["query", "--root", str(root), "--select", "functions",
+                                     "--store", str(store), "--format", "json"])
+            second_output = io.StringIO()
+            with contextlib.redirect_stdout(second_output), contextlib.redirect_stderr(errors):
+                second_status = main(["entities", "--root", str(root), "--select", "entities",
+                                      "--store", str(store), "--format", "json"])
+            self.assertIn(first_status, (0, 2), errors.getvalue())
+            self.assertIn(second_status, (0, 2), errors.getvalue())
+            first = json.loads(first_output.getvalue())
+            second = json.loads(second_output.getvalue())
+            self.assertEqual(first["semantic_entity_store"]["scopeId"], second["scopeId"])
+            self.assertEqual(second["constructionStatus"], "reused")
 
     def test_cli_returns_source_bound_algorithm_and_gap_coverage(self):
         with tempfile.TemporaryDirectory() as temporary:
@@ -56,7 +77,7 @@ class AlgorithmCliTests(unittest.TestCase):
             self.assertTrue(any(fact["predicate"] == "behavior.control_edge" for fact in bundle["facts"]))
             self.assertEqual(result["semantic_validation"]["valid"], True)
 
-    def test_cli_persists_and_reads_back_algorithm_full_profile(self):
+    def test_cli_persists_algorithm_through_entity_profile_and_not_legacy_archive(self):
         with tempfile.TemporaryDirectory() as temporary:
             root = Path(temporary) / "project"
             root.mkdir()
@@ -69,10 +90,19 @@ class AlgorithmCliTests(unittest.TestCase):
                     "--function", "choose", "--semantic-facts", "--store", str(database)])
             self.assertEqual(status, 0, errors.getvalue())
             response = json.loads(output.getvalue())
-            self.assertEqual(response["semantic_store"]["state"], "stored")
+            self.assertEqual(response["semantic_entity_store"]["state"], "stored")
+            self.assertEqual(response["semantic_entity_store"]["profile"], "semantic-entity-model-1")
             self.assertTrue(response["semantic_fact_bundle"]["facts"])
-            self.assertEqual(response["semantic_fact_bundle"]["coverage"][0]["selector"],
-                "algorithm:" + response["algorithm"]["algorithm_id"])
+            self.assertTrue(response["semantic_entity_validation"]["valid"])
+            with sqlite3.connect(database) as connection:
+                tables = {row[0] for row in connection.execute(
+                    "SELECT name FROM sqlite_master WHERE type='table'")}
+                archive = connection.execute(
+                    "SELECT payload FROM semantic_entity_archives WHERE scope_id=?",
+                    (response["semantic_entity_store"]["scopeId"],)).fetchone()
+            entity_model = json.loads(archive[0])
+            self.assertTrue(any(item["ref"]["kind"] == "ComputationEntity" for item in entity_model["entities"]))
+            self.assertNotIn("sessions", tables)
 
     def test_cli_parses_code_review_graph_json_for_source_mapped_call_facts(self):
         with tempfile.TemporaryDirectory() as temporary, tempfile.TemporaryDirectory() as output_dir:

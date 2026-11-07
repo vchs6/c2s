@@ -639,8 +639,8 @@ def read_bundle(store: SemanticFactStore | Path | str, analysis_id: str) -> dict
     return result
 
 
-def commit_bundle(store: SemanticFactStore | Path | str, candidate: dict) -> dict:
-    """Atomically persist a validated full-profile bundle, retaining every model collection."""
+def _commit_legacy_bundle_for_migration(store: SemanticFactStore | Path | str, candidate: dict) -> dict:
+    """Internal migration/test helper for preserving already-ingested legacy archives."""
     repository = store if isinstance(store, SemanticFactStore) else SemanticFactStore(store)
     session = candidate.get("session", {})
     if session.get("profile") != "semantic-fact-model-1":
@@ -730,6 +730,11 @@ def commit_bundle(store: SemanticFactStore | Path | str, candidate: dict) -> dic
                            (session["analysisId"], operation_id, content_hash, _json(receipt)))
         connection.commit()
     return receipt
+
+
+def commit_bundle(store: SemanticFactStore | Path | str, candidate: dict) -> dict:
+    """Reject writes to the retired full profile; callers must write the entity profile."""
+    raise ValueError("semantic-fact-model-1 is read-only; write semantic-entity-model-1 instead")
 
 
 def query_bundle(store: SemanticFactStore | Path | str, analysis_id: str, selector: str) -> dict:

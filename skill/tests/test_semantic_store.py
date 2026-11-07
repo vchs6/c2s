@@ -51,7 +51,7 @@ class SemanticStoreTests(unittest.TestCase):
         from c2s_semantic_contract.projection import project_query_to_semantic_model
         from c2s_semantic_contract.validation import semantic_model_catalogs, validate_model
         from c2s_skill.query import query_project
-        from c2s_skill.semantic_store import commit_bundle, query_bundle, read_bundle
+        from c2s_skill.semantic_store import _commit_legacy_bundle_for_migration, query_bundle, read_bundle
 
         with TemporaryDirectory() as temporary:
             root = Path(temporary) / "project"
@@ -93,7 +93,7 @@ class SemanticStoreTests(unittest.TestCase):
             checked = validate_model(bundle, semantic_model_catalogs(), projected["sourceObservations"])
             self.assertTrue(checked["valid"], checked["diagnostics"])
 
-            receipt = commit_bundle(db, {"session": session, "operationId": "full-operation-1",
+            receipt = _commit_legacy_bundle_for_migration(db, {"session": session, "operationId": "full-operation-1",
                 "expectedGeneration": 0, "bundle": bundle,
                 "sourceObservations": projected["sourceObservations"], "artifacts": [artifact]})
             loaded = read_bundle(db, session["analysisId"])
@@ -148,7 +148,7 @@ class SemanticStoreTests(unittest.TestCase):
         self.assertNotEqual(fact_key_semantic(fact), fact_key_semantic(changed_layer_claim))
         self.assertNotEqual(fact_key_semantic(fact), fact_key_semantic(changed_derivation))
 
-    def test_public_query_store_persists_and_returns_validated_semantic_bundle(self):
+    def test_public_query_store_persists_entity_profile_without_writing_legacy_archive(self):
         with TemporaryDirectory() as temporary:
             root = Path(temporary) / "project"
             root.mkdir()
@@ -167,20 +167,24 @@ class SemanticStoreTests(unittest.TestCase):
             Draft202012Validator.check_schema(schema)
             self.assertEqual(list(Draft202012Validator(schema).iter_errors(response)), [])
             self.assertEqual(status, 2)  # valid partial result: the tiny fixture lacks declared language metadata
-            self.assertTrue(response["semantic_validation"]["valid"])
-            self.assertEqual(response["semantic_store"]["state"], "stored")
-            self.assertEqual(len(response["semantic_fact_bundle"]["facts"]), 1)
+            self.assertTrue(response["semantic_entity_validation"]["valid"])
+            self.assertEqual(response["semantic_entity_store"]["profile"], "semantic-entity-model-1")
+            self.assertEqual(response["semantic_entity_store"]["state"], "stored")
             with sqlite3.connect(database) as connection:
-                analysis_id = connection.execute("SELECT analysis_id FROM sessions").fetchone()[0]
-            from c2s_skill.semantic_store import read_bundle
-            loaded = read_bundle(database, analysis_id)
-            self.assertEqual(loaded["bundle"], response["semantic_fact_bundle"])
+                tables = {row[0] for row in connection.execute(
+                    "SELECT name FROM sqlite_master WHERE type='table'")}
+                stored = connection.execute(
+                    "SELECT payload FROM semantic_entity_archives WHERE scope_id=?",
+                    (response["semantic_entity_store"]["scopeId"],)).fetchone()
+            self.assertEqual(json.loads(stored[0])["profile"], "semantic-entity-model-1")
+            self.assertNotIn("sessions", tables)
+            self.assertNotIn("full_bundles", tables)
 
-    def test_public_semantic_store_accepts_code_selector_with_full_profile(self):
+    def test_public_semantic_store_accepts_source_view_selector_and_persists_entity_profile(self):
         with TemporaryDirectory() as temporary:
             root = Path(temporary) / "project"
             root.mkdir()
-            (root / "main.py").write_text("class Sample:\n    pass\n", encoding="utf-8")
+            (root / "main.py").write_text("class Sample:\n    def run(self):\n        return 1\n", encoding="utf-8")
             output = io.StringIO()
 
             with redirect_stdout(output):
@@ -189,10 +193,9 @@ class SemanticStoreTests(unittest.TestCase):
 
             self.assertIn(status, (0, 2))
             response = json.loads(output.getvalue())
-            self.assertEqual(response["semantic_fact_bundle"]["profile"], "semantic-fact-model-1")
+            self.assertEqual(response["semantic_entity_store"]["profile"], "semantic-entity-model-1")
 
-    def test_full_store_accumulates_selector_results_for_same_source_snapshot(self):
-        from c2s_skill.semantic_store import read_bundle
+    def test_query_selectors_share_one_entity_archive(self):
         with TemporaryDirectory() as temporary:
             root = Path(temporary) / "project"
             root.mkdir()
@@ -204,39 +207,31 @@ class SemanticStoreTests(unittest.TestCase):
                                    "--store", str(database), "--format", "json"])
                 self.assertIn(status, (0, 2))
             with sqlite3.connect(database) as connection:
-                analysis_id = connection.execute("SELECT analysis_id FROM sessions").fetchone()[0]
-            stored = read_bundle(database, analysis_id)["bundle"]
-            selectors = {item["selector"] for item in stored["coverage"]}
-            self.assertEqual(selectors, {"classes", "functions"})
-            self.assertGreaterEqual(len(stored["facts"]), 2)
+                rows = connection.execute("SELECT payload FROM semantic_entity_archives").fetchall()
+            self.assertEqual(len(rows), 1)
+            stored = json.loads(rows[0][0])
+            self.assertEqual(stored["profile"], "semantic-entity-model-1")
+            self.assertEqual({item["selector"] for item in stored["coverage"]}, {"all-entities"})
 
-    def test_exact_full_store_query_hit_skips_project_analyzers(self):
+    def test_query_entity_archive_is_reused_for_same_source_snapshot(self):
         with TemporaryDirectory() as temporary:
             root = Path(temporary) / "project"
             root.mkdir()
-            (root / "main.py").write_text("class Sample:\n    pass\n", encoding="utf-8")
+            (root / "main.py").write_text("class Sample:\n    def run(self):\n        return 1\n", encoding="utf-8")
             database = Path(temporary) / "facts.sqlite"
             args = ["query", "--root", str(root), "--select", "classes", "--store", str(database), "--format", "json"]
             with redirect_stdout(io.StringIO()):
                 first_status = main(args)
             output = io.StringIO()
-            with patch("c2s_skill.__main__.query_project", side_effect=AssertionError("analyzer reran")), \
-                    redirect_stdout(output):
+            with redirect_stdout(output):
                 second_status = main(args)
             response = json.loads(output.getvalue())
             self.assertIn(first_status, (0, 2))
             self.assertIn(second_status, (0, 2))
-            self.assertEqual(response["persistence"]["status"], "cache_hit")
-            self.assertEqual(response["semantic_fact_bundle"]["profile"], "semantic-fact-model-1")
-            markdown = io.StringIO()
-            with patch("c2s_skill.__main__.query_project", side_effect=AssertionError("analyzer reran")), \
-                    redirect_stdout(markdown):
-                markdown_status = main(["query", "--root", str(root), "--select", "classes",
-                    "--store", str(database), "--format", "markdown"])
-            self.assertIn(markdown_status, (0, 2))
-            self.assertIn("Semantic facts:", markdown.getvalue())
+            self.assertEqual(response["semantic_entity_store"]["profile"], "semantic-entity-model-1")
+            self.assertEqual(response["semantic_entity_query"]["constructionStatus"], "reused")
 
-    def test_default_markdown_query_is_remembered_for_the_next_hit(self):
+    def test_default_markdown_query_reports_entity_archive_state(self):
         with TemporaryDirectory() as temporary:
             root = Path(temporary) / "project"
             root.mkdir()
@@ -246,12 +241,66 @@ class SemanticStoreTests(unittest.TestCase):
             with redirect_stdout(io.StringIO()):
                 first_status = main(args)
             markdown = io.StringIO()
-            with patch("c2s_skill.__main__.query_project", side_effect=AssertionError("analyzer reran")), \
-                    redirect_stdout(markdown):
+            with redirect_stdout(markdown):
                 second_status = main(args)
             self.assertIn(first_status, (0, 2))
             self.assertIn(second_status, (0, 2))
-            self.assertIn("Semantic facts:", markdown.getvalue())
+            self.assertIn("Semantic entities:", markdown.getvalue())
+
+    def test_public_legacy_full_profile_writer_is_disabled_after_cutover(self):
+        from c2s_skill.semantic_store import commit_bundle
+        with TemporaryDirectory() as temporary:
+            root = Path(temporary) / "project"
+            root.mkdir()
+            db = Path(temporary) / "legacy.sqlite"
+            session = session_for(root, db, "semantic-fact-model-1")
+            candidate = {"session": session, "operationId": "legacy-write",
+                "expectedGeneration": 0, "bundle": {"version": "1.0.0",
+                    "profile": "semantic-fact-model-1", "registrations": [], "assessments": [],
+                    "facts": [], "evidence": [], "coverage": [], "dependencies": [],
+                    "dependencyResolutions": [], "semanticStates": [], "diagnostics": [],
+                    "contextDomains": [], "contexts": []}, "artifacts": []}
+            with self.assertRaisesRegex(ValueError, "read-only"):
+                commit_bundle(db, candidate)
+
+    def test_entity_cutover_keeps_existing_legacy_archive_readable_in_same_database(self):
+        from c2s_skill.semantic_store import (_commit_legacy_bundle_for_migration, read_bundle)
+        from c2s_semantic_contract.projection import project_query_to_semantic_model
+        from c2s_skill.query import query_project
+        with TemporaryDirectory() as temporary:
+            root = Path(temporary) / "project"
+            root.mkdir()
+            (root / "pyproject.toml").write_text(
+                '[project]\nname = "sample"\nversion = "0.1.0"\nrequires-python = ">=3.11"\n',
+                encoding="utf-8")
+            (root / "main.py").write_text("def run():\n    return 1\n", encoding="utf-8")
+            database = Path(temporary) / "combined.sqlite"
+            session = session_for(root, database, "semantic-fact-model-1")
+            projection = project_query_to_semantic_model(query_project(root, ["functions"]),
+                identity_domain=session["identityDomain"])
+            legacy_bundle = projection["bundle"]
+            _commit_legacy_bundle_for_migration(database, {"session": session,
+                "operationId": "before-cutover", "expectedGeneration": 0,
+                "bundle": legacy_bundle, "artifacts": [],
+                "sourceObservations": projection["sourceObservations"]})
+            backup_database = Path(temporary) / "before-cutover.sqlite"
+            with sqlite3.connect(database) as source, sqlite3.connect(backup_database) as backup:
+                source.backup(backup)
+
+            with redirect_stdout(io.StringIO()):
+                status = main(["query", "--root", str(root), "--select", "functions",
+                               "--store", str(database), "--format", "json"])
+
+            self.assertIn(status, (0, 2))
+            old = read_bundle(database, session["analysisId"])
+            backup = read_bundle(backup_database, session["analysisId"])
+            self.assertEqual(old["bundle"]["profile"], "semantic-fact-model-1")
+            self.assertEqual(old["bundle"]["facts"], legacy_bundle["facts"])
+            self.assertEqual(backup["bundle"], old["bundle"])
+            with sqlite3.connect(database) as connection:
+                entity_payload = connection.execute(
+                    "SELECT payload FROM semantic_entity_archives").fetchone()[0]
+            self.assertEqual(json.loads(entity_payload)["profile"], "semantic-entity-model-1")
 
     def test_fact_equivalence_ignores_record_and_evidence_ids_but_keeps_claim_context(self):
         first = bundle_with_fact()["facts"][0]
