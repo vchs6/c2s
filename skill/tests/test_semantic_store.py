@@ -236,6 +236,23 @@ class SemanticStoreTests(unittest.TestCase):
             self.assertIn(markdown_status, (0, 2))
             self.assertIn("Semantic facts:", markdown.getvalue())
 
+    def test_default_markdown_query_is_remembered_for_the_next_hit(self):
+        with TemporaryDirectory() as temporary:
+            root = Path(temporary) / "project"
+            root.mkdir()
+            (root / "main.py").write_text("class Sample:\n    pass\n", encoding="utf-8")
+            args = ["query", "--root", str(root), "--select", "classes",
+                    "--store", str(Path(temporary) / "facts.sqlite")]
+            with redirect_stdout(io.StringIO()):
+                first_status = main(args)
+            markdown = io.StringIO()
+            with patch("c2s_skill.__main__.query_project", side_effect=AssertionError("analyzer reran")), \
+                    redirect_stdout(markdown):
+                second_status = main(args)
+            self.assertIn(first_status, (0, 2))
+            self.assertIn(second_status, (0, 2))
+            self.assertIn("Semantic facts:", markdown.getvalue())
+
     def test_fact_equivalence_ignores_record_and_evidence_ids_but_keeps_claim_context(self):
         first = bundle_with_fact()["facts"][0]
         second = bundle_with_fact(evidence_id="ev-2", fact_id="fact-2")["facts"][0]

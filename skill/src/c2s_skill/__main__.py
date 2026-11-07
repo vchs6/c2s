@@ -124,9 +124,8 @@ def main(argv: list[str] | None = None) -> int:
                 response["semantic_artifacts"] = query_artifacts(repository, analysis_id, "+".join(selectors))
                 response["semantic_validation"] = semantic_validation
                 response["semantic_store"] = semantic_receipt
-                if output_format == "json":
-                    remember_query_report(repository, root, "+".join(selectors), result.source_digest,
-                        result.profile_digest, analysis_id, response)
+                remember_query_report(repository, root, "+".join(selectors), result.source_digest,
+                    result.profile_digest, analysis_id, response)
             rendered = (json.dumps(response, ensure_ascii=False, indent=2) + "\n"
                         if output_format == "json" else result_to_markdown(result))
             if args.store and output_format == "markdown":
