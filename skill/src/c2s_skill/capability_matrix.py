@@ -45,6 +45,30 @@ def load_tool_matrix(path: Path | None = None) -> dict[str, Any]:
     return value
 
 
+def validate_matrix_evidence(matrix: dict[str, Any], repo_root: Path | None = None) -> None:
+    """Validate lit entries against checkout evidence during CI/release checks.
+
+    This is deliberately separate from runtime selection so installed wheels do
+    not need to ship the source repository's tests and research documents.
+    """
+    root = (repo_root or Path(__file__).resolve().parents[3]).resolve()
+    for tool in matrix.get("tools", []):
+        if not isinstance(tool, dict) or tool.get("status") != "lit":
+            continue
+        validation = tool.get("validation")
+        if not isinstance(validation, dict):
+            raise ValueError(f"lit tool {tool.get('id')!r} has no validation evidence")
+        for category in ("tests", "evidence"):
+            references = validation.get(category)
+            if not isinstance(references, list) or not references:
+                raise ValueError(f"lit tool {tool.get('id')!r} has no {category} references")
+            for item in references:
+                path = Path(item) if isinstance(item, str) else Path(".")
+                if (not isinstance(item, str) or path.is_absolute() or ".." in path.parts
+                        or not (root / path).is_file()):
+                    raise ValueError(f"lit tool {tool.get('id')!r} has invalid {category} reference: {item!r}")
+
+
 def detect_available_tools(matrix: dict[str, Any]) -> set[str]:
     """Detect tool executables and parser modules without installing anything."""
     available = set()
@@ -199,8 +223,7 @@ def parse_selected_tool_output(selection: ToolSelection, tool_id: str, response:
     raise ValueError(f"tool {tool_id!r} does not have a structured-output parser")
 
 
-def _is_lit(tool: Any, available: set[str], environment: dict[str, str],
-            repo_root: Path | None = None) -> bool:
+def _is_lit(tool: Any, available: set[str], environment: dict[str, str]) -> bool:
     if not isinstance(tool, dict) or not isinstance(tool.get("id"), str):
         return False
     validation = tool.get("validation")
@@ -209,13 +232,10 @@ def _is_lit(tool: Any, available: set[str], environment: dict[str, str],
             or not isinstance(validation, dict)
             or not validation.get("tests") or not validation.get("evidence")):
         return False
-    root = repo_root or Path(__file__).resolve().parents[3]
     for category in ("tests", "evidence"):
         references = validation.get(category)
         if (not isinstance(references, list) or not references
-                or any(not isinstance(item, str) or Path(item).is_absolute()
-                       or ".." in Path(item).parts or not (root / item).is_file()
-                       for item in references)):
+                or any(not isinstance(item, str) or not item for item in references)):
             return False
     host = tool.get("host_os", "any")
     if host != "any" and host != environment.get("host_os"):
@@ -228,8 +248,7 @@ def _is_lit(tool: Any, available: set[str], environment: dict[str, str],
 
 def select_tools(needs: Iterable[str], matrix: dict[str, Any], *,
                  available_tools: set[str] | None = None,
-                 environment: dict[str, str] | None = None,
-                 repo_root: Path | None = None) -> ToolSelection:
+                 environment: dict[str, str] | None = None) -> ToolSelection:
     """Choose the smallest deterministic lit tool set covering semantic needs.
 
     Candidate or unavailable tools do not contribute coverage. Equal-size sets
@@ -255,7 +274,7 @@ def select_tools(needs: Iterable[str], matrix: dict[str, Any], *,
         provides = tool.get("provides", [])
         if not isinstance(provides, list) or not all(isinstance(x, str) and x for x in provides):
             raise ValueError(f"tool {tool['id']} has invalid provides")
-        if _is_lit(tool, available, env, repo_root):
+        if _is_lit(tool, available, env):
             eligible.append((tool["id"], frozenset(provides)))
 
     if not requested:

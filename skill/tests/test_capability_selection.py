@@ -1,9 +1,11 @@
 import unittest
 import platform
+from unittest.mock import patch
 from pathlib import Path
 from tempfile import TemporaryDirectory
 
-from c2s_skill.capability_matrix import describe_tools_used, load_tool_matrix, select_tools
+from c2s_skill.capability_matrix import (describe_tools_used, load_tool_matrix, select_tools,
+                                         validate_matrix_evidence)
 from c2s_skill.query import query_project
 
 
@@ -57,6 +59,26 @@ class CapabilitySelectionTests(unittest.TestCase):
 
         self.assertEqual(selected.tools, ())
         self.assertEqual(selected.uncovered, ("declarations",))
+
+    def test_runtime_selection_does_not_require_source_checkout_evidence_files(self):
+        with TemporaryDirectory() as temporary:
+            matrix = {"tools": [provider("installed-parser", ["declarations"])]}
+
+            installed_module = Path(temporary) / "site-packages" / "c2s_skill" / "capability_matrix.py"
+            with patch("c2s_skill.capability_matrix.__file__", str(installed_module)):
+                selected = select_tools(["declarations"], matrix,
+                    available_tools={"installed-parser"})
+
+            self.assertEqual(selected.tools, ("installed-parser",))
+            self.assertEqual(selected.uncovered, ())
+
+    def test_checked_in_lit_matrix_references_real_test_and_evidence_files(self):
+        validate_matrix_evidence(load_tool_matrix())
+
+        invalid = {"tools": [provider("broken", ["declarations"])]}
+        invalid["tools"][0]["validation"]["evidence"] = ["../escape"]
+        with self.assertRaisesRegex(ValueError, "invalid evidence reference"):
+            validate_matrix_evidence(invalid)
 
     def test_duplicate_or_unknown_needs_are_normalized_without_fake_coverage(self):
         matrix = {"tools": [provider("python", ["declarations"])]}

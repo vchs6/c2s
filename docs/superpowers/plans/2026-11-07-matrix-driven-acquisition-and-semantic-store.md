@@ -14,6 +14,7 @@
 
 - Preserve the source project and store only outside its root.
 - Select only registered parsers with successful validation evidence; unknown host/target/tool state remains unavailable, not implicitly supported.
+- Validate evidence-file existence in checkout/release checks, not at runtime; installed packages must not depend on source test or research-document paths.
 - A tool's output is a candidate source, not semantic truth; keep evidence, omissions, unresolved bindings, and conflicts.
 - Preserve subject identity `{authority, domainId, localId}`; never use paths, names, hashes, or tool node IDs as semantic identity.
 - Use Python 3 for repository-owned scripts and tests; no new third-party runtime dependency.
