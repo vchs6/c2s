@@ -19,13 +19,17 @@ def archive():
             {"ref": data, "name": "订单", "aliases": [], "description": "", "attributes": [
                 {"attributeId": "status", "name": "状态", "semanticType": "unknown",
                  "valueRange": {"kind": "unknown"}, "cardinality": "one", "constraints": [],
-                 "evidenceIds": []}], "sourceKeys": ["src:order"], "observationViews": ["E2"]}],
+                 "evidenceIds": ["ev-1"]}], "sourceKeys": ["src:order"], "observationViews": ["E2"]}],
         "claims": [], "relations": [
             {"relationId": "r1", "predicate": "defines", "subject": project, "target": module,
              "evidenceIds": [], "condition": {"kind": "true"}},
             {"relationId": "r2", "predicate": "contains", "subject": module, "target": data,
              "evidenceIds": [], "condition": {"kind": "true"}}],
-        "continuityCandidates": [], "evidence": [], "coverage": []}
+        "continuityCandidates": [], "evidence": [{"evidenceId": "ev-1", "source": "source",
+            "description": "字段声明", "path": "order.py", "sha256": "a" * 64,
+            "startByte": 1, "endByte": 4, "method": "tree-sitter"}], "coverage": [{"coverageId": "c1", "entity": data,
+            "selector": "attributes", "status": "obtained", "inputFingerprint": "sha256:a",
+            "analyzerVersion": "1.0.0", "presentationStatus": "included", "freshness": "current"}]}
 
 
 class SemanticEntityQueryTests(unittest.TestCase):
@@ -62,8 +66,11 @@ class SemanticEntityQueryTests(unittest.TestCase):
             def read(self, scope_id):
                 return archive() if scope_id == "scope-a" else None
         request = {"version": "1.0.0", "profile": "semantic-entity-query-1", "scopeId": "scope-a",
-                   "selector": "entity:d"}
-        self.assertEqual(query_entity_store(Store(), request)["entity"]["name"], "订单")
+                   "selector": "entity:d", "inputFingerprint": "sha256:b"}
+        result = query_entity_store(Store(), request)
+        self.assertEqual(result["entity"]["name"], "订单")
+        self.assertEqual(result["entity"]["coverage"][0]["freshness"], "review_required")
+        self.assertEqual(result["gaps"][0]["code"], "COVERAGE_REVIEW_REQUIRED")
         request["ignored"] = True
         with self.assertRaises(ValueError):
             query_entity_store(Store(), request)
@@ -82,6 +89,10 @@ class SemanticEntityQueryTests(unittest.TestCase):
         self.assertIn("## 属性：状态", markdown)
         self.assertIn('"localId": "d"', encoded)
         self.assertIn('"localId": "d"', markdown)
+        self.assertIn("status", encoded)
+        self.assertIn("属性标识：status", markdown)
+        self.assertIn("ev-1", encoded)
+        self.assertIn("ev-1", markdown)
         self.assertIn("状态", markdown)
 
 

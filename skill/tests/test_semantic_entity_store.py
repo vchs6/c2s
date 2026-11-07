@@ -97,6 +97,15 @@ class SemanticEntityStoreTests(unittest.TestCase):
             merged = SemanticEntityStore(path).lookup("scope-a", "source:key")
             self.assertEqual(merged["evidenceIds"], [f"ev-{index}" for index in range(8)])
 
+    def test_source_move_keeps_distinct_identity_and_proposes_unresolved_continuity(self):
+        with tempfile.TemporaryDirectory() as temporary:
+            store = SemanticEntityStore(Path(temporary) / "semantic.sqlite")
+            previous = store.register("scope-a", "src:old/path", "DataEntity", "订单", ["ev-old"])
+            current = store.register("scope-a", "src:new/path", "DataEntity", "订单", ["ev-new"])
+            self.assertNotEqual(previous["ref"], current["ref"])
+            self.assertEqual(current["continuityCandidates"][0]["status"], "continuity_unresolved")
+            self.assertEqual(len(store.continuity_candidates("scope-a")), 1)
+
 
 if __name__ == "__main__":
     unittest.main()

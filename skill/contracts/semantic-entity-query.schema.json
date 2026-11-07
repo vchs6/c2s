@@ -11,6 +11,8 @@
     "scopeId": {"type": "string", "minLength": 1},
     "selector": {"type": "string", "minLength": 1},
     "expandChildren": {"type": "boolean", "default": false},
-    "maxDepth": {"type": "integer", "minimum": 0, "maximum": 32, "default": 8}
+    "maxDepth": {"type": "integer", "minimum": 0, "maximum": 32, "default": 8},
+    "inputFingerprint": {"type": "string", "minLength": 1},
+    "analyzerVersion": {"type": "string", "minLength": 1}
   }
 }

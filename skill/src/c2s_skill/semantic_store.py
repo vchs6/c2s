@@ -818,6 +818,9 @@ class SemanticEntityStore:
             scope_id TEXT NOT NULL, entity_key TEXT NOT NULL, kind TEXT NOT NULL,
             name TEXT NOT NULL, source_key TEXT NOT NULL,
             PRIMARY KEY(scope_id, entity_key, source_key))""")
+        connection.execute("""CREATE TABLE IF NOT EXISTS semantic_entity_continuity(
+            scope_id TEXT NOT NULL, candidate_id TEXT NOT NULL, payload TEXT NOT NULL,
+            PRIMARY KEY(scope_id, candidate_id))""")
         connection.execute("CREATE INDEX IF NOT EXISTS semantic_entity_kind_idx "
                            "ON semantic_entity_registry(scope_id, kind)")
         connection.execute("CREATE INDEX IF NOT EXISTS semantic_entity_name_idx "
@@ -883,6 +886,25 @@ class SemanticEntityStore:
             else:
                 payload = {"ref": {"identity": identity, "kind": kind}, "name": name,
                            "sourceKey": source_key, "evidenceIds": sorted(set(evidence_ids))}
+                previous_rows = connection.execute("SELECT payload FROM semantic_entity_registry "
+                    "WHERE scope_id=? AND kind=? AND source_key<>?", (scope_id, kind, source_key)).fetchall()
+                continuity_candidates = []
+                for previous_row in previous_rows:
+                    previous = json.loads(previous_row[0])
+                    if previous["name"] != name:
+                        continue
+                    candidate_id = hashlib.sha256(
+                        f"continuity\0{scope_id}\0{previous['sourceKey']}\0{source_key}".encode()).hexdigest()
+                    candidate = {"candidateId": candidate_id, "previous": previous["ref"],
+                        "current": payload["ref"], "status": "continuity_unresolved",
+                        "reason": "源码键变化且名称/类型相同，只能提出身份连续性候选，不能自动合并。",
+                        "evidenceIds": sorted(set(previous["evidenceIds"]) | set(evidence_ids))}
+                    connection.execute("INSERT OR IGNORE INTO semantic_entity_continuity VALUES(?,?,?)",
+                                       (scope_id, candidate_id, _json(candidate)))
+                    continuity_candidates.append(candidate)
+                if continuity_candidates:
+                    payload["continuityCandidates"] = sorted(continuity_candidates,
+                                                               key=lambda item: item["candidateId"])
                 connection.execute("INSERT INTO semantic_entity_registry VALUES(?,?,?,?,?)",
                                    (scope_id, source_key, identity_key, kind, _json(payload)))
         return payload
@@ -892,6 +914,12 @@ class SemanticEntityStore:
             row = connection.execute("SELECT payload FROM semantic_entity_registry WHERE scope_id=? AND source_key=?",
                                      (scope_id, source_key)).fetchone()
         return json.loads(row[0]) if row else None
+
+    def continuity_candidates(self, scope_id: str) -> list[dict]:
+        with self._connect() as connection:
+            rows = connection.execute("SELECT payload FROM semantic_entity_continuity WHERE scope_id=? "
+                                      "ORDER BY candidate_id", (scope_id,)).fetchall()
+        return [json.loads(row[0]) for row in rows]
 
 
 def _merge_entity_archives(old: dict, new: dict) -> dict:

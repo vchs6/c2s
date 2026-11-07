@@ -150,7 +150,27 @@ def query_entity_store(store, request: dict) -> dict:
         selector = "expand:" + request["selector"].removeprefix("entity:")
     else:
         selector = request["selector"]
-    return query_semantic_entities(model, selector, max_depth=request.get("maxDepth", 8))
+    result = query_semantic_entities(model, selector, max_depth=request.get("maxDepth", 8))
+    expected_fingerprint = request.get("inputFingerprint")
+    expected_analyzer = request.get("analyzerVersion")
+    stale_records = []
+    def assess_freshness(container: dict) -> None:
+        for coverage in container.get("coverage", []):
+            reasons = []
+            if expected_fingerprint is not None and coverage["inputFingerprint"] != expected_fingerprint:
+                reasons.append("INPUT_FINGERPRINT_CHANGED")
+            if expected_analyzer is not None and coverage["analyzerVersion"] != expected_analyzer:
+                reasons.append("ANALYZER_VERSION_CHANGED")
+            if reasons:
+                coverage["freshness"] = "review_required"
+                stale_records.append({"coverageId": coverage["coverageId"], "reasons": reasons})
+    if result.get("entity"):
+        assess_freshness(result["entity"])
+    for item in result.get("expandedMembers", []):
+        assess_freshness(item["entity"])
+    for stale in stale_records:
+        result["gaps"].append({"code": "COVERAGE_REVIEW_REQUIRED", **stale})
+    return result
 
 
 def render_entity_query(result: dict, output_format: str = "json") -> str:
@@ -167,7 +187,7 @@ def render_entity_query(result: dict, output_format: str = "json") -> str:
             f"源码映射键：{json.dumps(entity['sourceKeys'], ensure_ascii=False)}"])
         for attribute in entity.get("attributes", []):
             value_range = attribute["valueRange"]
-            lines.extend(["", f"## 属性：{attribute['name']}",
+            lines.extend(["", f"## 属性：{attribute['name']}", f"属性标识：{attribute['attributeId']}",
                 f"语义类型：{attribute['semanticType']}",
                 f"实现类型：{attribute.get('implementationType', '未提供')}",
                 f"值域：{json.dumps(value_range, ensure_ascii=False, sort_keys=True)}",
@@ -187,13 +207,13 @@ def render_entity_query(result: dict, output_format: str = "json") -> str:
                 f"输入指纹：{coverage['inputFingerprint']}",
                 f"分析器版本：{coverage['analyzerVersion']}"])
         for relation in entity.get("relations", []):
-            lines.extend(["", f"## 关系：{relation['predicate']}",
+            lines.extend(["", f"## 关系：{relation['predicate']}", f"关系标识：{relation['relationId']}",
                 f"主体：{json.dumps(relation['subject'], ensure_ascii=False, sort_keys=True)}",
                 f"目标：{json.dumps(relation['target'], ensure_ascii=False, sort_keys=True)}",
                 f"证据：{json.dumps(relation['evidenceIds'], ensure_ascii=False)}"])
         for evidence in entity.get("evidence", []):
-            lines.extend(["", f"## 证据：{evidence['evidenceId']}", evidence["description"],
-                f"来源：{evidence['source']}", f"路径：{evidence.get('path', '未提供')}"])
+            lines.extend(["", f"## 证据：{evidence['evidenceId']}",
+                json.dumps(evidence, ensure_ascii=False, sort_keys=True)])
     if result.get("members"):
         lines.extend(["", "## 直接子实体"])
         lines.extend(f"- {item['name']}（{item['kind']}）：{item.get('description', '')}；引用 {item['ref']['identity']['localId']}"
