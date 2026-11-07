@@ -1,15 +1,117 @@
 import contextlib
 import io
 import json
+import os
 import sqlite3
 import tempfile
 import unittest
 from pathlib import Path
+from unittest.mock import patch
 
 from c2s_skill.__main__ import main
 
 
 class AlgorithmCliTests(unittest.TestCase):
+    def test_workspace_metadata_is_stored_as_e1_project_claims_not_package_entities(self):
+        cargo = Path(__file__).resolve().parents[2] / ".local/cargo/bin/cargo"
+        if not cargo.is_file():
+            self.skipTest("repository-local Cargo toolchain is unavailable")
+        with tempfile.TemporaryDirectory() as temporary, tempfile.TemporaryDirectory() as data:
+            root = Path(temporary)
+            (root / "crates/a/src").mkdir(parents=True)
+            (root / "pyproject.toml").write_text('[project]\nname = "sample-workspace"\n', encoding="utf-8")
+            (root / "Cargo.toml").write_text('[workspace]\nmembers = ["crates/*"]\nresolver = "2"\n',
+                                              encoding="utf-8")
+            (root / "crates/a/Cargo.toml").write_text(
+                '[package]\nname = "sample-member"\nversion = "0.1.0"\nedition = "2021"\n', encoding="utf-8")
+            (root / "crates/a/src/lib.rs").write_text("pub fn value() -> u8 { 1 }\n", encoding="utf-8")
+            database = Path(data) / "entities.sqlite"
+            env = {"CARGO": str(cargo), "RUSTUP_HOME": str(cargo.parents[2] / "rustup"),
+                   "CARGO_HOME": str(cargo.parents[1])}
+            output, errors = io.StringIO(), io.StringIO()
+            with patch.dict(os.environ, env), contextlib.redirect_stdout(output), contextlib.redirect_stderr(errors):
+                status = main(["query", "--root", str(root), "--select", "workspace-members",
+                               "--format", "json", "--store", str(database)])
+            self.assertEqual(status, 0, errors.getvalue())
+            response = json.loads(output.getvalue())
+            self.assertEqual(len(response["facts"]), 1)
+            output = io.StringIO()
+            with patch.dict(os.environ, env), contextlib.redirect_stdout(output), contextlib.redirect_stderr(io.StringIO()):
+                status = main(["entities", "--root", str(root), "--select", "project",
+                               "--format", "json", "--store", str(database)])
+            self.assertEqual(status, 0)
+            entity_response = json.loads(output.getvalue())
+            project = entity_response["entity"]
+            self.assertIn("E1", project["observationViews"])
+            claims = [item for item in project["claims"] if item["predicate"] == "workspaceMemberPackage"]
+            self.assertEqual([item["value"]["packageName"] for item in claims], ["sample-member"])
+            self.assertTrue(all(item["claimStatus"] == "confirmed" for item in claims))
+            workspace_coverage = [item for item in project["coverage"]
+                                   if item["selector"] == "workspace-members"]
+            self.assertTrue(workspace_coverage)
+            self.assertTrue(all(item["status"] == "obtained" for item in workspace_coverage))
+            self.assertFalse(any(item["name"] == "sample-member" for item in entity_response["members"]))
+
+    def test_workspace_metadata_failure_is_stored_as_not_acquired_coverage(self):
+        with tempfile.TemporaryDirectory() as temporary, tempfile.TemporaryDirectory() as data:
+            root = Path(temporary)
+            (root / "Cargo.toml").write_text('[workspace]\nmembers = []\n', encoding="utf-8")
+            (root / "pyproject.toml").write_text('[project]\nname = "sample-workspace"\n', encoding="utf-8")
+            database = Path(data) / "entities.sqlite"
+            env = {"CARGO": ""}
+            output, errors = io.StringIO(), io.StringIO()
+            with patch.dict(os.environ, env), patch("c2s_skill.acquisition.shutil.which", return_value=None), \
+                    contextlib.redirect_stdout(output), contextlib.redirect_stderr(errors):
+                status = main(["query", "--root", str(root), "--select", "workspace-members",
+                               "--format", "json", "--store", str(database)])
+            self.assertEqual(status, 2)
+            self.assertTrue(any("TOOL_UNAVAILABLE:cargo" in item["reason"]
+                                for item in json.loads(output.getvalue())["gaps"]))
+            output = io.StringIO()
+            with patch.dict(os.environ, env), patch("c2s_skill.acquisition.shutil.which", return_value=None), \
+                    contextlib.redirect_stdout(output), contextlib.redirect_stderr(io.StringIO()):
+                status = main(["entities", "--root", str(root), "--select", "project",
+                               "--format", "json", "--store", str(database)])
+            self.assertEqual(status, 0)
+            response = json.loads(output.getvalue())
+            self.assertTrue(any(item["selector"] == "workspace-members" and item["status"] == "not_acquired"
+                                for item in response["entity"]["coverage"]))
+            self.assertTrue(any(item["code"] == "WORKSPACE_METADATA_NOT_ACQUIRED"
+                                for item in response["constructionDiagnostics"]))
+
+    def test_workspace_metadata_can_anchor_a_virtual_workspace_project(self):
+        cargo = Path(__file__).resolve().parents[2] / ".local/cargo/bin/cargo"
+        if not cargo.is_file():
+            self.skipTest("repository-local Cargo toolchain is unavailable")
+        with tempfile.TemporaryDirectory() as temporary, tempfile.TemporaryDirectory() as data:
+            root = Path(temporary)
+            (root / "crates/a/src").mkdir(parents=True)
+            (root / "Cargo.toml").write_text('[workspace]\nmembers = ["crates/*"]\nresolver = "2"\n',
+                                              encoding="utf-8")
+            (root / "crates/a/Cargo.toml").write_text(
+                '[package]\nname = "virtual-member"\nversion = "0.1.0"\nedition = "2021"\n', encoding="utf-8")
+            (root / "crates/a/src/lib.rs").write_text("pub fn value() -> u8 { 1 }\n", encoding="utf-8")
+            database = Path(data) / "entities.sqlite"
+            env = {"CARGO": str(cargo), "RUSTUP_HOME": str(cargo.parents[2] / "rustup"),
+                   "CARGO_HOME": str(cargo.parents[1])}
+            output = io.StringIO()
+            with patch.dict(os.environ, env), contextlib.redirect_stdout(output), \
+                    contextlib.redirect_stderr(io.StringIO()):
+                status = main(["query", "--root", str(root), "--select", "workspace-members",
+                               "--format", "json", "--store", str(database)])
+            self.assertEqual(status, 0)
+            output = io.StringIO()
+            with patch.dict(os.environ, env), contextlib.redirect_stdout(output), \
+                    contextlib.redirect_stderr(io.StringIO()):
+                status = main(["entities", "--root", str(root), "--select", "project",
+                               "--format", "json", "--store", str(database)])
+            self.assertEqual(status, 0)
+            result = json.loads(output.getvalue())
+            self.assertEqual(result["entity"]["ref"]["kind"], "Project")
+            self.assertTrue(any(item["predicate"] == "workspaceMemberPackage"
+                                and item["value"]["packageName"] == "virtual-member"
+                                for item in result["entity"]["claims"]))
+
     def test_entities_command_constructs_and_queries_entity_archive(self):
         with tempfile.TemporaryDirectory() as temporary, tempfile.TemporaryDirectory() as data:
             root = Path(temporary)

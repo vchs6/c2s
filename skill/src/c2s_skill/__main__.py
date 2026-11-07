@@ -20,12 +20,33 @@ from .capability_matrix import (detect_available_tools, host_environment, load_t
 
 
 def _persist_semantic_entity_archive(root: Path, database: Path, implementation_view: dict | None = None,
-                                     source_path: str | None = None, function_name: str | None = None) -> dict:
+                                     source_path: str | None = None, function_name: str | None = None,
+                                     workspace_facts: tuple = (), workspace_gap: str | None = None,
+                                     workspace_requested: bool = False) -> dict:
     from c2s_semantic_contract.validation import validate_semantic_entity_model
     from .entity_construction import construct_and_query_semantic_entities
 
     store = SemanticEntityStore(database)
     query = construct_and_query_semantic_entities(root, store, "entities")
+    if workspace_requested:
+        from .entity_construction import add_workspace_observations
+        model = store.read(query["scopeId"])
+        base_coverage = next((item for item in model["coverage"] if item["selector"] == "all-entities"), None)
+        if base_coverage is None:
+            from .acquisition import analysis_profile_digest
+            from .inventory import source_fingerprint
+            analyzer_version = analysis_profile_digest()
+            input_fingerprint = "sha256:" + hashlib.sha256(
+                f"{source_fingerprint(root)}\0{analyzer_version}".encode()).hexdigest()
+        else:
+            analyzer_version = base_coverage["analyzerVersion"]
+            input_fingerprint = base_coverage["inputFingerprint"]
+        diagnostics = add_workspace_observations(root, store, model, workspace_facts, workspace_gap,
+                                                  input_fingerprint, analyzer_version)
+        prior_diagnostics = store.read_diagnostics(query["scopeId"], input_fingerprint)
+        diagnostics_by_key = {json.dumps(item, ensure_ascii=False, sort_keys=True): item
+                              for item in [*prior_diagnostics, *diagnostics]}
+        store.write(model, list(diagnostics_by_key.values()))
     if implementation_view is not None:
         model = store.read(query["scopeId"])
         matching = [item for item in model["sourceMappings"]
@@ -135,7 +156,15 @@ def main(argv: list[str] | None = None) -> int:
             result = query_project(root, selectors, cache)
             response = result_to_dict(result)
             if args.store:
-                response.update(_persist_semantic_entity_archive(root, args.store))
+                workspace_requested = ("workspace-members" in selectors or
+                    ("all-supported-facts" in selectors and (root / "Cargo.toml").is_file()))
+                workspace_gap = next((item.reason for item in result.gaps
+                    if item.selector in {"workspace-members", "all-supported-facts"}
+                    and ("cargo" in item.reason.lower() or "workspace" in item.reason.lower())), None)
+                workspace_facts = tuple(item for item in result.facts if item.kind == "workspace_member")
+                response.update(_persist_semantic_entity_archive(root, args.store,
+                    workspace_facts=workspace_facts, workspace_gap=workspace_gap,
+                    workspace_requested=workspace_requested))
             rendered = (json.dumps(response, ensure_ascii=False, indent=2) + "\n"
                         if output_format == "json" else result_to_markdown(result))
             if args.store and output_format == "markdown":

@@ -9,6 +9,10 @@
 - **WHEN** 项目实体同时有构建、接口和实现事实
 - **THEN** 这些事实关联同一语义实体身份，并分别保留对应观察视角
 
+#### Scenario: 记录Cargo workspace成员
+- **WHEN** Cargo metadata成功返回workspace package成员
+- **THEN** 将包名和manifest定位作为Project实体的E1观察主张及覆盖/证据保存，不把Cargo package自动提升为语义模块或业务实体
+
 #### Scenario: 被分析项目没有采用DDD
 - **WHEN** 被分析软件没有采用DDD架构
 - **THEN** 仍按语义实体、属性和关系表达其领域内容，不要求其具有DDD聚合或限界上下文

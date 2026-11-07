@@ -104,3 +104,4 @@
 ## 执行记录
 
 Task 1–6按OpenSpec唯一任务表完成。Task 6切换证据、全量验证命令和限制见`openspec/changes/redesign-semantic-entity-domain-model/tasks.md`及`docs/development/reviews/semantic-facts/entity-model-verification.md`。
+- 后续复核补充：Cargo workspace metadata属于Project的E1构建观察，包不是业务实体；查询显式请求metadata时，将其包名/manifest主张、证据和覆盖持久化至Project。Cargo不可用时保存未取得覆盖和诊断。业务语义候选保持暂定；结构、来源及仓储可验证性不替代领域负责人对业务意图的确认。

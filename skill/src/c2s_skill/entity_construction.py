@@ -377,6 +377,82 @@ def construct_semantic_entity_candidates(root: Path, scan: ProjectScan | None = 
             "relationCandidates": relation_candidates, "diagnostics": diagnostics}
 
 
+def add_workspace_observations(root: Path, store, model: dict, facts: tuple[Fact, ...], gap: str | None,
+                               input_fingerprint: str, analyzer_version: str) -> list[dict]:
+    """Attach directly observed E1 Cargo membership to Project without inventing package entities."""
+    projects = [item for item in model["entities"] if item["ref"]["kind"] == "Project"]
+    if len(projects) > 1:
+        raise ValueError("workspace metadata requires one registered Project entity")
+    diagnostics = []
+    if not projects:
+        manifest = root / "Cargo.toml"
+        if not manifest.is_file() or manifest.is_symlink():
+            raise ValueError("workspace metadata requires a safe Cargo.toml at the project root")
+        source = manifest.read_bytes()
+        source_digest = hashlib.sha256(source).hexdigest()
+        evidence_id = _digest(f"workspace-project\0{manifest}\0{source_digest}")
+        evidence_by_manifest = {"evidenceId": evidence_id, "source": "input",
+            "description": "虚拟Cargo workspace根目录清单；项目实体名称暂以目录名代称。",
+            "path": "Cargo.toml", "sha256": source_digest, "startByte": 0, "endByte": len(source),
+            "method": "cargo-workspace-manifest"}
+        store.register(model["scopeId"], f"workspace-project:{model['scopeId']}", "Project", root.name,
+                       [evidence_id])
+        project_ref = store.lookup(model["scopeId"], f"workspace-project:{model['scopeId']}")["ref"]
+        project = {"ref": project_ref, "name": root.name, "aliases": [],
+            "description": "由虚拟Cargo workspace根目录提出的Project候选；项目产品名称尚未取得。",
+            "attributes": [], "sourceKeys": [f"workspace-project:{model['scopeId']}"],
+            "observationViews": ["E0", "E1"]}
+        model["entities"].append(project)
+        model["evidence"].append(evidence_by_manifest)
+        model["claims"].append({"claimId": _digest(f"workspace-project-status\0{project_ref['identity']['localId']}"),
+            "subject": project_ref, "predicate": "epistemicStatus", "value": "provisional",
+            "evidenceIds": [evidence_id], "claimStatus": "provisional"})
+        model["coverage"].append({"coverageId": _digest(
+            f"workspace-project-coverage\0{input_fingerprint}\0{analyzer_version}"),
+            "entity": project_ref, "selector": "project", "status": "obtained",
+            "inputFingerprint": input_fingerprint, "analyzerVersion": analyzer_version,
+            "presentationStatus": "included", "freshness": "current"})
+        projects = [project]
+        diagnostics.append({"code": "VIRTUAL_WORKSPACE_PROJECT_PROVISIONAL", "severity": "gap",
+            "reason": "Cargo虚拟workspace没有根package；以目录名临时代称Project，未取得产品名称。",
+            "entityRef": project_ref})
+    project = projects[0]
+    project["observationViews"] = sorted(set(project["observationViews"]) | {"E1"})
+    evidence_by_id = {item["evidenceId"]: item for item in model["evidence"]}
+    claims_by_id = {item["claimId"]: item for item in model["claims"]}
+    for fact in facts:
+        evidence = _fact_evidence(root, fact)
+        evidence["evidenceId"] = _digest(f"cargo-metadata\0{fact.name}\0{fact.owner or ''}\0{evidence['sha256']}")
+        evidence.update({"source": "cargo_metadata", "description": "Cargo metadata确认的workspace package成员",
+                         "method": "cargo metadata --no-deps --offline", "toolName": "cargo"})
+        evidence_by_id[evidence["evidenceId"]] = evidence
+        claim_id = _digest(f"claim\0{project['ref']['identity']['localId']}\0workspaceMemberPackage\0"
+                           f"{fact.name}\0{fact.owner or ''}")
+        claim = claims_by_id.get(claim_id)
+        if claim is None:
+            claim = {"claimId": claim_id, "subject": project["ref"],
+                     "predicate": "workspaceMemberPackage",
+                     "value": {"packageName": fact.name, "manifestPath": fact.owner or "Cargo.toml"},
+                     "evidenceIds": [], "claimStatus": "confirmed"}
+            claims_by_id[claim_id] = claim
+        claim["evidenceIds"] = sorted(set(claim["evidenceIds"]) | {evidence["evidenceId"]})
+
+    coverage_status = "not_acquired" if gap else "obtained"
+    coverage_id = _digest(f"workspace-coverage\0{project['ref']['identity']['localId']}\0"
+                          f"{input_fingerprint}\0{analyzer_version}\0{coverage_status}")
+    if not any(item["coverageId"] == coverage_id for item in model["coverage"]):
+        model["coverage"].append({"coverageId": coverage_id, "entity": project["ref"],
+            "selector": "workspace-members", "status": coverage_status,
+            "inputFingerprint": input_fingerprint, "analyzerVersion": analyzer_version,
+            "presentationStatus": "included", "freshness": "current"})
+    if gap:
+        diagnostics.append({"code": "WORKSPACE_METADATA_NOT_ACQUIRED", "severity": "gap",
+                            "reason": gap, "entityRef": project["ref"]})
+    model["evidence"] = list(evidence_by_id.values())
+    model["claims"] = list(claims_by_id.values())
+    return diagnostics
+
+
 def _field_implementation_type(field: SourceConstruct) -> str | None:
     if field.declared_type:
         return field.declared_type.strip() or None
