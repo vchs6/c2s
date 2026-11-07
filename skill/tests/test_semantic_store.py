@@ -6,6 +6,7 @@ import json
 from jsonschema import Draft202012Validator
 from pathlib import Path
 from tempfile import TemporaryDirectory
+from unittest.mock import patch
 
 from c2s_skill.semantic_store import (SemanticFactStore, canonicalize_m1, commit_m1,
                                       fact_key_m1, read_m1)
@@ -31,13 +32,13 @@ def bundle_with_fact(value="Example", evidence_id="ev-1", fact_id="fact-1"):
     return bundle
 
 
-def session_for(root, store_path):
+def session_for(root, store_path, profile="m1-project-discovery-1"):
     return {"analysisId": "00000000-0000-4000-8000-000000000001",
         "inputId": "00000000-0000-4000-8000-000000000002", "root": str(root), "store": str(store_path),
         "identityDomain": "00000000-0000-4000-8000-000000000003", "sourceCommit": None, "inputDigest": "b" * 64,
         "host": {"os": "linux", "arch": "x86_64", "pythonVersion": "3.12.14"},
         "target": {"value": None, "basisEvidenceIds": [], "status": "unknown"},
-        "tools": [], "profile": "m1-project-discovery-1"}
+        "tools": [], "profile": profile}
 
 
 def candidate(root, store_path, bundle, operation_id="operation-1", generation=0):
@@ -46,6 +47,88 @@ def candidate(root, store_path, bundle, operation_id="operation-1", generation=0
 
 
 class SemanticStoreTests(unittest.TestCase):
+    def test_full_layered_bundle_is_stored_and_queried_by_selector(self):
+        from c2s_semantic_contract.projection import project_query_to_semantic_model
+        from c2s_semantic_contract.validation import semantic_model_catalogs, validate_model
+        from c2s_skill.query import query_project
+        from c2s_skill.semantic_store import commit_bundle, query_bundle, read_bundle
+
+        with TemporaryDirectory() as temporary:
+            root = Path(temporary) / "project"
+            root.mkdir()
+            source = root / "run.py"
+            source.write_text("def run(value):\n    return value + 1\n", encoding="utf-8")
+            db = Path(temporary) / "all-facts.sqlite"
+            session = session_for(root, db, "semantic-fact-model-1")
+            projected = project_query_to_semantic_model(
+                query_project(root, ["function:run"]), identity_domain=session["identityDomain"])
+            bundle = projected["bundle"]
+            evidence_id = bundle["evidence"][0]["evidenceId"]
+            consumer = bundle["facts"][0]["subject"]
+            provider = {"identity": {"authority": "registry", "domainId": "packages", "localId": "serde"},
+                        "kind": "PackageSpecification"}
+            bundle["registrations"].append({"ref": provider, "sourceKey": "registry:serde",
+                                             "evidenceIds": [evidence_id]})
+            bundle["dependencies"] = [{"dependencyId": "dep-1", "consumer": consumer,
+                "purpose": "build", "stage": "compile", "path": None, "version": "^1",
+                "condition": {"kind": "true"}, "evidenceIds": [evidence_id]}]
+            bundle["dependencyResolutions"] = [{"resolutionId": "resolution-1", "dependencyId": "dep-1",
+                "status": "resolved", "providers": [provider], "configuration": "linux",
+                "visibility": "registry", "scopePosition": "outside", "evidenceIds": [evidence_id]}]
+            bundle["contextDomains"] = [{"keyId": "target", "values": ["linux", "windows"]}]
+            bundle["contexts"] = [{"contextId": "linux", "assignments": {"target": "linux"}}]
+            checked = validate_model(bundle, semantic_model_catalogs(), projected["sourceObservations"])
+            self.assertTrue(checked["valid"], checked["diagnostics"])
+
+            receipt = commit_bundle(db, {"session": session, "operationId": "full-operation-1",
+                "expectedGeneration": 0, "bundle": bundle, "artifacts": projected["artifacts"],
+                "sourceObservations": projected["sourceObservations"]})
+            loaded = read_bundle(db, session["analysisId"])
+            selected = query_bundle(db, session["analysisId"], "function:run")
+
+            self.assertEqual(receipt["state"], "stored")
+            self.assertEqual(loaded["bundle"]["profile"], "semantic-fact-model-1")
+            self.assertEqual({item["evidenceId"] for item in loaded["sourceObservations"]["items"]},
+                             {item["evidenceId"] for item in projected["sourceObservations"]["items"]})
+            for collection in ("registrations", "assessments", "facts", "evidence", "coverage",
+                               "dependencies", "dependencyResolutions", "semanticStates", "diagnostics",
+                               "contextDomains", "contexts"):
+                self.assertEqual(loaded["bundle"][collection], bundle[collection])
+            self.assertTrue(validate_model(loaded["bundle"], semantic_model_catalogs(),
+                                           loaded["sourceObservations"])["valid"])
+            self.assertEqual({fact["factId"] for fact in selected["facts"]},
+                             {fact["factId"] for fact in bundle["facts"]})
+            self.assertEqual(selected["coverage"][0]["selector"], "function:run")
+            self.assertEqual(len(selected["facts"]), len(bundle["facts"]))
+            with sqlite3.connect(db) as connection:
+                stored_collections = {row[0] for row in connection.execute(
+                    "SELECT DISTINCT collection FROM semantic_records WHERE analysis_id=?", (session["analysisId"],))}
+                reference_count = connection.execute(
+                    "SELECT COUNT(*) FROM semantic_refs WHERE analysis_id=?", (session["analysisId"],)).fetchone()[0]
+            self.assertEqual(stored_collections,
+                {name for name in ("registrations", "assessments", "facts", "evidence", "coverage",
+                    "dependencies", "dependencyResolutions", "semanticStates", "diagnostics",
+                    "contextDomains", "contexts") if bundle[name]})
+            self.assertGreater(reference_count, 0)
+
+    def test_full_fact_equivalence_preserves_layer_claim_context_and_merges_evidence(self):
+        from c2s_skill.semantic_store import fact_key_semantic
+
+        fact = {"factId": "fact-a", "predicate": "behavior.calls", "subject":
+            {"kind": "BehaviorStep", "identity": {"authority": "c2s", "domainId": "d", "localId": "s"}},
+            "value": None, "arguments": [{"role": "callee", "value": "target"}],
+            "claimMode": "static_may", "condition": {"kind": "true"},
+            "evidenceIds": ["ev-a"], "evidenceRefs": [{"evidenceId": "ev-a", "role": "Supports"}],
+            "sourceMetadata": {"kind": "call", "layer": "E4", "owner": "f", "text": "target()",
+                                "evidenceIncluded": True}}
+        same_claim = {**fact, "factId": "fact-b", "evidenceIds": ["ev-b"],
+            "evidenceRefs": [{"evidenceId": "ev-b", "role": "Supports"}],
+            "sourceMetadata": {**fact["sourceMetadata"], "evidenceIncluded": False, "text": ""}}
+        changed_layer_claim = {**fact, "claimMode": "static_must", "factId": "fact-c"}
+
+        self.assertEqual(fact_key_semantic(fact), fact_key_semantic(same_claim))
+        self.assertNotEqual(fact_key_semantic(fact), fact_key_semantic(changed_layer_claim))
+
     def test_public_query_store_persists_and_returns_validated_semantic_bundle(self):
         with TemporaryDirectory() as temporary:
             root = Path(temporary) / "project"
@@ -70,10 +153,11 @@ class SemanticStoreTests(unittest.TestCase):
             self.assertEqual(len(response["semantic_fact_bundle"]["facts"]), 1)
             with sqlite3.connect(database) as connection:
                 analysis_id = connection.execute("SELECT analysis_id FROM sessions").fetchone()[0]
-            loaded = read_m1(database, analysis_id)
+            from c2s_skill.semantic_store import read_bundle
+            loaded = read_bundle(database, analysis_id)
             self.assertEqual(loaded["bundle"], response["semantic_fact_bundle"])
 
-    def test_public_semantic_store_rejects_query_facts_outside_its_m1_profile(self):
+    def test_public_semantic_store_accepts_code_selector_with_full_profile(self):
         with TemporaryDirectory() as temporary:
             root = Path(temporary) / "project"
             root.mkdir()
@@ -82,10 +166,49 @@ class SemanticStoreTests(unittest.TestCase):
 
             with redirect_stdout(output):
                 status = main(["query", "--root", str(root), "--select", "classes",
-                               "--store", str(Path(temporary) / "facts.sqlite")])
+                               "--store", str(Path(temporary) / "facts.sqlite"), "--format", "json"])
 
-            self.assertEqual(status, 64)
-            self.assertEqual(output.getvalue(), "")
+            self.assertIn(status, (0, 2))
+            response = json.loads(output.getvalue())
+            self.assertEqual(response["semantic_fact_bundle"]["profile"], "semantic-fact-model-1")
+
+    def test_full_store_accumulates_selector_results_for_same_source_snapshot(self):
+        from c2s_skill.semantic_store import read_bundle
+        with TemporaryDirectory() as temporary:
+            root = Path(temporary) / "project"
+            root.mkdir()
+            (root / "main.py").write_text("class Sample:\n    def run(self):\n        return 1\n", encoding="utf-8")
+            database = Path(temporary) / "facts.sqlite"
+            for selector in ("classes", "functions"):
+                with redirect_stdout(io.StringIO()):
+                    status = main(["query", "--root", str(root), "--select", selector,
+                                   "--store", str(database), "--format", "json"])
+                self.assertIn(status, (0, 2))
+            with sqlite3.connect(database) as connection:
+                analysis_id = connection.execute("SELECT analysis_id FROM sessions").fetchone()[0]
+            stored = read_bundle(database, analysis_id)["bundle"]
+            selectors = {item["selector"] for item in stored["coverage"]}
+            self.assertEqual(selectors, {"classes", "functions"})
+            self.assertGreaterEqual(len(stored["facts"]), 2)
+
+    def test_exact_full_store_query_hit_skips_project_analyzers(self):
+        with TemporaryDirectory() as temporary:
+            root = Path(temporary) / "project"
+            root.mkdir()
+            (root / "main.py").write_text("class Sample:\n    pass\n", encoding="utf-8")
+            database = Path(temporary) / "facts.sqlite"
+            args = ["query", "--root", str(root), "--select", "classes", "--store", str(database), "--format", "json"]
+            with redirect_stdout(io.StringIO()):
+                first_status = main(args)
+            output = io.StringIO()
+            with patch("c2s_skill.__main__.query_project", side_effect=AssertionError("analyzer reran")), \
+                    redirect_stdout(output):
+                second_status = main(args)
+            response = json.loads(output.getvalue())
+            self.assertIn(first_status, (0, 2))
+            self.assertIn(second_status, (0, 2))
+            self.assertEqual(response["persistence"]["status"], "cache_hit")
+            self.assertEqual(response["semantic_fact_bundle"]["profile"], "semantic-fact-model-1")
 
     def test_fact_equivalence_ignores_record_and_evidence_ids_but_keeps_claim_context(self):
         first = bundle_with_fact()["facts"][0]

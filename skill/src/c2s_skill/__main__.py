@@ -14,7 +14,8 @@ from .acquisition import scan_project
 from .graph_tool_adapter import parse_code_review_graph_response
 from .query import normalize_request, query_project, result_to_dict, result_to_markdown
 from .store import QueryResultCache
-from .semantic_store import SemanticFactStore, commit_m1, read_m1
+from .semantic_store import (SemanticFactStore, commit_m1, read_m1, commit_bundle, read_bundle,
+                             query_bundle, read_query_report, remember_query_report)
 from .capability_matrix import (detect_available_tools, host_environment, load_tool_matrix,
                                 parse_selected_tool_output, select_tools)
 
@@ -56,24 +57,37 @@ def main(argv: list[str] | None = None) -> int:
             # required for a semantic session.
             cache = QueryResultCache(args.cache) if args.cache and not args.store else None
             selectors = args.select if args.select else normalize_request(args.request)
-            if args.store and not set(selectors) <= {"project", "workspace-members"}:
-                raise ValueError("--store currently persists the M1 project/workspace discovery profile only; use --cache for query projections")
-            result = query_project(root, selectors, cache)
             output_format = args.format or "markdown"
+            repository = SemanticFactStore(args.store) if args.store else None
+            if repository and output_format == "json":
+                from .inventory import source_fingerprint
+                from .acquisition import analysis_profile_digest
+                repository.validate_root(root)
+                source_digest = source_fingerprint(root)
+                profile_digest = analysis_profile_digest()
+                hit = read_query_report(repository, root, "+".join(selectors), source_digest, profile_digest)
+                if hit is not None:
+                    cached_response = hit["response"]
+                    cached_response["persistence"] = {"status": "cache_hit", "diagnostic": None}
+                    if cached_response.get("semantic_store"):
+                        cached_response["semantic_store"]["state"] = "already_stored"
+                    sys.stdout.write(json.dumps(cached_response, ensure_ascii=False, indent=2) + "\n")
+                    return 0 if cached_response.get("complete") else 2
+            result = query_project(root, selectors, cache)
             response = result_to_dict(result)
             semantic_receipt = semantic_read = semantic_validation = None
             if args.store:
-                from c2s_semantic_contract.projection import project_query_to_m1
+                from c2s_semantic_contract.projection import project_query_to_semantic_model
                 from c2s_semantic_contract.validation import semantic_model_catalogs, validate_model
                 repository = SemanticFactStore(args.store)
                 repository.validate_root(root)
                 identity_domain = str(uuid5(NAMESPACE_URL, f"c2s-domain:{root}"))
                 input_id = str(uuid5(NAMESPACE_URL, f"c2s-input:{root}:{result.source_digest}:{result.profile_digest}"))
-                analysis_id = str(uuid5(NAMESPACE_URL, f"c2s-analysis:{input_id}"))
-                stored = read_m1(repository, analysis_id)
-                projection = project_query_to_m1(result, stored["bundle"]["registrations"], identity_domain)
+                analysis_id = str(uuid5(NAMESPACE_URL, f"c2s-analysis:semantic-fact-model-1:{input_id}"))
+                stored = read_bundle(repository, analysis_id)
+                projection = project_query_to_semantic_model(result, identity_domain=identity_domain)
                 semantic_validation = validate_model(projection["bundle"],
-                    semantic_model_catalogs("m1-project-discovery-1"), projection["sourceObservations"])
+                    semantic_model_catalogs(), projection["sourceObservations"])
                 if not semantic_validation["valid"]:
                     raise ValueError("projected M1 bundle failed semantic contract validation")
                 from .capability_matrix import describe_tools_used
@@ -84,26 +98,31 @@ def main(argv: list[str] | None = None) -> int:
                              "pythonVersion": platform.python_version()},
                     "target": {"value": None, "basisEvidenceIds": [], "status": "unknown"},
                     "tools": describe_tools_used(result.tools_used, load_tool_matrix()),
-                    "profile": "m1-project-discovery-1"}
+                    "profile": "semantic-fact-model-1"}
                 operation_id = str(uuid5(NAMESPACE_URL,
                     f"c2s-commit:{analysis_id}:{result.source_digest}:{','.join(selectors)}"))
-                semantic_receipt = commit_m1(repository, {"session": session, "operationId": operation_id,
+                semantic_receipt = commit_bundle(repository, {"session": session, "operationId": operation_id,
                     "expectedGeneration": stored["generation"], "bundle": projection["bundle"],
-                    "artifacts": projection["artifacts"]})
+                    "artifacts": projection["artifacts"], "sourceObservations": projection["sourceObservations"]})
                 if semantic_receipt["state"] == "failed":
                     raise ValueError("semantic fact repository rejected the transaction")
-                semantic_read = read_m1(repository, analysis_id)
-                response["semantic_fact_bundle"] = semantic_read["bundle"]
+                semantic_read = read_bundle(repository, analysis_id)
+                response["semantic_fact_bundle"] = query_bundle(repository, analysis_id, "+".join(selectors))
                 response["semantic_validation"] = semantic_validation
                 response["semantic_store"] = semantic_receipt
+                if output_format == "json":
+                    remember_query_report(repository, root, "+".join(selectors), result.source_digest,
+                        result.profile_digest, analysis_id, response)
             rendered = (json.dumps(response, ensure_ascii=False, indent=2) + "\n"
                         if output_format == "json" else result_to_markdown(result))
             if args.store and output_format == "markdown":
                 rendered += f"\nSemantic facts: {len(semantic_read['bundle']['facts'])}; store state: {semantic_receipt['state']}\n"
             status = 0 if result.complete else 2
         else:
-            if args.select or args.request or args.store or args.cache:
-                raise ValueError("--select, --request, --cache and --store are only valid for query requests")
+            if args.select or args.request or args.cache:
+                raise ValueError("--select, --request and --cache are only valid for query requests")
+            if args.store and not args.semantic_facts:
+                raise ValueError("algorithm --store requires --semantic-facts")
             if args.all_functions:
                 if args.semantic_facts or args.graph_output or args.graph_version:
                     raise ValueError("--semantic-facts currently requires one --source and --function request")
@@ -232,12 +251,37 @@ def main(argv: list[str] | None = None) -> int:
                         graph_facts = parse_selected_tool_output(graph_selection, "code-review-graph",
                             json.loads(graph_path.read_text(encoding="utf-8")), root,
                             args.graph_version, matrix)
-                    projection = project_algorithm_to_semantic_model(extracted, root, graph_facts=graph_facts)
+                    identity_domain = str(uuid5(NAMESPACE_URL, f"c2s-domain:{root}"))
+                    projection = project_algorithm_to_semantic_model(extracted, root, graph_facts=graph_facts,
+                                                                      identity_domain=identity_domain)
                     response["semantic_fact_bundle"] = projection["bundle"]
                     response["source_observations"] = projection["sourceObservations"]
                     response["artifacts"] = projection["artifacts"]
                     response["semantic_validation"] = validate_model(
                         projection["bundle"], semantic_model_catalogs(), projection["sourceObservations"])
+                    if args.store:
+                        repository = SemanticFactStore(args.store)
+                        repository.validate_root(root)
+                        algorithm_id = extracted["algorithm"]["algorithm_id"]
+                        input_id = str(uuid5(NAMESPACE_URL, f"c2s-input:{root}:{response['source_digest']}:{algorithm_id}"))
+                        analysis_id = str(uuid5(NAMESPACE_URL, f"c2s-analysis:semantic-fact-model-1:{input_id}"))
+                        stored = read_bundle(repository, analysis_id)
+                        session = {"analysisId": analysis_id, "inputId": input_id, "root": str(root),
+                            "store": str(repository.path), "identityDomain": identity_domain,
+                            "sourceCommit": None, "inputDigest": response["source_digest"],
+                            "host": {"os": platform.system().lower(), "arch": platform.machine(),
+                                     "pythonVersion": platform.python_version()},
+                            "target": {"value": None, "basisEvidenceIds": [], "status": "unknown"},
+                            "tools": [], "profile": "semantic-fact-model-1"}
+                        operation_id = str(uuid5(NAMESPACE_URL, f"c2s-algorithm-commit:{analysis_id}:{algorithm_id}"))
+                        receipt = commit_bundle(repository, {"session": session, "operationId": operation_id,
+                            "expectedGeneration": stored["generation"], "bundle": projection["bundle"],
+                            "artifacts": projection["artifacts"], "sourceObservations": projection["sourceObservations"]})
+                        if receipt["state"] == "failed":
+                            raise ValueError("semantic fact repository rejected the algorithm transaction")
+                        response["semantic_fact_bundle"] = query_bundle(repository, analysis_id,
+                            "algorithm:" + extracted["algorithm"]["algorithm_id"])
+                        response["semantic_store"] = receipt
                     if graph_facts is not None:
                         response["graph_query"] = {"tool": graph_facts.tool, "pattern": graph_facts.pattern,
                             "selected_tool_ids": list(graph_selection.tools),

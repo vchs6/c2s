@@ -276,7 +276,8 @@ _QUERY_KIND_PREDICATES = {
 }
 
 
-def project_query_to_semantic_model(query_result, catalogs: dict | None = None) -> dict:
+def project_query_to_semantic_model(query_result, catalogs: dict | None = None,
+                                   identity_domain: str | None = None) -> dict:
     """Project every currently supported query fact into the full semantic profile.
 
     This maps existing Python/Rust syntax facts; it does not add type/call binding,
@@ -289,7 +290,7 @@ def project_query_to_semantic_model(query_result, catalogs: dict | None = None) 
         raise ValueError("project sources changed after the query scan; rerun before semantic projection")
     catalogs = catalogs or semantic_model_catalogs()
     supported_predicates = {item["predicateId"] for item in catalogs["predicates"]["predicates"]}
-    domain_id = hashlib.sha256(str(root).encode("utf-8")).hexdigest()
+    domain_id = identity_domain or hashlib.sha256(str(root).encode("utf-8")).hexdigest()
     registrations_by_key: dict[tuple[str, str], dict] = {}
     evidence_by_id: dict[str, dict] = {}
     sources_by_path: dict[str, tuple[bytes, str]] = {}
@@ -437,7 +438,8 @@ def project_query_to_semantic_model(query_result, catalogs: dict | None = None) 
 
 
 def project_algorithm_to_semantic_model(algorithm_document: dict, project_root: Path,
-                                       catalogs: dict | None = None, graph_facts=None) -> dict:
+                                       catalogs: dict | None = None, graph_facts=None,
+                                       identity_domain: str | None = None) -> dict:
     """Project source-located algorithm facts and optional graph call candidates."""
     root = Path(project_root).resolve(strict=True)
     algorithm = algorithm_document.get("algorithm", algorithm_document)
@@ -454,7 +456,7 @@ def project_algorithm_to_semantic_model(algorithm_document: dict, project_root: 
         raise ValueError(f"algorithm document failed structural validation: {algorithm_errors[0]['code']}")
     catalogs = catalogs or semantic_model_catalogs()
     predicates = {item["predicateId"] for item in catalogs["predicates"]["predicates"]}
-    domain_id = hashlib.sha256(str(root).encode("utf-8")).hexdigest()
+    domain_id = identity_domain or hashlib.sha256(str(root).encode("utf-8")).hexdigest()
     identities: dict[tuple[str, str], dict] = {}
     registrations: dict[tuple[str, str], dict] = {}
     evidence: dict[str, dict] = {}

@@ -1,4 +1,4 @@
-"""M1 semantic-fact repository with canonical identities and atomic SQLite commits."""
+"""SQLite repository for M1 and full layered semantic-fact bundles."""
 
 from __future__ import annotations
 
@@ -37,6 +37,123 @@ def fact_key_m1(fact: dict) -> str:
                   "subject": {key: identity.get(key) for key in ("authority", "domainId", "localId")},
                   "value": fact.get("value"), "claimMode": fact.get("claimMode"),
                   "condition": fact.get("condition")})
+
+
+def fact_key_semantic(fact: dict) -> str:
+    """Comparison identity for a layered claim, excluding presentation/evidence identity."""
+    omitted = {"factId", "evidenceIds", "evidenceRefs", "derivation"}
+    metadata = fact.get("sourceMetadata")
+    if isinstance(metadata, dict):
+        metadata = {key: value for key, value in metadata.items()
+                    if key not in {"evidenceIncluded", "text"}}
+    value = {key: item for key, item in fact.items() if key not in omitted | {"sourceMetadata"}}
+    if metadata is not None:
+        value["sourceMetadata"] = metadata
+    return _json(value)
+
+
+_FULL_COLLECTIONS = ("registrations", "assessments", "facts", "evidence", "coverage",
+                     "dependencies", "dependencyResolutions", "semanticStates", "diagnostics",
+                     "contextDomains", "contexts")
+
+
+def _semantic_references(collection: str, record: dict) -> list[tuple[str, str, str]]:
+    """Extract typed cross-record edges so the normalized store can audit bundle links."""
+    refs = []
+    def add(field: str, target: str, values):
+        for value in values if isinstance(values, list) else [values]:
+            if isinstance(value, str):
+                refs.append((field, target, value))
+    if collection in {"registrations", "facts", "assessments", "coverage", "dependencies",
+                      "dependencyResolutions", "semanticStates"}:
+        add("evidenceIds", "evidence", record.get("evidenceIds", []))
+    if collection == "facts":
+        add("contextIds", "contexts", record.get("contextIds", []))
+        for item in record.get("evidenceRefs", []):
+            add("evidenceRefs", "evidence", item.get("evidenceId"))
+    elif collection == "assessments":
+        add("supersedes", "assessments", record.get("supersedes", []))
+    elif collection == "coverage":
+        add("supersedes", "coverage", record.get("supersedes", []))
+    elif collection == "dependencyResolutions":
+        add("dependencyId", "dependencies", record.get("dependencyId"))
+    elif collection == "semanticStates":
+        add("factIds", "facts", record.get("factIds", []))
+    elif collection == "evidence":
+        add("artifactId", "artifacts", record.get("artifactId"))
+    if collection in {"assessments", "coverage", "semanticStates", "diagnostics"}:
+        diagnostics = record.get("diagnostics", [])
+        for item in diagnostics:
+            if isinstance(item, dict) and item.get("recordId"):
+                add("diagnostic.recordId", "records", item["recordId"])
+    if collection == "diagnostics" and record.get("recordId"):
+        add("recordId", "records", record["recordId"])
+    return refs
+
+
+def canonicalize_semantic(bundle: dict) -> dict:
+    """Return a stable, complete full-profile bundle without dropping any model collection."""
+    if bundle.get("profile") != "semantic-fact-model-1" or bundle.get("version") != "1.0.0":
+        raise ValueError("only semantic-fact-model-1 version 1.0.0 bundles are supported")
+    result = {"version": "1.0.0", "profile": "semantic-fact-model-1"}
+    for name in _FULL_COLLECTIONS:
+        collection = bundle.get(name, [])
+        if not isinstance(collection, list):
+            raise ValueError(f"{name} must be an array")
+        result[name] = sorted(collection, key=_json)
+    return result
+
+
+def _merge_semantic_bundles(old: dict, new: dict) -> dict:
+    """Accumulate independently requested selector facts into one full-profile bundle."""
+    if old.get("profile") != "semantic-fact-model-1":
+        old = {"version": "1.0.0", "profile": "semantic-fact-model-1",
+               **{name: [] for name in _FULL_COLLECTIONS}}
+    result = {"version": "1.0.0", "profile": "semantic-fact-model-1"}
+    fact_id_map: dict[str, str] = {}
+    id_fields = {"registrations": "sourceKey", "assessments": "assessmentId", "facts": "factId",
+        "evidence": "evidenceId", "coverage": "coverageId", "dependencies": "dependencyId",
+        "dependencyResolutions": "resolutionId", "semanticStates": "stateId",
+        "diagnostics": None, "contextDomains": "keyId", "contexts": "contextId"}
+    for name in _FULL_COLLECTIONS:
+        by_key = {}
+        for record in old.get(name, []) + new.get(name, []):
+            field = id_fields[name]
+            key = fact_key_semantic(record) if name == "facts" else (record[field] if field else _json(record))
+            previous = by_key.get(key)
+            if previous is not None and name == "registrations":
+                merged = dict(previous)
+                merged["evidenceIds"] = sorted(set(previous.get("evidenceIds", [])) |
+                                               set(record.get("evidenceIds", [])))
+                if _json({k: v for k, v in previous.items() if k != "evidenceIds"}) != _json(
+                        {k: v for k, v in record.items() if k != "evidenceIds"}):
+                    raise ValueError(f"conflicting registration records share source key {key!r}")
+                by_key[key] = merged
+            elif previous is not None and name == "facts":
+                merged = dict(previous)
+                canonical_id = min(previous["factId"], record["factId"])
+                fact_id_map[previous["factId"]] = canonical_id
+                fact_id_map[record["factId"]] = canonical_id
+                merged["factId"] = canonical_id
+                for list_field in ("evidenceIds",):
+                    merged[list_field] = sorted(set(previous.get(list_field, [])) | set(record.get(list_field, [])))
+                refs = {(_json(ref), ref.get("role")): ref
+                        for ref in previous.get("evidenceRefs", []) + record.get("evidenceRefs", [])}
+                if refs:
+                    merged["evidenceRefs"] = sorted(refs.values(), key=_json)
+                by_key[key] = merged
+            elif previous is None:
+                by_key[key] = record
+            elif _json(previous) != _json(record):
+                raise ValueError(f"conflicting {name} records share identity {key!r}")
+        result[name] = sorted(by_key.values(), key=_json)
+    if fact_id_map:
+        for state in result["semanticStates"]:
+            state["factIds"] = sorted({fact_id_map.get(value, value) for value in state.get("factIds", [])})
+        for record in result["assessments"] + result["coverage"] + result["diagnostics"]:
+            if record.get("recordId") is not None:
+                record["recordId"] = fact_id_map.get(record["recordId"], record["recordId"])
+    return result
 
 
 def _evidence_key(evidence: dict, artifact_hashes: dict[str, str]) -> str:
@@ -248,6 +365,26 @@ class SemanticFactStore:
                 analysis_id TEXT NOT NULL, operation_id TEXT NOT NULL, content_hash TEXT NOT NULL,
                 payload TEXT NOT NULL, PRIMARY KEY(analysis_id, operation_id),
                 FOREIGN KEY(analysis_id) REFERENCES sessions(analysis_id) ON DELETE CASCADE);
+            CREATE TABLE IF NOT EXISTS full_bundles(
+                analysis_id TEXT PRIMARY KEY, payload TEXT NOT NULL,
+                FOREIGN KEY(analysis_id) REFERENCES sessions(analysis_id) ON DELETE CASCADE);
+            CREATE TABLE IF NOT EXISTS semantic_records(
+                analysis_id TEXT NOT NULL, collection TEXT NOT NULL, record_key TEXT NOT NULL,
+                payload TEXT NOT NULL, PRIMARY KEY(analysis_id, collection, record_key),
+                FOREIGN KEY(analysis_id) REFERENCES sessions(analysis_id) ON DELETE CASCADE);
+            CREATE TABLE IF NOT EXISTS semantic_refs(
+                analysis_id TEXT NOT NULL, source_collection TEXT NOT NULL, source_id TEXT NOT NULL,
+                field TEXT NOT NULL, target_collection TEXT NOT NULL, target_id TEXT NOT NULL,
+                PRIMARY KEY(analysis_id, source_collection, source_id, field, target_collection, target_id),
+                FOREIGN KEY(analysis_id) REFERENCES sessions(analysis_id) ON DELETE CASCADE);
+            CREATE TABLE IF NOT EXISTS source_observations(
+                analysis_id TEXT NOT NULL, evidence_id TEXT NOT NULL, payload TEXT NOT NULL,
+                PRIMARY KEY(analysis_id, evidence_id),
+                FOREIGN KEY(analysis_id) REFERENCES sessions(analysis_id) ON DELETE CASCADE);
+            CREATE TABLE IF NOT EXISTS semantic_query_reports(
+                root TEXT NOT NULL, selector TEXT NOT NULL, source_digest TEXT NOT NULL,
+                profile_digest TEXT NOT NULL, analysis_id TEXT NOT NULL, payload TEXT NOT NULL,
+                PRIMARY KEY(root, selector, source_digest, profile_digest));
         """)
         return connection
 
@@ -443,3 +580,191 @@ def lookup_m1(store: SemanticFactStore | Path | str, analysis_id: str,
         return _receipt(operation_id, "unknown", 0,
             diagnostics=[{"code": "COMMIT_UNKNOWN", "message": "No stored receipt matches this operation."}])
     return json.loads(row[0])
+
+
+def remember_query_report(store: SemanticFactStore | Path | str, root: Path | str,
+                          selector: str, source_digest: str, profile_digest: str,
+                          analysis_id: str, payload: dict) -> None:
+    repository = store if isinstance(store, SemanticFactStore) else SemanticFactStore(store)
+    resolved = str(Path(root).resolve(strict=True))
+    repository.validate_root(resolved)
+    with repository._connect() as connection:
+        connection.execute("INSERT INTO semantic_query_reports VALUES(?,?,?,?,?,?) ON CONFLICT(root,selector,source_digest,profile_digest) DO UPDATE SET analysis_id=excluded.analysis_id,payload=excluded.payload",
+            (resolved, selector, source_digest, profile_digest, analysis_id, _json(payload)))
+
+
+def read_query_report(store: SemanticFactStore | Path | str, root: Path | str, selector: str,
+                      source_digest: str, profile_digest: str) -> dict | None:
+    repository = store if isinstance(store, SemanticFactStore) else SemanticFactStore(store)
+    resolved = str(Path(root).resolve(strict=True))
+    repository.validate_root(resolved)
+    with repository._connect() as connection:
+        row = connection.execute("SELECT analysis_id,payload FROM semantic_query_reports WHERE root=? AND selector=? AND source_digest=? AND profile_digest=?",
+                                  (resolved, selector, source_digest, profile_digest)).fetchone()
+    if row is None:
+        return None
+    return {"analysisId": row[0], "response": json.loads(row[1])}
+
+
+def read_bundle(store: SemanticFactStore | Path | str, analysis_id: str) -> dict:
+    """Read the canonical bundle for either supported profile."""
+    repository = store if isinstance(store, SemanticFactStore) else SemanticFactStore(store)
+    with repository._connect() as connection:
+        row = connection.execute("SELECT payload FROM full_bundles WHERE analysis_id=?", (analysis_id,)).fetchone()
+        normalized = connection.execute("SELECT collection, payload FROM semantic_records WHERE analysis_id=? ORDER BY collection,record_key",
+                                         (analysis_id,)).fetchall()
+        if normalized:
+            result = _read_connection(connection, analysis_id)
+            collections = {name: [] for name in _FULL_COLLECTIONS}
+            for collection, payload in normalized:
+                collections[collection].append(json.loads(payload))
+            for records in collections.values():
+                records.sort(key=_json)
+            result["bundle"] = {"version": "1.0.0", "profile": "semantic-fact-model-1", **collections}
+        elif row is not None:
+            result = _read_connection(connection, analysis_id)
+            result["bundle"] = json.loads(row[0])
+        else:
+            result = _read_connection(connection, analysis_id)
+        observation_rows = connection.execute("SELECT payload FROM source_observations WHERE analysis_id=? ORDER BY evidence_id",
+                                              (analysis_id,)).fetchall()
+        result["sourceObservations"] = {"items": [json.loads(item[0]) for item in observation_rows]}
+    if result["session"] is not None:
+        repository.validate_root(result["session"]["root"])
+    return result
+
+
+def commit_bundle(store: SemanticFactStore | Path | str, candidate: dict) -> dict:
+    """Atomically persist a validated full-profile bundle, retaining every model collection."""
+    repository = store if isinstance(store, SemanticFactStore) else SemanticFactStore(store)
+    session = candidate.get("session", {})
+    if session.get("profile") != "semantic-fact-model-1":
+        raise ValueError("full semantic bundle requires semantic-fact-model-1 session")
+    required = {"analysisId", "inputId", "root", "store", "identityDomain", "profile", "host", "target", "tools"}
+    if not required <= set(session):
+        raise ValueError("session is missing required analysis identity fields")
+    for field in ("analysisId", "inputId", "identityDomain"):
+        UUID(session[field])
+    root = Path(session["root"]).resolve(strict=True)
+    repository.validate_root(root)
+    if Path(session["store"]).resolve() != repository.path:
+        raise ValueError("session store path does not match repository")
+    operation_id, expected = candidate.get("operationId"), candidate.get("expectedGeneration")
+    if not isinstance(operation_id, str) or not operation_id or type(expected) is not int or expected < 0:
+        raise ValueError("commit requires operationId and expectedGeneration")
+    bundle = canonicalize_semantic(candidate.get("bundle", {}))
+    from c2s_semantic_contract.validation import semantic_model_catalogs, validate_model
+    check = validate_model(bundle, semantic_model_catalogs(), candidate.get("sourceObservations"))
+    if not check["valid"]:
+        raise ValueError("full semantic bundle failed contract validation: " + ", ".join(
+            item.get("ruleCode", "CONTRACT_INVALID") for item in check["diagnostics"]))
+    artifacts = candidate.get("artifacts", [])
+    for artifact in artifacts:
+        if not isinstance(artifact.get("content"), str) or _sha(artifact["content"].encode()) != artifact.get("sha256"):
+            raise ValueError("artifact content digest is invalid")
+    content_hash = _sha(_json({"session": session, "bundle": bundle, "artifacts": artifacts}).encode())
+    with repository._connect() as connection:
+        connection.execute("BEGIN IMMEDIATE")
+        prior = connection.execute("SELECT content_hash,payload FROM receipts WHERE analysis_id=? AND operation_id=?",
+                                   (session["analysisId"], operation_id)).fetchone()
+        if prior:
+            if prior[0] != content_hash:
+                raise ValueError("operation ID was already used with different content")
+            return json.loads(prior[1])
+        current = _read_connection(connection, session["analysisId"])
+        if current["generation"] != expected:
+            connection.rollback()
+            return _receipt(operation_id, "failed", current["generation"], diagnostics=[
+                {"code": "INPUT_MISMATCH", "message": "Stored generation changed before commit."}])
+        if current["session"] is not None and any(current["session"].get(k) != session.get(k)
+                                                   for k in ("inputId", "root", "store", "identityDomain", "profile")):
+            raise ValueError("session input or identity domain changed")
+        generation = expected + 1
+        connection.execute("INSERT INTO sessions VALUES(?,?,?) ON CONFLICT(analysis_id) DO UPDATE SET session_json=excluded.session_json,generation=excluded.generation",
+                           (session["analysisId"], _json(session), generation))
+        old_row = connection.execute("SELECT payload FROM full_bundles WHERE analysis_id=?",
+                                     (session["analysisId"],)).fetchone()
+        if old_row:
+            bundle = _merge_semantic_bundles(json.loads(old_row[0]), bundle)
+        connection.execute("INSERT INTO full_bundles VALUES(?,?) ON CONFLICT(analysis_id) DO UPDATE SET payload=excluded.payload",
+                           (session["analysisId"], _json(bundle)))
+        connection.execute("DELETE FROM semantic_records WHERE analysis_id=?", (session["analysisId"],))
+        connection.execute("DELETE FROM semantic_refs WHERE analysis_id=?", (session["analysisId"],))
+        for observation in candidate.get("sourceObservations", {}).get("items", []):
+            connection.execute("INSERT INTO source_observations VALUES(?,?,?) ON CONFLICT(analysis_id,evidence_id) DO UPDATE SET payload=excluded.payload",
+                (session["analysisId"], observation["evidenceId"], _json(observation)))
+        for artifact in artifacts:
+            connection.execute("INSERT INTO artifacts VALUES(?,?,?,?,?,?) ON CONFLICT(analysis_id,sha256) DO UPDATE SET artifact_id=excluded.artifact_id,media_type=excluded.media_type,content=excluded.content,payload=excluded.payload",
+                (session["analysisId"], artifact["sha256"], artifact.get("artifactId", artifact["sha256"]),
+                 artifact.get("mediaType", "application/json"), artifact["content"], _json(artifact)))
+        id_fields = {"registrations": "sourceKey", "assessments": "assessmentId", "facts": "factId",
+            "evidence": "evidenceId", "coverage": "coverageId", "dependencies": "dependencyId",
+            "dependencyResolutions": "resolutionId", "semanticStates": "stateId",
+            "diagnostics": None, "contextDomains": "keyId", "contexts": "contextId"}
+        for collection in _FULL_COLLECTIONS:
+            for record in bundle[collection]:
+                record_id = record.get(id_fields[collection]) if id_fields[collection] else _sha(_json(record).encode())
+                connection.execute("INSERT INTO semantic_records VALUES(?,?,?,?)",
+                    (session["analysisId"], collection, str(record_id), _json(record)))
+                for field, target_collection, target_id in _semantic_references(collection, record):
+                    connection.execute("INSERT OR IGNORE INTO semantic_refs VALUES(?,?,?,?,?,?)",
+                        (session["analysisId"], collection, str(record_id), field, target_collection, str(target_id)))
+        receipt = _receipt(operation_id, "stored", generation,
+                           added=[item["factId"] for item in bundle["facts"]])
+        connection.execute("INSERT INTO receipts VALUES(?,?,?,?)",
+                           (session["analysisId"], operation_id, content_hash, _json(receipt)))
+        connection.commit()
+    return receipt
+
+
+def query_bundle(store: SemanticFactStore | Path | str, analysis_id: str, selector: str) -> dict:
+    """Return stored claims and selector coverage for a selector, without reconstructing facts."""
+    result = read_bundle(store, analysis_id)
+    bundle = result["bundle"]
+    matching = [item for item in bundle.get("coverage", []) if item.get("selector") == selector]
+    if not matching:
+        return {"version": bundle["version"], "profile": bundle["profile"],
+                **{name: [] for name in _FULL_COLLECTIONS}}
+    states = [item for item in bundle.get("semanticStates", []) if item.get("selector") == selector]
+    fact_ids = {fact_id for item in states for fact_id in item.get("factIds", [])}
+    facts = [item for item in bundle["facts"] if item["factId"] in fact_ids]
+    evidence_ids = {value for item in facts for value in item.get("evidenceIds", [])}
+    evidence_ids.update(value for item in matching + states for value in item.get("evidenceIds", []))
+    identities = set()
+    def collect_refs(value):
+        if isinstance(value, dict):
+            identity = value.get("identity")
+            if isinstance(identity, dict) and {"authority", "domainId", "localId"} <= set(identity):
+                identities.add(_json({key: identity[key] for key in ("authority", "domainId", "localId")}))
+            for child in value.values():
+                collect_refs(child)
+        elif isinstance(value, list):
+            for child in value:
+                collect_refs(child)
+    for fact in facts:
+        collect_refs(fact)
+    dependencies = [item for item in bundle.get("dependencies", [])
+                    if _json(item.get("consumer", {}).get("identity", {})) in identities]
+    dependency_ids = {item["dependencyId"] for item in dependencies}
+    resolutions = [item for item in bundle.get("dependencyResolutions", [])
+                   if item.get("dependencyId") in dependency_ids]
+    registrations = [item for item in bundle.get("registrations", [])
+                     if _identity_key(item["ref"]) in identities]
+    for item in registrations:
+        evidence_ids.update(item.get("evidenceIds", []))
+    evidence = [item for item in bundle.get("evidence", []) if item["evidenceId"] in evidence_ids]
+    context_ids = {item["contextRef"] for item in facts if item.get("contextRef")}
+    contexts = [item for item in bundle.get("contexts", []) if item.get("contextId") in context_ids]
+    domain_keys = {key for item in contexts for key in item.get("assignments", {})}
+    result = {name: [] for name in _FULL_COLLECTIONS}
+    result.update(version=bundle["version"], profile=bundle["profile"], facts=facts,
+                  coverage=matching, semanticStates=states, registrations=registrations,
+                  evidence=evidence, dependencies=dependencies, dependencyResolutions=resolutions,
+                  contexts=contexts, contextDomains=[item for item in bundle.get("contextDomains", [])
+                                                     if item.get("keyId") in domain_keys],
+                  assessments=[item for item in bundle.get("assessments", [])
+                               if item.get("recordId") in fact_ids or item.get("factId") in fact_ids],
+                  diagnostics=[item for item in bundle.get("diagnostics", [])
+                               if item.get("recordId") in fact_ids or item.get("recordId") in
+                               {row["coverageId"] for row in matching}])
+    return result

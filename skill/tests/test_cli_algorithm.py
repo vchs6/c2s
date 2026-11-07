@@ -41,6 +41,24 @@ class AlgorithmCliTests(unittest.TestCase):
             self.assertTrue(any(fact["predicate"] == "behavior.control_edge" for fact in bundle["facts"]))
             self.assertEqual(result["semantic_validation"]["valid"], True)
 
+    def test_cli_persists_and_reads_back_algorithm_full_profile(self):
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary) / "project"
+            root.mkdir()
+            source = root / "main.py"
+            source.write_text("def choose(flag):\n    if flag:\n        return 1\n    return 0\n", encoding="utf-8")
+            database = Path(temporary) / "semantic.sqlite"
+            output, errors = io.StringIO(), io.StringIO()
+            with contextlib.redirect_stdout(output), contextlib.redirect_stderr(errors):
+                status = main(["algorithm", "--root", str(root), "--source", "main.py",
+                    "--function", "choose", "--semantic-facts", "--store", str(database)])
+            self.assertEqual(status, 0, errors.getvalue())
+            response = json.loads(output.getvalue())
+            self.assertEqual(response["semantic_store"]["state"], "stored")
+            self.assertTrue(response["semantic_fact_bundle"]["facts"])
+            self.assertEqual(response["semantic_fact_bundle"]["coverage"][0]["selector"],
+                "algorithm:" + response["algorithm"]["algorithm_id"])
+
     def test_cli_parses_code_review_graph_json_for_source_mapped_call_facts(self):
         with tempfile.TemporaryDirectory() as temporary, tempfile.TemporaryDirectory() as output_dir:
             root = Path(temporary)
