@@ -18,6 +18,7 @@ class FullSemanticProjectionTests(unittest.TestCase):
             source = b"def choose(flag):\n    if flag:\n        return 1\n    return 0\n"
             (root / "sample.py").write_bytes(source)
             algorithm = extract_python_algorithm(source, "sample.py", "choose")["algorithm"]
+            algorithm["body"]["data_edges"].append({"from_step": "s1", "to_step": "s2", "role": "value"})
 
             projection = project_algorithm_to_semantic_model(algorithm, root)
             bundle = projection["bundle"]
@@ -29,6 +30,7 @@ class FullSemanticProjectionTests(unittest.TestCase):
         self.assertIn("behavior.body_region", predicates)
         self.assertIn("region.member", predicates)
         self.assertIn("behavior.control_edge", predicates)
+        self.assertIn("behavior.data_edge", predicates)
         edge = next(fact for fact in bundle["facts"] if fact["predicate"] == "behavior.control_edge")
         self.assertEqual({item["role"] for item in edge["arguments"]}, {"target", "edgeKind", "condition"})
 

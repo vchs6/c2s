@@ -592,6 +592,18 @@ def project_algorithm_to_semantic_model(algorithm_document: dict, project_root: 
                 {"role": "condition", "value": condition}],
             source_metadata={"kind": "control_edge", "layer": "E4", "owner": algorithm_id,
                              "text": condition, "evidenceIncluded": True})
+    for edge_index, edge in enumerate(body_data.get("data_edges", [])):
+        source_id, target_id = edge.get("from_step"), edge.get("to_step")
+        if source_id not in step_refs or target_id not in step_refs:
+            diagnostics.append({"code": "ALGORITHM_EDGE_UNMAPPED", "severity": "gap", "recordId": f"data:{edge_index}",
+                "path": None, "message": "Data edge refers to a step without a source mapping."})
+            continue
+        add_fact("behavior.data_edge", step_refs[source_id], None, "static_may",
+            [step_evidence[source_id], step_evidence[target_id]], arguments=[
+                {"role": "target", "value": step_refs[target_id]},
+                {"role": "dataRole", "value": edge.get("role", "unknown")}],
+            source_metadata={"kind": "data_edge", "layer": "E4", "owner": algorithm_id,
+                             "text": edge.get("role", "unknown"), "evidenceIncluded": True})
     for omission in algorithm.get("omissions", []):
         diagnostics.append({"code": "ALGORITHM_OMISSION", "severity": "gap", "recordId": algorithm_id,
             "path": None, "message": f"{omission.get('reason', 'Unspecified omission')}: {omission.get('impact', '')}"})
