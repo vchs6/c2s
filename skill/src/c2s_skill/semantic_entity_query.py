@@ -72,8 +72,11 @@ def query_semantic_entities(model: dict, selector: str, *, max_depth: int = 8) -
         selected = projects if selector == "project" else entities
         if selector == "project":
             selected = members(projects[0])
-        return {"status": "obtained", "selector": selector, "scopeId": model["scopeId"],
-                "members": [ref_summary(item) for item in selected], "gaps": []}
+        result = {"status": "obtained", "selector": selector, "scopeId": model["scopeId"],
+                  "members": [ref_summary(item) for item in selected], "gaps": []}
+        if selector == "project":
+            result["entity"] = details(projects[0])
+        return result
 
     expand = selector.startswith("expand:")
     target = selector.removeprefix("expand:").removeprefix("entity:")

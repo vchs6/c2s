@@ -804,6 +804,11 @@ class SemanticEntityStore:
     def __init__(self, path: Path | str):
         self.path = Path(path).resolve()
 
+    def validate_root(self, root: Path | str) -> None:
+        root = Path(root).resolve(strict=True)
+        if self.path == root or root in self.path.parents:
+            raise ValueError("semantic entity store must be outside the analyzed project")
+
     def _connect(self) -> sqlite3.Connection:
         self.path.parent.mkdir(parents=True, exist_ok=True)
         connection = sqlite3.connect(self.path, timeout=30)
@@ -821,6 +826,9 @@ class SemanticEntityStore:
         connection.execute("""CREATE TABLE IF NOT EXISTS semantic_entity_continuity(
             scope_id TEXT NOT NULL, candidate_id TEXT NOT NULL, payload TEXT NOT NULL,
             PRIMARY KEY(scope_id, candidate_id))""")
+        connection.execute("""CREATE TABLE IF NOT EXISTS semantic_entity_diagnostics(
+            scope_id TEXT NOT NULL, input_fingerprint TEXT NOT NULL, payload TEXT NOT NULL,
+            PRIMARY KEY(scope_id, input_fingerprint))""")
         connection.execute("CREATE INDEX IF NOT EXISTS semantic_entity_kind_idx "
                            "ON semantic_entity_registry(scope_id, kind)")
         connection.execute("CREATE INDEX IF NOT EXISTS semantic_entity_name_idx "
@@ -835,7 +843,7 @@ class SemanticEntityStore:
                                      (scope_id,)).fetchone()
         return json.loads(row[0]) if row else None
 
-    def write(self, document: dict) -> dict:
+    def write(self, document: dict, diagnostics: list[dict] | None = None) -> dict:
         from c2s_semantic_contract.validation import validate_semantic_entity_model
         result = validate_semantic_entity_model(document)
         if not result["valid"]:
@@ -859,6 +867,13 @@ class SemanticEntityStore:
                 for source_key in entity["sourceKeys"] or [""]:
                     connection.execute("INSERT INTO semantic_entity_index VALUES(?,?,?,?,?)",
                         (scope_id, entity_key, entity["ref"]["kind"], entity["name"], source_key))
+            if diagnostics is not None:
+                fingerprints = {item["inputFingerprint"] for item in document["coverage"]
+                                if item["selector"] == "all-entities"}
+                for fingerprint in fingerprints:
+                    connection.execute("INSERT INTO semantic_entity_diagnostics VALUES(?,?,?) "
+                        "ON CONFLICT(scope_id,input_fingerprint) DO UPDATE SET payload=excluded.payload",
+                        (scope_id, fingerprint, _json(diagnostics)))
         return {"valid": True, "scopeId": scope_id, "generation": generation, "model": merged}
 
     def register(self, scope_id: str, source_key: str, kind: str, name: str,
@@ -920,6 +935,12 @@ class SemanticEntityStore:
             rows = connection.execute("SELECT payload FROM semantic_entity_continuity WHERE scope_id=? "
                                       "ORDER BY candidate_id", (scope_id,)).fetchall()
         return [json.loads(row[0]) for row in rows]
+
+    def read_diagnostics(self, scope_id: str, input_fingerprint: str) -> list[dict]:
+        with self._connect() as connection:
+            row = connection.execute("SELECT payload FROM semantic_entity_diagnostics "
+                "WHERE scope_id=? AND input_fingerprint=?", (scope_id, input_fingerprint)).fetchone()
+        return json.loads(row[0]) if row else []
 
 
 def _merge_entity_archives(old: dict, new: dict) -> dict:

@@ -3,6 +3,7 @@ from __future__ import annotations
 import sys
 import tempfile
 import unittest
+from unittest.mock import patch
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -10,6 +11,8 @@ sys.path.insert(0, str(ROOT / "src"))
 sys.path.insert(0, str(ROOT / "skill" / "src"))
 
 from c2s_skill.entity_construction import construct_semantic_entity_candidates
+from c2s_skill.entity_construction import construct_and_query_semantic_entities
+from c2s_skill.semantic_store import SemanticEntityStore
 
 
 class SemanticEntityConstructionTests(unittest.TestCase):
@@ -148,6 +151,38 @@ class SemanticEntityConstructionTests(unittest.TestCase):
         calculate = next(item for item in result["candidates"] if item["name"] == "calculate")
         self.assertTrue(calculate["implementationViews"])
         self.assertTrue(all(item["path"] == "src/lib.rs" for item in calculate["implementationViews"]))
+
+    def test_construct_store_query_reuses_unchanged_coverage_and_invalidates_changes(self):
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary) / "project"
+            root.mkdir()
+            (root / "pyproject.toml").write_text('[project]\nname = "sample"\n', encoding="utf-8")
+            (root / "README.md").write_text("## Modules\n- logic: core operations\n\n"
+                                             "## Features\n- calculation: computes totals\n", encoding="utf-8")
+            (root / "logic.py").write_text("def run(value):\n    return value + 1\n", encoding="utf-8")
+            store = SemanticEntityStore(Path(temporary) / "entities.sqlite")
+            with patch("c2s_skill.entity_construction.analysis_profile_digest", return_value="profile-a"):
+                first = construct_and_query_semantic_entities(root, store, "project")
+                self.assertEqual(first["constructionStatus"], "constructed")
+                self.assertTrue(any(item["kind"] == "ComputationEntity" for item in first["members"]))
+                with patch("c2s_skill.entity_construction.scan_project", side_effect=AssertionError("unexpected scan")):
+                    cached = construct_and_query_semantic_entities(root, store, "project")
+                self.assertEqual(cached["constructionStatus"], "reused")
+                (root / "logic.py").write_text("def run(value):\n    return value + 2\n", encoding="utf-8")
+                changed = construct_and_query_semantic_entities(root, store, "project")
+                (root / "logic.py").rename(root / "renamed.py")
+                moved = construct_and_query_semantic_entities(root, store, "project")
+            with patch("c2s_skill.entity_construction.analysis_profile_digest", return_value="profile-b"):
+                profile_changed = construct_and_query_semantic_entities(root, store, "project")
+            self.assertEqual(changed["constructionStatus"], "constructed")
+            archive = store.read(first["entity"]["ref"]["identity"]["domainId"])
+            self.assertEqual(moved["constructionStatus"], "constructed")
+            self.assertEqual(profile_changed["constructionStatus"], "constructed")
+            self.assertTrue(any(item["status"] == "continuity_unresolved"
+                                for item in archive["continuityCandidates"]))
+            self.assertTrue(any(item["freshness"] == "review_required" for item in changed["entity"]["coverage"]))
+            self.assertTrue(any(item["freshness"] == "review_required"
+                                for item in profile_changed["entity"]["coverage"]))
 
 
 if __name__ == "__main__":

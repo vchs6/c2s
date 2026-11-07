@@ -7,7 +7,8 @@ import hashlib
 import re
 from pathlib import Path
 
-from .acquisition import Fact, ProjectScan, SourceConstruct, scan_project
+from .acquisition import (Fact, ProjectScan, SourceConstruct, analysis_profile_digest,
+                          scan_project)
 from .inventory import source_fingerprint
 
 
@@ -296,6 +297,15 @@ def construct_semantic_entity_candidates(root: Path, scan: ProjectScan | None = 
 
     _markdown_candidates(root, scan, candidates, evidence, relation_candidates, diagnostics,
                          project_candidate_id)
+    if project_candidate_id:
+        existing_pairs = {(item["subjectCandidateId"], item["targetCandidateId"])
+                          for item in relation_candidates if item["predicate"] == "defines"}
+        for candidate in candidates:
+            pair = (project_candidate_id, candidate["candidateId"])
+            if candidate["kind"] != "Project" and pair not in existing_pairs:
+                relation_candidates.append({"predicate": "defines", "subjectCandidateId": pair[0],
+                    "targetCandidateId": pair[1], "epistemicStatus": "provisional",
+                    "evidenceIds": candidate["evidenceIds"]})
     if source_fingerprint(root) != scan.source_digest:
         raise ValueError("项目源码在候选构造期间发生变化；请重新扫描后再构造语义候选")
     return {"sourceDigest": scan.source_digest, "candidates": candidates,
@@ -312,3 +322,89 @@ def _field_implementation_type(field: SourceConstruct) -> str | None:
         return None
     value = match.group(1).strip()
     return value or None
+
+
+def construct_and_query_semantic_entities(root: Path, store, selector: str = "project") -> dict:
+    """Construct/persist provisional candidates on a miss, then query the durable archive."""
+    from .semantic_entity_query import query_entity_store
+
+    root = root.resolve(strict=True)
+    store.validate_root(root)
+    profile_digest = analysis_profile_digest()
+    current_source = source_fingerprint(root)
+    input_fingerprint = "sha256:" + _digest(f"{current_source}\0{profile_digest}")
+    scope_id = "project:" + _digest(str(root))
+    existing = store.read(scope_id)
+    if existing and any(item["selector"] == "all-entities"
+                        and item["inputFingerprint"] == input_fingerprint
+                        and item["analyzerVersion"] == profile_digest
+                        for item in existing["coverage"]):
+        result = query_entity_store(store, {"version": "1.0.0", "profile": "semantic-entity-query-1",
+            "scopeId": scope_id, "selector": selector, "inputFingerprint": input_fingerprint,
+            "analyzerVersion": profile_digest})
+        result["constructionStatus"] = "reused"
+        result["constructionDiagnostics"] = store.read_diagnostics(scope_id, input_fingerprint)
+        return result
+
+    scan = scan_project(root)
+    constructed = construct_semantic_entity_candidates(root, scan)
+    refs: dict[str, dict] = {}
+    records = {item["evidenceId"]: item for item in constructed["evidence"]}
+    entities = []
+    claims = []
+    coverage = []
+    observations = {"Project": "E0", "Module": "E1", "Capability": "E1", "DataEntity": "E2",
+                    "ComputationEntity": "E2", "ExternalActor": "E3", "TestEntity": "E4"}
+    for candidate in constructed["candidates"]:
+        source_key = f"candidate:{candidate['kind']}:{candidate['candidateId']}"
+        registration = store.register(scope_id, source_key, candidate["kind"], candidate["name"],
+                                      candidate["evidenceIds"])
+        ref = registration["ref"]
+        refs[candidate["candidateId"]] = ref
+        source_keys = sorted(set(candidate.get("sourceConstructIds", [])) | {source_key})
+        entity = {"ref": ref, "name": candidate["name"], "aliases": [],
+            "description": candidate["description"], "attributes": candidate.get("attributes", []),
+            "sourceKeys": source_keys, "observationViews": [observations[candidate["kind"]]]}
+        for attr in entity["attributes"]:
+            attr["claimStatus"] = "provisional"
+            if attr.get("implementationType") is None:
+                attr.pop("implementationType", None)
+        entities.append(entity)
+        status_id = _digest(f"claim\0{candidate['candidateId']}\0epistemicStatus")
+        claims.append({"claimId": status_id, "subject": ref, "predicate": "epistemicStatus",
+            "value": candidate["epistemicStatus"], "evidenceIds": candidate["evidenceIds"],
+            "claimStatus": "provisional"})
+        coverage_id = _digest(f"coverage\0{candidate['candidateId']}\0{input_fingerprint}\0{profile_digest}")
+        coverage.append({"coverageId": coverage_id, "entity": ref, "selector": "all-entities",
+            "status": "obtained", "inputFingerprint": input_fingerprint,
+            "analyzerVersion": profile_digest, "presentationStatus": "not_expanded", "freshness": "current"})
+    relations = []
+    for index, candidate in enumerate(constructed["relationCandidates"]):
+        subject = refs.get(candidate["subjectCandidateId"])
+        target = refs.get(candidate["targetCandidateId"])
+        if subject is None or target is None:
+            continue
+        relations.append({"relationId": _digest(f"relation\0{index}\0{candidate['predicate']}\0"
+            f"{candidate['subjectCandidateId']}\0{candidate['targetCandidateId']}"),
+            "predicate": candidate["predicate"], "subject": subject, "target": target,
+            "evidenceIds": candidate["evidenceIds"], "condition": {"kind": "true"},
+            "claimStatus": "provisional"})
+    continuity = []
+    for registration in store.continuity_candidates(scope_id):
+        if registration["current"] in refs.values():
+            continuity.append(registration)
+    prior_evidence = {item["evidenceId"]: item for item in (existing or {}).get("evidence", [])}
+    continuity_evidence_ids = {item for candidate in continuity for item in candidate.get("evidenceIds", [])}
+    for evidence_id in continuity_evidence_ids - records.keys():
+        if evidence_id in prior_evidence:
+            records[evidence_id] = prior_evidence[evidence_id]
+    document = {"version": "1.0.0", "profile": "semantic-entity-model-1", "scopeId": scope_id,
+        "entities": entities, "claims": claims, "relations": relations,
+        "continuityCandidates": continuity, "evidence": list(records.values()), "coverage": coverage}
+    store.write(document, constructed["diagnostics"])
+    result = query_entity_store(store, {"version": "1.0.0", "profile": "semantic-entity-query-1",
+        "scopeId": scope_id, "selector": selector, "inputFingerprint": input_fingerprint,
+        "analyzerVersion": profile_digest})
+    result["constructionStatus"] = "constructed"
+    result["constructionDiagnostics"] = constructed["diagnostics"]
+    return result
