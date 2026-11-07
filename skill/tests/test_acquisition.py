@@ -28,6 +28,15 @@ class AcquisitionTests(unittest.TestCase):
         self.assertEqual([item.name for item in fields], ["left", "right"])
         self.assertEqual([item.text for item in fields], ["left", "right"])
 
+    def test_python_enum_construct_separates_enum_type_and_members(self):
+        source = b"from enum import Enum\nclass Status(Enum):\n    READY = 'ready'\n"
+        result = parse_source("status.py", source, "python")
+        enum_type = next(item for item in result.constructs if item.syntax_kind == "enum_declaration")
+        variant = next(item for item in result.constructs if item.syntax_kind == "enum_variant")
+        self.assertEqual(enum_type.name, "Status")
+        self.assertEqual(variant.name, "READY")
+        self.assertEqual(variant.parent_id, enum_type.construct_id)
+
     def test_rust_source_constructs_cover_items_members_generics_macros_attributes_and_closures(self):
         source = (b"#[derive(Debug)] struct Box<T> { value: T }\n"
                   b"enum State { Ready }\n"

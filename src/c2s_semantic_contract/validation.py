@@ -26,7 +26,7 @@ _SEMANTIC_ENTITY_SCHEMA_PATH = _ROOT / "contracts" / "semantic-model" / "semanti
 _SEMANTIC_ENTITY_TYPES_PATH = _ROOT / "contracts" / "semantic-model" / "semantic-entity-types.json"
 _SEMANTIC_ENTITY_PREDICATES_PATH = _ROOT / "contracts" / "semantic-model" / "semantic-entity-predicates.json"
 _SEMANTIC_ENTITY_MANIFEST_PATH = _ROOT / "contracts" / "semantic-model" / "semantic-entity-catalog-manifest.json"
-_TRUSTED_SEMANTIC_ENTITY_MANIFEST_SHA256 = "08f672d89a256e1c9a45e17b3a1dafc42e990a5eb45c5922b4913fbac4681bb1"
+_TRUSTED_SEMANTIC_ENTITY_MANIFEST_SHA256 = "99f14cfe7a54c651578233818d58e3c499c64a7ab3cbcf682baa7988bcaea075"
 _TRUSTED_MANIFEST_SHA256 = "34e533b34af5fdb135e2fd8cea22de95a964b702b714619f314a30bd4cd49c2b"
 _TRUSTED_SEMANTIC_MANIFEST_SHA256 = "35c99a715a99e78dbe43290fcbcc342d655241f35f3724d311c7765d4b66c659"
 _M1_SUPPORTED_KINDS = {"Project", "PackageSpecification", "NativeWorkspace", "SourceDeclaration"}
@@ -1079,6 +1079,12 @@ def validate_semantic_entity_model(document: dict) -> dict:
     evidence_set = set(evidence_ids)
     if len(evidence_set) != len(evidence_ids):
         add_reference_error("ENTITY_EVIDENCE_ID_DUPLICATE", "证据标识必须唯一。", "/evidence")
+    for index, evidence in enumerate(document["evidence"]):
+        if "startByte" in evidence and evidence["endByte"] < evidence["startByte"]:
+            diagnostics.append(_diagnostic("invariants", "ENTITY_EVIDENCE_RANGE_INVALID",
+                "证据结束字节位置必须大于或等于起始位置。",
+                record_ref=f"evidence:{evidence['evidenceId']}",
+                field_path=f"/evidence/{index}/endByte"))
 
     def check_evidence(ids: list[str], path: str, record: str) -> None:
         for evidence_id in ids:

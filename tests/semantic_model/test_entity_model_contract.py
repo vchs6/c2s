@@ -110,6 +110,22 @@ class SemanticEntityModelContractTests(unittest.TestCase):
         self.assertFalse(result["valid"])
         self.assertIn("ENTITY_EVIDENCE_MISSING", {item["ruleCode"] for item in result["diagnostics"]})
 
+    def test_evidence_can_retain_source_path_digest_and_byte_span(self):
+        document = valid_entity_model()
+        document["evidence"][0].update({"path": "src/order.py", "sha256": "a" * 64,
+                                        "startByte": 4, "endByte": 12, "method": "python-ast"})
+        result = validate_semantic_entity_model(document)
+        self.assertTrue(result["valid"], result["diagnostics"])
+
+    def test_evidence_rejects_inverted_source_byte_span(self):
+        document = valid_entity_model()
+        document["evidence"][0].update({"path": "src/order.py", "sha256": "a" * 64,
+                                        "startByte": 12, "endByte": 4, "method": "python-ast"})
+        result = validate_semantic_entity_model(document)
+        self.assertFalse(result["valid"])
+        self.assertIn("ENTITY_EVIDENCE_RANGE_INVALID",
+                      {item["ruleCode"] for item in result["diagnostics"]})
+
     def test_same_entity_identity_cannot_have_two_kinds(self):
         document = valid_entity_model()
         document["entities"].append({"ref": entity_ref("record", "ComputationEntity"),

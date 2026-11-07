@@ -50,6 +50,7 @@ class SourceConstruct:
     parser_version: str
     opaque: bool
     text: str
+    declared_type: str | None = None
 
 
 @dataclass(frozen=True, slots=True)
@@ -313,18 +314,24 @@ def _construct_parser_version(language: str) -> tuple[str, str]:
 
 def _source_construct(path: str, source: bytes, language: str, syntax_kind: str,
                       name: str, start: int, end: int, parent_id: str | None,
-                      parser_id: str, parser_version: str, *, opaque: bool = False) -> SourceConstruct:
+                      parser_id: str, parser_version: str, *, opaque: bool = False,
+                      declared_type: str | None = None) -> SourceConstruct:
     source_digest = hashlib.sha256(source).hexdigest()
     key = f"{language}:{path}:{syntax_kind}:{start}:{end}"
     construct_id = hashlib.sha256(key.encode("utf-8")).hexdigest()
     source_key = hashlib.sha256(f"{path}\0{syntax_kind}\0{start}".encode("utf-8")).hexdigest()
     return SourceConstruct(construct_id, source_key, language, syntax_kind, name, path,
                           start, end, parent_id, source_digest, parser_id, parser_version,
-                          opaque, source[start:end].decode("utf-8", errors="replace"))
+                          opaque, source[start:end].decode("utf-8", errors="replace"), declared_type)
 
 
 def _python_source_constructs(path: str, source: bytes, tree: ast.AST) -> tuple[SourceConstruct, ...]:
     parents = {child: parent for parent in ast.walk(tree) for child in ast.iter_child_nodes(parent)}
+    enum_definitions = {node for node in ast.walk(tree) if isinstance(node, ast.ClassDef)
+                        and any((base.id if isinstance(base, ast.Name) else
+                                 base.attr if isinstance(base, ast.Attribute) else "")
+                                in {"Enum", "IntEnum", "StrEnum", "Flag", "IntFlag"}
+                                for base in node.bases)}
     parser_id, parser_version = _construct_parser_version("python")
     lines = source.splitlines(keepends=True)
 
@@ -332,13 +339,13 @@ def _python_source_constructs(path: str, source: bytes, tree: ast.AST) -> tuple[
         return (sum(len(line) for line in lines[:node.lineno - 1]) + node.col_offset,
                 sum(len(line) for line in lines[:node.end_lineno - 1]) + node.end_col_offset)
 
-    candidates: list[tuple[ast.AST | None, str, str, int, int, bool]] = [
-        (None, "module", Path(path).name, 0, len(source), False)]
+    candidates: list[tuple[ast.AST | None, str, str, int, int, bool, str | None]] = [
+        (None, "module", Path(path).name, 0, len(source), False, None)]
     for node in ast.walk(tree):
         kind = None
         name = getattr(node, "name", type(node).__name__)
         if isinstance(node, ast.ClassDef):
-            kind = "class_declaration"
+            kind = "enum_declaration" if node in enum_definitions else "class_declaration"
         elif isinstance(node, (ast.FunctionDef, ast.AsyncFunctionDef)):
             kind = "function_declaration"
         elif isinstance(node, ast.Lambda):
@@ -354,31 +361,39 @@ def _python_source_constructs(path: str, source: bytes, tree: ast.AST) -> tuple[
                     field_name = (target_node.id if isinstance(target_node, ast.Name) else
                                   target_node.attr if isinstance(target_node, ast.Attribute) else
                                   type(target_node).__name__)
-                    start, end = byte_span(target_node)
-                    candidates.append((target_node, "field_declaration", field_name, start, end, False))
+                    if parents.get(node) in enum_definitions:
+                        start, end = byte_span(node)
+                        candidates.append((node, "enum_variant", field_name, start, end, False, None))
+                    else:
+                        start, end = byte_span(target_node)
+                        annotation = ast.unparse(node.annotation) if isinstance(node, ast.AnnAssign) else None
+                        candidates.append((target_node, "field_declaration", field_name, start, end,
+                                           False, annotation))
             continue
         if kind:
             start, end = byte_span(node)
-            candidates.append((node, kind, name, start, end, False))
+            candidates.append((node, kind, name, start, end, False, None))
         if isinstance(node, (ast.FunctionDef, ast.AsyncFunctionDef, ast.ClassDef)):
             for decorator in node.decorator_list:
                 start, end = byte_span(decorator)
-                candidates.append((decorator, "decorator_application", ast.unparse(decorator), start, end, False))
+                candidates.append((decorator, "decorator_application", ast.unparse(decorator), start, end,
+                                   False, None))
             for parameter in getattr(node, "type_params", ()):
                 start, end = byte_span(parameter)
                 candidates.append((parameter, "generic_parameter", getattr(parameter, "name", type(parameter).__name__),
-                                   start, end, False))
+                                   start, end, False, None))
 
-    parent_lookup: dict[ast.AST, list[tuple[ast.AST | None, str, str, int, int, bool]]] = {}
+    parent_lookup: dict[ast.AST, list[tuple[ast.AST | None, str, str, int, int, bool, str | None]]] = {}
     for candidate in candidates:
         node = candidate[0]
         if node is not None:
             parent_lookup.setdefault(node, []).append(candidate)
     construct_ids = {(candidate[0], candidate[1]): _source_construct(
         path, source, "python", candidate[1], candidate[2], candidate[3], candidate[4], None,
-        parser_id, parser_version, opaque=candidate[5]).construct_id for candidate in candidates}
+        parser_id, parser_version, opaque=candidate[5], declared_type=candidate[6]).construct_id
+        for candidate in candidates}
     constructs = []
-    for node, kind, name, start, end, opaque in candidates:
+    for node, kind, name, start, end, opaque, declared_type in candidates:
         ancestor = parents.get(node) if node is not None else None
         parent_id = construct_ids[(None, "module")]
         while ancestor is not None:
@@ -391,7 +406,8 @@ def _python_source_constructs(path: str, source: bytes, tree: ast.AST) -> tuple[
         if node is None:
             parent_id = None
         constructs.append(_source_construct(path, source, "python", kind, name, start, end,
-                                            parent_id, parser_id, parser_version, opaque=opaque))
+                                            parent_id, parser_id, parser_version, opaque=opaque,
+                                            declared_type=declared_type))
     return tuple(constructs)
 
 
@@ -406,24 +422,28 @@ def _rust_source_constructs(path: str, source: bytes, root) -> tuple[SourceConst
                     "macro_definition": "macro_definition", "macro_invocation": "macro_invocation",
                     "attribute_item": "attribute_application", "type_parameters": "generic_parameter_list",
                     "type_parameter": "generic_parameter", "closure_expression": "closure_expression"}
-    raw: list[tuple[object, str, str, int, int, bool]] = []
+    raw: list[tuple[object, str, str, int, int, bool, str | None]] = []
     for node in _walk_syntax(root):
         if node.type in syntax_kinds:
             name_node = node.child_by_field_name("name")
             name = (source[name_node.start_byte:name_node.end_byte].decode("utf-8", errors="replace")
                     if name_node is not None else node.type)
-            raw.append((node, syntax_kinds[node.type], name, node.start_byte, node.end_byte, False))
+            type_node = node.child_by_field_name("type") if node.type == "field_declaration" else None
+            declared_type = (source[type_node.start_byte:type_node.end_byte].decode("utf-8", errors="replace")
+                             if type_node is not None else None)
+            raw.append((node, syntax_kinds[node.type], name, node.start_byte, node.end_byte, False, declared_type))
         elif node.type == "ERROR" or node.is_missing:
-            raw.append((node, "opaque_error", node.type, node.start_byte, node.end_byte, True))
+            raw.append((node, "opaque_error", node.type, node.start_byte, node.end_byte, True, None))
 
     by_node = {item[0]: item for item in raw}
     ids = {item[0]: _source_construct(path, source, "rust", item[1], item[2], item[3], item[4],
-                                        None, parser_id, parser_version, opaque=item[5]).construct_id
+                                        None, parser_id, parser_version, opaque=item[5],
+                                        declared_type=item[6]).construct_id
            for item in raw}
     constructs = [_source_construct(path, source, "rust", "module", path, 0, len(source), None,
                                     parser_id, parser_version)]
     module_id = constructs[0].construct_id
-    for node, kind, name, start, end, opaque in raw:
+    for node, kind, name, start, end, opaque, declared_type in raw:
         parent = node.parent
         parent_id = module_id
         while parent is not None:
@@ -432,7 +452,8 @@ def _rust_source_constructs(path: str, source: bytes, root) -> tuple[SourceConst
                 break
             parent = parent.parent
         constructs.append(_source_construct(path, source, "rust", kind, name, start, end,
-                                            parent_id, parser_id, parser_version, opaque=opaque))
+                                            parent_id, parser_id, parser_version, opaque=opaque,
+                                            declared_type=declared_type))
     return tuple(constructs)
 
 

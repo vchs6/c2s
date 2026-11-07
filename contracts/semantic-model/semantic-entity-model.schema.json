@@ -110,7 +110,16 @@
     "evidence": {
       "type": "object", "additionalProperties": false,
       "required": ["evidenceId", "source", "description"],
-      "properties": {"evidenceId": {"$ref": "#/$defs/id"}, "source": {"$ref": "#/$defs/id"}, "description": {"type": "string"}}
+      "properties": {
+        "evidenceId": {"$ref": "#/$defs/id"}, "source": {"$ref": "#/$defs/id"},
+        "description": {"type": "string"}, "path": {"type": "string"},
+        "sha256": {"type": "string", "pattern": "^[a-f0-9]{64}$"},
+        "startByte": {"type": "integer", "minimum": 0}, "endByte": {"type": "integer", "minimum": 0},
+        "method": {"type": "string"}, "toolName": {"type": "string"},
+        "toolVersion": {"type": "string"}
+      },
+      "allOf": [{"if": {"required": ["path"]},
+                 "then": {"required": ["sha256", "startByte", "endByte", "method"]}}]
     },
     "coverage": {
       "type": "object", "additionalProperties": false,
