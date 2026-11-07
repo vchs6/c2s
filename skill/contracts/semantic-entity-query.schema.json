@@ -1,0 +1,16 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:c2s:semantic-entity-query:1.0.0",
+  "title": "C2S 语义实体查询请求",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["version", "profile", "scopeId", "selector"],
+  "properties": {
+    "version": {"const": "1.0.0"},
+    "profile": {"const": "semantic-entity-query-1"},
+    "scopeId": {"type": "string", "minLength": 1},
+    "selector": {"type": "string", "minLength": 1},
+    "expandChildren": {"type": "boolean", "default": false},
+    "maxDepth": {"type": "integer", "minimum": 0, "maximum": 32, "default": 8}
+  }
+}
