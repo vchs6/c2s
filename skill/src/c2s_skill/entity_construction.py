@@ -228,6 +228,19 @@ def construct_semantic_entity_candidates(root: Path, scan: ProjectScan | None = 
                 "epistemicStatus": "provisional", "evidenceIds": [record["evidenceId"]],
                 "sourceConstructIds": [construct.construct_id], "attributes": [],
                 "uncertainties": ["函数边界和名称不等同业务能力边界。"]})
+            implementation_views = []
+            for parsed in scan.files:
+                for fact in parsed.facts:
+                    if (fact.path == construct.path and fact.owner == construct.name
+                            and fact.kind in {"algorithm_step", "local_binding"}):
+                        step_evidence = _fact_evidence(root, fact)
+                        evidence[step_evidence["evidenceId"]] = step_evidence
+                        implementation_views.append({"sourceFactId": fact.id, "kind": fact.kind,
+                            "name": fact.name, "path": fact.path, "startByte": fact.start_byte,
+                            "endByte": fact.end_byte, "text": fact.text,
+                            "evidenceIds": [step_evidence["evidenceId"]]})
+            candidates[-1]["implementationViews"] = sorted(implementation_views,
+                key=lambda item: (item["path"], item["startByte"], item["sourceFactId"]))
             computation_candidates_by_name.setdefault(construct.name, []).append(candidates[-1])
             mappings.append({"candidateId": candidate_id, "sourceConstructId": construct.construct_id,
                              "role": "implements"})

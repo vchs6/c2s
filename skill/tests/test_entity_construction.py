@@ -122,6 +122,33 @@ class SemanticEntityConstructionTests(unittest.TestCase):
                             and item["code"] == "TEST_TARGET_UNRESOLVED"
                             for item in result["diagnostics"]))
 
+    def test_algorithm_steps_are_implementation_views_of_computation_not_entities(self):
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            (root / "pyproject.toml").write_text('[project]\nname = "sample"\n', encoding="utf-8")
+            (root / "logic.py").write_text(
+                "def calculate(value):\n    result = normalize(value)\n    return result\n\n"
+                "def normalize(value):\n    return value\n", encoding="utf-8")
+            result = construct_semantic_entity_candidates(root)
+        calculate = next(item for item in result["candidates"] if item["name"] == "calculate")
+        self.assertTrue(calculate["implementationViews"])
+        self.assertTrue(all(item["evidenceIds"] for item in calculate["implementationViews"]))
+        self.assertFalse(any(item["kind"] == "AlgorithmStep" for item in result["candidates"]))
+
+    def test_rust_computation_keeps_source_mapped_algorithm_view(self):
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            (root / "Cargo.toml").write_text('[package]\nname = "sample"\nversion = "0.1.0"\nedition = "2021"\n',
+                                            encoding="utf-8")
+            (root / "src").mkdir()
+            (root / "src/lib.rs").write_text(
+                "pub fn calculate(value: i32) -> i32 {\n    let result = normalize(value);\n    result\n}\n"
+                "fn normalize(value: i32) -> i32 { value }\n", encoding="utf-8")
+            result = construct_semantic_entity_candidates(root)
+        calculate = next(item for item in result["candidates"] if item["name"] == "calculate")
+        self.assertTrue(calculate["implementationViews"])
+        self.assertTrue(all(item["path"] == "src/lib.rs" for item in calculate["implementationViews"]))
+
 
 if __name__ == "__main__":
     unittest.main()
