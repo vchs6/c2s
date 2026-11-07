@@ -2,7 +2,8 @@ from __future__ import annotations
 
 import unittest
 
-from c2s_skill.semantic_entity_query import query_entity_store, query_semantic_entities
+from c2s_skill.semantic_entity_query import (query_entity_store, query_semantic_entities,
+                                             render_entity_query)
 
 
 def archive():
@@ -72,6 +73,16 @@ class SemanticEntityQueryTests(unittest.TestCase):
         self.assertEqual(result["status"], "obtained")
         detail = query_semantic_entities(archive(), "查询订单实体的属性")
         self.assertEqual(detail["entity"]["name"], "订单")
+
+    def test_json_and_markdown_render_the_same_attributes_relations_and_gaps(self):
+        result = query_semantic_entities(archive(), "entity:d")
+        encoded = render_entity_query(result, "json")
+        markdown = render_entity_query(result, "markdown")
+        self.assertIn('"status": "obtained"', encoded)
+        self.assertIn("## 属性：状态", markdown)
+        self.assertIn('"localId": "d"', encoded)
+        self.assertIn('"localId": "d"', markdown)
+        self.assertIn("状态", markdown)
 
 
 if __name__ == "__main__":

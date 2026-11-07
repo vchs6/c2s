@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 from collections import defaultdict
+import json
 import re
 
 
@@ -47,10 +48,21 @@ def query_semantic_entities(model: dict, selector: str, *, max_depth: int = 8) -
     def details(entity: dict) -> dict:
         ref_key = _key(entity["ref"])
         claims = [item for item in model.get("claims", []) if _key(item["subject"]) == ref_key]
+        relations_for_entity = [item for item in model.get("relations", [])
+            if _key(item["subject"]) == ref_key or
+            (isinstance(item.get("target"), dict) and "identity" in item["target"]
+             and _key(item["target"]) == ref_key)]
         coverage = [item for item in model.get("coverage", [])
                     if isinstance(item.get("entity"), dict) and _key(item["entity"]) == ref_key]
+        evidence_ids = {evidence_id for item in claims + relations_for_entity + coverage
+                        for evidence_id in item.get("evidenceIds", [])}
+        evidence_ids.update(evidence_id for item in entity["attributes"]
+                            for evidence_id in item.get("evidenceIds", []))
+        evidence = [item for item in model.get("evidence", []) if item["evidenceId"] in evidence_ids]
         return {**entity, "claims": sorted(claims, key=lambda item: item["claimId"]),
-                "coverage": sorted(coverage, key=lambda item: item["coverageId"])}
+                "relations": sorted(relations_for_entity, key=lambda item: item["relationId"]),
+                "coverage": sorted(coverage, key=lambda item: item["coverageId"]),
+                "evidence": sorted(evidence, key=lambda item: item["evidenceId"])}
 
     if selector in {"entities", "project"}:
         projects = [item for item in entities if item["ref"]["kind"] == "Project"]
@@ -139,3 +151,62 @@ def query_entity_store(store, request: dict) -> dict:
     else:
         selector = request["selector"]
     return query_semantic_entities(model, selector, max_depth=request.get("maxDepth", 8))
+
+
+def render_entity_query(result: dict, output_format: str = "json") -> str:
+    """Render one query result as deterministic JSON or a complete Markdown view."""
+    if output_format == "json":
+        return json.dumps(result, ensure_ascii=False, sort_keys=True, indent=2)
+    if output_format != "markdown":
+        raise ValueError("output_format must be 'json' or 'markdown'")
+    lines = [f"状态：{result['status']}", f"选择器：{result.get('selector', '')}"]
+    if result.get("entity"):
+        entity = result["entity"]
+        lines.extend(["", f"# {entity['name']}（{entity['ref']['kind']}）", entity.get("description", ""),
+            f"实体身份：{json.dumps(entity['ref']['identity'], ensure_ascii=False, sort_keys=True)}",
+            f"源码映射键：{json.dumps(entity['sourceKeys'], ensure_ascii=False)}"])
+        for attribute in entity.get("attributes", []):
+            value_range = attribute["valueRange"]
+            lines.extend(["", f"## 属性：{attribute['name']}",
+                f"语义类型：{attribute['semanticType']}",
+                f"实现类型：{attribute.get('implementationType', '未提供')}",
+                f"值域：{json.dumps(value_range, ensure_ascii=False, sort_keys=True)}",
+                f"基数：{attribute['cardinality']}",
+                f"约束：{json.dumps(attribute['constraints'], ensure_ascii=False)}",
+                f"证据：{json.dumps(attribute['evidenceIds'], ensure_ascii=False)}",
+                f"主张状态：{attribute.get('claimStatus', '未声明')}"])
+        for claim in entity.get("claims", []):
+            lines.extend(["", f"## 主张：{claim['predicate']}",
+                f"值：{json.dumps(claim['value'], ensure_ascii=False, sort_keys=True)}",
+                f"状态：{claim['claimStatus']}",
+                f"证据：{json.dumps(claim['evidenceIds'], ensure_ascii=False)}"])
+        for coverage in entity.get("coverage", []):
+            lines.extend(["", f"## 覆盖：{coverage['selector']}", f"状态：{coverage['status']}",
+                f"呈现：{coverage.get('presentationStatus', '未声明')}",
+                f"新鲜度：{coverage.get('freshness', '未声明')}",
+                f"输入指纹：{coverage['inputFingerprint']}",
+                f"分析器版本：{coverage['analyzerVersion']}"])
+        for relation in entity.get("relations", []):
+            lines.extend(["", f"## 关系：{relation['predicate']}",
+                f"主体：{json.dumps(relation['subject'], ensure_ascii=False, sort_keys=True)}",
+                f"目标：{json.dumps(relation['target'], ensure_ascii=False, sort_keys=True)}",
+                f"证据：{json.dumps(relation['evidenceIds'], ensure_ascii=False)}"])
+        for evidence in entity.get("evidence", []):
+            lines.extend(["", f"## 证据：{evidence['evidenceId']}", evidence["description"],
+                f"来源：{evidence['source']}", f"路径：{evidence.get('path', '未提供')}"])
+    if result.get("members"):
+        lines.extend(["", "## 直接子实体"])
+        lines.extend(f"- {item['name']}（{item['kind']}）：{item.get('description', '')}；引用 {item['ref']['identity']['localId']}"
+                     for item in result["members"])
+    if result.get("expandedMembers"):
+        lines.extend(["", "## 已展开子实体"])
+        lines.extend(f"- 深度 {item['depth']}：{item['entity']['name']}（{item['entity']['ref']['kind']}），"
+                     f"属性 {len(item['entity'].get('attributes', []))} 项"
+                     for item in result["expandedMembers"])
+    if result.get("candidates"):
+        lines.extend(["", "## 候选目标"])
+        lines.extend(f"- {item['name']}（{item['kind']}）" for item in result["candidates"])
+    if result.get("gaps"):
+        lines.extend(["", "## 缺口"])
+        lines.extend(f"- {item['code']}" for item in result["gaps"])
+    return "\n".join(lines)
