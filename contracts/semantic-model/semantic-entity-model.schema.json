@@ -13,6 +13,7 @@
     "claims": {"type": "array", "items": {"$ref": "#/$defs/claim"}},
     "relations": {"type": "array", "items": {"$ref": "#/$defs/relation"}},
     "continuityCandidates": {"type": "array", "items": {"$ref": "#/$defs/continuityCandidate"}},
+    "sourceMappings": {"type": "array", "items": {"$ref": "#/$defs/sourceMapping"}},
     "evidence": {"type": "array", "items": {"$ref": "#/$defs/evidence"}},
     "coverage": {"type": "array", "items": {"$ref": "#/$defs/coverage"}}
   },
@@ -106,6 +107,36 @@
         "reason": {"type": "string", "minLength": 1},
         "evidenceIds": {"type": "array", "items": {"$ref": "#/$defs/id"}}
       }
+    },
+    "sourceConstruct": {
+      "type": "object", "additionalProperties": false,
+      "required": ["constructId", "sourceKey", "language", "syntaxKind", "name", "path", "sha256",
+                   "startByte", "endByte", "parserId", "parserVersion"],
+      "properties": {
+        "constructId": {"$ref": "#/$defs/id"}, "sourceKey": {"$ref": "#/$defs/id"},
+        "language": {"$ref": "#/$defs/id"}, "syntaxKind": {"$ref": "#/$defs/id"},
+        "name": {"type": "string"}, "path": {"type": "string", "minLength": 1},
+        "sha256": {"type": "string", "pattern": "^[a-f0-9]{64}$"},
+        "startByte": {"type": "integer", "minimum": 0}, "endByte": {"type": "integer", "minimum": 0},
+        "parentConstructId": {"$ref": "#/$defs/id"}, "parserId": {"$ref": "#/$defs/id"},
+        "text": {"type": "string"}, "declaredType": {"type": "string"},
+        "parserVersion": {"$ref": "#/$defs/id"}, "opaque": {"type": "boolean"}
+      }
+    },
+    "sourceMapping": {
+      "type": "object", "additionalProperties": false,
+      "required": ["mappingId", "sourceConstruct", "role", "mappingStatus", "evidenceIds"],
+      "properties": {
+        "mappingId": {"$ref": "#/$defs/id"},
+        "target": {"oneOf": [{"$ref": "#/$defs/entityRef"}, {"$ref": "#/$defs/claimRef"}]},
+        "sourceConstruct": {"$ref": "#/$defs/sourceConstruct"},
+        "role": {"enum": ["represents", "declares", "implements", "implementation_reference",
+                            "test_entry", "constrains", "generated_by", "calls", "algorithm_view"]},
+        "mappingStatus": {"enum": ["mapped", "partial", "unresolved", "conflicting"]},
+        "evidenceIds": {"type": "array", "uniqueItems": true, "items": {"$ref": "#/$defs/id"}}
+      },
+      "allOf": [{"if": {"properties": {"mappingStatus": {"const": "mapped"}}, "required": ["mappingStatus"]},
+                 "then": {"required": ["target"]}}]
     },
     "evidence": {
       "type": "object", "additionalProperties": false,

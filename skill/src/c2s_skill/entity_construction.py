@@ -45,7 +45,8 @@ def _construct_evidence(root: Path, construct: SourceConstruct, *, description: 
     sha = hashlib.sha256(source).hexdigest()
     if sha != construct.source_sha256:
         raise ValueError(f"源码在扫描后发生变化：{construct.path}")
-    evidence_id = _digest(f"{construct.construct_id}\0{sha}\0{construct.start_byte}\0{construct.end_byte}")
+    evidence_id = _digest(f"{construct.construct_id}\0{sha}\0{construct.start_byte}\0{construct.end_byte}"
+                          f"\0{construct.parser_id}\0{construct.parser_version}\0{description}")
     return {"evidenceId": evidence_id, "source": "input", "description": description,
             "path": construct.path, "sha256": sha, "startByte": construct.start_byte,
             "endByte": construct.end_byte, "method": construct.parser_id,
@@ -295,6 +296,69 @@ def construct_semantic_entity_candidates(root: Path, scan: ProjectScan | None = 
                 "reason": "测试入口没有唯一、可由源码调用证据解析的计算实体目标。",
                 "evidenceId": record["evidenceId"]})
 
+    construct_lookup = {item.construct_id: item for item in constructs}
+    candidate_for_construct = {construct_id: candidate for candidate in candidates
+        if candidate["kind"] in {"DataEntity", "ComputationEntity", "TestEntity"}
+        for construct_id in candidate["sourceConstructIds"]}
+    enum_owners: dict[str, list[dict]] = {}
+    for candidate in candidates:
+        if candidate["kind"] != "DataEntity":
+            continue
+        for attribute in candidate["attributes"]:
+            implementation_type = attribute.get("implementationType")
+            if implementation_type:
+                enum_owners.setdefault(implementation_type.rsplit("::", 1)[-1].rsplit(".", 1)[-1], []).append(candidate)
+    implementation_kinds = {"class_declaration", "struct_declaration", "enum_declaration", "enum_variant",
+        "generic_parameter", "generic_parameter_list", "import_declaration",
+        "decorator_application", "attribute_application", "macro_definition", "macro_invocation",
+        "lambda_expression", "closure_expression", "type_alias_declaration", "constant_declaration",
+        "static_declaration", "module_declaration", "trait_declaration", "implementation_block"}
+    for construct in constructs:
+        if construct.opaque:
+            record = _construct_evidence(root, construct, description="不透明/不可解析的源码边界")
+            evidence[record["evidenceId"]] = record
+            diagnostics.append({"code": "OPAQUE_SOURCE_CONSTRUCT", "candidateKind": "ImplementationReference",
+                "sourceConstructId": construct.construct_id, "path": construct.path,
+                "startByte": construct.start_byte, "endByte": construct.end_byte,
+                "evidenceId": record["evidenceId"],
+                "reason": "解析器保留了不透明语法边界；未从中推导语义实体。"})
+            continue
+        if construct.syntax_kind not in implementation_kinds or construct.construct_id in candidate_for_construct:
+            continue
+        owners = enum_owners.get(construct.name, []) if construct.syntax_kind == "enum_declaration" else []
+        if construct.syntax_kind == "enum_variant" and construct.parent_id:
+            parent = construct_lookup.get(construct.parent_id)
+            owners = enum_owners.get(parent.name, []) if parent else []
+        ancestor_id = construct.parent_id
+        while not owners and ancestor_id:
+            owner = candidate_for_construct.get(ancestor_id)
+            if owner:
+                owners = [owner]
+                break
+            ancestor = construct_lookup.get(ancestor_id)
+            ancestor_id = ancestor.parent_id if ancestor else None
+        if not owners:
+            record = _construct_evidence(root, construct,
+                description=f"尚未映射的实现参考源码构造：{construct.syntax_kind} {construct.name}")
+            evidence[record["evidenceId"]] = record
+            diagnostics.append({"code": "IMPLEMENTATION_CONSTRUCT_UNMAPPED", "candidateKind": "ImplementationReference",
+                "sourceConstructId": construct.construct_id, "path": construct.path,
+                "syntaxKind": construct.syntax_kind, "name": construct.name,
+                "startByte": construct.start_byte, "endByte": construct.end_byte,
+                "evidenceId": record["evidenceId"],
+                "reason": "此语言构造是实现参考，但没有证据将它映射到某个语义实体。"})
+            continue
+        record = _construct_evidence(root, construct,
+            description=f"实现参考源码构造：{construct.syntax_kind} {construct.name}")
+        evidence[record["evidenceId"]] = record
+        for owner in owners:
+            if construct.construct_id not in owner["sourceConstructIds"]:
+                owner["sourceConstructIds"].append(construct.construct_id)
+            if record["evidenceId"] not in owner["evidenceIds"]:
+                owner["evidenceIds"].append(record["evidenceId"])
+            mappings.append({"candidateId": owner["candidateId"],
+                "sourceConstructId": construct.construct_id, "role": "implementation_reference"})
+
     _markdown_candidates(root, scan, candidates, evidence, relation_candidates, diagnostics,
                          project_candidate_id)
     if project_candidate_id:
@@ -348,6 +412,7 @@ def construct_and_query_semantic_entities(root: Path, store, selector: str = "pr
 
     scan = scan_project(root)
     constructed = construct_semantic_entity_candidates(root, scan)
+    prior_registry = store.registered_entities(scope_id)
     refs: dict[str, dict] = {}
     records = {item["evidenceId"]: item for item in constructed["evidence"]}
     entities = []
@@ -358,7 +423,8 @@ def construct_and_query_semantic_entities(root: Path, store, selector: str = "pr
     for candidate in constructed["candidates"]:
         source_key = f"candidate:{candidate['kind']}:{candidate['candidateId']}"
         registration = store.register(scope_id, source_key, candidate["kind"], candidate["name"],
-                                      candidate["evidenceIds"])
+            candidate["evidenceIds"], continuity_from=[item for item in prior_registry
+                if item["name"] == candidate["name"] and item["ref"]["kind"] == candidate["kind"]])
         ref = registration["ref"]
         refs[candidate["candidateId"]] = ref
         source_keys = sorted(set(candidate.get("sourceConstructIds", [])) | {source_key})
@@ -389,6 +455,69 @@ def construct_and_query_semantic_entities(root: Path, store, selector: str = "pr
             "predicate": candidate["predicate"], "subject": subject, "target": target,
             "evidenceIds": candidate["evidenceIds"], "condition": {"kind": "true"},
             "claimStatus": "provisional"})
+    construct_by_id = {item.construct_id: item for parsed in scan.files for item in parsed.constructs}
+    evidence_by_location: dict[tuple[str, int, int], list[str]] = {}
+    for item in records.values():
+        if "path" in item:
+            evidence_by_location.setdefault((item["path"], item["startByte"], item["endByte"]), []).append(
+                item["evidenceId"])
+    source_mappings = []
+    mapped_constructs = set()
+    for mapping in constructed["sourceMappings"]:
+        construct = construct_by_id.get(mapping["sourceConstructId"])
+        target = refs.get(mapping["candidateId"])
+        if construct is None or target is None:
+            continue
+        mapped_constructs.add(construct.construct_id)
+        source_mapping = {"mappingId": _digest(f"mapping\0{mapping['candidateId']}\0"
+            f"{construct.construct_id}\0{construct.source_sha256}\0{mapping['role']}"), "target": target,
+            "sourceConstruct": {"constructId": construct.construct_id, "sourceKey": construct.source_key,
+                "language": construct.language, "syntaxKind": construct.syntax_kind, "name": construct.name,
+                "path": construct.path, "sha256": construct.source_sha256,
+                "startByte": construct.start_byte, "endByte": construct.end_byte,
+                "parentConstructId": construct.parent_id, "parserId": construct.parser_id,
+                "parserVersion": construct.parser_version, "opaque": construct.opaque,
+                "text": construct.text, **({"declaredType": construct.declared_type}
+                                             if construct.declared_type is not None else {})},
+            "role": mapping["role"], "mappingStatus": "mapped",
+            "evidenceIds": sorted(evidence_by_location.get(
+                (construct.path, construct.start_byte, construct.end_byte), []))}
+        source_mappings.append(source_mapping)
+    for diagnostic in constructed["diagnostics"]:
+        construct = construct_by_id.get(diagnostic.get("sourceConstructId"))
+        if construct is None or construct.construct_id in mapped_constructs:
+            continue
+        source_mappings.append({"mappingId": _digest(f"unresolved\0{construct.construct_id}\0{construct.source_sha256}"),
+            "sourceConstruct": {"constructId": construct.construct_id, "sourceKey": construct.source_key,
+                "language": construct.language, "syntaxKind": construct.syntax_kind, "name": construct.name,
+                "path": construct.path, "sha256": construct.source_sha256,
+                "startByte": construct.start_byte, "endByte": construct.end_byte,
+                "parentConstructId": construct.parent_id, "parserId": construct.parser_id,
+                "parserVersion": construct.parser_version, "opaque": construct.opaque,
+                "text": construct.text, **({"declaredType": construct.declared_type}
+                                             if construct.declared_type is not None else {})},
+            "role": "implementation_reference", "mappingStatus": "unresolved",
+            "evidenceIds": [diagnostic["evidenceId"]]})
+    for candidate in constructed["candidates"]:
+        target = refs[candidate["candidateId"]]
+        parent = next((construct_by_id[item] for item in candidate["sourceConstructIds"]
+                       if item in construct_by_id), None)
+        if parent is None:
+            continue
+        for view in candidate.get("implementationViews", []):
+            parsed = next((item for item in scan.files if item.path == view["path"]), None)
+            if parsed is None:
+                continue
+            source_construct = {"constructId": view["sourceFactId"], "sourceKey": view["sourceFactId"],
+                "language": parsed.language, "syntaxKind": view["kind"], "name": view["name"],
+                "path": view["path"], "sha256": parsed.source_sha256,
+                "startByte": view["startByte"], "endByte": view["endByte"],
+                "parentConstructId": parent.construct_id, "parserId": parent.parser_id,
+                "parserVersion": parent.parser_version, "opaque": False, "text": view["text"]}
+            source_mappings.append({"mappingId": _digest(f"algorithm-view\0{candidate['candidateId']}\0"
+                f"{view['sourceFactId']}\0{parsed.source_sha256}"), "target": target,
+                "sourceConstruct": source_construct, "role": "algorithm_view", "mappingStatus": "mapped",
+                "evidenceIds": view["evidenceIds"]})
     continuity = []
     for registration in store.continuity_candidates(scope_id):
         if registration["current"] in refs.values():
@@ -400,7 +529,8 @@ def construct_and_query_semantic_entities(root: Path, store, selector: str = "pr
             records[evidence_id] = prior_evidence[evidence_id]
     document = {"version": "1.0.0", "profile": "semantic-entity-model-1", "scopeId": scope_id,
         "entities": entities, "claims": claims, "relations": relations,
-        "continuityCandidates": continuity, "evidence": list(records.values()), "coverage": coverage}
+        "continuityCandidates": continuity, "sourceMappings": source_mappings,
+        "evidence": list(records.values()), "coverage": coverage}
     store.write(document, constructed["diagnostics"])
     result = query_entity_store(store, {"version": "1.0.0", "profile": "semantic-entity-query-1",
         "scopeId": scope_id, "selector": selector, "inputFingerprint": input_fingerprint,

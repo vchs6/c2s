@@ -9,6 +9,21 @@ from c2s_skill.__main__ import main
 
 
 class AlgorithmCliTests(unittest.TestCase):
+    def test_entities_command_constructs_and_queries_entity_archive(self):
+        with tempfile.TemporaryDirectory() as temporary, tempfile.TemporaryDirectory() as data:
+            root = Path(temporary)
+            store = Path(data) / "entities.sqlite"
+            (root / "main.py").write_text("def choose(flag):\n    return flag\n", encoding="utf-8")
+            output, errors = io.StringIO(), io.StringIO()
+            with contextlib.redirect_stdout(output), contextlib.redirect_stderr(errors):
+                status = main(["entities", "--root", str(root), "--select", "entities",
+                               "--store", str(store), "--format", "json"])
+            self.assertEqual(status, 0, errors.getvalue())
+            result = json.loads(output.getvalue())
+            self.assertEqual(result["status"], "obtained")
+            self.assertTrue(result["members"])
+            self.assertEqual(result["constructionStatus"], "constructed")
+
     def test_cli_returns_source_bound_algorithm_and_gap_coverage(self):
         with tempfile.TemporaryDirectory() as temporary:
             root = Path(temporary)

@@ -10,35 +10,60 @@ import re
 _CHILD_PREDICATES = {"defines", "groups", "contains"}
 
 
-def query_semantic_entities(model: dict, selector: str, *, max_depth: int = 8) -> dict:
+def prepare_semantic_entity_query(model: dict) -> dict:
+    by_identity = {_key(item["ref"]): item for item in model.get("entities", [])}
+    by_local_id: dict[str, list[dict]] = defaultdict(list)
+    children: dict[tuple[str, str, str], dict[tuple[str, str, str], dict]] = defaultdict(dict)
+    claims: dict[tuple[str, str, str], list[dict]] = defaultdict(list)
+    relations: dict[tuple[str, str, str], list[dict]] = defaultdict(list)
+    coverage: dict[tuple[str, str, str], list[dict]] = defaultdict(list)
+    mappings: dict[tuple[str, str, str], list[dict]] = defaultdict(list)
+    evidence: dict[str, dict] = {item["evidenceId"]: item for item in model.get("evidence", [])}
+    for entity in model.get("entities", []):
+        by_local_id[entity["ref"]["identity"]["localId"]].append(entity)
+    for relation in model.get("relations", []):
+        subject_key = _key(relation["subject"])
+        relations[subject_key].append(relation)
+        target = relation.get("target")
+        if isinstance(target, dict) and "identity" in target:
+            target_key = _key(target)
+            relations[target_key].append(relation)
+            if relation["predicate"] in _CHILD_PREDICATES:
+                children[subject_key][target_key] = target
+            elif relation["predicate"] == "belongs_to":
+                children[target_key][subject_key] = relation["subject"]
+    for claim in model.get("claims", []):
+        claims[_key(claim["subject"])].append(claim)
+    for item in model.get("coverage", []):
+        if isinstance(item.get("entity"), dict):
+            coverage[_key(item["entity"])].append(item)
+    for item in model.get("sourceMappings", []):
+        target = item.get("target")
+        if isinstance(target, dict) and "identity" in target:
+            mappings[_key(target)].append(item)
+    return {"byIdentity": by_identity, "byLocalId": by_local_id, "children": children,
+        "claims": claims, "relations": relations, "coverage": coverage,
+        "mappings": mappings, "evidence": evidence}
+
+
+def query_semantic_entities(model: dict, selector: str, *, max_depth: int = 8,
+                            index: dict | None = None) -> dict:
     if model.get("profile") != "semantic-entity-model-1" or not isinstance(selector, str) or not selector:
         raise ValueError("需要有效的 semantic-entity-model-1 档案和非空选择器")
     if not 0 <= max_depth <= 32:
         raise ValueError("递归展开深度必须在0到32之间")
     entities = model.get("entities", [])
     selector = _normalize_selector(selector)
-    by_identity = {_key(item["ref"]): item for item in entities}
-    by_local_id: dict[str, list[dict]] = defaultdict(list)
-    for entity in entities:
-        by_local_id[entity["ref"]["identity"]["localId"]].append(entity)
-    relations = model.get("relations", [])
-
+    index = index or prepare_semantic_entity_query(model)
+    by_identity = index["byIdentity"]
+    by_local_id = index["byLocalId"]
     def members(parent: dict) -> list[dict]:
         parent_key = _key(parent["ref"])
         found: dict[str, dict] = {}
-        for relation in relations:
-            subject = relation["subject"]
-            target = relation["target"]
-            if not isinstance(target, dict) or "identity" not in target:
-                continue
-            if relation["predicate"] in _CHILD_PREDICATES and _key(subject) == parent_key:
-                child = by_identity.get(_key(target))
-                if child:
-                    found[_key(child["ref"])] = child
-            elif relation["predicate"] == "belongs_to" and _key(target) == parent_key:
-                child = by_identity.get(_key(subject))
-                if child:
-                    found[_key(child["ref"])] = child
+        for child_key in index["children"].get(parent_key, {}):
+            child = by_identity.get(child_key)
+            if child:
+                found[child_key] = child
         return sorted(found.values(), key=lambda item: (item["name"].casefold(), _key(item["ref"])))
 
     def ref_summary(entity: dict) -> dict:
@@ -47,20 +72,20 @@ def query_semantic_entities(model: dict, selector: str, *, max_depth: int = 8) -
 
     def details(entity: dict) -> dict:
         ref_key = _key(entity["ref"])
-        claims = [item for item in model.get("claims", []) if _key(item["subject"]) == ref_key]
-        relations_for_entity = [item for item in model.get("relations", [])
-            if _key(item["subject"]) == ref_key or
-            (isinstance(item.get("target"), dict) and "identity" in item["target"]
-             and _key(item["target"]) == ref_key)]
-        coverage = [item for item in model.get("coverage", [])
-                    if isinstance(item.get("entity"), dict) and _key(item["entity"]) == ref_key]
+        claims = index["claims"].get(ref_key, [])
+        relations_for_entity = index["relations"].get(ref_key, [])
+        coverage = index["coverage"].get(ref_key, [])
+        mappings = index["mappings"].get(ref_key, [])
         evidence_ids = {evidence_id for item in claims + relations_for_entity + coverage
                         for evidence_id in item.get("evidenceIds", [])}
         evidence_ids.update(evidence_id for item in entity["attributes"]
                             for evidence_id in item.get("evidenceIds", []))
-        evidence = [item for item in model.get("evidence", []) if item["evidenceId"] in evidence_ids]
+        evidence_ids.update(evidence_id for item in mappings for evidence_id in item.get("evidenceIds", []))
+        evidence = [index["evidence"][evidence_id] for evidence_id in evidence_ids
+                    if evidence_id in index["evidence"]]
         return {**entity, "claims": sorted(claims, key=lambda item: item["claimId"]),
                 "relations": sorted(relations_for_entity, key=lambda item: item["relationId"]),
+                "sourceMappings": sorted(mappings, key=lambda item: item["mappingId"]),
                 "coverage": sorted(coverage, key=lambda item: item["coverageId"]),
                 "evidence": sorted(evidence, key=lambda item: item["evidenceId"])}
 
@@ -214,6 +239,13 @@ def render_entity_query(result: dict, output_format: str = "json") -> str:
                 f"主体：{json.dumps(relation['subject'], ensure_ascii=False, sort_keys=True)}",
                 f"目标：{json.dumps(relation['target'], ensure_ascii=False, sort_keys=True)}",
                 f"证据：{json.dumps(relation['evidenceIds'], ensure_ascii=False)}"])
+        for mapping in entity.get("sourceMappings", []):
+            source = mapping["sourceConstruct"]
+            lines.extend(["", f"## 源码映射：{mapping['mappingId']}",
+                f"构造：{source['syntaxKind']} {source['name']}", f"角色：{mapping['role']}",
+                f"映射状态：{mapping['mappingStatus']}",
+                f"定位：{source['path']}:{source['startByte']}-{source['endByte']}",
+                f"证据：{json.dumps(mapping['evidenceIds'], ensure_ascii=False)}"])
         for evidence in entity.get("evidence", []):
             lines.extend(["", f"## 证据：{evidence['evidenceId']}",
                 json.dumps(evidence, ensure_ascii=False, sort_keys=True)])

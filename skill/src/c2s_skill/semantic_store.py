@@ -835,6 +835,14 @@ class SemanticEntityStore:
                            "ON semantic_entity_index(scope_id, name, kind)")
         connection.execute("CREATE INDEX IF NOT EXISTS semantic_entity_source_idx "
                            "ON semantic_entity_index(scope_id, source_key)")
+        connection.execute("""CREATE TABLE IF NOT EXISTS semantic_entity_mapping_index(
+            scope_id TEXT NOT NULL, mapping_id TEXT NOT NULL, target_key TEXT,
+            source_construct_id TEXT NOT NULL, source_path TEXT NOT NULL,
+            mapping_status TEXT NOT NULL, PRIMARY KEY(scope_id, mapping_id))""")
+        connection.execute("CREATE INDEX IF NOT EXISTS semantic_entity_mapping_target_idx "
+                           "ON semantic_entity_mapping_index(scope_id, target_key)")
+        connection.execute("CREATE INDEX IF NOT EXISTS semantic_entity_mapping_path_idx "
+                           "ON semantic_entity_mapping_index(scope_id, source_path)")
         return connection
 
     def read(self, scope_id: str) -> dict | None:
@@ -862,11 +870,19 @@ class SemanticEntityStore:
                 "ON CONFLICT(scope_id) DO UPDATE SET generation=excluded.generation,payload=excluded.payload",
                 (scope_id, generation, _json(merged)))
             connection.execute("DELETE FROM semantic_entity_index WHERE scope_id=?", (scope_id,))
+            connection.execute("DELETE FROM semantic_entity_mapping_index WHERE scope_id=?", (scope_id,))
             for entity in merged["entities"]:
                 entity_key = _identity_key(entity["ref"])
                 for source_key in entity["sourceKeys"] or [""]:
                     connection.execute("INSERT INTO semantic_entity_index VALUES(?,?,?,?,?)",
                         (scope_id, entity_key, entity["ref"]["kind"], entity["name"], source_key))
+            for mapping in merged.get("sourceMappings", []):
+                target = mapping.get("target")
+                target_key = _identity_key(target) if isinstance(target, dict) and "identity" in target else None
+                construct = mapping["sourceConstruct"]
+                connection.execute("INSERT INTO semantic_entity_mapping_index VALUES(?,?,?,?,?,?)",
+                    (scope_id, mapping["mappingId"], target_key, construct["constructId"],
+                     construct["path"], mapping["mappingStatus"]))
             if diagnostics is not None:
                 fingerprints = {item["inputFingerprint"] for item in document["coverage"]
                                 if item["selector"] == "all-entities"}
@@ -877,7 +893,7 @@ class SemanticEntityStore:
         return {"valid": True, "scopeId": scope_id, "generation": generation, "model": merged}
 
     def register(self, scope_id: str, source_key: str, kind: str, name: str,
-                 evidence_ids: list[str]) -> dict:
+                 evidence_ids: list[str], continuity_from: list[dict] | None = None) -> dict:
         from c2s_semantic_contract.validation import semantic_entity_model_catalogs
         kinds = {item["typeId"] for item in semantic_entity_model_catalogs()["types"]["types"]}
         if (not scope_id or not source_key or kind not in kinds or not name.strip()
@@ -901,12 +917,10 @@ class SemanticEntityStore:
             else:
                 payload = {"ref": {"identity": identity, "kind": kind}, "name": name,
                            "sourceKey": source_key, "evidenceIds": sorted(set(evidence_ids))}
-                previous_rows = connection.execute("SELECT payload FROM semantic_entity_registry "
-                    "WHERE scope_id=? AND kind=? AND source_key<>?", (scope_id, kind, source_key)).fetchall()
                 continuity_candidates = []
-                for previous_row in previous_rows:
-                    previous = json.loads(previous_row[0])
-                    if previous["name"] != name:
+                for previous in continuity_from or []:
+                    if previous["name"] != name or previous["ref"]["kind"] != kind \
+                            or previous["sourceKey"] == source_key:
                         continue
                     candidate_id = hashlib.sha256(
                         f"continuity\0{scope_id}\0{previous['sourceKey']}\0{source_key}".encode()).hexdigest()
@@ -923,6 +937,12 @@ class SemanticEntityStore:
                 connection.execute("INSERT INTO semantic_entity_registry VALUES(?,?,?,?,?)",
                                    (scope_id, source_key, identity_key, kind, _json(payload)))
         return payload
+
+    def registered_entities(self, scope_id: str) -> list[dict]:
+        with self._connect() as connection:
+            rows = connection.execute("SELECT payload FROM semantic_entity_registry WHERE scope_id=? "
+                                      "ORDER BY source_key", (scope_id,)).fetchall()
+        return [json.loads(row[0]) for row in rows]
 
     def lookup(self, scope_id: str, source_key: str) -> dict | None:
         with self._connect() as connection:
@@ -948,13 +968,15 @@ def _merge_entity_archives(old: dict, new: dict) -> dict:
     result = json.loads(_json(old))
     collection_ids = {"entities": lambda item: _identity_key(item["ref"]),
         "claims": lambda item: item["claimId"], "relations": lambda item: item["relationId"],
+        "sourceMappings": lambda item: item["mappingId"],
         "continuityCandidates": lambda item: item["candidateId"],
         "evidence": lambda item: item["evidenceId"], "coverage": lambda item: item["coverageId"]}
     if old["scopeId"] != new["scopeId"]:
         raise ValueError("cannot merge entity archives from different scopes")
     for collection, key_fn in collection_ids.items():
+        result.setdefault(collection, [])
         records = {key_fn(item): item for item in result[collection]}
-        for incoming in new[collection]:
+        for incoming in new.get(collection, []):
             key = key_fn(incoming)
             existing = records.get(key)
             if existing is None:
@@ -992,10 +1014,15 @@ def _merge_entity_record(old: dict, new: dict) -> dict:
         if previous is None:
             attributes[item["attributeId"]] = item
         elif previous != item:
-            left = {k: v for k, v in previous.items() if k != "evidenceIds"}
-            right = {k: v for k, v in item.items() if k != "evidenceIds"}
-            if left != right:
+            left = {k: v for k, v in previous.items() if k not in {"evidenceIds", "valueRange"}}
+            right = {k: v for k, v in item.items() if k not in {"evidenceIds", "valueRange"}}
+            left_range = {k: v for k, v in previous["valueRange"].items() if k != "evidenceIds"}
+            right_range = {k: v for k, v in item["valueRange"].items() if k != "evidenceIds"}
+            if left != right or left_range != right_range:
                 raise ValueError(f"conflicting attribute: {item['attributeId']}")
             previous["evidenceIds"] = sorted(set(previous["evidenceIds"]) | set(item["evidenceIds"]))
+            if "evidenceIds" in previous["valueRange"] or "evidenceIds" in item["valueRange"]:
+                previous["valueRange"]["evidenceIds"] = sorted(set(previous["valueRange"].get("evidenceIds", []))
+                    | set(item["valueRange"].get("evidenceIds", [])))
     result["attributes"] = sorted(attributes.values(), key=lambda item: item["attributeId"])
     return result

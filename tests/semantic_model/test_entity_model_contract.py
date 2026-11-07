@@ -126,6 +126,29 @@ class SemanticEntityModelContractTests(unittest.TestCase):
         self.assertIn("ENTITY_EVIDENCE_RANGE_INVALID",
                       {item["ruleCode"] for item in result["diagnostics"]})
 
+    def test_source_mapping_retains_construct_identity_and_resolves_target(self):
+        document = valid_entity_model()
+        document["sourceMappings"] = [{"mappingId": "mapping-1", "target": document["entities"][1]["ref"],
+            "sourceConstruct": {"constructId": "construct-1", "sourceKey": "source-key-1",
+                "language": "python", "syntaxKind": "class_declaration", "name": "Order",
+                "path": "src/order.py", "sha256": "a" * 64, "startByte": 0, "endByte": 12,
+                "parserId": "python-ast", "parserVersion": "3.12"},
+            "role": "represents", "mappingStatus": "mapped", "evidenceIds": ["ev-1"]}]
+        result = validate_semantic_entity_model(document)
+        self.assertTrue(result["valid"], result["diagnostics"])
+
+    def test_source_mapping_rejects_missing_target(self):
+        document = valid_entity_model()
+        document["sourceMappings"] = [{"mappingId": "mapping-1",
+            "target": entity_ref("missing"), "sourceConstruct": {"constructId": "construct-1",
+                "sourceKey": "source-key-1", "language": "python", "syntaxKind": "function_declaration",
+                "name": "f", "path": "src/f.py", "sha256": "a" * 64, "startByte": 0,
+                "endByte": 1, "parserId": "python-ast", "parserVersion": "3.12"},
+            "role": "implements", "mappingStatus": "mapped", "evidenceIds": ["ev-1"]}]
+        result = validate_semantic_entity_model(document)
+        self.assertIn("ENTITY_MAPPING_TARGET_MISSING",
+                      {item["ruleCode"] for item in result["diagnostics"]})
+
     def test_same_entity_identity_cannot_have_two_kinds(self):
         document = valid_entity_model()
         document["entities"].append({"ref": entity_ref("record", "ComputationEntity"),

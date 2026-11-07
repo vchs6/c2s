@@ -152,6 +152,28 @@ class SemanticEntityConstructionTests(unittest.TestCase):
         self.assertTrue(calculate["implementationViews"])
         self.assertTrue(all(item["path"] == "src/lib.rs" for item in calculate["implementationViews"]))
 
+    def test_language_constructs_are_implementation_references_not_semantic_entity_kinds(self):
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            (root / "Cargo.toml").write_text('[package]\nname = "sample"\nversion = "0.1.0"\nedition = "2021"\n',
+                                            encoding="utf-8")
+            (root / "src").mkdir()
+            (root / "src/lib.rs").write_text(
+                "enum State { Ready, Sent }\nstruct Record<T> { state: State, value: T }\n"
+                "macro_rules! mark { ($x:expr) => {$x}; }\n"
+                "pub fn calculate(value: i32) -> i32 { let f = |x| x + 1; mark!(f(value)) }\n",
+                encoding="utf-8")
+            result = construct_semantic_entity_candidates(root)
+        record = next(item for item in result["candidates"] if item["name"] == "Record")
+        calculate = next(item for item in result["candidates"] if item["name"] == "calculate")
+        self.assertIn("enum_declaration", " ".join(
+            item["description"] for item in result["evidence"] if item["evidenceId"] in record["evidenceIds"]))
+        self.assertTrue(any(item["role"] == "implementation_reference"
+                            and item["candidateId"] == calculate["candidateId"]
+                            for item in result["sourceMappings"]))
+        self.assertFalse(any(item["kind"] in {"Macro", "Enum", "Closure", "Generic"}
+                            for item in result["candidates"]))
+
     def test_construct_store_query_reuses_unchanged_coverage_and_invalidates_changes(self):
         with tempfile.TemporaryDirectory() as temporary:
             root = Path(temporary) / "project"
@@ -165,6 +187,10 @@ class SemanticEntityConstructionTests(unittest.TestCase):
                 first = construct_and_query_semantic_entities(root, store, "project")
                 self.assertEqual(first["constructionStatus"], "constructed")
                 self.assertTrue(any(item["kind"] == "ComputationEntity" for item in first["members"]))
+                first_archive = store.read(first["entity"]["ref"]["identity"]["domainId"])
+                self.assertTrue(first_archive["sourceMappings"])
+                self.assertTrue(all("text" in item["sourceConstruct"]
+                                    for item in first_archive["sourceMappings"]))
                 with patch("c2s_skill.entity_construction.scan_project", side_effect=AssertionError("unexpected scan")):
                     cached = construct_and_query_semantic_entities(root, store, "project")
                 self.assertEqual(cached["constructionStatus"], "reused")

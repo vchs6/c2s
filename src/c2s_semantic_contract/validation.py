@@ -26,7 +26,7 @@ _SEMANTIC_ENTITY_SCHEMA_PATH = _ROOT / "contracts" / "semantic-model" / "semanti
 _SEMANTIC_ENTITY_TYPES_PATH = _ROOT / "contracts" / "semantic-model" / "semantic-entity-types.json"
 _SEMANTIC_ENTITY_PREDICATES_PATH = _ROOT / "contracts" / "semantic-model" / "semantic-entity-predicates.json"
 _SEMANTIC_ENTITY_MANIFEST_PATH = _ROOT / "contracts" / "semantic-model" / "semantic-entity-catalog-manifest.json"
-_TRUSTED_SEMANTIC_ENTITY_MANIFEST_SHA256 = "99f14cfe7a54c651578233818d58e3c499c64a7ab3cbcf682baa7988bcaea075"
+_TRUSTED_SEMANTIC_ENTITY_MANIFEST_SHA256 = "80b1fc859970fce599f30ee689f30546613de0cc1bafbe368adee09571a2f0b7"
 _TRUSTED_MANIFEST_SHA256 = "34e533b34af5fdb135e2fd8cea22de95a964b702b714619f314a30bd4cd49c2b"
 _TRUSTED_SEMANTIC_MANIFEST_SHA256 = "35c99a715a99e78dbe43290fcbcc342d655241f35f3724d311c7765d4b66c659"
 _M1_SUPPORTED_KINDS = {"Project", "PackageSpecification", "NativeWorkspace", "SourceDeclaration"}
@@ -1152,6 +1152,34 @@ def validate_semantic_entity_model(document: dict) -> dict:
             add_reference_error("ENTITY_RELATION_KIND_INVALID", "关系谓词不允许此主体和目标类型。",
                                 f"/relations/{index}", f"relation:{relation_id}")
         check_evidence(relation["evidenceIds"], f"/relations/{index}/evidenceIds", f"relation:{relation_id}")
+
+    mapping_ids: set[str] = set()
+    for index, mapping in enumerate(document.get("sourceMappings", [])):
+        mapping_id = mapping["mappingId"]
+        if mapping_id in mapping_ids:
+            add_reference_error("ENTITY_MAPPING_ID_DUPLICATE", "源码映射标识必须唯一。",
+                                f"/sourceMappings/{index}/mappingId")
+        mapping_ids.add(mapping_id)
+        target = mapping.get("target")
+        if target is not None:
+            if "identity" in target:
+                if identity(target) not in entities:
+                    add_reference_error("ENTITY_MAPPING_TARGET_MISSING", "源码映射实体目标未登记。",
+                                        f"/sourceMappings/{index}/target")
+                else:
+                    check_ref_kind(target, f"/sourceMappings/{index}/target", f"mapping:{mapping_id}")
+            elif target["claimId"] not in claim_ids:
+                add_reference_error("ENTITY_MAPPING_TARGET_MISSING", "源码映射主张目标未登记。",
+                                    f"/sourceMappings/{index}/target")
+        construct = mapping["sourceConstruct"]
+        path_parts = Path(construct["path"]).parts
+        if Path(construct["path"]).is_absolute() or ".." in path_parts:
+            add_reference_error("ENTITY_MAPPING_PATH_INVALID", "源码构造路径必须位于项目分析范围内。",
+                                f"/sourceMappings/{index}/sourceConstruct/path")
+        if construct["endByte"] < construct["startByte"]:
+            add_reference_error("ENTITY_MAPPING_RANGE_INVALID", "源码构造结束位置不能早于起始位置。",
+                                f"/sourceMappings/{index}/sourceConstruct/endByte")
+        check_evidence(mapping["evidenceIds"], f"/sourceMappings/{index}/evidenceIds", f"mapping:{mapping_id}")
 
     candidate_ids: set[str] = set()
     for index, candidate in enumerate(document["continuityCandidates"]):

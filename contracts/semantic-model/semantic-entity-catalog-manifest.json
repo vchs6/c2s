@@ -5,6 +5,6 @@
   "digests": {
     "semantic-entity-types.json": "b5d0162091c30c1d89c72c60fc6425d849a03f932d8caedf94530f3d3db32faa",
     "semantic-entity-predicates.json": "65d49f37295d4299322fc7d16f129d850c50148059dbfa5440069610289a5182",
-    "semantic-entity-model.schema.json": "f19b08a1e4628a09cba9c9807df8da0ddd53c4bd16f7a93670bc93949ae0d488"
+    "semantic-entity-model.schema.json": "b42605cee8eea725d8b9234d495eb00c1fa95f851c0647fe01339d12b3aee0d0"
   }
 }

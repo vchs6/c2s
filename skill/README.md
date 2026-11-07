@@ -96,6 +96,50 @@ CI账户配置与公开容器探针的命令、最小权限、安装来源及安
 
 工作授权与访问现状见`../docs/decisions/0011-development-without-isolation-gate.md`及`../docs/workflow/blind-development.md`。公开维护测试不消耗模型Token；实际语义理解/模型调用流程尚未实现。
 
+## 语义实体模型与查询（开发中的隔离档案）
+
+领域模型档案使用`semantic-entity-model-1`，独立保存在与旧M1/`semantic-fact-model-1`隔离的SQLite表中。项目、模块、能力、数据实体、计算实体和测试实体均由证据提出暂定候选；仅当文档明确列出模块/能力时才生成相应候选，不从目录、Cargo package或函数名推断业务边界。源码类/结构体字段可生成数据实体属性，成员函数生成计算候选；裸实现类型不会被当作语义类型，值域默认未知，枚举成员只有在可定位的类型引用证据下才提供有限值域。
+
+档案保存身份、属性、关系、主张状态、来源证据、`SourceConstruct`及`sourceMappings`。源码映射保留语言、语法种类、父构造、解析器版本、相对路径、SHA-256和UTF-8字节区间；映射未解决时不丢弃构造，而是保留定位与缺口。宏、泛型、闭包、枚举等记录为语言实现参考，不会因此自动变成领域实体。测试实体与测试函数入口分开，只有唯一解析到本地计算实体的调用才会形成暂定验证关系。
+
+查询使用项目范围和结构化选择器。`project`返回项目实体的直接子实体引用和摘要；`entity:<localId>`返回单体全部属性、主张、关系、证据、来源映射及覆盖状态；`expand:<localId>`显式逐层展开并受最大深度限制。中文名称可解析，未知目标和歧义目标分别返回缺口状态。Markdown和JSON从同一查询结果投影。重复输入与相同解析配置复用覆盖；源码、解析器或工具矩阵指纹变化后旧覆盖标为需复核。扫描粒度目前是全项目支持范围，尚未实现单属性粒度的增量解析。
+
+命令行入口为`entities`，选择器只处理语义实体档案；旧`query`和`algorithm --semantic-facts`入口继续写各自的旧档案，尚未切换默认模型。示例：
+
+```bash
+PYTHONPATH=src:skill/src .local/analysis-venv/bin/python3 -m c2s_skill entities --root /path/to/project --select entities --store /tmp/project-entities.sqlite --format json
+```
+
+`--select project`查询已能由证据构造的项目实体；项目元信息不足时会返回`not_found`及缺口，`--select entities`可列出档案中已有的全部候选。`--select entity:<localId>`查询单个实体，`--select expand:<localId>`展开子实体。每次实体查询会先检查源码与分析器指纹，覆盖未命中时扫描并写入独立实体档案；查询库必须位于项目根目录之外。CLI的`--store`按子命令区分profile，不得让`entities`与旧查询共用SQLite文件。
+
+一个直接调用示例：
+
+```python
+from pathlib import Path
+from c2s_skill.entity_construction import construct_and_query_semantic_entities
+from c2s_skill.semantic_store import SemanticEntityStore
+
+store = SemanticEntityStore(Path("/tmp/c2s-entities.sqlite"))
+result = construct_and_query_semantic_entities(Path("/path/to/project"), store, "project")
+```
+
+SQLite档案会写入磁盘，必须放在被分析项目目录之外；调用者需为分析输入建立稳定的`scopeId`身份域，仓储会由项目绝对根路径生成默认域。用户可复核的全量遍历产物位于`../docs/development/reviews/semantic-facts/`；清单固定上游提交并列出未映射源码和测试目标缺口。清单为控制体积省略内嵌源码文本，须用记录的提交、相对路径、SHA-256和字节区间复核原文。
+
+运行仓库全套Skill测试的命令为：
+
+```bash
+PYTHONPATH=src:skill/src .local/analysis-venv/bin/python3 -m unittest discover -s skill/tests -v
+```
+
+运行真实Click与regex全量实体遍历：
+
+```bash
+PYTHONPATH=src:skill/src .local/analysis-venv/bin/python3 scripts/verify_semantic_entity_inventory.py .local/real-projects/click .local/entity-analysis/click.sqlite docs/development/reviews/semantic-facts/entity-model-click-inventory.json
+PYTHONPATH=src:skill/src .local/analysis-venv/bin/python3 scripts/verify_semantic_entity_inventory.py .local/real-projects/regex .local/entity-analysis/regex.sqlite docs/development/reviews/semantic-facts/entity-model-regex-inventory.json
+```
+
+这两项目的共享容器验证不是私有盲验收。当前容器的Cargo shim没有默认Rust toolchain，故没有声称Cargo metadata或Rust构建测试通过；Rust Tree-sitter源码遍历和Cargo.toml静态workspace成员核对已单独记录。语义候选不等同人工确认的业务事实，也不证明运行时行为正确。
+
 ## 初步算法描述请求
 
 可用`PYTHONPATH=skill/src .local/analysis-venv/bin/python -m c2s_skill algorithm --root .local/real-projects/click --source examples/naval/naval.py --function ship_move`或将根目录换成regex、源文件换成`.rs`路径，按需获得单个Python/Rust函数的JSON算法描述。请求只读取根目录内的一个常规源码文件，拒绝越界路径和符号链接；响应带源码摘要、结构校验、`complete=false`及来源/类型/调用/数据流等显式缺口。该输出是静态语法投影，不能当作完整CFG、类型检查结果、测试结论或行为等价证明。

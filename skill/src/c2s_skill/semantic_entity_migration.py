@@ -89,8 +89,8 @@ def export_legacy_bundle(model: dict) -> dict:
         "contextDomains": [], "contexts": []}
     mapped_entities = {_identity_key(claim["subject"]) for claim in model["claims"]}
     losses = []
-    for collection in ("relations", "continuityCandidates", "coverage"):
-        if model[collection]:
+    for collection in ("relations", "continuityCandidates", "sourceMappings", "coverage"):
+        if model.get(collection, []):
             losses.append({"code": "ENTITY_COLLECTION_UNMAPPED", "recordId": collection,
                            "reason": f"实体集合 {collection} 没有旧档案的无损映射。"})
     for entity in model["entities"]:

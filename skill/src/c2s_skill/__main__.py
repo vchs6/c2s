@@ -15,7 +15,7 @@ from .graph_tool_adapter import parse_code_review_graph_response
 from .query import (normalize_request, query_project, query_result_from_dict, result_to_dict,
                     result_to_markdown)
 from .store import QueryResultCache
-from .semantic_store import (SemanticFactStore, commit_m1, read_m1, commit_bundle, read_bundle,
+from .semantic_store import (SemanticFactStore, SemanticEntityStore, commit_m1, read_m1, commit_bundle, read_bundle,
                              query_bundle, query_artifacts, read_query_report, remember_query_report)
 from .capability_matrix import (detect_available_tools, host_environment, load_tool_matrix,
                                 parse_selected_tool_output, select_tools)
@@ -23,7 +23,7 @@ from .capability_matrix import (detect_available_tools, host_environment, load_t
 
 def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(prog="c2s-skill")
-    parser.add_argument("query", choices=["query", "algorithm"])
+    parser.add_argument("query", choices=["query", "algorithm", "entities"])
     parser.add_argument("--root", required=True, type=Path)
     query_args = parser.add_mutually_exclusive_group(required=False)
     query_args.add_argument("--select", action="append", help="classes, members, functions, definitions, imports, constants, all-declarations")
@@ -40,13 +40,26 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("--format", choices=["json", "markdown"], default=None)
     parser.add_argument("--output", type=Path, help="write the report outside the analyzed project")
     parser.add_argument("--cache", type=Path, help="optional SQLite query-result cache outside the analyzed project")
-    parser.add_argument("--store", type=Path, help="SQLite semantic-fact repository outside the analyzed project")
+    parser.add_argument("--store", type=Path, help="SQLite archive outside the analyzed project (profile depends on command)")
     args = parser.parse_args(argv)
     try:
         root = args.root.resolve(strict=True)
         if args.output and args.output.resolve().is_relative_to(root):
             raise ValueError("output must be outside the analyzed project")
-        if args.query == "query":
+        if args.query == "entities":
+            if not args.select or len(args.select) != 1 or args.request:
+                raise ValueError("entities requires exactly one --select selector")
+            if not args.store:
+                raise ValueError("entities requires --store outside the analyzed project")
+            if args.cache or args.source or args.function or args.all_functions or args.semantic_facts or args.graph_output or args.graph_version:
+                raise ValueError("legacy query and algorithm options are not valid for entities")
+            from .entity_construction import construct_and_query_semantic_entities
+            from .semantic_entity_query import render_entity_query
+            entity_store = SemanticEntityStore(args.store)
+            response = construct_and_query_semantic_entities(root, entity_store, args.select[0])
+            rendered = render_entity_query(response, args.format or "markdown") + "\n"
+            status = 0 if response.get("status") == "obtained" else 2
+        elif args.query == "query":
             if (args.source or args.function or args.all_functions or args.semantic_facts
                     or args.graph_output or args.graph_version):
                 raise ValueError("algorithm options are only valid for algorithm requests")

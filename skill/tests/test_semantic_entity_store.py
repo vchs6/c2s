@@ -24,6 +24,12 @@ def model():
         "claims": [],
         "relations": [{"relationId": "relation-1", "predicate": "defines", "subject": project,
             "target": record, "evidenceIds": ["ev-1"], "condition": {"kind": "true"}}],
+        "sourceMappings": [{"mappingId": "mapping-1", "target": record,
+            "sourceConstruct": {"constructId": "construct-1", "sourceKey": "source-key-1",
+                "language": "python", "syntaxKind": "class_declaration", "name": "Order",
+                "path": "src/order.py", "sha256": "a" * 64, "startByte": 0, "endByte": 12,
+                "parserId": "python-ast", "parserVersion": "3.12", "text": "class Order"},
+            "role": "represents", "mappingStatus": "mapped", "evidenceIds": ["ev-1"]}],
         "continuityCandidates": [],
         "evidence": [{"evidenceId": "ev-1", "source": "source", "description": "源声明"}],
         "coverage": [{"coverageId": "coverage-1", "entity": record, "selector": "members",
@@ -42,9 +48,12 @@ class SemanticEntityStoreTests(unittest.TestCase):
                 names = {row[0] for row in connection.execute("SELECT name FROM sqlite_master WHERE type='table'")}
                 indexed = connection.execute("SELECT kind,name,source_key FROM semantic_entity_index "
                                              "WHERE source_key='source:record'").fetchone()
+                mapping_indexed = connection.execute("SELECT source_construct_id,source_path,mapping_status "
+                    "FROM semantic_entity_mapping_index WHERE mapping_id='mapping-1'").fetchone()
             self.assertIn("semantic_entity_archives", names)
             self.assertIn("semantic_entity_index", names)
             self.assertEqual(indexed, ("DataEntity", "订单", "source:record"))
+            self.assertEqual(mapping_indexed, ("construct-1", "src/order.py", "mapped"))
             self.assertNotIn("sessions", names)
 
     def test_registry_reuses_stable_identity_and_merges_evidence_atomically(self):
@@ -85,6 +94,23 @@ class SemanticEntityStoreTests(unittest.TestCase):
                 store.write(conflicting)
             self.assertEqual(store.read("scope-a"), original)
 
+    def test_repeated_attribute_evidence_merges_without_changing_semantic_range(self):
+        with tempfile.TemporaryDirectory() as temporary:
+            store = SemanticEntityStore(Path(temporary) / "semantic.sqlite")
+            first = model()
+            first["entities"][1]["attributes"] = [{"attributeId": "status", "name": "状态",
+                "semanticType": "unknown", "valueRange": {"kind": "finite_set", "values": ["paid"],
+                    "evidenceIds": ["ev-1"]}, "cardinality": "one", "constraints": [],
+                "evidenceIds": ["ev-1"]}]
+            store.write(first)
+            second = copy.deepcopy(first)
+            second["evidence"].append({"evidenceId": "ev-2", "source": "source", "description": "补充"})
+            second["entities"][1]["attributes"][0]["evidenceIds"].append("ev-2")
+            second["entities"][1]["attributes"][0]["valueRange"]["evidenceIds"].append("ev-2")
+            store.write(second)
+            merged = store.read("scope-a")["entities"][1]["attributes"][0]
+            self.assertEqual(merged["valueRange"]["evidenceIds"], ["ev-1", "ev-2"])
+
     def test_concurrent_registration_retries_resolve_to_same_identity(self):
         with tempfile.TemporaryDirectory() as temporary:
             path = Path(temporary) / "semantic.sqlite"
@@ -101,7 +127,8 @@ class SemanticEntityStoreTests(unittest.TestCase):
         with tempfile.TemporaryDirectory() as temporary:
             store = SemanticEntityStore(Path(temporary) / "semantic.sqlite")
             previous = store.register("scope-a", "src:old/path", "DataEntity", "订单", ["ev-old"])
-            current = store.register("scope-a", "src:new/path", "DataEntity", "订单", ["ev-new"])
+            current = store.register("scope-a", "src:new/path", "DataEntity", "订单", ["ev-new"],
+                                     continuity_from=[previous])
             self.assertNotEqual(previous["ref"], current["ref"])
             self.assertEqual(current["continuityCandidates"][0]["status"], "continuity_unresolved")
             self.assertEqual(len(store.continuity_candidates("scope-a")), 1)

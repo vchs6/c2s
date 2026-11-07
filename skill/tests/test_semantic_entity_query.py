@@ -25,7 +25,13 @@ def archive():
              "evidenceIds": [], "condition": {"kind": "true"}},
             {"relationId": "r2", "predicate": "contains", "subject": module, "target": data,
              "evidenceIds": [], "condition": {"kind": "true"}}],
-        "continuityCandidates": [], "evidence": [{"evidenceId": "ev-1", "source": "source",
+        "continuityCandidates": [], "sourceMappings": [{"mappingId": "map-1", "target": data,
+            "sourceConstruct": {"constructId": "construct-1", "sourceKey": "source-key-1",
+                "language": "python", "syntaxKind": "field_declaration", "name": "status",
+                "path": "order.py", "sha256": "a" * 64, "startByte": 1, "endByte": 4,
+                "parserId": "python-ast", "parserVersion": "3.12", "text": "status: str"},
+            "role": "declares", "mappingStatus": "mapped", "evidenceIds": ["ev-1"]}],
+        "evidence": [{"evidenceId": "ev-1", "source": "source",
             "description": "字段声明", "path": "order.py", "sha256": "a" * 64,
             "startByte": 1, "endByte": 4, "method": "tree-sitter"}], "coverage": [{"coverageId": "c1", "entity": data,
             "selector": "attributes", "status": "obtained", "inputFingerprint": "sha256:a",
@@ -93,6 +99,8 @@ class SemanticEntityQueryTests(unittest.TestCase):
         self.assertIn("属性标识：status", markdown)
         self.assertIn("ev-1", encoded)
         self.assertIn("ev-1", markdown)
+        self.assertIn("map-1", encoded)
+        self.assertIn("源码映射：map-1", markdown)
         self.assertIn("状态", markdown)
 
 
