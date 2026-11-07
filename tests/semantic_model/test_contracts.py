@@ -727,7 +727,7 @@ class M1IdentityTests(unittest.TestCase):
         predicates = {item["predicateId"]: item for item in catalog["predicates"]["predicates"]}
         expected = {"behavior.implemented_by", "behavior.calls", "behavior.binds", "behavior.captures",
                     "behavior.reads", "behavior.writes", "behavior.algorithm_described_by",
-                    "behavior.projects_to_pseudocode", "provenance.generated_from"}
+                    "behavior.projects_to_pseudocode", "behavior.body_region", "provenance.generated_from"}
         self.assertTrue(expected <= predicates.keys())
         for predicate_id in expected - {"provenance.generated_from"}:
             self.assertEqual(predicates[predicate_id]["primaryLayer"], "E4")

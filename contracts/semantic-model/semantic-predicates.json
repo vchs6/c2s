@@ -130,6 +130,49 @@
       ]
     },
     {
+      "predicateId": "behavior.body_region",
+      "category": "Semantic",
+      "primaryLayer": "E4",
+      "description": "A behavior body contains an independently identified region; region membership of steps remains a separate relation.",
+      "relationKind": "composition",
+      "claimCardinality": "multi_value",
+      "comparisonPolicy": "never",
+      "claimModes": [
+        "declaration",
+        "specification",
+        "static_may",
+        "static_must",
+        "observation",
+        "interpretation"
+      ],
+      "roles": [
+        {
+          "roleId": "body",
+          "position": "subject",
+          "valueType": "M1SubjectRef",
+          "allowedKinds": [
+            "BehaviorBody"
+          ],
+          "cardinality": "exactly_one"
+        },
+        {
+          "roleId": "region",
+          "position": "value",
+          "valueType": "M1SubjectRef",
+          "allowedKinds": [
+            "BehaviorRegion"
+          ],
+          "cardinality": "exactly_one"
+        }
+      ],
+      "constraints": [
+        "KIND_MATCH",
+        "ROLE_CARDINALITY",
+        "INTERNAL_REF_EXISTS",
+        "LAYER_CLASSIFICATION"
+      ]
+    },
+    {
       "predicateId": "behavior.calls",
       "category": "Semantic",
       "primaryLayer": "E4",
@@ -307,6 +350,13 @@
         },
         {
           "roleId": "edgeKind",
+          "position": "argument",
+          "valueType": "string",
+          "allowedKinds": [],
+          "cardinality": "exactly_one"
+        },
+        {
+          "roleId": "condition",
           "position": "argument",
           "valueType": "string",
           "allowedKinds": [],

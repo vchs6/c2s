@@ -23,7 +23,7 @@ _SEMANTIC_TYPES_PATH = _ROOT / "contracts" / "semantic-model" / "semantic-types.
 _SEMANTIC_PREDICATES_PATH = _ROOT / "contracts" / "semantic-model" / "semantic-predicates.json"
 _SEMANTIC_CATALOG_MANIFEST_PATH = _ROOT / "contracts" / "semantic-model" / "semantic-catalog-manifest.json"
 _TRUSTED_MANIFEST_SHA256 = "34e533b34af5fdb135e2fd8cea22de95a964b702b714619f314a30bd4cd49c2b"
-_TRUSTED_SEMANTIC_MANIFEST_SHA256 = "de477542fdcc6dd9f8b4d0e331f4a7486cd9b5d599b003f60ba3b606efc2d84d"
+_TRUSTED_SEMANTIC_MANIFEST_SHA256 = "35c99a715a99e78dbe43290fcbcc342d655241f35f3724d311c7765d4b66c659"
 _M1_SUPPORTED_KINDS = {"Project", "PackageSpecification", "NativeWorkspace", "SourceDeclaration"}
 _SUPPORTED_KINDS = _M1_SUPPORTED_KINDS | {"BehaviorBody", "BehaviorRegion", "BehaviorStep",
     "BuildTarget", "BuildRecipe", "BuildAlias", "OutputSpecification", "ArtifactObservation",

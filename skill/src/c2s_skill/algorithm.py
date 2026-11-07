@@ -295,7 +295,8 @@ def extract_python_algorithm(source: bytes, path: str, function_name: str,
          "reason": "Only direct statement order and selected control links are represented."},
     ]
     algorithm = {
-        "algorithm_id": algorithm_id, "purpose": "current_implementation", "problem": qualified_name(function),
+        "algorithm_id": algorithm_id, "source_digest": hashlib.sha256(source).hexdigest(),
+        "purpose": "current_implementation", "problem": qualified_name(function),
         "body": {"regions": regions, "steps": steps, "control_edges": control_edges, "data_edges": []},
         "contract": {"inputs": inputs, "outputs": outputs, "preconditions": [], "outcomes": outcomes,
                      "effects": [{"kind": "unknown", "description": "Runtime and indirect effects not analyzed",
@@ -553,7 +554,8 @@ def extract_rust_algorithm(source: bytes, path: str, function_name: str,
          "reason": "Only direct syntax sequencing and selected control links are represented."},
     ]
     algorithm = {
-        "algorithm_id": algorithm_id, "purpose": "current_implementation", "problem": function_name,
+        "algorithm_id": algorithm_id, "source_digest": hashlib.sha256(source).hexdigest(),
+        "purpose": "current_implementation", "problem": function_name,
         "body": {"regions": regions, "steps": steps, "control_edges": control_edges, "data_edges": []},
         "contract": {"inputs": inputs, "outputs": outputs, "preconditions": [], "outcomes": outcomes,
                      "effects": [{"kind": "unknown", "description": "Calls and runtime effects are unresolved",

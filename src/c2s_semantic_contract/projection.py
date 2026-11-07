@@ -432,3 +432,190 @@ def project_query_to_semantic_model(query_result, catalogs: dict | None = None) 
         "coverage": [coverage], "diagnostics": [], "semanticStates": semantic_states}
     return {"bundle": bundle, "artifacts": [],
             "sourceObservations": {"items": list(observations_by_id.values())}}
+
+
+def project_algorithm_to_semantic_model(algorithm_document: dict, project_root: Path,
+                                       catalogs: dict | None = None) -> dict:
+    """Project a source-located algorithm document into typed body/step/edge facts."""
+    root = Path(project_root).resolve(strict=True)
+    algorithm = algorithm_document.get("algorithm", algorithm_document)
+    algorithm_id = algorithm.get("algorithm_id") if isinstance(algorithm, dict) else None
+    algorithm_digest = algorithm.get("source_digest") if isinstance(algorithm, dict) else None
+    body_data = algorithm.get("body") if isinstance(algorithm, dict) else None
+    if (not isinstance(algorithm_id, str) or not algorithm_id or not isinstance(body_data, dict)
+            or not isinstance(algorithm_digest, str) or len(algorithm_digest) != 64
+            or any(char not in "0123456789abcdef" for char in algorithm_digest)):
+        raise ValueError("an algorithm document with algorithm_id, source_digest and body is required")
+    from c2s_skill.algorithm import validate_algorithms
+    algorithm_errors = validate_algorithms({"schema_version": "1.0.0", "algorithms": [algorithm]})
+    if algorithm_errors:
+        raise ValueError(f"algorithm document failed structural validation: {algorithm_errors[0]['code']}")
+    catalogs = catalogs or semantic_model_catalogs()
+    predicates = {item["predicateId"] for item in catalogs["predicates"]["predicates"]}
+    domain_id = hashlib.sha256(str(root).encode("utf-8")).hexdigest()
+    identities: dict[tuple[str, str], dict] = {}
+    registrations: dict[tuple[str, str], dict] = {}
+    evidence: dict[str, dict] = {}
+    observations: dict[str, dict] = {}
+    source_cache: dict[str, tuple[bytes, str]] = {}
+    facts = []
+    diagnostics = []
+
+    def ref(kind: str, local_id: str) -> dict:
+        key = (kind, local_id)
+        return identities.setdefault(key, {"identity": {"authority": "c2s-analysis", "domainId": domain_id,
+                                                           "localId": local_id}, "kind": kind})
+
+    def register(subject: dict, source_key: str, evidence_ids: list[str]) -> None:
+        key = (subject["kind"], subject["identity"]["localId"])
+        record = registrations.setdefault(key, {"ref": subject, "sourceKey": source_key, "evidenceIds": []})
+        record["evidenceIds"] = sorted(set(record["evidenceIds"]) | set(evidence_ids))
+
+    def evidence_for(source_span: dict) -> str:
+        path = source_span.get("path")
+        start, end = source_span.get("start_byte"), source_span.get("end_byte")
+        if not isinstance(path, str) or Path(path).is_absolute() or ".." in Path(path).parts \
+                or type(start) is not int or type(end) is not int or start < 0 or end < start:
+            raise ValueError("algorithm step has an invalid root-relative source span")
+        unresolved_path = root / path
+        cursor = unresolved_path
+        while cursor != root:
+            if cursor.is_symlink():
+                raise ValueError(f"algorithm source traverses a symlink: {path}")
+            cursor = cursor.parent
+        source_path = unresolved_path.resolve(strict=True)
+        if source_path != root and root not in source_path.parents:
+            raise ValueError(f"algorithm source escapes project root: {path}")
+        pair = source_cache.get(path)
+        if pair is None:
+            source = source_path.read_bytes()
+            pair = (source, hashlib.sha256(source).hexdigest())
+            source_cache[path] = pair
+        source, digest = pair
+        if digest != algorithm_digest:
+            raise ValueError("algorithm source digest changed after lowering; rerun before semantic projection")
+        if end > len(source):
+            raise ValueError(f"algorithm source span exceeds input length: {path}")
+        evidence_id = hashlib.sha256(f"{path}\0{start}\0{end}\0{digest}".encode()).hexdigest()
+        evidence[evidence_id] = {"evidenceId": evidence_id, "source": "input", "path": path,
+            "artifactId": None, "originalPath": path, "sha256": digest, "startByte": start,
+            "endByte": end, "method": "algorithm-syntax", "toolName": "c2s", "toolVersion": None}
+        observations[evidence_id] = {"evidenceId": evidence_id, "status": "verified", "observedSha256": digest}
+        return evidence_id
+
+    def add_fact(predicate: str, subject: dict, value, mode: str, evidence_ids: list[str],
+                 *, arguments: list[dict] | None = None, source_metadata: dict | None = None) -> None:
+        if predicate not in predicates:
+            diagnostics.append({"code": "PREDICATE_UNAVAILABLE", "severity": "gap", "recordId": algorithm_id,
+                                "path": None, "message": f"The supplied catalog has no {predicate} predicate."})
+            return
+        for evidence_id in evidence_ids:
+            if evidence_id not in evidence:
+                raise ValueError("algorithm fact references missing source evidence")
+        facts.append({"factId": hashlib.sha256(
+            f"{algorithm_id}\0{predicate}\0{len(facts)}".encode()).hexdigest(),
+            "predicate": predicate, "subject": subject, "value": None if arguments is not None else value,
+            **({"arguments": arguments} if arguments is not None else {}), "claimMode": mode,
+            "condition": {"kind": "true"}, "evidenceIds": sorted(set(evidence_ids)),
+            "sourceMetadata": source_metadata or {"kind": predicate, "layer": "E4", "owner": None,
+                "text": "", "evidenceIncluded": True}})
+
+    step_records = body_data.get("steps", [])
+    step_refs = {}
+    step_evidence = {}
+    for step in step_records:
+        step_id = step.get("step_id")
+        if not isinstance(step_id, str) or not isinstance(step.get("source"), dict):
+            diagnostics.append({"code": "ALGORITHM_STEP_UNLOCATED", "severity": "gap", "recordId": str(step_id),
+                "path": None, "message": "Algorithm step is not mapped to an input source span."})
+            continue
+        evidence_id = evidence_for(step["source"])
+        local_id = hashlib.sha256(f"{algorithm_id}\0step\0{step_id}".encode()).hexdigest()
+        step_ref = ref("BehaviorStep", local_id)
+        step_refs[step_id] = step_ref
+        step_evidence[step_id] = evidence_id
+        register(step_ref, f"algorithm:{algorithm_id}:step:{step_id}", [evidence_id])
+
+    implementation_refs = algorithm.get("implementation_refs", [])
+    implementation_ids = [item.get("subject_id") for item in implementation_refs
+                          if isinstance(item, dict) and isinstance(item.get("subject_id"), str)]
+    if not implementation_ids:
+        implementation_ids = ["algorithm-implementation:" + algorithm_id]
+    body_ref = ref("BehaviorBody", hashlib.sha256(f"{algorithm_id}\0body".encode()).hexdigest())
+    description_ref = ref("AlgorithmDescription", hashlib.sha256(f"{algorithm_id}\0description".encode()).hexdigest())
+    all_step_evidence = sorted(set(step_evidence.values()))
+    if all_step_evidence:
+        register(body_ref, f"algorithm:{algorithm_id}:body", all_step_evidence)
+        register(description_ref, f"algorithm:{algorithm_id}:description", all_step_evidence)
+        for implementation_id in implementation_ids:
+            implementation_ref = ref("SourceDeclaration", hashlib.sha256(implementation_id.encode()).hexdigest())
+            register(implementation_ref, f"algorithm-implementation:{implementation_id}", all_step_evidence)
+            for predicate in ("behavior.has_body", "behavior.implemented_by", "behavior.algorithm_described_by"):
+                value_ref = description_ref if predicate == "behavior.algorithm_described_by" else body_ref
+                add_fact(predicate, implementation_ref, value_ref, "declaration", all_step_evidence)
+    for region in body_data.get("regions", []):
+        region_id = region.get("region_id")
+        region_step_evidence = [step_evidence[step["step_id"]] for step in step_records
+                                if step.get("region_id") == region_id and step.get("step_id") in step_evidence]
+        if not isinstance(region_id, str) or not region_step_evidence:
+            continue
+        region_ref = ref("BehaviorRegion", hashlib.sha256(f"{algorithm_id}\0region\0{region_id}".encode()).hexdigest())
+        register(region_ref, f"algorithm:{algorithm_id}:region:{region_id}", region_step_evidence)
+        add_fact("behavior.body_region", body_ref, region_ref, "declaration", region_step_evidence,
+                 source_metadata={"kind": "body_region", "layer": "E4", "owner": algorithm_id,
+                                  "text": "", "evidenceIncluded": True})
+        for step in step_records:
+            step_id = step.get("step_id")
+            if step.get("region_id") == region_id and step_id in step_refs:
+                add_fact("region.member", region_ref, step_refs[step_id], "declaration",
+                         [step_evidence[step_id]], source_metadata={"kind": "region_member", "layer": "E4",
+                            "owner": algorithm_id, "text": "", "evidenceIncluded": True})
+    for step in step_records:
+        step_id = step.get("step_id")
+        if step_id not in step_refs:
+            continue
+        if step.get("kind") == "opaque":
+            diagnostics.append({"code": "OPAQUE_ALGORITHM_STEP", "severity": "gap", "recordId": step_id,
+                "path": step.get("source", {}).get("path"), "message": step.get("impact", "Opaque step semantics remain unknown.")})
+
+    for edge_index, edge in enumerate(body_data.get("control_edges", [])):
+        source_id, target_id = edge.get("from_step"), edge.get("to_step")
+        if source_id not in step_refs or target_id not in step_refs:
+            diagnostics.append({"code": "ALGORITHM_EDGE_UNMAPPED", "severity": "gap", "recordId": str(edge_index),
+                "path": None, "message": "Control edge refers to a step without a source mapping."})
+            continue
+        condition = json.dumps(edge.get("condition", {"kind": "unknown"}), sort_keys=True, ensure_ascii=False)
+        add_fact("behavior.control_edge", step_refs[source_id], None, "static_may",
+            [step_evidence[source_id], step_evidence[target_id]], arguments=[
+                {"role": "target", "value": step_refs[target_id]},
+                {"role": "edgeKind", "value": edge.get("kind", "unknown")},
+                {"role": "condition", "value": condition}],
+            source_metadata={"kind": "control_edge", "layer": "E4", "owner": algorithm_id,
+                             "text": condition, "evidenceIncluded": True})
+    for omission in algorithm.get("omissions", []):
+        diagnostics.append({"code": "ALGORITHM_OMISSION", "severity": "gap", "recordId": algorithm_id,
+            "path": None, "message": f"{omission.get('reason', 'Unspecified omission')}: {omission.get('impact', '')}"})
+    if not facts:
+        diagnostics.append({"code": "ALGORITHM_FACTS_UNAVAILABLE", "severity": "gap", "recordId": algorithm_id,
+            "path": None, "message": "No source-located algorithm facts could be projected."})
+    for path, (_, expected_digest) in source_cache.items():
+        if hashlib.sha256((root / path).read_bytes()).hexdigest() != expected_digest:
+            raise ValueError("project sources changed during algorithm projection; rerun analysis")
+    selector = "algorithm:" + algorithm_id
+    coverage_id = hashlib.sha256(f"{algorithm_id}\0{domain_id}".encode()).hexdigest()
+    coverage = {"coverageId": coverage_id, "selector": selector, "subject": None,
+        "checkedPaths": sorted(source_cache), "evidenceIds": sorted(evidence),
+        "complete": bool(facts) and not diagnostics, "supersedes": [], "resolvedDiagnosticKeys": [],
+        "diagnostics": diagnostics}
+    state = {"stateId": hashlib.sha256(f"{coverage_id}\0obtained".encode()).hexdigest(),
+        "selector": selector, "subject": None, "predicate": None, "condition": {"kind": "true"},
+        "presentation": "expanded", "acquisition": "obtained" if facts else "not_acquired",
+        "factIds": [item["factId"] for item in facts], "applicabilityReason": None,
+        "evidenceIds": sorted(evidence), "diagnostics": diagnostics}
+    if not facts:
+        state["presentation"] = "ref_only"
+    bundle = {"version": "1.0.0", "profile": "semantic-fact-model-1",
+        "registrations": sorted(registrations.values(), key=lambda item: item["sourceKey"]),
+        "assessments": [], "facts": facts, "evidence": list(evidence.values()), "coverage": [coverage],
+        "diagnostics": [], "semanticStates": [state]}
+    return {"bundle": bundle, "artifacts": [], "sourceObservations": {"items": list(observations.values())}}

@@ -73,6 +73,7 @@
       "required": ["algorithm_id", "purpose", "problem", "body", "contract", "management", "implementation_refs", "evidence_refs", "omissions"],
       "properties": {
         "algorithm_id": {"type": "string", "minLength": 1},
+        "source_digest": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
         "purpose": {"enum": ["normative", "current_implementation", "abstract"]},
         "problem": {"type": "string", "minLength": 1},
         "body": {
