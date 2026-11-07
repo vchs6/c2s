@@ -24,6 +24,8 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("--function", help="function name to lower into a partial algorithm description")
     parser.add_argument("--all-functions", action="store_true",
                         help="lower every discovered Python and Rust function in the project")
+    parser.add_argument("--semantic-facts", action="store_true",
+                        help="include a validated semantic fact bundle for a single algorithm request")
     parser.add_argument("--format", choices=["json", "markdown"], default=None)
     parser.add_argument("--output", type=Path, help="write the report outside the analyzed project")
     parser.add_argument("--store", type=Path, help="SQLite fact cache outside the analyzed project")
@@ -33,8 +35,8 @@ def main(argv: list[str] | None = None) -> int:
         if args.output and args.output.resolve().is_relative_to(root):
             raise ValueError("output must be outside the analyzed project")
         if args.query == "query":
-            if args.source or args.function or args.all_functions:
-                raise ValueError("--source, --function and --all-functions are only valid for algorithm requests")
+            if args.source or args.function or args.all_functions or args.semantic_facts:
+                raise ValueError("algorithm options are only valid for algorithm requests")
             if (args.select is None) == (args.request is None):
                 raise ValueError("query requires exactly one of --select or --request")
             store = FactStore(args.store) if args.store else None
@@ -48,6 +50,8 @@ def main(argv: list[str] | None = None) -> int:
             if args.select or args.request or args.store:
                 raise ValueError("--select, --request and --store are only valid for query requests")
             if args.all_functions:
+                if args.semantic_facts:
+                    raise ValueError("--semantic-facts currently requires one --source and --function request")
                 if args.source or args.function:
                     raise ValueError("--all-functions cannot be combined with --source or --function")
                 if args.format not in {None, "json"}:
@@ -147,12 +151,21 @@ def main(argv: list[str] | None = None) -> int:
                         for item in coverage if item["state"] != "complete"]
                 gaps.extend({"category": "algorithm_body", **item}
                             for item in extracted["algorithm"]["omissions"])
-                rendered = json.dumps({"root": str(root), "source_path": relative_path,
-                                       "source_digest": hashlib.sha256(source_bytes).hexdigest(),
-                                       "complete": False, "claim_scope": "partial_static_syntax_projection",
-                                       "algorithm": extracted["algorithm"],
-                                       "validation": {"scope": "structure_only", "diagnostics": diagnostics},
-                                       "gaps": gaps}, ensure_ascii=False, indent=2) + "\n"
+                response = {"root": str(root), "source_path": relative_path,
+                            "source_digest": hashlib.sha256(source_bytes).hexdigest(),
+                            "complete": False, "claim_scope": "partial_static_syntax_projection",
+                            "algorithm": extracted["algorithm"],
+                            "validation": {"scope": "structure_only", "diagnostics": diagnostics},
+                            "gaps": gaps}
+                if args.semantic_facts:
+                    from c2s_semantic_contract import semantic_model_catalogs, validate_model
+                    from c2s_semantic_contract.projection import project_algorithm_to_semantic_model
+                    projection = project_algorithm_to_semantic_model(extracted, root)
+                    response["semantic_fact_bundle"] = projection["bundle"]
+                    response["source_observations"] = projection["sourceObservations"]
+                    response["semantic_validation"] = validate_model(
+                        projection["bundle"], semantic_model_catalogs(), projection["sourceObservations"])
+                rendered = json.dumps(response, ensure_ascii=False, indent=2) + "\n"
                 status = 0 if not diagnostics else 2
         if args.output:
             args.output.parent.mkdir(parents=True, exist_ok=True)

@@ -25,6 +25,22 @@ class AlgorithmCliTests(unittest.TestCase):
             self.assertTrue(result["algorithm"]["omissions"])
             self.assertEqual(result["validation"]["diagnostics"], [])
 
+    def test_cli_can_return_a_valid_semantic_fact_bundle_for_one_algorithm(self):
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            (root / "main.py").write_text(
+                "def choose(flag):\n    if flag:\n        return 1\n    return 0\n", encoding="utf-8")
+            output, errors = io.StringIO(), io.StringIO()
+            with contextlib.redirect_stdout(output), contextlib.redirect_stderr(errors):
+                status = main(["algorithm", "--root", str(root), "--source", "main.py",
+                               "--function", "choose", "--semantic-facts"])
+            self.assertEqual(status, 0, errors.getvalue())
+            result = json.loads(output.getvalue())
+            bundle = result["semantic_fact_bundle"]
+            self.assertEqual(bundle["profile"], "semantic-fact-model-1")
+            self.assertTrue(any(fact["predicate"] == "behavior.control_edge" for fact in bundle["facts"]))
+            self.assertEqual(result["semantic_validation"]["valid"], True)
+
     def test_cli_rejects_source_paths_that_escape_the_project_root(self):
         with tempfile.TemporaryDirectory() as temporary, tempfile.TemporaryDirectory() as outside:
             root = Path(temporary)
