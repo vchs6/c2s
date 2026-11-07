@@ -286,6 +286,18 @@ def result_to_dict(result: QueryResult) -> dict:
     }
 
 
+def query_result_from_dict(value: dict) -> QueryResult:
+    """Rehydrate a previously validated query report for cached Markdown rendering."""
+    return QueryResult(root=value["root"], requested=tuple(value["requested"]),
+        facts=tuple(Fact(**item) for item in value["facts"]),
+        gaps=tuple(Gap(**item) for item in value["gaps"]), complete=value["complete"],
+        source_files=value["coverage"]["source_files"], parsed_files=value["coverage"]["parsed_files"],
+        source_digest=value["source_digest"],
+        inventory=tuple(InventoryEntry(**item) for item in value["inventory"]),
+        profile_digest=value["profile_digest"],
+        persistence=PersistenceResult(**value["persistence"]), tools_used=tuple(value["tools_used"]))
+
+
 def result_to_markdown(result: QueryResult) -> str:
     unhandled = [entry for entry in result.inventory
                  if entry.state != "readable" or (entry.kind == "file" and

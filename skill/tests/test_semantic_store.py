@@ -77,12 +77,25 @@ class SemanticStoreTests(unittest.TestCase):
                 "visibility": "registry", "scopePosition": "outside", "evidenceIds": [evidence_id]}]
             bundle["contextDomains"] = [{"keyId": "target", "values": ["linux", "windows"]}]
             bundle["contexts"] = [{"contextId": "linux", "assignments": {"target": "linux"}}]
+            artifact_content = '{"tool":"fixture"}'
+            artifact = {"artifactId": "artifact-fixture", "mediaType": "application/json",
+                        "sha256": __import__("hashlib").sha256(artifact_content.encode()).hexdigest(),
+                        "content": artifact_content}
+            artifact_evidence_id = "artifact-evidence"
+            bundle["evidence"].append({"evidenceId": artifact_evidence_id, "source": "tool_output",
+                "path": None, "artifactId": artifact["artifactId"], "originalPath": "fixture.json",
+                "sha256": artifact["sha256"], "startByte": 0, "endByte": len(artifact_content),
+                "method": "code-review-graph", "toolName": "fixture", "toolVersion": "1"})
+            bundle["facts"][0]["evidenceIds"].append(artifact_evidence_id)
+            bundle["registrations"][0]["evidenceIds"].append(artifact_evidence_id)
+            projected["sourceObservations"]["items"].append({"evidenceId": artifact_evidence_id,
+                "status": "verified", "observedSha256": artifact["sha256"]})
             checked = validate_model(bundle, semantic_model_catalogs(), projected["sourceObservations"])
             self.assertTrue(checked["valid"], checked["diagnostics"])
 
             receipt = commit_bundle(db, {"session": session, "operationId": "full-operation-1",
-                "expectedGeneration": 0, "bundle": bundle, "artifacts": projected["artifacts"],
-                "sourceObservations": projected["sourceObservations"]})
+                "expectedGeneration": 0, "bundle": bundle,
+                "sourceObservations": projected["sourceObservations"], "artifacts": [artifact]})
             loaded = read_bundle(db, session["analysisId"])
             selected = query_bundle(db, session["analysisId"], "function:run")
 
@@ -93,9 +106,12 @@ class SemanticStoreTests(unittest.TestCase):
             for collection in ("registrations", "assessments", "facts", "evidence", "coverage",
                                "dependencies", "dependencyResolutions", "semanticStates", "diagnostics",
                                "contextDomains", "contexts"):
-                self.assertEqual(loaded["bundle"][collection], bundle[collection])
+                self.assertEqual(sorted(loaded["bundle"][collection], key=lambda item: json.dumps(item, sort_keys=True)),
+                                 sorted(bundle[collection], key=lambda item: json.dumps(item, sort_keys=True)))
             self.assertTrue(validate_model(loaded["bundle"], semantic_model_catalogs(),
                                            loaded["sourceObservations"])["valid"])
+            from c2s_skill.semantic_store import query_artifacts
+            self.assertEqual(query_artifacts(db, session["analysisId"], "function:run"), [artifact])
             self.assertEqual({fact["factId"] for fact in selected["facts"]},
                              {fact["factId"] for fact in bundle["facts"]})
             self.assertEqual(selected["coverage"][0]["selector"], "function:run")
@@ -125,9 +141,12 @@ class SemanticStoreTests(unittest.TestCase):
             "evidenceRefs": [{"evidenceId": "ev-b", "role": "Supports"}],
             "sourceMetadata": {**fact["sourceMetadata"], "evidenceIncluded": False, "text": ""}}
         changed_layer_claim = {**fact, "claimMode": "static_must", "factId": "fact-c"}
+        changed_derivation = {**fact, "factId": "fact-d", "derivation": {
+            "ruleId": "different-rule", "premiseFactIds": ["premise-2"]}}
 
         self.assertEqual(fact_key_semantic(fact), fact_key_semantic(same_claim))
         self.assertNotEqual(fact_key_semantic(fact), fact_key_semantic(changed_layer_claim))
+        self.assertNotEqual(fact_key_semantic(fact), fact_key_semantic(changed_derivation))
 
     def test_public_query_store_persists_and_returns_validated_semantic_bundle(self):
         with TemporaryDirectory() as temporary:
@@ -209,6 +228,13 @@ class SemanticStoreTests(unittest.TestCase):
             self.assertIn(second_status, (0, 2))
             self.assertEqual(response["persistence"]["status"], "cache_hit")
             self.assertEqual(response["semantic_fact_bundle"]["profile"], "semantic-fact-model-1")
+            markdown = io.StringIO()
+            with patch("c2s_skill.__main__.query_project", side_effect=AssertionError("analyzer reran")), \
+                    redirect_stdout(markdown):
+                markdown_status = main(["query", "--root", str(root), "--select", "classes",
+                    "--store", str(database), "--format", "markdown"])
+            self.assertIn(markdown_status, (0, 2))
+            self.assertIn("Semantic facts:", markdown.getvalue())
 
     def test_fact_equivalence_ignores_record_and_evidence_ids_but_keeps_claim_context(self):
         first = bundle_with_fact()["facts"][0]

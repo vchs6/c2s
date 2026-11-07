@@ -37,6 +37,7 @@
     "gaps": {"type": "array", "items": {"$ref": "#/$defs/gap"}},
     "inventory": {"type": "array", "items": {"$ref": "#/$defs/inventoryEntry"}},
     "semantic_fact_bundle": {"$ref": "#/$defs/fullBundle"},
+    "semantic_artifacts": {"type": "array", "items": {"type": "object"}},
     "semantic_validation": {"type": "object", "required": ["valid", "diagnostics"],
       "properties": {"valid": {"type": "boolean"}, "diagnostics": {"type": "array"}},
       "additionalProperties": true},

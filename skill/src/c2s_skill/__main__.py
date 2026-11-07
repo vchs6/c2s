@@ -12,10 +12,11 @@ from .algorithm import (_index_python_functions, _index_rust_functions,
                         extract_python_algorithm, extract_rust_algorithm, validate_algorithms)
 from .acquisition import scan_project
 from .graph_tool_adapter import parse_code_review_graph_response
-from .query import normalize_request, query_project, result_to_dict, result_to_markdown
+from .query import (normalize_request, query_project, query_result_from_dict, result_to_dict,
+                    result_to_markdown)
 from .store import QueryResultCache
 from .semantic_store import (SemanticFactStore, commit_m1, read_m1, commit_bundle, read_bundle,
-                             query_bundle, read_query_report, remember_query_report)
+                             query_bundle, query_artifacts, read_query_report, remember_query_report)
 from .capability_matrix import (detect_available_tools, host_environment, load_tool_matrix,
                                 parse_selected_tool_output, select_tools)
 
@@ -59,7 +60,7 @@ def main(argv: list[str] | None = None) -> int:
             selectors = args.select if args.select else normalize_request(args.request)
             output_format = args.format or "markdown"
             repository = SemanticFactStore(args.store) if args.store else None
-            if repository and output_format == "json":
+            if repository:
                 from .inventory import source_fingerprint
                 from .acquisition import analysis_profile_digest
                 repository.validate_root(root)
@@ -71,7 +72,19 @@ def main(argv: list[str] | None = None) -> int:
                     cached_response["persistence"] = {"status": "cache_hit", "diagnostic": None}
                     if cached_response.get("semantic_store"):
                         cached_response["semantic_store"]["state"] = "already_stored"
-                    sys.stdout.write(json.dumps(cached_response, ensure_ascii=False, indent=2) + "\n")
+                    if output_format == "json":
+                        rendered = json.dumps(cached_response, ensure_ascii=False, indent=2) + "\n"
+                    else:
+                        cached_result = query_result_from_dict(cached_response)
+                        rendered = result_to_markdown(cached_result)
+                        if cached_response.get("semantic_fact_bundle"):
+                            rendered += (f"\nSemantic facts: {len(cached_response['semantic_fact_bundle']['facts'])}; "
+                                         f"store state: {cached_response['semantic_store']['state']}\n")
+                    if args.output:
+                        args.output.parent.mkdir(parents=True, exist_ok=True)
+                        args.output.write_text(rendered, encoding="utf-8")
+                    else:
+                        sys.stdout.write(rendered)
                     return 0 if cached_response.get("complete") else 2
             result = query_project(root, selectors, cache)
             response = result_to_dict(result)
@@ -108,6 +121,7 @@ def main(argv: list[str] | None = None) -> int:
                     raise ValueError("semantic fact repository rejected the transaction")
                 semantic_read = read_bundle(repository, analysis_id)
                 response["semantic_fact_bundle"] = query_bundle(repository, analysis_id, "+".join(selectors))
+                response["semantic_artifacts"] = query_artifacts(repository, analysis_id, "+".join(selectors))
                 response["semantic_validation"] = semantic_validation
                 response["semantic_store"] = semantic_receipt
                 if output_format == "json":
@@ -280,6 +294,8 @@ def main(argv: list[str] | None = None) -> int:
                         if receipt["state"] == "failed":
                             raise ValueError("semantic fact repository rejected the algorithm transaction")
                         response["semantic_fact_bundle"] = query_bundle(repository, analysis_id,
+                            "algorithm:" + extracted["algorithm"]["algorithm_id"])
+                        response["semantic_artifacts"] = query_artifacts(repository, analysis_id,
                             "algorithm:" + extracted["algorithm"]["algorithm_id"])
                         response["semantic_store"] = receipt
                     if graph_facts is not None:

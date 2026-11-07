@@ -41,7 +41,7 @@ def fact_key_m1(fact: dict) -> str:
 
 def fact_key_semantic(fact: dict) -> str:
     """Comparison identity for a layered claim, excluding presentation/evidence identity."""
-    omitted = {"factId", "evidenceIds", "evidenceRefs", "derivation"}
+    omitted = {"factId", "evidenceIds", "evidenceRefs"}
     metadata = fact.get("sourceMetadata")
     if isinstance(metadata, dict):
         metadata = {key: value for key, value in metadata.items()
@@ -148,6 +148,11 @@ def _merge_semantic_bundles(old: dict, new: dict) -> dict:
                 raise ValueError(f"conflicting {name} records share identity {key!r}")
         result[name] = sorted(by_key.values(), key=_json)
     if fact_id_map:
+        for fact in result["facts"]:
+            derivation = fact.get("derivation")
+            if isinstance(derivation, dict):
+                derivation["premiseFactIds"] = sorted({fact_id_map.get(value, value)
+                                                        for value in derivation.get("premiseFactIds", [])})
         for state in result["semanticStates"]:
             state["factIds"] = sorted({fact_id_map.get(value, value) for value in state.get("factIds", [])})
         for record in result["assessments"] + result["coverage"] + result["diagnostics"]:
@@ -662,7 +667,9 @@ def commit_bundle(store: SemanticFactStore | Path | str, candidate: dict) -> dic
     for artifact in artifacts:
         if not isinstance(artifact.get("content"), str) or _sha(artifact["content"].encode()) != artifact.get("sha256"):
             raise ValueError("artifact content digest is invalid")
-    content_hash = _sha(_json({"session": session, "bundle": bundle, "artifacts": artifacts}).encode())
+    source_observations = candidate.get("sourceObservations", {"items": []})
+    content_hash = _sha(_json({"session": session, "bundle": bundle, "artifacts": artifacts,
+                               "sourceObservations": source_observations}).encode())
     with repository._connect() as connection:
         connection.execute("BEGIN IMMEDIATE")
         prior = connection.execute("SELECT content_hash,payload FROM receipts WHERE analysis_id=? AND operation_id=?",
@@ -693,6 +700,14 @@ def commit_bundle(store: SemanticFactStore | Path | str, candidate: dict) -> dic
         for observation in candidate.get("sourceObservations", {}).get("items", []):
             connection.execute("INSERT INTO source_observations VALUES(?,?,?) ON CONFLICT(analysis_id,evidence_id) DO UPDATE SET payload=excluded.payload",
                 (session["analysisId"], observation["evidenceId"], _json(observation)))
+        stored_observations = connection.execute(
+            "SELECT payload FROM source_observations WHERE analysis_id=? ORDER BY evidence_id",
+            (session["analysisId"],)).fetchall()
+        canonical_observations = {"items": [json.loads(row[0]) for row in stored_observations]}
+        merged_check = validate_model(bundle, semantic_model_catalogs(), canonical_observations)
+        if not merged_check["valid"]:
+            raise ValueError("merged full semantic bundle failed contract validation: " + ", ".join(
+                item.get("ruleCode", "CONTRACT_INVALID") for item in merged_check["diagnostics"]))
         for artifact in artifacts:
             connection.execute("INSERT INTO artifacts VALUES(?,?,?,?,?,?) ON CONFLICT(analysis_id,sha256) DO UPDATE SET artifact_id=excluded.artifact_id,media_type=excluded.media_type,content=excluded.content,payload=excluded.payload",
                 (session["analysisId"], artifact["sha256"], artifact.get("artifactId", artifact["sha256"]),
@@ -748,12 +763,18 @@ def query_bundle(store: SemanticFactStore | Path | str, analysis_id: str, select
     dependency_ids = {item["dependencyId"] for item in dependencies}
     resolutions = [item for item in bundle.get("dependencyResolutions", [])
                    if item.get("dependencyId") in dependency_ids]
+    assessments = [item for item in bundle.get("assessments", [])
+                   if item.get("recordId") in fact_ids or item.get("factId") in fact_ids]
+    for record in dependencies + resolutions + assessments:
+        collect_refs(record)
+        evidence_ids.update(record.get("evidenceIds", []))
     registrations = [item for item in bundle.get("registrations", [])
                      if _identity_key(item["ref"]) in identities]
     for item in registrations:
         evidence_ids.update(item.get("evidenceIds", []))
     evidence = [item for item in bundle.get("evidence", []) if item["evidenceId"] in evidence_ids]
-    context_ids = {item["contextRef"] for item in facts if item.get("contextRef")}
+    context_ids = {item["contextRef"] for item in facts + states + dependencies + resolutions
+                   if item.get("contextRef")}
     contexts = [item for item in bundle.get("contexts", []) if item.get("contextId") in context_ids]
     domain_keys = {key for item in contexts for key in item.get("assignments", {})}
     result = {name: [] for name in _FULL_COLLECTIONS}
@@ -762,9 +783,16 @@ def query_bundle(store: SemanticFactStore | Path | str, analysis_id: str, select
                   evidence=evidence, dependencies=dependencies, dependencyResolutions=resolutions,
                   contexts=contexts, contextDomains=[item for item in bundle.get("contextDomains", [])
                                                      if item.get("keyId") in domain_keys],
-                  assessments=[item for item in bundle.get("assessments", [])
-                               if item.get("recordId") in fact_ids or item.get("factId") in fact_ids],
+                  assessments=assessments,
                   diagnostics=[item for item in bundle.get("diagnostics", [])
                                if item.get("recordId") in fact_ids or item.get("recordId") in
                                {row["coverageId"] for row in matching}])
     return result
+
+
+def query_artifacts(store: SemanticFactStore | Path | str, analysis_id: str, selector: str) -> list[dict]:
+    """Return stored artifact payloads referenced by the selector-scoped evidence."""
+    selected = query_bundle(store, analysis_id, selector)
+    artifact_ids = {item.get("artifactId") for item in selected.get("evidence", []) if item.get("artifactId")}
+    artifacts = read_bundle(store, analysis_id).get("artifacts", [])
+    return [item for item in artifacts if item.get("artifactId") in artifact_ids]
