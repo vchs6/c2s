@@ -19,12 +19,58 @@ from .capability_matrix import (detect_available_tools, host_environment, load_t
                                 parse_selected_tool_output, select_tools)
 
 
-def _persist_semantic_entity_archive(root: Path, database: Path) -> dict:
+def _persist_semantic_entity_archive(root: Path, database: Path, implementation_view: dict | None = None,
+                                     source_path: str | None = None, function_name: str | None = None) -> dict:
     from c2s_semantic_contract.validation import validate_semantic_entity_model
     from .entity_construction import construct_and_query_semantic_entities
 
     store = SemanticEntityStore(database)
     query = construct_and_query_semantic_entities(root, store, "entities")
+    if implementation_view is not None:
+        model = store.read(query["scopeId"])
+        matching = [item for item in model["sourceMappings"]
+                    if item.get("target", {}).get("kind") == "ComputationEntity"
+                    and item["sourceConstruct"]["path"] == source_path
+                    and item["sourceConstruct"]["name"] == function_name]
+        if not matching:
+            raise ValueError("algorithm result has no matching computation-entity source mapping")
+        payload = json.dumps(implementation_view, ensure_ascii=False, sort_keys=True, separators=(",", ":"))
+        view_digest = hashlib.sha256(payload.encode("utf-8")).hexdigest()
+        artifact = implementation_view.get("graphToolResult")
+        evidence_id = "evidence:algorithm:" + view_digest
+        view = {"algorithm": implementation_view["algorithm"],
+                "semanticFactBundle": implementation_view["semanticFactBundle"],
+                "sourceObservations": implementation_view["sourceObservations"],
+                "artifacts": implementation_view["artifacts"], "graphToolResult": artifact,
+                "completeness": "partial_static_syntax_projection"}
+        algorithm_evidence = implementation_view["semanticFactBundle"].get("evidence", [])
+        known_evidence = {item["evidenceId"] for item in model["evidence"]}
+        for evidence in algorithm_evidence:
+            evidence_id = evidence["evidenceId"]
+            entity_evidence = {"evidenceId": evidence_id,
+                "source": evidence.get("source") or "algorithm_projection",
+                "description": f"算法投影证据：{evidence.get('path') or evidence.get('toolName') or evidence_id}"}
+            for field in ("path", "sha256", "startByte", "endByte", "method", "toolName", "toolVersion"):
+                if evidence.get(field) is not None:
+                    entity_evidence[field] = evidence[field]
+            if evidence_id not in known_evidence:
+                model["evidence"].append(entity_evidence)
+                known_evidence.add(evidence_id)
+        for mapping in matching:
+            mapping["mappingId"] = "mapping:algorithm:" + hashlib.sha256(
+                f"{mapping['mappingId']}\0{view_digest}".encode("utf-8")).hexdigest()
+            mapping["role"] = "algorithm_view"
+            mapping["implementationView"] = view
+            mapping["evidenceIds"] = sorted(set(mapping.get("evidenceIds", []))
+                                               | {item["evidenceId"] for item in algorithm_evidence})
+            if artifact is not None:
+                mapping["evidenceIds"] = sorted(set(mapping.get("evidenceIds", [])) | {evidence_id})
+        if artifact is not None and not any(item["evidenceId"] == evidence_id for item in model["evidence"]):
+            model["evidence"].append({"evidenceId": evidence_id, "source": "code-review-graph",
+                "description": "本次算法请求使用的外部调用图原始JSON；freshness由查询诊断限定。",
+                "method": "structured_tool_output", "toolName": "code-review-graph",
+                "toolVersion": implementation_view.get("graphToolVersion") or "unknown"})
+        store.write(model)
     model = store.read(query["scopeId"])
     validation = validate_semantic_entity_model(model) if model else {"valid": False, "diagnostics": []}
     if not validation["valid"]:
@@ -238,7 +284,14 @@ def main(argv: list[str] | None = None) -> int:
                     response["semantic_validation"] = validate_model(
                         projection["bundle"], semantic_model_catalogs(), projection["sourceObservations"])
                     if args.store:
-                        response.update(_persist_semantic_entity_archive(root, args.store))
+                        response.update(_persist_semantic_entity_archive(root, args.store,
+                            {"algorithm": extracted["algorithm"],
+                             "semanticFactBundle": projection["bundle"],
+                             "sourceObservations": projection["sourceObservations"],
+                             "artifacts": projection["artifacts"],
+                             "graphToolResult": json.loads(graph_facts.artifact_content) if graph_facts else None,
+                             "graphToolVersion": graph_facts.tool_version if graph_facts else None},
+                            relative_path, args.function))
                     if graph_facts is not None:
                         response["graph_query"] = {"tool": graph_facts.tool, "pattern": graph_facts.pattern,
                             "selected_tool_ids": list(graph_selection.tools),

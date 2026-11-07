@@ -133,7 +133,20 @@
         "role": {"enum": ["represents", "declares", "implements", "implementation_reference",
                             "test_entry", "constrains", "generated_by", "calls", "algorithm_view"]},
         "mappingStatus": {"enum": ["mapped", "partial", "unresolved", "conflicting"]},
-        "evidenceIds": {"type": "array", "uniqueItems": true, "items": {"$ref": "#/$defs/id"}}
+        "evidenceIds": {"type": "array", "uniqueItems": true, "items": {"$ref": "#/$defs/id"}},
+        "implementationView": {
+          "type": "object", "additionalProperties": false,
+          "required": ["algorithm", "semanticFactBundle", "sourceObservations", "artifacts",
+                       "graphToolResult", "completeness"],
+          "properties": {
+            "algorithm": {"type": "object"},
+            "semanticFactBundle": {"type": "object"},
+            "sourceObservations": {"type": "object"},
+            "artifacts": {"type": "array"},
+            "graphToolResult": {"oneOf": [{"type": "object"}, {"type": "null"}]},
+            "completeness": {"const": "partial_static_syntax_projection"}
+          }
+        }
       },
       "allOf": [{"if": {"properties": {"mappingStatus": {"const": "mapped"}}, "required": ["mappingStatus"]},
                  "then": {"required": ["target"]}}]

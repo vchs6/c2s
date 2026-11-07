@@ -246,6 +246,9 @@ def render_entity_query(result: dict, output_format: str = "json") -> str:
                 f"映射状态：{mapping['mappingStatus']}",
                 f"定位：{source['path']}:{source['startByte']}-{source['endByte']}",
                 f"证据：{json.dumps(mapping['evidenceIds'], ensure_ascii=False)}"])
+            if "implementationView" in mapping:
+                lines.extend(["实现投影：", json.dumps(mapping["implementationView"], ensure_ascii=False,
+                                                             sort_keys=True)])
         for evidence in entity.get("evidence", []):
             lines.extend(["", f"## 证据：{evidence['evidenceId']}",
                 json.dumps(evidence, ensure_ascii=False, sort_keys=True)])

@@ -102,6 +102,7 @@ class AlgorithmCliTests(unittest.TestCase):
                     (response["semantic_entity_store"]["scopeId"],)).fetchone()
             entity_model = json.loads(archive[0])
             self.assertTrue(any(item["ref"]["kind"] == "ComputationEntity" for item in entity_model["entities"]))
+            self.assertTrue(any("implementationView" in item for item in entity_model["sourceMappings"]))
             self.assertNotIn("sessions", tables)
 
     def test_cli_parses_code_review_graph_json_for_source_mapped_call_facts(self):
@@ -111,19 +112,21 @@ class AlgorithmCliTests(unittest.TestCase):
             (root / "src/run.py").write_text("def run():\n    parse()\n", encoding="utf-8")
             (root / "src/parse.py").write_text("def parse():\n    return 1\n", encoding="utf-8")
             graph_output = Path(output_dir) / "graph.json"
-            graph_output.write_text(json.dumps({
+            graph_document = {
                 "status": "ok", "pattern": "callees_of", "target": "run",
                 "result_count": 1, "results_omitted": 0,
                 "results": [{"kind": "Function", "name": "parse", "qualified_name": "parse",
                              "file_path": "src/parse.py", "line_start": 1, "line_end": 2,
                              "call_site": {"line": 2, "file": "src/run.py"}}],
                 "edges": [{"source": "run", "target": "parse"}],
-            }), encoding="utf-8")
+            }
+            graph_output.write_text(json.dumps(graph_document), encoding="utf-8")
+            database = Path(output_dir) / "semantic.sqlite"
             output, errors = io.StringIO(), io.StringIO()
             with contextlib.redirect_stdout(output), contextlib.redirect_stderr(errors):
                 status = main(["algorithm", "--root", str(root), "--source", "src/run.py",
                                "--function", "run", "--semantic-facts", "--graph-output",
-                               str(graph_output), "--graph-version", "2.3.9"])
+                               str(graph_output), "--graph-version", "2.3.9", "--store", str(database)])
 
             self.assertEqual(status, 2, errors.getvalue())
             result = json.loads(output.getvalue())
@@ -132,6 +135,52 @@ class AlgorithmCliTests(unittest.TestCase):
             self.assertIn("GRAPH_INDEX_FRESHNESS_UNVERIFIED",
                           {item["code"] for item in bundle["coverage"][0]["diagnostics"]})
             self.assertTrue(result["semantic_validation"]["valid"], result["semantic_validation"]["diagnostics"])
+            with sqlite3.connect(database) as connection:
+                archive = connection.execute("SELECT payload FROM semantic_entity_archives WHERE scope_id=?",
+                    (result["semantic_entity_store"]["scopeId"],)).fetchone()
+            entity_model = json.loads(archive[0])
+            views = [item["implementationView"] for item in entity_model["sourceMappings"]
+                     if "implementationView" in item]
+            self.assertEqual(len(views), 1)
+            self.assertEqual(views[0]["algorithm"]["problem"], "run")
+            self.assertEqual(views[0]["graphToolResult"], graph_document)
+            self.assertTrue(any(item.get("toolName") == "code-review-graph"
+                                for item in entity_model["evidence"]))
+            algorithm_evidence_ids = {item["evidenceId"]
+                                      for item in views[0]["semanticFactBundle"]["evidence"]}
+            self.assertTrue(algorithm_evidence_ids <= {item["evidenceId"] for item in entity_model["evidence"]})
+            changed_graph = {**graph_document, "result_count": 2,
+                             "results": graph_document["results"] + [{"kind": "Function",
+                                 "name": "extra", "qualified_name": "extra", "file_path": "src/parse.py",
+                                 "line_start": 3, "line_end": 4,
+                                 "call_site": {"line": 2, "file": "src/run.py"}}]}
+            graph_output.write_text(json.dumps(changed_graph), encoding="utf-8")
+            output = io.StringIO()
+            with contextlib.redirect_stdout(output), contextlib.redirect_stderr(io.StringIO()):
+                status = main(["algorithm", "--root", str(root), "--source", "src/run.py",
+                               "--function", "run", "--semantic-facts", "--graph-output",
+                               str(graph_output), "--graph-version", "2.3.9", "--store", str(database)])
+            self.assertEqual(status, 2)
+            with sqlite3.connect(database) as connection:
+                archive = connection.execute("SELECT payload FROM semantic_entity_archives WHERE scope_id=?",
+                    (result["semantic_entity_store"]["scopeId"],)).fetchone()
+            entity_model = json.loads(archive[0])
+            views = [item["implementationView"] for item in entity_model["sourceMappings"]
+                     if "implementationView" in item]
+            self.assertEqual({json.dumps(item["graphToolResult"], sort_keys=True) for item in views},
+                             {json.dumps(graph_document, sort_keys=True), json.dumps(changed_graph, sort_keys=True)})
+            queried = io.StringIO()
+            with contextlib.redirect_stdout(queried), contextlib.redirect_stderr(io.StringIO()):
+                status = main(["entities", "--root", str(root), "--select", "run", "--store", str(database),
+                               "--format", "json"])
+            self.assertEqual(status, 0)
+            entity_response = json.loads(queried.getvalue())
+            queried_views = [item["implementationView"] for item in entity_response["entity"]["sourceMappings"]
+                             if "implementationView" in item]
+            self.assertEqual({json.dumps(item["graphToolResult"], sort_keys=True) for item in queried_views},
+                             {json.dumps(graph_document, sort_keys=True), json.dumps(changed_graph, sort_keys=True)})
+            self.assertTrue(algorithm_evidence_ids <= {item["evidenceId"]
+                for item in entity_response["entity"]["evidence"]})
 
     def test_cli_rejects_source_paths_that_escape_the_project_root(self):
         with tempfile.TemporaryDirectory() as temporary, tempfile.TemporaryDirectory() as outside:
