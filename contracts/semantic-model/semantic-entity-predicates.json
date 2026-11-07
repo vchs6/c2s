@@ -1,0 +1,17 @@
+{
+  "version": "1.0.0",
+  "profile": "semantic-entity-model-1",
+  "predicates": [
+    {"predicateId": "defines", "subjectKinds": ["Project", "Module", "Capability"], "targetKinds": ["Module", "Capability", "DataEntity", "ComputationEntity", "ExternalActor", "TestEntity"]},
+    {"predicateId": "groups", "subjectKinds": ["Project", "Module", "Capability"], "targetKinds": ["Capability", "DataEntity", "ComputationEntity"]},
+    {"predicateId": "contains", "subjectKinds": ["Project", "Module", "Capability", "DataEntity"], "targetKinds": ["Module", "Capability", "DataEntity", "ComputationEntity", "TestEntity"]},
+    {"predicateId": "belongs_to", "subjectKinds": ["Module", "Capability", "DataEntity", "ComputationEntity", "TestEntity"], "targetKinds": ["Project", "Module", "Capability"]},
+    {"predicateId": "depends_on", "subjectKinds": ["Capability", "DataEntity", "ComputationEntity"], "targetKinds": ["Capability", "DataEntity", "ComputationEntity", "ExternalActor"]},
+    {"predicateId": "uses", "subjectKinds": ["ComputationEntity"], "targetKinds": ["DataEntity", "ExternalActor", "ComputationEntity"]},
+    {"predicateId": "produces", "subjectKinds": ["ComputationEntity"], "targetKinds": ["DataEntity"]},
+    {"predicateId": "transforms", "subjectKinds": ["ComputationEntity"], "targetKinds": ["DataEntity"]},
+    {"predicateId": "interacts_with", "subjectKinds": ["Capability", "ComputationEntity"], "targetKinds": ["ExternalActor"]},
+    {"predicateId": "realized_by", "subjectKinds": ["Capability", "DataEntity", "ComputationEntity"], "targetKinds": []},
+    {"predicateId": "verified_by", "subjectKinds": ["Capability", "DataEntity", "ComputationEntity"], "targetKinds": ["TestEntity"]}
+  ]
+}

@@ -22,6 +22,11 @@ _CATALOG_MANIFEST_PATH = _ROOT / "contracts" / "semantic-model" / "catalog-manif
 _SEMANTIC_TYPES_PATH = _ROOT / "contracts" / "semantic-model" / "semantic-types.json"
 _SEMANTIC_PREDICATES_PATH = _ROOT / "contracts" / "semantic-model" / "semantic-predicates.json"
 _SEMANTIC_CATALOG_MANIFEST_PATH = _ROOT / "contracts" / "semantic-model" / "semantic-catalog-manifest.json"
+_SEMANTIC_ENTITY_SCHEMA_PATH = _ROOT / "contracts" / "semantic-model" / "semantic-entity-model.schema.json"
+_SEMANTIC_ENTITY_TYPES_PATH = _ROOT / "contracts" / "semantic-model" / "semantic-entity-types.json"
+_SEMANTIC_ENTITY_PREDICATES_PATH = _ROOT / "contracts" / "semantic-model" / "semantic-entity-predicates.json"
+_SEMANTIC_ENTITY_MANIFEST_PATH = _ROOT / "contracts" / "semantic-model" / "semantic-entity-catalog-manifest.json"
+_TRUSTED_SEMANTIC_ENTITY_MANIFEST_SHA256 = "08f672d89a256e1c9a45e17b3a1dafc42e990a5eb45c5922b4913fbac4681bb1"
 _TRUSTED_MANIFEST_SHA256 = "34e533b34af5fdb135e2fd8cea22de95a964b702b714619f314a30bd4cd49c2b"
 _TRUSTED_SEMANTIC_MANIFEST_SHA256 = "35c99a715a99e78dbe43290fcbcc342d655241f35f3724d311c7765d4b66c659"
 _M1_SUPPORTED_KINDS = {"Project", "PackageSpecification", "NativeWorkspace", "SourceDeclaration"}
@@ -961,4 +966,221 @@ def validate_model(document: dict, catalogs: dict, source_observations: dict | N
     result["valid"] = True
     result["consistency"] = "conflicting" if any(item["severity"] == "conflict"
                                                   for item in conflict_diagnostics) else "undetermined"
+    return result
+
+
+def semantic_entity_model_catalogs() -> dict:
+    """Load the pinned entity types, relation predicates, and wire schema."""
+    return {"types": json.loads(_SEMANTIC_ENTITY_TYPES_PATH.read_text(encoding="utf-8")),
+            "predicates": json.loads(_SEMANTIC_ENTITY_PREDICATES_PATH.read_text(encoding="utf-8")),
+            "schema": json.loads(_SEMANTIC_ENTITY_SCHEMA_PATH.read_text(encoding="utf-8"))}
+
+
+def _validate_semantic_entity_catalogs() -> tuple[dict | None, list[dict]]:
+    try:
+        catalogs = semantic_entity_model_catalogs()
+        manifest = json.loads(_SEMANTIC_ENTITY_MANIFEST_PATH.read_text(encoding="utf-8"))
+    except (OSError, ValueError) as error:
+        return None, [_diagnostic("catalog", "ENTITY_CATALOG_INVALID",
+                                  f"语义实体目录无法读取：{type(error).__name__}。")]
+    expected_files = {_SEMANTIC_ENTITY_TYPES_PATH.name: catalogs["types"],
+                      _SEMANTIC_ENTITY_PREDICATES_PATH.name: catalogs["predicates"],
+                      _SEMANTIC_ENTITY_SCHEMA_PATH.name: catalogs["schema"]}
+    expected_digests = {name: _canonical_digest(value) for name, value in expected_files.items()}
+    if (_canonical_digest(manifest) != _TRUSTED_SEMANTIC_ENTITY_MANIFEST_SHA256
+            or manifest.get("version") != "1.0.0" or manifest.get("profile") != "semantic-entity-model-1"
+            or manifest.get("ruleSetId") != "semantic-entity-model-1.0.0"
+            or manifest.get("digests") != expected_digests):
+        return None, [_diagnostic("catalog", "ENTITY_CATALOG_DIGEST_MISMATCH",
+                                  "语义实体目录清单与版本化目录内容不一致。")]
+    try:
+        Draft202012Validator.check_schema(catalogs["schema"])
+    except SchemaError as error:
+        return None, [_diagnostic("catalog", "ENTITY_SCHEMA_INVALID",
+                                  f"语义实体结构模式无效：{type(error).__name__}。")]
+    kinds = [item.get("typeId") for item in catalogs["types"].get("types", [])]
+    predicates = [item.get("predicateId") for item in catalogs["predicates"].get("predicates", [])]
+    schema_kinds = catalogs["schema"].get("$defs", {}).get("entityRef", {}).get("properties", {}).get("kind", {}).get("enum", [])
+    schema_predicates = catalogs["schema"].get("$defs", {}).get("relation", {}).get("properties", {}).get("predicate", {}).get("enum", [])
+    if (len(set(kinds)) != len(kinds) or len(set(predicates)) != len(predicates)
+            or set(kinds) != set(schema_kinds) or set(predicates) != set(schema_predicates)):
+        return None, [_diagnostic("catalog", "ENTITY_CATALOG_SCHEMA_MISMATCH",
+                                  "类型或关系目录与结构模式枚举不一致。")]
+    kind_set = set(kinds)
+    for predicate in catalogs["predicates"]["predicates"]:
+        if (not predicate.get("subjectKinds") or not set(predicate["subjectKinds"]) <= kind_set
+                or not set(predicate.get("targetKinds", [])) <= kind_set):
+            return None, [_diagnostic("catalog", "ENTITY_PREDICATE_KIND_INVALID",
+                                      "关系谓词引用了未知实体类型或没有合法主体类型。")]
+    return catalogs, []
+
+
+def validate_semantic_entity_model(document: dict) -> dict:
+    """Validate entity-profile structure, identity, evidence and local references."""
+    result = {"valid": False, "stages": {"structure": "not_run", "references": "not_run",
+                                          "invariants": "not_run"}, "diagnostics": []}
+    catalogs, catalog_errors = _validate_semantic_entity_catalogs()
+    if catalog_errors:
+        result["stages"]["structure"] = "fail"
+        result["diagnostics"] = catalog_errors
+        return result
+    schema = catalogs["schema"]
+    errors = sorted(Draft202012Validator(schema).iter_errors(document),
+                    key=lambda error: list(error.absolute_path))
+    if errors:
+        result["stages"]["structure"] = "fail"
+        result["diagnostics"] = [_diagnostic("structure", "ENTITY_CONTRACT_INVALID", error.message,
+            field_path="/" + "/".join(map(str, error.absolute_path))) for error in errors]
+        return result
+    result["stages"]["structure"] = "pass"
+
+    def identity(ref: dict) -> tuple[str, str, str]:
+        item = ref["identity"]
+        return item["authority"], item["domainId"], item["localId"]
+
+    def add_reference_error(code: str, message: str, path: str, record: str | None = None) -> None:
+        diagnostics.append(_diagnostic("references", code, message, field_path=path, record_ref=record))
+
+    diagnostics: list[dict] = []
+    entities: dict[tuple[str, str, str], tuple[str, str]] = {}
+    for index, entity in enumerate(document["entities"]):
+        ref = entity["ref"]
+        key = identity(ref)
+        previous = entities.get(key)
+        if key[1] != document["scopeId"]:
+            add_reference_error("ENTITY_SCOPE_MISMATCH", "实体身份域必须与档案分析范围一致。",
+                                f"/entities/{index}/ref/identity/domainId", f"entity:{index}")
+        if previous is not None:
+            code = "ENTITY_IDENTITY_KIND_CONFLICT" if previous[0] != ref["kind"] else "ENTITY_IDENTITY_DUPLICATE"
+            add_reference_error(code, "同一身份不得重复登记或具有不同实体类型。",
+                                f"/entities/{index}/ref", f"entity:{index}")
+        else:
+            entities[key] = (ref["kind"], f"entity:{index}")
+
+    def check_ref_kind(ref: dict, path: str, record: str) -> None:
+        registered = entities.get(identity(ref))
+        if registered is not None and registered[0] != ref["kind"]:
+            add_reference_error("ENTITY_REF_KIND_MISMATCH", "引用声明的类型与已登记实体类型不一致。",
+                                path, record)
+
+    claim_ids: set[str] = set()
+    for index, claim in enumerate(document["claims"]):
+        claim_id = claim["claimId"]
+        if claim_id in claim_ids:
+            add_reference_error("ENTITY_CLAIM_ID_DUPLICATE", "主张标识必须唯一。",
+                                f"/claims/{index}/claimId", f"claim:{claim_id}")
+        claim_ids.add(claim_id)
+        if identity(claim["subject"]) not in entities:
+            add_reference_error("ENTITY_CLAIM_SUBJECT_MISSING", "主张主体未登记。",
+                                f"/claims/{index}/subject", f"claim:{claim_id}")
+        check_ref_kind(claim["subject"], f"/claims/{index}/subject", f"claim:{claim_id}")
+
+    evidence_ids = [item["evidenceId"] for item in document["evidence"]]
+    evidence_set = set(evidence_ids)
+    if len(evidence_set) != len(evidence_ids):
+        add_reference_error("ENTITY_EVIDENCE_ID_DUPLICATE", "证据标识必须唯一。", "/evidence")
+
+    def check_evidence(ids: list[str], path: str, record: str) -> None:
+        for evidence_id in ids:
+            if evidence_id not in evidence_set:
+                add_reference_error("ENTITY_EVIDENCE_MISSING", "引用的证据未登记。",
+                                    path, record)
+
+    for index, claim in enumerate(document["claims"]):
+        check_evidence(claim["evidenceIds"], f"/claims/{index}/evidenceIds",
+                       f"claim:{claim['claimId']}")
+
+    attribute_ids: set[tuple[tuple[str, str, str], str]] = set()
+    for index, entity in enumerate(document["entities"]):
+        owner = identity(entity["ref"])
+        for attribute_index, attribute in enumerate(entity["attributes"]):
+            key = (owner, attribute["attributeId"])
+            if key in attribute_ids:
+                add_reference_error("ENTITY_ATTRIBUTE_ID_DUPLICATE", "同一实体内属性标识必须唯一。",
+                                    f"/entities/{index}/attributes/{attribute_index}/attributeId")
+            attribute_ids.add(key)
+            value_range = attribute["valueRange"]
+            range_evidence = value_range.get("evidenceIds", [])
+            check_evidence(attribute["evidenceIds"] + range_evidence,
+                           f"/entities/{index}/attributes/{attribute_index}/evidenceIds",
+                           f"attribute:{attribute['attributeId']}")
+            if value_range["kind"] != "unknown" and not range_evidence:
+                add_reference_error("ENTITY_VALUE_RANGE_EVIDENCE_MISSING",
+                    "已声明的值域必须关联至少一项证据。",
+                    f"/entities/{index}/attributes/{attribute_index}/valueRange/evidenceIds",
+                    f"attribute:{attribute['attributeId']}")
+            target = value_range.get("target")
+            if target is not None and identity(target) not in entities:
+                add_reference_error("ENTITY_VALUE_RANGE_TARGET_MISSING", "值域引用目标未登记。",
+                    f"/entities/{index}/attributes/{attribute_index}/valueRange/target")
+            elif target is not None:
+                check_ref_kind(target, f"/entities/{index}/attributes/{attribute_index}/valueRange/target",
+                               f"attribute:{attribute['attributeId']}")
+
+    relation_ids: set[str] = set()
+    predicates_by_id = {item["predicateId"]: item for item in catalogs["predicates"]["predicates"]}
+    for index, relation in enumerate(document["relations"]):
+        relation_id = relation["relationId"]
+        if relation_id in relation_ids:
+            add_reference_error("ENTITY_RELATION_ID_DUPLICATE", "关系标识必须唯一。",
+                                f"/relations/{index}/relationId")
+        relation_ids.add(relation_id)
+        if identity(relation["subject"]) not in entities:
+            add_reference_error("ENTITY_RELATION_ENDPOINT_MISSING", "关系主体未登记。",
+                                f"/relations/{index}/subject", f"relation:{relation_id}")
+        check_ref_kind(relation["subject"], f"/relations/{index}/subject", f"relation:{relation_id}")
+        target = relation["target"]
+        target_missing = (identity(target) not in entities if "identity" in target
+                          else target["claimId"] not in claim_ids)
+        if target_missing:
+            add_reference_error("ENTITY_RELATION_ENDPOINT_MISSING", "关系目标实体或事实主张未登记。",
+                                f"/relations/{index}/target", f"relation:{relation_id}")
+        elif "identity" in target:
+            check_ref_kind(target, f"/relations/{index}/target", f"relation:{relation_id}")
+        predicate = predicates_by_id[relation["predicate"]]
+        subject_kind = entities.get(identity(relation["subject"]), (None,))[0]
+        target_kind = (entities.get(identity(target), (None,))[0] if "identity" in target
+                       else "FactClaim")
+        if (subject_kind not in predicate["subjectKinds"]
+                or (target_kind != "FactClaim" and target_kind not in predicate.get("targetKinds", []))):
+            add_reference_error("ENTITY_RELATION_KIND_INVALID", "关系谓词不允许此主体和目标类型。",
+                                f"/relations/{index}", f"relation:{relation_id}")
+        check_evidence(relation["evidenceIds"], f"/relations/{index}/evidenceIds", f"relation:{relation_id}")
+
+    candidate_ids: set[str] = set()
+    for index, candidate in enumerate(document["continuityCandidates"]):
+        candidate_id = candidate["candidateId"]
+        if candidate_id in candidate_ids:
+            add_reference_error("ENTITY_CONTINUITY_ID_DUPLICATE", "连续性候选标识必须唯一。",
+                                f"/continuityCandidates/{index}/candidateId")
+        candidate_ids.add(candidate_id)
+        if identity(candidate["previous"]) == identity(candidate["current"]):
+            add_reference_error("ENTITY_CONTINUITY_SELF_LINK", "连续性候选必须区分来源身份。",
+                                f"/continuityCandidates/{index}")
+        if identity(candidate["current"]) not in entities:
+            add_reference_error("ENTITY_CONTINUITY_CURRENT_MISSING", "连续性候选的当前实体未登记。",
+                                f"/continuityCandidates/{index}/current")
+        else:
+            check_ref_kind(candidate["current"], f"/continuityCandidates/{index}/current",
+                           f"continuity:{candidate_id}")
+        check_evidence(candidate.get("evidenceIds", []),
+                       f"/continuityCandidates/{index}/evidenceIds", f"continuity:{candidate_id}")
+
+    coverage_ids: set[str] = set()
+    for index, coverage in enumerate(document["coverage"]):
+        coverage_id = coverage["coverageId"]
+        if coverage_id in coverage_ids:
+            add_reference_error("ENTITY_COVERAGE_ID_DUPLICATE", "覆盖标识必须唯一。",
+                                f"/coverage/{index}/coverageId")
+        coverage_ids.add(coverage_id)
+        if identity(coverage["entity"]) not in entities:
+            add_reference_error("ENTITY_COVERAGE_ENTITY_MISSING", "覆盖目标实体未登记。",
+                                f"/coverage/{index}/entity", f"coverage:{coverage_id}")
+        else:
+            check_ref_kind(coverage["entity"], f"/coverage/{index}/entity", f"coverage:{coverage_id}")
+
+    result["stages"]["references"] = "fail" if diagnostics else "pass"
+    result["stages"]["invariants"] = "fail" if diagnostics else "pass"
+    result["diagnostics"] = diagnostics
+    result["valid"] = not diagnostics
     return result

@@ -1,0 +1,128 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:c2s:semantic-entity-model:1.0.0",
+  "title": "C2S 语义实体模型档案",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["version", "profile", "scopeId", "entities", "claims", "relations", "continuityCandidates", "evidence", "coverage"],
+  "properties": {
+    "version": {"const": "1.0.0"},
+    "profile": {"const": "semantic-entity-model-1"},
+    "scopeId": {"$ref": "#/$defs/id"},
+    "entities": {"type": "array", "items": {"$ref": "#/$defs/entity"}},
+    "claims": {"type": "array", "items": {"$ref": "#/$defs/claim"}},
+    "relations": {"type": "array", "items": {"$ref": "#/$defs/relation"}},
+    "continuityCandidates": {"type": "array", "items": {"$ref": "#/$defs/continuityCandidate"}},
+    "evidence": {"type": "array", "items": {"$ref": "#/$defs/evidence"}},
+    "coverage": {"type": "array", "items": {"$ref": "#/$defs/coverage"}}
+  },
+  "$defs": {
+    "id": {"type": "string", "minLength": 1},
+    "identity": {
+      "type": "object", "additionalProperties": false,
+      "required": ["authority", "domainId", "localId"],
+      "properties": {"authority": {"$ref": "#/$defs/id"}, "domainId": {"$ref": "#/$defs/id"}, "localId": {"$ref": "#/$defs/id"}}
+    },
+    "entityRef": {
+      "type": "object", "additionalProperties": false,
+      "required": ["identity", "kind"],
+      "properties": {
+        "identity": {"$ref": "#/$defs/identity"},
+        "kind": {"enum": ["Project", "Module", "Capability", "DataEntity", "ComputationEntity", "ExternalActor", "TestEntity"]}
+      }
+    },
+    "entity": {
+      "type": "object", "additionalProperties": false,
+      "required": ["ref", "name", "aliases", "description", "attributes", "sourceKeys", "observationViews"],
+      "properties": {
+        "ref": {"$ref": "#/$defs/entityRef"}, "name": {"$ref": "#/$defs/id"},
+        "aliases": {"type": "array", "uniqueItems": true, "items": {"$ref": "#/$defs/id"}},
+        "description": {"type": "string"},
+        "attributes": {"type": "array", "items": {"$ref": "#/$defs/attribute"}},
+        "sourceKeys": {"type": "array", "uniqueItems": true, "items": {"$ref": "#/$defs/id"}},
+        "observationViews": {"type": "array", "uniqueItems": true, "items": {"enum": ["E0", "E1", "E2", "E3", "E4"]}}
+      }
+    },
+    "attribute": {
+      "type": "object", "additionalProperties": false,
+      "required": ["attributeId", "name", "semanticType", "valueRange", "cardinality", "constraints", "evidenceIds"],
+      "properties": {
+        "attributeId": {"$ref": "#/$defs/id"}, "name": {"$ref": "#/$defs/id"},
+        "semanticType": {"$ref": "#/$defs/id"}, "implementationType": {"type": "string"},
+        "valueRange": {"$ref": "#/$defs/valueRange"},
+        "cardinality": {"enum": ["one", "optional", "many", "zero_or_more"]},
+        "constraints": {"type": "array", "items": {"type": "string"}},
+        "evidenceIds": {"type": "array", "uniqueItems": true, "items": {"$ref": "#/$defs/id"}},
+        "claimStatus": {"enum": ["confirmed", "provisional", "conflicting"]}
+      }
+    },
+    "valueRange": {
+      "type": "object", "additionalProperties": false,
+      "required": ["kind"],
+      "properties": {
+        "kind": {"enum": ["unknown", "finite_set", "interval", "format", "reference", "predicate"]},
+        "values": {"type": "array", "items": {}}, "minimum": {}, "maximum": {},
+        "format": {"type": "string"}, "pattern": {"type": "string"},
+        "target": {"$ref": "#/$defs/entityRef"},
+        "evidenceIds": {"type": "array", "uniqueItems": true, "items": {"$ref": "#/$defs/id"}}
+      },
+      "allOf": [{"if": {"properties": {"kind": {"const": "finite_set"}}, "required": ["kind"]},
+                 "then": {"required": ["values", "evidenceIds"]}}]
+    },
+    "relation": {
+      "type": "object", "additionalProperties": false,
+      "required": ["relationId", "predicate", "subject", "target", "evidenceIds", "condition"],
+      "properties": {
+        "relationId": {"$ref": "#/$defs/id"},
+        "predicate": {"enum": ["defines", "groups", "contains", "belongs_to", "depends_on", "uses", "produces", "transforms", "interacts_with", "realized_by", "verified_by"]},
+        "subject": {"$ref": "#/$defs/entityRef"},
+        "target": {"oneOf": [{"$ref": "#/$defs/entityRef"}, {"$ref": "#/$defs/claimRef"}]},
+        "evidenceIds": {"type": "array", "uniqueItems": true, "items": {"$ref": "#/$defs/id"}},
+        "condition": {"type": "object"},
+        "claimStatus": {"enum": ["confirmed", "provisional", "conflicting"]}
+      }
+    },
+    "claim": {
+      "type": "object", "additionalProperties": false,
+      "required": ["claimId", "subject", "predicate", "value", "evidenceIds", "claimStatus"],
+      "properties": {
+        "claimId": {"$ref": "#/$defs/id"}, "subject": {"$ref": "#/$defs/entityRef"},
+        "predicate": {"$ref": "#/$defs/id"}, "value": {},
+        "evidenceIds": {"type": "array", "uniqueItems": true, "items": {"$ref": "#/$defs/id"}},
+        "claimStatus": {"enum": ["confirmed", "provisional", "conflicting"]}
+      }
+    },
+    "claimRef": {
+      "type": "object", "additionalProperties": false,
+      "required": ["claimId"], "properties": {"claimId": {"$ref": "#/$defs/id"}}
+    },
+    "continuityCandidate": {
+      "type": "object", "additionalProperties": false,
+      "required": ["candidateId", "previous", "current", "status", "reason"],
+      "properties": {
+        "candidateId": {"$ref": "#/$defs/id"}, "previous": {"$ref": "#/$defs/entityRef"},
+        "current": {"$ref": "#/$defs/entityRef"},
+        "status": {"enum": ["continuity_unresolved", "mapped", "rejected"]},
+        "reason": {"type": "string", "minLength": 1},
+        "evidenceIds": {"type": "array", "items": {"$ref": "#/$defs/id"}}
+      }
+    },
+    "evidence": {
+      "type": "object", "additionalProperties": false,
+      "required": ["evidenceId", "source", "description"],
+      "properties": {"evidenceId": {"$ref": "#/$defs/id"}, "source": {"$ref": "#/$defs/id"}, "description": {"type": "string"}}
+    },
+    "coverage": {
+      "type": "object", "additionalProperties": false,
+      "required": ["coverageId", "entity", "selector", "status", "inputFingerprint", "analyzerVersion"],
+      "properties": {
+        "coverageId": {"$ref": "#/$defs/id"}, "entity": {"$ref": "#/$defs/entityRef"},
+        "selector": {"$ref": "#/$defs/id"},
+        "status": {"enum": ["obtained", "not_acquired", "unsupported", "not_applicable"]},
+        "inputFingerprint": {"$ref": "#/$defs/id"}, "analyzerVersion": {"$ref": "#/$defs/id"},
+        "presentationStatus": {"enum": ["included", "not_expanded"]},
+        "freshness": {"enum": ["current", "stale", "review_required"]}
+      }
+    }
+  }
+}

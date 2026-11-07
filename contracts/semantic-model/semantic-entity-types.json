@@ -1,0 +1,13 @@
+{
+  "version": "1.0.0",
+  "profile": "semantic-entity-model-1",
+  "types": [
+    {"typeId": "Project", "description": "被分析的软件项目"},
+    {"typeId": "Module", "description": "按职责组织语义实体的软件模块"},
+    {"typeId": "Capability", "description": "项目提供的能力或职责"},
+    {"typeId": "DataEntity", "description": "项目创建、读取、维护或交换的信息概念"},
+    {"typeId": "ComputationEntity", "description": "项目执行的计算、操作或业务能力"},
+    {"typeId": "ExternalActor", "description": "与项目交互的外部参与者"},
+    {"typeId": "TestEntity", "description": "具有场景、断言或验证目标的测试对象"}
+  ]
+}
