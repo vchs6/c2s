@@ -144,6 +144,13 @@
             "sourceObservations": {"type": "object"},
             "artifacts": {"type": "array"},
             "graphToolResult": {"oneOf": [{"type": "object"}, {"type": "null"}]},
+            "pseudocode": {"type": "object", "required": ["schema_version", "format", "function", "text",
+              "complete", "evidence_refs", "omissions", "claim_scope"], "properties": {
+                "schema_version": {"const": "1.0.0"}, "format": {"const": "c2s-pseudocode-1"},
+                "function": {"type": "string"}, "text": {"type": "string"}, "complete": {"const": false},
+                "evidence_refs": {"type": "array", "items": {"type": "string"}},
+                "omissions": {"type": "array", "items": {"type": "object"}},
+                "claim_scope": {"const": "source_mapped_partial_pseudocode"}}},
             "completeness": {"const": "partial_static_syntax_projection"}
           }
         }

@@ -9,6 +9,7 @@ from __future__ import annotations
 import ast
 import hashlib
 import json
+import re
 from collections import Counter
 from pathlib import Path
 
@@ -716,3 +717,62 @@ def validate_algorithms(document: object) -> list[dict[str, str]]:
             diagnostics.append(_diagnostic("DUPLICATE_ALGORITHM_ID", f"algorithms[{index}].algorithm_id", algorithm_id))
         seen_ids.add(algorithm_id)
     return sorted(diagnostics, key=lambda item: (item["path"], item["code"], item["message"]))
+
+
+def render_pseudocode(algorithm: dict, source: bytes) -> dict:
+    """Render a conservative readable view while retaining source evidence and gaps."""
+    body = algorithm.get("body", {})
+    regions = {item["region_id"]: item.get("parent_region_id") for item in body.get("regions", [])}
+
+    def depth(region_id: str) -> int:
+        result, seen = 0, set()
+        while region_id in regions and regions[region_id] is not None and region_id not in seen:
+            seen.add(region_id)
+            result += 1
+            region_id = regions[region_id]
+        return result
+
+    translations = {"select": "如果", "loop": "循环", "return": "返回", "raise": "抛出",
+                    "handle": "处理异常", "resource": "管理资源", "call": "执行", "assign": "计算并赋值",
+                    "bind": "定义", "compute": "计算", "sequence": "继续", "opaque": "未解析步骤"}
+    lines = []
+    references = set()
+    steps = sorted(body.get("steps", []), key=lambda item: (
+            item.get("source", {}).get("start_byte", 0), item.get("source", {}).get("end_byte", 0)))
+    false_branch_targets = {edge.get("to_step") for edge in body.get("control_edges", [])
+                            if edge.get("kind") == "branch_false"}
+    for step in steps:
+        if step.get("step_id") in false_branch_targets:
+            lines.append("  " * max(0, depth(step.get("region_id", "r0")) - 1) + "否则")
+        span = step.get("source", {})
+        raw = source[span.get("start_byte", 0):span.get("end_byte", 0)].decode("utf-8", errors="replace")
+        statement = next((line.strip() for line in raw.splitlines() if line.strip()), "")
+        kind = step.get("kind", "opaque")
+        if kind in {"select", "loop"}:
+            statement = statement.splitlines()[0].strip()
+            if kind == "select" and statement.startswith("match"):
+                statement = "按值匹配 " + statement.removeprefix("match").strip()
+                keyword = ""
+            elif kind == "select":
+                keyword = "if"
+            elif statement.startswith("loop"):
+                statement = "无限循环"
+                keyword = ""
+            else:
+                keyword = "while" if statement.startswith("while") else "for"
+            statement = re.sub(rf"^{keyword}\b\s*", "", statement)
+            statement = re.sub(r"\s*\{\s*$", "", statement)
+            statement = re.sub(r"\s*:\s*$", "", statement)
+        elif kind == "return":
+            statement = re.sub(r"^return\b", "", statement).strip().rstrip(";") or "无值"
+        elif kind == "raise":
+            statement = re.sub(r"^raise\b", "", statement).strip() or "当前异常"
+        elif kind == "call":
+            statement = re.sub(r";\s*$", "", statement)
+        prefix = translations.get(kind, "未解析步骤")
+        lines.append("  " * depth(step.get("region_id", "r0")) + f"{prefix} {statement}".rstrip())
+        references.update(step.get("evidence_refs", []))
+    return {"schema_version": "1.0.0", "format": "c2s-pseudocode-1", "function": algorithm.get("problem"),
+            "text": "\n".join(lines), "complete": False,
+            "evidence_refs": sorted(references), "omissions": list(algorithm.get("omissions", [])),
+            "claim_scope": "source_mapped_partial_pseudocode"}

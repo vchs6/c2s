@@ -163,6 +163,44 @@ class AlgorithmCliTests(unittest.TestCase):
             self.assertTrue(result["algorithm"]["omissions"])
             self.assertEqual(result["validation"]["diagnostics"], [])
 
+    def test_function_query_returns_rendered_pseudocode_for_python_and_rust(self):
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            (root / "main.py").write_text(
+                "def choose(flag):\n    if flag:\n        return 1\n    return 0\n", encoding="utf-8")
+            (root / "lib.rs").write_text(
+                "fn answer(flag: bool) -> i32 { if flag { return 1; } 0 }\n", encoding="utf-8")
+            output, errors = io.StringIO(), io.StringIO()
+            with contextlib.redirect_stdout(output), contextlib.redirect_stderr(errors):
+                status = main(["query", "--root", str(root), "--select", "function:choose",
+                               "--format", "json"])
+            self.assertEqual(status, 0, errors.getvalue())
+            result = json.loads(output.getvalue())
+            choose = next(item for item in result["pseudocode"] if item["function"] == "choose")
+            self.assertIn("如果 flag", choose["text"])
+            self.assertIn("返回 1", choose["text"])
+            self.assertTrue(choose["evidence_refs"])
+            self.assertFalse(choose["complete"])
+            output = io.StringIO()
+            with contextlib.redirect_stdout(output), contextlib.redirect_stderr(io.StringIO()):
+                status = main(["query", "--root", str(root), "--select", "function:answer",
+                               "--format", "json"])
+            self.assertEqual(status, 0)
+            answer = next(item for item in json.loads(output.getvalue())["pseudocode"]
+                          if item["function"] == "answer")
+            self.assertIn("如果 flag", answer["text"])
+            self.assertIn("返回 1", answer["text"])
+            (root / "main.py").write_text(
+                "def choose(flag):\n    if flag:\n        return 1\n    else:\n        return 2\n", encoding="utf-8")
+            output = io.StringIO()
+            with contextlib.redirect_stdout(output), contextlib.redirect_stderr(io.StringIO()):
+                status = main(["query", "--root", str(root), "--select", "function:choose",
+                               "--format", "json"])
+            self.assertEqual(status, 0)
+            choose = next(item for item in json.loads(output.getvalue())["pseudocode"]
+                          if item["function"] == "choose")
+            self.assertIn("否则", choose["text"])
+
     def test_cli_can_return_a_valid_semantic_fact_bundle_for_one_algorithm(self):
         with tempfile.TemporaryDirectory() as temporary:
             root = Path(temporary)
@@ -205,6 +243,9 @@ class AlgorithmCliTests(unittest.TestCase):
             entity_model = json.loads(archive[0])
             self.assertTrue(any(item["ref"]["kind"] == "ComputationEntity" for item in entity_model["entities"]))
             self.assertTrue(any("implementationView" in item for item in entity_model["sourceMappings"]))
+            stored_views = [item["implementationView"] for item in entity_model["sourceMappings"]
+                            if "implementationView" in item]
+            self.assertTrue(stored_views[0]["pseudocode"]["text"])
             self.assertNotIn("sessions", tables)
 
     def test_cli_parses_code_review_graph_json_for_source_mapped_call_facts(self):
@@ -279,6 +320,7 @@ class AlgorithmCliTests(unittest.TestCase):
             entity_response = json.loads(queried.getvalue())
             queried_views = [item["implementationView"] for item in entity_response["entity"]["sourceMappings"]
                              if "implementationView" in item]
+            self.assertTrue(all(item["pseudocode"]["text"] for item in queried_views))
             self.assertEqual({json.dumps(item["graphToolResult"], sort_keys=True) for item in queried_views},
                              {json.dumps(graph_document, sort_keys=True), json.dumps(changed_graph, sort_keys=True)})
             self.assertTrue(algorithm_evidence_ids <= {item["evidenceId"]

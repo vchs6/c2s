@@ -8,7 +8,8 @@ from pathlib import Path
 from uuid import NAMESPACE_URL, uuid5
 
 from .algorithm import (_index_python_functions, _index_rust_functions,
-                        extract_python_algorithm, extract_rust_algorithm, validate_algorithms)
+                        extract_python_algorithm, extract_rust_algorithm, render_pseudocode,
+                        validate_algorithms)
 from .acquisition import scan_project
 from .graph_tool_adapter import parse_code_review_graph_response
 from .query import (normalize_request, query_project, result_to_dict,
@@ -60,6 +61,7 @@ def _persist_semantic_entity_archive(root: Path, database: Path, implementation_
         artifact = implementation_view.get("graphToolResult")
         evidence_id = "evidence:algorithm:" + view_digest
         view = {"algorithm": implementation_view["algorithm"],
+                "pseudocode": implementation_view["pseudocode"],
                 "semanticFactBundle": implementation_view["semanticFactBundle"],
                 "sourceObservations": implementation_view["sourceObservations"],
                 "artifacts": implementation_view["artifacts"], "graphToolResult": artifact,
@@ -155,6 +157,26 @@ def main(argv: list[str] | None = None) -> int:
             output_format = args.format or "markdown"
             result = query_project(root, selectors, cache)
             response = result_to_dict(result)
+            function_facts = [fact for fact in result.facts if fact.kind == "function" and
+                              any(selector.startswith("function:") and selector.removeprefix("function:")
+                                  in {fact.name, f"{fact.owner}.{fact.name}"} for selector in selectors)]
+            if function_facts:
+                pseudocode_views = []
+                for fact in function_facts:
+                    try:
+                        source_bytes = (root / fact.path).read_bytes()
+                        if fact.path.endswith(".py"):
+                            extracted = extract_python_algorithm(source_bytes, fact.path, fact.name,
+                                                                 start_byte=fact.start_byte)
+                        else:
+                            extracted = extract_rust_algorithm(source_bytes, fact.path, fact.name,
+                                                               start_byte=fact.start_byte)
+                        pseudocode_views.append({**render_pseudocode(extracted["algorithm"], source_bytes),
+                            "path": fact.path, "function": fact.name, "owner": fact.owner})
+                    except (OSError, ValueError) as error:
+                        pseudocode_views.append({"path": fact.path, "function": fact.name,
+                            "error": f"ANALYSIS_FAILED:{error}", "complete": False})
+                response["pseudocode"] = pseudocode_views
             if args.store:
                 workspace_requested = ("workspace-members" in selectors or
                     ("all-supported-facts" in selectors and (root / "Cargo.toml").is_file()))
@@ -167,6 +189,12 @@ def main(argv: list[str] | None = None) -> int:
                     workspace_requested=workspace_requested))
             rendered = (json.dumps(response, ensure_ascii=False, indent=2) + "\n"
                         if output_format == "json" else result_to_markdown(result))
+            if output_format == "markdown" and response.get("pseudocode"):
+                rendered += "\n## 函数伪代码\n"
+                for pseudocode in response["pseudocode"]:
+                    rendered += f"\n### {pseudocode['function']}（{pseudocode['path']}）\n\n```text\n"
+                    rendered += pseudocode.get("text", pseudocode.get("error", "无法构造伪代码"))
+                    rendered += "\n```\n\n伪代码为部分静态投影，缺口和来源证据见结构化结果。\n"
             if args.store and output_format == "markdown":
                 rendered += f"\nSemantic entities: {len(response['semantic_entity_query']['members'])}; "
                 rendered += f"store state: {response['semantic_entity_store']['state']}\n"
@@ -287,6 +315,7 @@ def main(argv: list[str] | None = None) -> int:
                             "source_digest": hashlib.sha256(source_bytes).hexdigest(),
                             "complete": False, "claim_scope": "partial_static_syntax_projection",
                             "algorithm": extracted["algorithm"],
+                            "pseudocode": render_pseudocode(extracted["algorithm"], source_bytes),
                             "validation": {"scope": "structure_only", "diagnostics": diagnostics},
                             "gaps": gaps}
                 if args.semantic_facts:
@@ -315,6 +344,7 @@ def main(argv: list[str] | None = None) -> int:
                     if args.store:
                         response.update(_persist_semantic_entity_archive(root, args.store,
                             {"algorithm": extracted["algorithm"],
+                             "pseudocode": render_pseudocode(extracted["algorithm"], source_bytes),
                              "semanticFactBundle": projection["bundle"],
                              "sourceObservations": projection["sourceObservations"],
                              "artifacts": projection["artifacts"],
