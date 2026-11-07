@@ -56,11 +56,11 @@
 | #7 | `semantic-fact-query` / 逐项结果保留独立状态 | 混合结果 | `define-semantic-fact-query-contracts/tasks.md` 2.1, 3.1 | 分别报告并将总体标为部分，B不能变不存在或完整成功 |
 | #7 | `semantic-fact-query` / 顶层结果不夹带递归内容 | 类成员有循环类型引用 | `define-semantic-fact-query-contracts/tasks.md` 2.1 | 返回本次所需成员顶层事实和必要类型引用，不沿循环递归返回全部类型定义 |
 | #7 | `semantic-fact-query` / 语义完成与持久化结果独立 | 完整回答而保存失败 | `define-semantic-fact-query-contracts/tasks.md` 3.1 | 语义维度完成、持久化维度失败、操作汇总部分，不能丢弃已得事实或声称已保存 |
-| #7 | `semantic-fact-query` / 按请求查询项目类型成员与函数事实 | 从类清单继续查询成员 | `define-semantic-fact-query-contracts/tasks.md` 1.1, 2.1 | 两次请求分别返回各自所需顶层事实，后一次不要求前一次已递归取得所有成员 |
+| #7 | `semantic-fact-query` / 按请求查询语义实体及源码构造视图 | 从类清单继续查询成员 | `define-semantic-fact-query-contracts/tasks.md` 1.1, 2.1 | 两次请求分别返回各自所需顶层事实，后一次不要求前一次已递归取得所有成员 |
 | #7 | `semantic-fact-query` / 同时提供可读报告与结构化数据 | 同一次查询供用户与Skill消费 | `define-semantic-fact-query-contracts/tasks.md` 3.1 | 可读报告和结构数据均保留相同的事实范围与缺口原因，不在其中一种形式虚报完整 |
-| #8 | `lazy-semantic-fact-construction` / 查询触发具体语义构造 | 尚无查询 | `design-lazy-semantic-fact-construction/tasks.md` 1.1 | 不构造具体E0–E4语义内容或后台遍历全仓 |
+| #8 | `lazy-semantic-fact-construction` / 查询触发具体语义构造 | 尚无查询 | `design-lazy-semantic-fact-construction/tasks.md` 1.1 | 不构造实体属性、关系、实现/验证映射或后台遍历全仓 |
 | #8 | `lazy-semantic-fact-construction` / 必要依赖有理由与停止边界 | 混合边界不能解析 | `design-lazy-semantic-fact-construction/tasks.md` 1.1 | 保留已有证据、指出边界缺口并停止该分支，不无限扫描或猜定契约 |
-| #8 | `lazy-semantic-fact-construction` / 共享成果而不重复全量模型 | 两层共享来源 | `design-lazy-semantic-fact-construction/tasks.md` 2.1 | 核有效性和适用后复用该成果，不因层号再次全量模型通读 |
+| #8 | `lazy-semantic-fact-construction` / 共享成果而不重复全量模型 | 两层共享来源 | `design-lazy-semantic-fact-construction/tasks.md` 2.1 | 核有效性和适用后复用该成果，不因共享同一源码证据而重复全量模型通读 |
 | #8 | `lazy-semantic-fact-construction` / 不完备停止不变成功 | 循环与限额同时存在 | `design-lazy-semantic-fact-construction/tasks.md` 1.1, 2.1 | 停止调度并保留未决依赖和限额原因，不因图已去重声称完成 |
 | #8 | `lazy-semantic-fact-construction` / 取消不污染共享成果 | 取消一个共享订阅 | `design-lazy-semantic-fact-construction/tasks.md` 2.1 | 解除该查询订阅，其他查询继续；未核验或发布未定的结果不作有效命中 |
 | #8 | `lazy-semantic-fact-construction` / 查询触发按需分析 | 首次查询尚未分析的函数 | `design-lazy-semantic-fact-construction/tasks.md` 1.1 | 针对该请求开始分析并返回已取得的所需顶层事实；无法取得的部分明确告知原因 |
@@ -85,11 +85,11 @@
 
 ## #3模型/算法逐项继承
 
-#3仍只提供公共领域结构和校验，不把fixture当查询执行器。其query镜像四项已同步ADR-0007，仅维护静态支撑，执行行为归#7/#8。以下原22项仍以原tasks为唯一计划；模型A选型不重开。
+#3原任务记录建模与校验基础。ADR-0012已更新领域模型：语义实体为身份/关系主轴，E0–E4为观察视角；以下旧22项用于追溯原requirements与tasks，不作为旧层级组织轴仍有效的依据。模型与提案对照见`docs/development/reviews/semantic-facts/semantic-entity-proposal-alignment.md`。
 
 | Requirement | 原依据 | 唯一任务 | 未来验收 |
 | --- | --- | --- | --- |
-| semantic-fact-model / 五层语义组织 | [原review-map](../../../openspec/changes/define-layered-semantic-fact-model/review-map.md) | `define-layered-semantic-fact-model/tasks.md` 1.2 | test_catalog_roles_and_layers |
+| semantic-fact-model / E0–E4事实观察视角（已由ADR-0012调整） | [原review-map](../../../openspec/changes/define-layered-semantic-fact-model/review-map.md) | `define-layered-semantic-fact-model/tasks.md` 1.2 | test_catalog_roles_and_layers |
 | semantic-fact-model / 分层不强制包含或细化 | [原review-map](../../../openspec/changes/define-layered-semantic-fact-model/review-map.md) | `define-layered-semantic-fact-model/tasks.md` 1.2,2.2 | test_cross_layer_entry_binding |
 | semantic-fact-model / 单一主体身份与跨层引用 | [原review-map](../../../openspec/changes/define-layered-semantic-fact-model/review-map.md) | `define-layered-semantic-fact-model/tasks.md` 1.1 | test_same_declaration_two_contexts |
 | semantic-fact-model / 显式工程边界与组织关系 | [原review-map](../../../openspec/changes/define-layered-semantic-fact-model/review-map.md) | `define-layered-semantic-fact-model/tasks.md` 1.1,2.2 | test_undecided_project_mapping |

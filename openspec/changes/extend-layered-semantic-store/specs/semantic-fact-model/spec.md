@@ -2,7 +2,7 @@
 
 ### Requirement: 全层存储保留完整语义模型
 
-语义仓库 SHALL 保留`semantic-fact-model-1`所有顶层记录集合（registrations、assessments、facts、evidence、coverage、dependencies、dependencyResolutions、semanticStates、diagnostics、contextDomains、contexts），不得只保存M1子集或将整次查询JSON作为唯一记录。规范化与去重 MUST 保持事实主张、层级谓词、主体身份、条件、证据角色、派生前提、覆盖、上下文和所有内部引用；不同层关联不得被转换为隐式包含关系。
+兼容仓储 SHALL 保留旧`semantic-fact-model-1`所有顶层记录集合（registrations、assessments、facts、evidence、coverage、dependencies、dependencyResolutions、semanticStates、diagnostics、contextDomains、contexts），不得只保存M1子集或将整次查询JSON作为唯一记录。规范化与去重 MUST 保持事实主张、观察视角标注、主体身份、条件、证据角色、派生前提、覆盖、上下文和所有内部引用；旧记录迁移不得把观察视角转换为实体包含关系。
 
 #### Scenario: 持久化算法事实
 

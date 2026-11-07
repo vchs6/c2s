@@ -1,5 +1,9 @@
 # Design
 
+## 当前领域模型基准
+
+当前领域模型基准：完整就绪审核包含全部非归档提案与ADR-0012的逐项对照，要求将冲突收敛到实体重构提案或说明历史/无影响。检查矩阵见`docs/development/reviews/semantic-facts/semantic-entity-proposal-alignment.md`。
+
 ## Context
 
 用户显式授权依序持续规划，自动触发保持关闭。整体候选见overall-review.md、验收矩阵和待决清单。已确认规格约束不重开，新代理建议不冒充批准。

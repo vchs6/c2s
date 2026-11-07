@@ -1,8 +1,12 @@
 # Design
 
+## 当前领域模型基准
+
+当前兼容边界：本提案建成的`semantic-fact-model-1`仓储保留为旧档案兼容实现及迁移输入；实体档案成为唯一权威写入、旧档案只读的切换尚待`redesign-semantic-entity-domain-model`的6.2/6.3完成，不在此宣称已执行。
+
 ## Scope
 
-本变更扩展现有SQLite M1实现，目标是`semantic-fact-model-1`全量记录和请求级仓库读取。五层是组织尺度，不表示包含树；除引用闭合需要外不递归扩展响应。M1 profile/接口继续读写，full profile使用自己的profile标识及目录校验。
+本变更历史交付扩展了SQLite以支持`semantic-fact-model-1`完整记录；该profile现作为旧档案兼容边界，不再定义新领域模型主轴。E0–E4是可保留的观察视角，不生成包含关系。M1 profile/接口继续独立；`semantic-entity-model-1`的权威档案及后续默认切换由实体重构提案管理。
 
 ## Existing Evidence
 

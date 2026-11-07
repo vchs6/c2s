@@ -1,5 +1,9 @@
 # Design
 
+## 当前领域模型基准
+
+当前领域模型基准：本提案历史形成的E0–E4主组织轴已由ADR-0012替代。以下仍有效的模型规则须解释为目录、条件、引用、来源和证据约束，不能推出实体类型或业务边界；现行语义实体契约与映射要求见`redesign-semantic-entity-domain-model`。
+
 ## M1项目发现切片契约（代理技术决定，m1-project-discovery-1）
 
 本节是交付2.1的局部契约细化，不是新增用户确认、Schema或产品完成。后文旧“另批/全目录先完成”不适用于此切片：ADR-0009授权仍有效，实施仍须交付就绪/隔离门禁。M1仅发现/列出有边界依据的项目、项目语言声明、原生workspace成员；不是“完整所有项目事实”。M2–M4未消费类型不作为M1前置。本节记录由本change独占定义；其他change只引用，未来落入contracts/semantic-model，不在本轮创建。
@@ -42,7 +46,7 @@ Registration的ref.identity/ref.kind/sourceKey不可变，evidenceIds为集合�
 
 ## Context
 
-Issue #3阶段一：评审与候选规划；状态 **awaiting-decision（方案A已选择，等待实施批准）**。读取基点为`18370af506d2153d0dae66a4d9536499a2b08114`。动机及范围见proposal.md；固定约束为ADR-0001/0002与两份主规格，均不修改。现有公共目录、Schema、契约校验器及产品测试尚未实现。
+Issue #3原阶段一设计：评审与候选规划；历史状态曾为 **awaiting-decision（方案A已选择，等待实施批准）**。ADR-0012已改变当前模型主轴，本文只保留原方案记录。读取基点为`18370af506d2153d0dae66a4d9536499a2b08114`。动机及范围见proposal.md；固定约束为ADR-0001/0002与两份主规格，均不修改。现有公共目录、Schema、契约校验器及产品测试尚未实现。
 
 本轮已实际进行独立proposer/challenger首轮、第二轮交叉质询与新上下文reviewer综合；中立包、双方论证与评审记录在`docs/development/reviews/issues/3/stage-one-2026-11-01/`。记录是实际答复的结构化摘要，不是逐字转储，不声称操作系统隔离。来源案例仍仅是先前20文件选样；没有新增宏展开、构建、运行或全仓库验证。
 
@@ -151,7 +155,7 @@ AlgorithmDescription保持独立描述身份，purpose取normative/current_imple
 | src/c2s_semantic_contract/projection.py | 算法body可读投影及来源/投影清单检查 |
 | src/c2s_semantic_contract/__init__.py | 只导出下述接口 |
 | tests/semantic-model/test_contracts.py、test_algorithms.py、fixtures/ | 正反例、来源清单与静态顶层形状例 |
-| docs/domain/semantic-model-contract.md | 最终获批领域模型及公共契约说明，按五层和统一语言组织 |
+| docs/domain/semantic-model-contract.md | 最终获批领域模型及公共契约说明，按当时五种观察视角和统一语言组织（历史候选） |
 | requirements-semantic-model.txt | 校验开发依赖固定项，不改变package版本 |
 
 #### 6.1 首版目录包与自校验（builder-check修订）
@@ -179,12 +183,12 @@ AlgorithmDescription保持独立描述身份，purpose取normative/current_imple
 
 ## Migration Plan
 
-本轮仅交付候选proposal/specs/design/tasks、Battle/映射/校验及绑定输入/工件摘要的批准令牌，状态awaiting-decision。正式主规格与导入原件字节不变。方案选择与实施批准分别记录；仅确认A不自动实施。选择B或改字段/条件/范围时重算令牌，不复用旧批准。阶段二获得明确批准后才读取apply指令并按tasks推进；本轮不调用产品实施技能或安装其依赖，不归档。
+原规划阶段仅交付候选proposal/specs/design/tasks、Battle/映射/校验及绑定输入/工件摘要的批准令牌，历史状态为awaiting-decision。正式主规格与导入原件字节不变。方案选择与实施批准分别记录；仅确认A不自动实施。选择B或改字段/条件/范围时重算令牌，不复用旧批准。阶段二获得明确批准后才读取apply指令并按tasks推进；本轮不调用产品实施技能或安装其依赖，不归档。
 
 ## Open Questions
 
-暂无对推荐A隐藏的实现阻塞假设；方案A现已获用户选择；本次只更新方案选型状态，不将详细候选字段等额外提升为逐项主规格批准，**实施仍待明确批准**。Q01–Q05的裁决入口及替代见本目录review-map.md与评审报告。构造命名和函数内部组织可由实施者在已批准行为下决定；任何改变候选公共行为的选择不得自行归入“小实现细节”。
+暂无对推荐A隐藏的实现阻塞假设；历史记录显示方案A曾获用户选择；该选择不再定义当前实体模型主轴。Q01–Q05的裁决入口及替代见本目录review-map.md与评审报告。构造命名和函数内部组织可由实施者在已批准行为下决定；任何改变候选公共行为的选择不得自行归入“小实现细节”。
 
 ## ADR-0007查询澄清同步
 
-模型A和五层不重开；“顶层最小”限定响应范围，范围内要完整取得本次请求所需事实，缺口诚实报告。类/成员/函数是可请求对象尺度，不固定等同E0–E4。域模型仍只提供类型、身份、引用与事实形状支撑，完整查询/补充分析/双输出由#7/#8实现；不能用模型fixture声称产品已完成。
+“顶层最小”限定请求响应范围，范围内完整取得本次所需语义实体事实并如实报告缺口。类/成员/函数保留为可请求的源码构造视图，须与语义实体区分。E0–E4仅作观察视角，其主组织地位已被ADR-0012替代。域模型仍只提供类型、身份、引用与事实形状支撑，完整查询/补充分析/双输出由#7/#8实现；不能用模型fixture声称产品已完成。

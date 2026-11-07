@@ -2,7 +2,7 @@
 
 ## Why
 
-当前SQLite公开入口只接受`m1-project-discovery-1`，函数、算法、行为契约、证据引用及上下文事实不能写入或从语义仓库查询。这与已定义的E0–E4全量模型及按需复用查询要求不符，查询只能重新运行分析器。
+本提案开始时SQLite公开入口只接受`m1-project-discovery-1`，函数、算法、行为契约、证据引用及上下文事实不能写入或从语义仓库查询。这与当时规划的全量旧模型记录和按需复用查询要求不符，查询只能重新运行分析器。
 
 ## What Changes
 
@@ -21,9 +21,13 @@
 ### Modified Capabilities
 
 - `semantic-fact-query`: 查询需复用持久化的各层事实并限定返回范围。
-- `semantic-fact-model`: 全量顶层记录在存储与规范化后仍保持五层语义、身份及引用语义。
+- `semantic-fact-model`: 旧完整profile的顶层记录保留其历史观察视角、身份及引用语义，迁移不把观察视角推为实体组成关系。
 - `lazy-semantic-fact-construction`: 查询按请求从仓库复用已取得部分，只构造缺少部分。
 
 ## Impact
 
 影响`skill/src/c2s_skill/semantic_store.py`、CLI查询和算法入口、`project_query_to_semantic_model`调用、契约schema与Skill测试。使用现有`semantic-fact-model-1`目录和校验器，不新增运行时依赖。共享工作区测试不构成私有验收。
+
+## 领域模型对齐复核（2026-11-07）
+
+领域模型对齐及兼容状态：本提案交付的 `semantic-fact-model-1` 保留为旧完整档案的兼容读写实现/迁移输入，不再被解释为新领域模型的权威组织轴。新权威profile为 `semantic-entity-model-1`；默认入口切换、旧profile只读和回滚门槛只由 `redesign-semantic-entity-domain-model` 后续迁移任务管理。本注记不宣称切换已执行。

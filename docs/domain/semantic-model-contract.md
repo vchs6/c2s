@@ -1,17 +1,19 @@
-# Semantic Model Contract
+# 语义模型契约说明
 
-## Status and scope
+## 状态与范围
 
-Version `1.0.0` exposes two profiles: `m1-project-discovery-1` remains the narrow project/workspace identity contract, and `semantic-fact-model-1` adds contextual claims, finite conditions, dependencies/resolutions, evidence roles, derivations, semantic acquisition/presentation states, and an expanded closed predicate catalog. `project_query_to_semantic_model` projects every fact kind currently returned by the Python/Rust analyzer into that expanded profile. Fixed Click and regex checkouts exercise 23,779 and 54,313 returned facts respectively. Those totals describe the analyzer's supported acquisition surface, not all possible project semantics. Workspace metadata unavailable from Cargo remains a gap. The model validates shape, references, and declared invariants; it does not prove source truth, complete E0–E4 extraction, or runtime behavior.
+当前领域模型以`semantic-entity-model-1`为权威profile，包含语义实体、实体属性、类型化关系、主张、证据、覆盖、源码构造、实现映射和测试验证映射。项目及其语义模块也按实体表达；E0–E4保留为事实观察视角，不是实体类别或身份组成部分。
 
-## Identity language
+`m1-project-discovery-1`继续作为独立的窄范围项目/workspace发现profile。`semantic-fact-model-1`保留为旧完整档案兼容格式和迁移输入；在实体重构切换任务完成前，其当前写入路径尚未全面切换，不能描述为已只读。切换时点和回滚门槛以`openspec/changes/redesign-semantic-entity-domain-model/tasks.md`为准。
 
-A **Subject** is an independently referable object. Its identity is `{authority, domainId, localId}`; its `kind` is carried by a typed `M1SubjectRef`. The identity does not contain a path, name, layer, commit, content hash, or tool-generated node identifier. This lets evidence move or gain corroboration without changing subject identity.
+既有`project_query_to_semantic_model`把Python/Rust分析器当时支持的事实投影到旧`semantic-fact-model-1`档案。固定Click和regex检出曾分别产生23,779与54,313条旧事实；这些数量只表示该分析器的支持范围，不表示项目全部语义。Cargo元数据不可用时仍有明确缺口。旧校验可检查结构、引用和声明的不变量，不能证明源码解释为真、完整还原E0–E4内容或运行时行为正确。
 
-A **sourceKey** is an acquisition-local lookup key for reconnecting a source declaration with its registered subject. `register_m1` reuses the registered identity for a repeated source key and merges evidence IDs. A source-key/kind or source-key/domain conflict is rejected as `CONTRACT_INVALID` rather than resolved by guessing.
+## 身份术语
 
-The M1 subject kinds are `Project`, `PackageSpecification`, `NativeWorkspace`, and `SourceDeclaration`. They are distinct concepts: package/workspace membership does not itself create a Project identity, and a source declaration is not promoted to a Project. M1 references do not carry interpretation context; contextual claims are outside this slice.
+`SemanticEntityRef`标识可独立引用的语义实体，身份由authority、domainId和localId组成，kind使用类型目录约束。实体身份不包含路径、名称、层号、提交、内容摘要或工具节点ID。注册表的sourceKey只用于将新的来源证据关联到已登记实体；冲突时报告诊断，不按名称或路径猜测。
 
-## Validation and evidence boundary
+`SourceConstruct`拥有独立于实体的源码身份，保存语言、语法种类、源码位置、声明形状和源码包含关系。`SourceDeclaration`是旧M1 profile的主体类别；不能仅凭该旧身份将声明提升为语义实体。软件包、workspace成员、目录和源码模块也不自动成为领域项目、模块或能力。
 
-`contracts/semantic-model/fact.schema.json` provides JSON Schema 2020-12 structural validation for both profiles. `src/c2s_semantic_contract/validation.py` adds local reference, catalog, identity, condition, dependency, coverage, derivation, and claim consistency checks. `project_query_to_semantic_model` rechecks the scanned source fingerprint, hashes source evidence, preserves original acquisition metadata, and does not turn empty results into negative claims. Contract validity is not source truth; coverage is scoped to the submitted selector and inventory. Full language-mechanism mapping, the complete engineering/build-delivery model, broader composition/reference rules, query execution guarantees, and runtime behavior remain implementation tasks. Shared-workspace tests are implementation evidence, not independent acceptance.
+## 校验与证据边界
+
+`contracts/semantic-model/`中的实体模式和目录规定结构化记录；`src/c2s_semantic_contract/validation.py`负责实体身份、属性、关系端点、源码映射、证据和覆盖等局部一致性检查。Skill构造器应保留分析输入指纹、来源摘要和原始获取元数据，空结果不得转换成全称否定主张。契约有效不等于来源判断为真；覆盖仅对实际提交的输入、请求和分析配置有效。共享工作区测试是公开实现证据，不构成独立验收。

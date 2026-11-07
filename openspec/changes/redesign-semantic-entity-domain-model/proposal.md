@@ -28,3 +28,7 @@
 ## Impact
 
 影响 `contracts/semantic-model/` 公共类型、谓词与JSON结构模式，`src/c2s_semantic_contract/` 投影和校验，`skill/src/c2s_skill/` 的获取解析、工具矩阵、查询、算法投影、SQLite仓储和命令行接口，以及对应的OpenSpec规格、领域文档、测试夹具、真实项目遍历验证和技能包说明。需为新模型档案及数据迁移定义版本边界；不增加语言范围或声称所有语义都可自动推断，分析不确定性和证据缺口必须保留。
+
+## 领域模型对齐复核（2026-11-07）
+
+领域模型变更影响的提案逐项审查是实施的一部分；全量核对及受影响文件见 `docs/development/reviews/semantic-facts/semantic-entity-proposal-alignment.md`。此前规划提案中的旧模型基线仅保留历史上下文；本提案定义当前目标和迁移边界。

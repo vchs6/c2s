@@ -1,5 +1,9 @@
 ## 1. Full-profile normalization and canonicalization
 
+## 现行范围说明
+
+现行范围说明：原任务交付的`semantic-fact-model-1`属于旧档案能力；实体重构的6.2/6.3完成前，不将其描述成已只读或已迁移。旧档案可作为兼容和导出对象。
+
 - [x] 1.1 （M1）完整profile记录规范化。依据：`contracts/semantic-model/fact.schema.json`及`design-incremental-semantic-fact-storage` M1比较契约。交付：全模型各记录collection映射、规范键及引用重写。验证：facts/evidence/registrations/assessments/coverage/dependencies/resolutions/states/contexts全量往返；补证不复制主张；冲突保留；乱序/重复/断引用拒绝或规范化。全部模型层字段丢失、引用悬空、把层号推成包含关系失败。
 - [x] 1.2 （M1）全量SQLite表与模式兼容。依据：任务1.1及现有M1 store。交付：新collection表/索引/refs及M1向后兼容迁移。验证：M1历史数据库可读；full bundle事务原子保存及恢复；故障不暴露半包；bytes/hash碰撞拒绝。
 
