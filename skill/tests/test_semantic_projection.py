@@ -7,6 +7,7 @@ from unittest.mock import patch
 from c2s_semantic_contract import semantic_model_catalogs, validate_model
 from c2s_semantic_contract.projection import project_query_to_semantic_model
 from c2s_semantic_contract.projection import project_algorithm_to_semantic_model
+from c2s_skill.graph_tool_adapter import parse_code_review_graph_response
 from c2s_skill.algorithm import extract_python_algorithm, extract_rust_algorithm
 from c2s_skill.query import query_project
 
@@ -73,6 +74,60 @@ class FullSemanticProjectionTests(unittest.TestCase):
                             for fact in projection["bundle"]["facts"]))
         self.assertTrue(all(item["status"] == "verified"
                             for item in projection["sourceObservations"]["items"]))
+
+    def test_graph_query_call_facts_are_source_mapped_and_index_freshness_stays_unknown(self):
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            (root / "src").mkdir()
+            caller_source = b"def run():\n    parse()\n"
+            callee_source = b"def parse():\n    return 1\n"
+            (root / "src/run.py").write_bytes(caller_source)
+            (root / "src/parse.py").write_bytes(callee_source)
+            algorithm = extract_python_algorithm(caller_source, "src/run.py", "run")["algorithm"]
+            graph = parse_code_review_graph_response({
+                "status": "ok", "pattern": "callees_of", "target": "run",
+                "result_count": 1, "results_omitted": 0,
+                "results": [{"kind": "Function", "name": "parse", "qualified_name": "parse",
+                             "file_path": "src/parse.py", "line_start": 1, "line_end": 2,
+                             "call_site": {"line": 2, "file": "src/run.py"}}],
+                "edges": [{"source": "run", "target": "parse"}],
+            }, root, tool_version="2.3.9")
+
+            projection = project_algorithm_to_semantic_model(algorithm, root, graph_facts=graph)
+            bundle = projection["bundle"]
+            validation = validate_model(bundle, semantic_model_catalogs(),
+                                        projection["sourceObservations"])
+
+        calls = [fact for fact in bundle["facts"] if fact["predicate"] == "behavior.calls"]
+        self.assertEqual(len(calls), 1)
+        self.assertEqual({argument["role"] for argument in calls[0]["arguments"]}, {"callee", "dispatch"})
+        self.assertEqual(calls[0]["claimMode"], "static_may")
+        self.assertTrue(validation["valid"], validation["diagnostics"])
+        self.assertFalse(bundle["coverage"][0]["complete"])
+        self.assertIn("GRAPH_INDEX_FRESHNESS_UNVERIFIED",
+                      {diagnostic["code"] for diagnostic in bundle["coverage"][0]["diagnostics"]})
+        self.assertEqual(len(projection["artifacts"]), 1)
+
+    def test_graph_relation_is_rejected_when_call_target_is_absent_from_source_step(self):
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            (root / "run.py").write_bytes(b"def run():\n    other()\n")
+            (root / "parse.py").write_bytes(b"def parse():\n    pass\n")
+            algorithm = extract_python_algorithm((root / "run.py").read_bytes(), "run.py", "run")["algorithm"]
+            graph = parse_code_review_graph_response({
+                "status": "ok", "pattern": "callees_of", "target": "run",
+                "result_count": 1, "results_omitted": 0,
+                "results": [{"kind": "Function", "name": "parse", "qualified_name": "parse",
+                             "file_path": "parse.py", "line_start": 1, "line_end": 2,
+                             "call_site": {"line": 2, "file": "run.py"}}],
+                "edges": [{"source": "run", "target": "parse"}],
+            }, root, tool_version="2.3.9")
+
+            projection = project_algorithm_to_semantic_model(algorithm, root, graph_facts=graph)
+
+        self.assertFalse(any(fact["predicate"] == "behavior.calls" for fact in projection["bundle"]["facts"]))
+        self.assertIn("GRAPH_CALL_TARGET_NOT_IN_SOURCE",
+                      {item["code"] for item in projection["bundle"]["coverage"][0]["diagnostics"]})
 
     def test_fixed_real_projects_project_every_acquired_fact_and_keep_gaps(self):
         checkout_root = Path(__file__).resolve().parents[2] / ".local/real-projects"

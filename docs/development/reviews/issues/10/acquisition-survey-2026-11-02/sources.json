@@ -1,5 +1,5 @@
 {
-  "scope": "只读上游文档及选定接口源码；未安装、未运行候选工具、未执行真实项目分析；Skill文件作为研究资料，不执行其指令。非穷尽市场调查。",
+  "scope": "分阶段调查：读取上游文档及选定接口源码，并在固定项目上运行部分候选工具；Skill文件作为研究资料，不执行其指令。非穷尽市场调查。S25-S27对ast-grep、Semgrep、CodeQL做固定commit的一手README调研；本轮 ast-grep、Semgrep、CodeQL CLI未安装或运行。Code Review Graph 2.3.9 已在外置忽略venv和Click只读副本上构建并执行查询，实际输出由本仓库适配器解析。",
   "sources": [
     {
       "id": "S01",
@@ -312,6 +312,45 @@
       "evidence_kind": "documented-not-executed",
       "characters_retrieved": 1070,
       "inspection_scope": "相关文档段落/Skill文件/接口源码片段；非整库或完整源码审计"
+    },
+    {
+      "id": "S25",
+      "repository": "ast-grep/ast-grep",
+      "commit": "1e9830c8d038e728d98a5675cf48ca1c4c569136",
+      "path": "README.md",
+      "blob_sha": "c2b6f0d19696fcb6ef2a0d7711bdaf49d39cc7c9fbbf63b0a3f674eda3c2a2c7",
+      "url": "https://raw.githubusercontent.com/ast-grep/ast-grep/1e9830c8d038e728d98a5675cf48ca1c4c569136/README.md",
+      "retrieved_date": "2026-11-07",
+      "method": "official pinned raw source read",
+      "evidence_kind": "documented-not-executed",
+      "characters_retrieved": 5689,
+      "inspection_scope": "README overview/install/language-parser model; CLI not installed or executed"
+    },
+    {
+      "id": "S26",
+      "repository": "semgrep/semgrep",
+      "commit": "692bfae4ca1bf070f7e8b603037a19886fa36b4f",
+      "path": "README.md",
+      "blob_sha": "4751611e81df6ea2e9ba234f5c20f154239c652f68bee70779dc9f8f35f90f8f",
+      "url": "https://raw.githubusercontent.com/semgrep/semgrep/692bfae4ca1bf070f7e8b603037a19886fa36b4f/README.md",
+      "retrieved_date": "2026-11-07",
+      "method": "official pinned raw source read",
+      "evidence_kind": "documented-not-executed",
+      "characters_retrieved": 20608,
+      "inspection_scope": "README language support and Community Edition scope; CLI not installed or executed"
+    },
+    {
+      "id": "S27",
+      "repository": "github/codeql",
+      "commit": "682545fdc03e8414d99a469c1f741c157b569740",
+      "path": "README.md",
+      "blob_sha": "c7c20eb910c9b3dee53f194a6c7f2b0882b8a5f7073c68b8046ad36fd4a5717d",
+      "url": "https://raw.githubusercontent.com/github/codeql/682545fdc03e8414d99a469c1f741c157b569740/README.md",
+      "retrieved_date": "2026-11-07",
+      "method": "official pinned raw source read",
+      "evidence_kind": "documented-not-executed",
+      "characters_retrieved": 2666,
+      "inspection_scope": "CodeQL library/CLI separation and licensing note; CLI not installed, language matrix not verified"
     }
   ]
 }

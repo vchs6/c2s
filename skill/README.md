@@ -2,7 +2,7 @@
 
 状态：原型实现中。当前可对Python与Rust源文件进行全目录语法遍历，提取类/结构体、字段、函数、导入、常量、源码文档行为说明及常见控制流/调用/运算步骤，并按selector或有限自然语言请求查询，返回JSON或Markdown。每条记录带项目根命名空间内的稳定fact ID、主体ID、源路径和UTF-8字节范围；同一函数的声明、文档契约和算法步骤共享`subject_id`。`evidence_included`标明本次请求是否附带源码片段。`claim_mode`区分语法、声明、Cargo元数据和文档陈述，不代表已验证运行时行为。fact/subject ID绑定分析根路径，移动检出目录后会改变。
 
-领域模型已提供`semantic-fact-model-1`扩展profile和封闭的E0–E4类型/谓词目录，并能投影获取器当前返回的全部事实种类；它仍不是完整的项目语义事实获取器，缺少类型解析、跨模块调用/绑定、工程/构建系统读取及语言条件提取。算法source-to-body审定已有固定版本的regex/R5、Click/P7和nlohmann-json/C5清单；C5是人工编写的C++ opaque案例，只有R5/P7由当前Rust/Python lowerer生成。body到文本投影只呈现已有step/edge和缺口，不证明清单覆盖全部源码或行为等价。算法描述契约结构校验切片位于`skill/contracts/semantic-algorithm.schema.json`和`c2s_skill.algorithm.validate_algorithms`；项目管理归属以resolved/ambiguous/unresolved及候选Project IDs独立表达，当前语言lowering保留unresolved；实现引用可多值。契约要求输入/输出、前提、正常/错误/终止结果、效果和顺序约束分别记录证据覆盖状态；校验器检查步骤身份、区域/控制/数据引用、计算语义字段及opaque边界。`c2s_skill.algorithm.extract_python_algorithm(...)`和`extract_rust_algorithm(...)`可从指定Python函数或Rust函数生成带源码字节跨度、控制区域和显式缺口的初步算法描述。`algorithm --all-functions`会遍历项目中发现的Python/Rust函数，逐个生成结构化算法结果，并报告解析失败与未处理路径；该模式仍不等于全项目语义完整，也没有接入通用`function:`查询结果；生成物不等于行为完整或源码等价证明。宏展开、条件编译、多态/动态调用、反射、运行时行为和工程配置语义没有完整覆盖；所以当前结果的`complete=true`仅表示所选事实类别的获取没有已知缺口，并不表示项目的所有语义事实均已取得。结果会附带全目录清单和未处理路径；源文件解析目前只覆盖`.py`与`.rs`。`classes`、`functions`和`all-declarations`只返回顶层条目，不附带类型体/函数体；须请求`definitions`、指定`function:名称`或`all-supported-facts`才会附带相应源码体。SQLite结果缓存绑定项目树摘要及分析配置摘要（分析器、Python/平台、Tree-sitter和Cargo版本）；缓存写入失败时事实仍返回，并通过独立持久化状态报告，逐项构造事务恢复和supersedes lineage尚未实现。机器输出契约位于`contracts/semantic-fact-query.schema.json`。请把本原型用于开发与明确范围查询，不作为完整语义验收结论。
+领域模型已提供`semantic-fact-model-1`扩展profile和封闭的E0–E4类型/谓词目录，并能投影获取器当前返回的全部事实种类；它仍不是完整的项目语义事实获取器，缺少类型解析、绑定证明、工程/构建系统的广泛读取及语言条件提取。算法source-to-body审定已有固定版本的regex/R5、Click/P7和nlohmann-json/C5清单；C5是人工编写的C++ opaque案例，只有R5/P7由当前Rust/Python lowerer生成。body到文本投影只呈现已有step/edge和缺口，不证明清单覆盖全部源码或行为等价。算法描述契约结构校验切片位于`skill/contracts/semantic-algorithm.schema.json`和`c2s_skill.algorithm.validate_algorithms`；项目管理归属以resolved/ambiguous/unresolved及候选Project IDs独立表达，当前语言lowering保留unresolved；实现引用可多值。契约要求输入/输出、前提、正常/错误/终止结果、效果和顺序约束分别记录证据覆盖状态；校验器检查步骤身份、区域/控制/数据引用、计算语义字段及opaque边界。`c2s_skill.algorithm.extract_python_algorithm(...)`和`extract_rust_algorithm(...)`可从指定Python函数或Rust函数生成带源码字节跨度、控制区域和显式缺口的初步算法描述。单函数算法请求可通过`--graph-output`导入Code Review Graph `callees_of` JSON，并映射成`behavior.calls`候选关系；适配器保存原始JSON工具证据、检查路径/计数/遗漏并映射到本地源码声明。图索引与当前源码摘要无法核对时必有`GRAPH_INDEX_FRESHNESS_UNVERIFIED`缺口，coverage保持不完整，不能把图关系当已证明绑定。`algorithm --all-functions`会遍历项目中发现的Python/Rust函数，逐个生成结构化算法结果，并报告解析失败与未处理路径；该模式仍不等于全项目语义完整，也没有接入通用`function:`查询结果；生成物不等于行为完整或源码等价证明。宏展开、条件编译、多态/动态调用、反射、运行时行为和工程配置语义没有完整覆盖；所以当前结果的`complete=true`仅表示所选事实类别的获取没有已知缺口，并不表示项目的所有语义事实均已取得。结果会附带全目录清单和未处理路径；源文件解析目前只覆盖`.py`与`.rs`。`classes`、`functions`和`all-declarations`只返回顶层条目，不附带类型体/函数体；须请求`definitions`、指定`function:名称`或`all-supported-facts`才会附带相应源码体。SQLite结果缓存绑定项目树摘要及分析配置摘要（分析器、Python/平台、Tree-sitter和Cargo版本）；缓存写入失败时事实仍返回，并通过独立持久化状态报告，逐项构造事务恢复和supersedes lineage尚未实现。机器输出契约位于`contracts/semantic-fact-query.schema.json`。请把本原型用于开发与明确范围查询，不作为完整语义验收结论。
 
 ## 公共语义模型契约（M1）
 
@@ -30,8 +30,13 @@ PYTHONPATH=skill/src .local/analysis-venv/bin/python -m c2s_skill query \
   --root .local/real-projects/click --select all-supported-facts --format json
 PYTHONPATH=skill/src .local/analysis-venv/bin/python -m c2s_skill algorithm \
   --root .local/real-projects/click --all-functions
+PYTHONPATH=src:skill/src .local/analysis-venv/bin/python -m c2s_skill algorithm \
+  --root .local/real-projects/click --source src/click/core.py --function Command.parse_args \
+  --semantic-facts --graph-output /tmp/click-callees.json --graph-version 2.3.9
 PYTHONPATH=skill/src .local/analysis-venv/bin/python -m unittest discover -s skill/tests -v
 ```
+
+`--graph-output`读取已由 Code Review Graph `query_graph("callees_of", target, detail_level="standard", max_results=...)`生成并存放在项目目录之外的JSON对象；其target必须与请求算法的限定名称相同。图输出应保留`result_count`、`results_omitted`、每行`call_site`和完整`results`。若当前项目没有相符的外置图索引，先按Code Review Graph文档在隔离的数据目录建立索引，再查询；不可将默认Git跟踪文件范围冒充Skill全目录。解析器会拒绝不安全路径、保留遗漏和不匹配诊断。当前响应不能证明索引对应最新源码摘要，所以即使查询零遗漏也会报告freshness gap并以部分状态返回。JSON只支持结构化工具响应，不接受Skill自由文本摘要作为关系事实。
 
 支持的查询：`project`、`workspace-members`、`classes`、`members:类型名`、`functions`、`function:名称`、`local-bindings`、`definitions`、`imports`、`constants`、`behavior-contracts`、`algorithm-structure`、`all-declarations`、`all-supported-facts`。自然语言暂支持“有哪些类”“Command 的成员有哪些”“函数 run”等明确形式；不能识别的请求会作为gap返回。`function:名称`返回所选函数声明、源码文档、算法步骤及局部绑定事实；嵌套函数是独立主体，需单独查询，避免把内层函数的执行步骤误归到外层函数。`local-bindings`目前返回函数内简单名称的赋值目标（Python支持简单/解构赋值、循环目标、with别名及异常别名；Rust支持元组、结构体、元组结构体、切片、or、引用及`@`捕获`let`模式中的标识符）；事实以源码片段为证据，不表示调用解析、类型确认或完整数据流。`workspace-members`通过Cargo metadata解析，不需要依赖下载；Cargo不可用或元数据失败会明确报告gap。未知selector以退出码2返回；`algorithm --all-functions`对部分静态分析返回退出码2，即使所有函数均已遍历成功；结构错误或读取失败使用退出码64。JSON和Markdown包含相同事实ID，并标明源码片段是否因本次请求省略。可用`--store /path/outside/project/facts.sqlite`启用SQLite缓存，缓存键绑定项目树摘要、分析配置摘要和请求。输出及缓存目录在读取或创建前必须位于分析项目之外。遍历包含测试、示例、隐藏及忽略文件中的`.py`/`.rs`源；`.git`对象库和非源文件不作为程序语法解析，并在结果覆盖中列为未处理路径。
 
@@ -44,14 +49,14 @@ PYTHONPATH=skill/src .local/analysis-venv/bin/python -m unittest discover -s ski
 | Python | 3.12.14 | Linux实现与AST；其他Python版本未测试 |
 | tree-sitter / Python grammar / Rust grammar | 0.26.0 / 0.25.0 / 0.24.2 | Rust结构解析依赖；Python使用标准库AST |
 | jsonschema | 4.26.0 | 校验JSON Schema 2020-12查询输出契约 |
-| Code Review Graph | 2.3.9 | 已实际建图/查询，默认覆盖不能当全目录完整；外置图缓存，无模型嵌入 |
+| Code Review Graph | 2.3.9（可选） | 已在固定Click/regex项目建图/查询；仅为按需跨文件调用/引用补充，不作为项目全量清单；外置索引、无模型嵌入。当前会话本地venv未安装，重建开发环境命令会安装 |
 | Rust工具链 | rustc 1.99.1，Cargo 1.99.1 | 已安装至`.local`；Cargo workspace metadata可离线取得，Rust依赖测试仍未通过下载阶段 |
 | GitHub CLI | 2.103.3 | 备用账户配置工具，官方归档摘要核验；仅CI开发准备，需独立GitHub授权 |
 | OpenSpec / Codex / Superpowers | 1.16.0 / 0.166.0 / 7.0.1 | 开发流程工具，不当产品运行依赖；Superpowers在当前环境可读 |
 
 Python包来自包索引；Rust安装来源为官方https://rust-lang.org/tools/install/，使用项目本地RUSTUP_HOME/CARGO_HOME且不改shell profile。当前安装路径`.local/analysis-venv`、`.local/rustup`、`.local/cargo`均为开发临时目录，不随Skill发行。
 
-CRG包自带build-graph/explore-codebase等Skill文件可读取，但本轮没有执行自动install去覆盖客户端MCP/AGENTS/hooks，也未把这些文件注册为新的个人Skill。Serena、GitNexus、CodeGraph仍是调查候选，未安装，不声称已支持。
+Code Review Graph `build-graph`/`explore-codebase` Skills只作为工具导航资料，不是本会话已注册的可调用Skill，也不把其短文本结果当语义事实；确定性API结果由专用解析器消费。ast-grep、Semgrep、Serena、GitNexus、CodeGraph和CodeQL CLI未安装；按覆盖矩阵暂不进入必需组合。具体比较见`../docs/development/reviews/issues/10/acquisition-survey-2026-11-02/tool-selection.md`。
 
 ## 重建当前开发环境
 

@@ -9,6 +9,7 @@ from pathlib import Path
 from .algorithm import (_index_python_functions, _index_rust_functions,
                         extract_python_algorithm, extract_rust_algorithm, validate_algorithms)
 from .acquisition import scan_project
+from .graph_tool_adapter import parse_code_review_graph_response
 from .query import normalize_request, query_project, result_to_dict, result_to_markdown
 from .store import FactStore
 
@@ -26,6 +27,9 @@ def main(argv: list[str] | None = None) -> int:
                         help="lower every discovered Python and Rust function in the project")
     parser.add_argument("--semantic-facts", action="store_true",
                         help="include a validated semantic fact bundle for a single algorithm request")
+    parser.add_argument("--graph-output", type=Path,
+                        help="read Code Review Graph query JSON stored outside the analyzed project")
+    parser.add_argument("--graph-version", help="Code Review Graph version that produced --graph-output")
     parser.add_argument("--format", choices=["json", "markdown"], default=None)
     parser.add_argument("--output", type=Path, help="write the report outside the analyzed project")
     parser.add_argument("--store", type=Path, help="SQLite fact cache outside the analyzed project")
@@ -35,7 +39,8 @@ def main(argv: list[str] | None = None) -> int:
         if args.output and args.output.resolve().is_relative_to(root):
             raise ValueError("output must be outside the analyzed project")
         if args.query == "query":
-            if args.source or args.function or args.all_functions or args.semantic_facts:
+            if (args.source or args.function or args.all_functions or args.semantic_facts
+                    or args.graph_output or args.graph_version):
                 raise ValueError("algorithm options are only valid for algorithm requests")
             if (args.select is None) == (args.request is None):
                 raise ValueError("query requires exactly one of --select or --request")
@@ -50,7 +55,7 @@ def main(argv: list[str] | None = None) -> int:
             if args.select or args.request or args.store:
                 raise ValueError("--select, --request and --store are only valid for query requests")
             if args.all_functions:
-                if args.semantic_facts:
+                if args.semantic_facts or args.graph_output or args.graph_version:
                     raise ValueError("--semantic-facts currently requires one --source and --function request")
                 if args.source or args.function:
                     raise ValueError("--all-functions cannot be combined with --source or --function")
@@ -122,6 +127,10 @@ def main(argv: list[str] | None = None) -> int:
                 if not function_facts and not project_gaps:
                     status = 0
             else:
+                if args.graph_version and not args.graph_output:
+                    raise ValueError("--graph-version requires --graph-output")
+                if args.graph_output and not args.semantic_facts:
+                    raise ValueError("--graph-output requires --semantic-facts")
                 if not args.source or not args.function:
                     raise ValueError("algorithm requires --source and --function, or --all-functions")
                 output_format = args.format or "json"
@@ -151,6 +160,7 @@ def main(argv: list[str] | None = None) -> int:
                         for item in coverage if item["state"] != "complete"]
                 gaps.extend({"category": "algorithm_body", **item}
                             for item in extracted["algorithm"]["omissions"])
+                status = 0 if not diagnostics else 2
                 response = {"root": str(root), "source_path": relative_path,
                             "source_digest": hashlib.sha256(source_bytes).hexdigest(),
                             "complete": False, "claim_scope": "partial_static_syntax_projection",
@@ -160,13 +170,31 @@ def main(argv: list[str] | None = None) -> int:
                 if args.semantic_facts:
                     from c2s_semantic_contract import semantic_model_catalogs, validate_model
                     from c2s_semantic_contract.projection import project_algorithm_to_semantic_model
-                    projection = project_algorithm_to_semantic_model(extracted, root)
+                    graph_facts = None
+                    if args.graph_output:
+                        graph_path = args.graph_output.resolve(strict=True)
+                        if graph_path.is_relative_to(root):
+                            raise ValueError("--graph-output must be outside the analyzed project")
+                        graph_facts = parse_code_review_graph_response(
+                            json.loads(graph_path.read_text(encoding="utf-8")), root, args.graph_version)
+                    projection = project_algorithm_to_semantic_model(extracted, root, graph_facts=graph_facts)
                     response["semantic_fact_bundle"] = projection["bundle"]
                     response["source_observations"] = projection["sourceObservations"]
+                    response["artifacts"] = projection["artifacts"]
                     response["semantic_validation"] = validate_model(
                         projection["bundle"], semantic_model_catalogs(), projection["sourceObservations"])
+                    if graph_facts is not None:
+                        response["graph_query"] = {"tool": graph_facts.tool, "pattern": graph_facts.pattern,
+                            "target": graph_facts.target, "complete": graph_facts.complete,
+                            "result_count": graph_facts.result_count,
+                            "omitted_count": graph_facts.omitted_count,
+                            "diagnostics": [{"code": item.code, "message": item.message, "path": item.path}
+                                            for item in graph_facts.diagnostics]}
+                        if not graph_facts.complete:
+                            status = 2
                 rendered = json.dumps(response, ensure_ascii=False, indent=2) + "\n"
-                status = 0 if not diagnostics else 2
+                if not args.graph_output:
+                    status = 0 if not diagnostics else 2
         if args.output:
             args.output.parent.mkdir(parents=True, exist_ok=True)
             args.output.write_text(rendered, encoding="utf-8")

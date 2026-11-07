@@ -6,6 +6,7 @@ import hashlib
 import json
 import os
 from pathlib import Path
+import re
 import shutil
 import subprocess
 
@@ -435,8 +436,8 @@ def project_query_to_semantic_model(query_result, catalogs: dict | None = None) 
 
 
 def project_algorithm_to_semantic_model(algorithm_document: dict, project_root: Path,
-                                       catalogs: dict | None = None) -> dict:
-    """Project a source-located algorithm document into typed body/step/edge facts."""
+                                       catalogs: dict | None = None, graph_facts=None) -> dict:
+    """Project source-located algorithm facts and optional graph call candidates."""
     root = Path(project_root).resolve(strict=True)
     algorithm = algorithm_document.get("algorithm", algorithm_document)
     algorithm_id = algorithm.get("algorithm_id") if isinstance(algorithm, dict) else None
@@ -457,6 +458,7 @@ def project_algorithm_to_semantic_model(algorithm_document: dict, project_root: 
     registrations: dict[tuple[str, str], dict] = {}
     evidence: dict[str, dict] = {}
     observations: dict[str, dict] = {}
+    artifacts: dict[str, dict] = {}
     source_cache: dict[str, tuple[bytes, str]] = {}
     facts = []
     diagnostics = []
@@ -500,6 +502,34 @@ def project_algorithm_to_semantic_model(algorithm_document: dict, project_root: 
         evidence[evidence_id] = {"evidenceId": evidence_id, "source": "input", "path": path,
             "artifactId": None, "originalPath": path, "sha256": digest, "startByte": start,
             "endByte": end, "method": "algorithm-syntax", "toolName": "c2s", "toolVersion": None}
+        observations[evidence_id] = {"evidenceId": evidence_id, "status": "verified", "observedSha256": digest}
+        return evidence_id
+
+    def evidence_for_external_source(path: str, start: int, end: int) -> str:
+        if not isinstance(path, str) or Path(path).is_absolute() or ".." in Path(path).parts \
+                or type(start) is not int or type(end) is not int or start < 0 or end < start:
+            raise ValueError("graph symbol has an invalid root-relative source span")
+        unresolved_path = root / path
+        cursor = unresolved_path
+        while cursor != root:
+            if cursor.is_symlink():
+                raise ValueError(f"graph symbol traverses a symlink: {path}")
+            cursor = cursor.parent
+        source_path = unresolved_path.resolve(strict=True)
+        if source_path != root and root not in source_path.parents:
+            raise ValueError(f"graph symbol escapes project root: {path}")
+        pair = source_cache.get(path)
+        if pair is None:
+            source = source_path.read_bytes()
+            pair = (source, hashlib.sha256(source).hexdigest())
+            source_cache[path] = pair
+        source, digest = pair
+        if end > len(source):
+            raise ValueError(f"graph symbol span exceeds source length: {path}")
+        evidence_id = hashlib.sha256(f"{path}\0{start}\0{end}\0{digest}".encode()).hexdigest()
+        evidence[evidence_id] = {"evidenceId": evidence_id, "source": "input", "path": path,
+            "artifactId": None, "originalPath": path, "sha256": digest, "startByte": start,
+            "endByte": end, "method": "syntax", "toolName": None, "toolVersion": None}
         observations[evidence_id] = {"evidenceId": evidence_id, "status": "verified", "observedSha256": digest}
         return evidence_id
 
@@ -570,6 +600,138 @@ def project_algorithm_to_semantic_model(algorithm_document: dict, project_root: 
                 add_fact("region.member", region_ref, step_refs[step_id], "declaration",
                          [step_evidence[step_id]], source_metadata={"kind": "region_member", "layer": "E4",
                             "owner": algorithm_id, "text": "", "evidenceIncluded": True})
+
+    if graph_facts is not None:
+        graph_diagnostics = getattr(graph_facts, "diagnostics", ())
+        for item in graph_diagnostics:
+            diagnostics.append({"code": getattr(item, "code", "GRAPH_TOOL_GAP"), "severity": "gap",
+                "recordId": algorithm_id, "path": getattr(item, "path", None),
+                "message": getattr(item, "message", "Graph tool output could not be fully verified.")})
+        algorithm_source_paths = {step.get("source", {}).get("path")
+                                  for step in algorithm.get("body", {}).get("steps", [])
+                                  if isinstance(step.get("source", {}).get("path"), str)}
+        graph_target = getattr(graph_facts, "target", "")
+        graph_target_path, separator, graph_target_name = graph_target.rpartition("::")
+        target_matches_algorithm = (
+            graph_target == algorithm.get("problem")
+            or (separator and graph_target_name == algorithm.get("problem")
+                and any(str((root / source_path).resolve(strict=False)) == graph_target_path
+                        for source_path in algorithm_source_paths)))
+        if (getattr(graph_facts, "tool", None) != "code-review-graph"
+                or getattr(graph_facts, "pattern", None) != "callees_of"
+                or not target_matches_algorithm):
+            diagnostics.append({"code": "GRAPH_QUERY_NOT_ALGORITHM_TARGET", "severity": "gap",
+                "recordId": algorithm_id, "path": None,
+                "message": "Graph query must request callees_of for this algorithm's qualified name."})
+        else:
+            artifact_content = getattr(graph_facts, "artifact_content", None)
+            artifact_digest = getattr(graph_facts, "artifact_sha256", None)
+            tool_bytes = artifact_content.encode("utf-8") if isinstance(artifact_content, str) else b""
+            if (not tool_bytes or hashlib.sha256(tool_bytes).hexdigest() != artifact_digest
+                    or not isinstance(artifact_digest, str)):
+                diagnostics.append({"code": "GRAPH_ARTIFACT_INVALID", "severity": "gap",
+                    "recordId": algorithm_id, "path": None,
+                    "message": "Graph query output is missing its canonical, digest-checked JSON artifact."})
+            else:
+                artifacts[artifact_digest] = {"artifactId": artifact_digest, "mediaType": "application/json",
+                    "sha256": artifact_digest, "content": artifact_content}
+                tool_evidence_id = hashlib.sha256(
+                    f"code-review-graph\0{artifact_digest}".encode()).hexdigest()
+                evidence[tool_evidence_id] = {"evidenceId": tool_evidence_id, "source": "tool_output",
+                    "path": None, "artifactId": artifact_digest,
+                    "originalPath": "Code Review Graph query response", "sha256": artifact_digest,
+                    "startByte": 0, "endByte": len(tool_bytes), "method": "code-review-graph-query",
+                    "toolName": "code-review-graph",
+                    "toolVersion": getattr(graph_facts, "tool_version", None)}
+                observations[tool_evidence_id] = {"evidenceId": tool_evidence_id, "status": "verified",
+                                                  "observedSha256": artifact_digest}
+                from c2s_skill.acquisition import _namespace_fact, parse_source
+                for graph_index, call in enumerate(getattr(graph_facts, "call_sites", ())):
+                    caller_path = getattr(call, "caller_path", None)
+                    caller_line = getattr(call, "caller_line", None)
+                    callee_path = getattr(call, "callee_path", None)
+                    callee_name = getattr(call, "callee_name", None)
+                    if getattr(call, "resolution", "unresolved") != "direct":
+                        diagnostics.append({"code": "GRAPH_CALLEE_UNRESOLVED", "severity": "gap",
+                            "recordId": f"{algorithm_id}:{graph_index}", "path": caller_path,
+                            "message": "Graph reported a bare-name or unresolved callee; no declaration binding was emitted."})
+                        continue
+                    matching_steps = []
+                    for step in step_records:
+                        span = step.get("source", {})
+                        if span.get("path") != caller_path or type(caller_line) is not int:
+                            continue
+                        try:
+                            caller_source = source_cache.get(caller_path)
+                            if caller_source is None:
+                                caller_bytes = (root / caller_path).read_bytes()
+                                caller_source = (caller_bytes, hashlib.sha256(caller_bytes).hexdigest())
+                                source_cache[caller_path] = caller_source
+                            start_line = caller_source[0].count(b"\n", 0, span["start_byte"]) + 1
+                            end_line = caller_source[0].count(b"\n", 0, span["end_byte"]) + 1
+                        except (OSError, KeyError, TypeError):
+                            continue
+                        if start_line <= caller_line <= end_line and step.get("step_id") in step_refs:
+                            matching_steps.append(step)
+                    if len(matching_steps) != 1:
+                        diagnostics.append({"code": "GRAPH_CALLSITE_NOT_MAPPED", "severity": "gap",
+                            "recordId": f"{algorithm_id}:{graph_index}", "path": caller_path,
+                            "message": "Graph call-site line does not map to exactly one lowered algorithm step."})
+                        continue
+                    if not isinstance(callee_path, str) or not isinstance(callee_name, str):
+                        diagnostics.append({"code": "GRAPH_CALLEE_UNMAPPED", "severity": "gap",
+                            "recordId": f"{algorithm_id}:{graph_index}", "path": caller_path,
+                            "message": "Graph callee has no source path or name."})
+                        continue
+                    call_span = matching_steps[0].get("source", {})
+                    caller_source = source_cache.get(caller_path)
+                    target_token = callee_name.rsplit("::", 1)[-1]
+                    call_pattern = re.compile(
+                        rf"(?<![\w$])(?:r#)?{re.escape(target_token)}"
+                        rf"(?:\s*::\s*<[^>]+>)?\s*\(")
+                    call_text = (caller_source[0][call_span["start_byte"]:call_span["end_byte"]]
+                                 if caller_source else b"").decode("utf-8", errors="replace")
+                    if not call_pattern.search(call_text):
+                        diagnostics.append({"code": "GRAPH_CALL_TARGET_NOT_IN_SOURCE", "severity": "gap",
+                            "recordId": f"{algorithm_id}:{graph_index}", "path": caller_path,
+                            "message": "Graph callee name does not occur as a call expression in the mapped source step."})
+                        continue
+                    try:
+                        callee_source = (root / callee_path).read_bytes()
+                        language = {".py": "python", ".rs": "rust"}.get(Path(callee_path).suffix)
+                        if language is None:
+                            raise ValueError("unsupported graph callee source language")
+                        parsed_callee = parse_source(callee_path, callee_source, language)
+                        if not parsed_callee.parse_complete:
+                            raise ValueError("graph callee source has incomplete syntax parsing")
+                        candidates = [item for item in parsed_callee.facts
+                                      if item.kind == "function" and item.name == callee_name]
+                        qualified_name = getattr(call, "callee_qualified_name", None)
+                        if qualified_name:
+                            qualified_member = qualified_name.split("::", 1)[-1]
+                            exact = [item for item in candidates
+                                     if (f"{item.owner}.{item.name}" if item.owner else item.name) == qualified_member]
+                            if exact:
+                                candidates = exact
+                        if len(candidates) != 1:
+                            raise ValueError("graph callee does not map to one local function declaration")
+                        callee_fact = _namespace_fact(candidates[0], root)
+                        callee_evidence_id = evidence_for_external_source(
+                            callee_path, callee_fact.start_byte, callee_fact.end_byte)
+                    except (OSError, ValueError) as error:
+                        diagnostics.append({"code": "GRAPH_CALLEE_UNMAPPED", "severity": "gap",
+                            "recordId": f"{algorithm_id}:{graph_index}", "path": callee_path,
+                            "message": str(error)})
+                        continue
+                    callee_ref = ref("SourceDeclaration", callee_fact.subject_id)
+                    register(callee_ref, "source:" + callee_fact.subject_id, [callee_evidence_id])
+                    step_id = matching_steps[0]["step_id"]
+                    add_fact("behavior.calls", step_refs[step_id], None, "static_may",
+                        [step_evidence[step_id], callee_evidence_id, tool_evidence_id], arguments=[
+                            {"role": "callee", "value": callee_ref},
+                            {"role": "dispatch", "value": getattr(call, "resolution", "unresolved")}],
+                        source_metadata={"kind": "graph_call", "layer": "E4", "owner": algorithm_id,
+                                         "text": callee_name, "evidenceIncluded": True})
     for step in step_records:
         step_id = step.get("step_id")
         if step_id not in step_refs:
@@ -630,4 +792,5 @@ def project_algorithm_to_semantic_model(algorithm_document: dict, project_root: 
         "registrations": sorted(registrations.values(), key=lambda item: item["sourceKey"]),
         "assessments": [], "facts": facts, "evidence": list(evidence.values()), "coverage": [coverage],
         "diagnostics": [], "semanticStates": [state]}
-    return {"bundle": bundle, "artifacts": [], "sourceObservations": {"items": list(observations.values())}}
+    return {"bundle": bundle, "artifacts": list(artifacts.values()),
+            "sourceObservations": {"items": list(observations.values())}}

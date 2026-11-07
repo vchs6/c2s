@@ -41,6 +41,35 @@ class AlgorithmCliTests(unittest.TestCase):
             self.assertTrue(any(fact["predicate"] == "behavior.control_edge" for fact in bundle["facts"]))
             self.assertEqual(result["semantic_validation"]["valid"], True)
 
+    def test_cli_parses_code_review_graph_json_for_source_mapped_call_facts(self):
+        with tempfile.TemporaryDirectory() as temporary, tempfile.TemporaryDirectory() as output_dir:
+            root = Path(temporary)
+            (root / "src").mkdir()
+            (root / "src/run.py").write_text("def run():\n    parse()\n", encoding="utf-8")
+            (root / "src/parse.py").write_text("def parse():\n    return 1\n", encoding="utf-8")
+            graph_output = Path(output_dir) / "graph.json"
+            graph_output.write_text(json.dumps({
+                "status": "ok", "pattern": "callees_of", "target": "run",
+                "result_count": 1, "results_omitted": 0,
+                "results": [{"kind": "Function", "name": "parse", "qualified_name": "parse",
+                             "file_path": "src/parse.py", "line_start": 1, "line_end": 2,
+                             "call_site": {"line": 2, "file": "src/run.py"}}],
+                "edges": [{"source": "run", "target": "parse"}],
+            }), encoding="utf-8")
+            output, errors = io.StringIO(), io.StringIO()
+            with contextlib.redirect_stdout(output), contextlib.redirect_stderr(errors):
+                status = main(["algorithm", "--root", str(root), "--source", "src/run.py",
+                               "--function", "run", "--semantic-facts", "--graph-output",
+                               str(graph_output), "--graph-version", "2.3.9"])
+
+            self.assertEqual(status, 2, errors.getvalue())
+            result = json.loads(output.getvalue())
+            bundle = result["semantic_fact_bundle"]
+            self.assertTrue(any(fact["predicate"] == "behavior.calls" for fact in bundle["facts"]))
+            self.assertIn("GRAPH_INDEX_FRESHNESS_UNVERIFIED",
+                          {item["code"] for item in bundle["coverage"][0]["diagnostics"]})
+            self.assertTrue(result["semantic_validation"]["valid"], result["semantic_validation"]["diagnostics"])
+
     def test_cli_rejects_source_paths_that_escape_the_project_root(self):
         with tempfile.TemporaryDirectory() as temporary, tempfile.TemporaryDirectory() as outside:
             root = Path(temporary)
