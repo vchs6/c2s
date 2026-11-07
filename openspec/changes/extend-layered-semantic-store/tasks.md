@@ -1,10 +1,10 @@
 ## 1. Full-profile normalization and canonicalization
 
-- [ ] 1.1 （M1）完整profile记录规范化。依据：`contracts/semantic-model/fact.schema.json`及`design-incremental-semantic-fact-storage` M1比较契约。交付：全模型各记录collection映射、规范键及引用重写。验证：facts/evidence/registrations/assessments/coverage/dependencies/resolutions/states/contexts全量往返；补证不复制主张；冲突保留；乱序/重复/断引用拒绝或规范化。全部模型层字段丢失、引用悬空、把层号推成包含关系失败。
-- [ ] 1.2 （M1）全量SQLite表与模式兼容。依据：任务1.1及现有M1 store。交付：新collection表/索引/refs及M1向后兼容迁移。验证：M1历史数据库可读；full bundle事务原子保存及恢复；故障不暴露半包；bytes/hash碰撞拒绝。
+- [x] 1.1 （M1）完整profile记录规范化。依据：`contracts/semantic-model/fact.schema.json`及`design-incremental-semantic-fact-storage` M1比较契约。交付：全模型各记录collection映射、规范键及引用重写。验证：facts/evidence/registrations/assessments/coverage/dependencies/resolutions/states/contexts全量往返；补证不复制主张；冲突保留；乱序/重复/断引用拒绝或规范化。全部模型层字段丢失、引用悬空、把层号推成包含关系失败。
+- [x] 1.2 （M1）全量SQLite表与模式兼容。依据：任务1.1及现有M1 store。交付：新collection表/索引/refs及M1向后兼容迁移。验证：M1历史数据库可读；full bundle事务原子保存及恢复；故障不暴露半包；bytes/hash碰撞拒绝。
 
 ## 2. Constructor and query integration
 
-- [ ] 2.1 （M1）普通selector全模型构造和持久化。依据：`project_query_to_semantic_model`及能力矩阵。交付：query CLI使用full profile和规范回读。验证：project/classes/members/functions/local-bindings/behavior-contracts/algorithm-structure/all-supported-facts被写入full store且覆盖/缺口准确；M1选择兼容。
-- [ ] 2.2 （M1）算法语义存储与仓库查询。依据：`project_algorithm_to_semantic_model`及`semantic-fact-query`。交付：算法CLI保存E4 facts，query --store从覆盖命中回读范围bundle。验证：重复查询不重复执行工具；请求selector隔离；同subject只补缺层；source/profile失配不复用。
-- [ ] 2.3 （M1）端到端项目验证。依据：ADR-0011开发侧工作模式。交付：真实Python与Rust项目全selector存储/查询测试与README。验证：遍历所有支持事实并逐ID比对构造结果和仓库结果；验证schema、OpenSpec、artifact；如实标注未做私有盲验收。
+- [x] 2.1 （M1）普通selector全模型构造和持久化。依据：`project_query_to_semantic_model`及能力矩阵。交付：query CLI使用full profile和规范回读。验证：project/classes/members/functions/local-bindings/behavior-contracts/algorithm-structure/all-supported-facts被写入full store且覆盖/缺口准确；M1选择兼容。
+- [x] 2.2 （M1）算法语义存储与仓库查询。依据：`project_algorithm_to_semantic_model`及`semantic-fact-query`。交付：算法CLI保存E4 facts，query --store从覆盖命中回读范围bundle。验证：重复查询不重复执行工具；请求selector隔离；同subject只补缺层；source/profile失配不复用。
+- [x] 2.3 （M1）端到端项目验证。依据：ADR-0011开发侧工作模式。交付：真实Python与Rust项目全selector存储/查询测试与README。验证：遍历所有支持事实并逐ID比对构造结果和仓库结果；验证schema、OpenSpec、artifact；如实标注未做私有盲验收。

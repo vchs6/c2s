@@ -1,7 +1,9 @@
 import tempfile
 import unittest
 import os
+import platform
 from pathlib import Path
+from uuid import NAMESPACE_URL, uuid5
 from unittest.mock import patch
 
 from c2s_semantic_contract import semantic_model_catalogs, validate_model
@@ -144,7 +146,8 @@ class FullSemanticProjectionTests(unittest.TestCase):
                 else:
                     query = query_project(root, ["all-supported-facts"])
 
-                projection = project_query_to_semantic_model(query)
+                identity_domain = str(uuid5(NAMESPACE_URL, f"c2s-domain:{root.resolve()}"))
+                projection = project_query_to_semantic_model(query, identity_domain=identity_domain)
                 bundle = projection["bundle"]
                 validation = validate_model(bundle, semantic_model_catalogs(),
                                             projection["sourceObservations"])
@@ -161,6 +164,29 @@ class FullSemanticProjectionTests(unittest.TestCase):
                     self.assertTrue(query.gaps)
                     self.assertTrue(any(diagnostic["severity"] == "gap"
                                         for diagnostic in coverage_diagnostics))
+                with tempfile.TemporaryDirectory() as temporary:
+                    from c2s_skill.semantic_store import commit_bundle, query_bundle, read_bundle
+                    store_path = Path(temporary) / "semantic-facts.sqlite"
+                    input_id = str(uuid5(NAMESPACE_URL,
+                        f"c2s-input:{query.source_digest}:{query.profile_digest}"))
+                    analysis_id = str(uuid5(NAMESPACE_URL, f"c2s-analysis:{name}:{input_id}"))
+                    session = {"analysisId": analysis_id, "inputId": input_id, "root": str(root.resolve()),
+                        "store": str(store_path.resolve()), "identityDomain": identity_domain,
+                        "sourceCommit": None, "inputDigest": query.source_digest,
+                        "host": {"os": platform.system().lower(), "arch": platform.machine(),
+                                 "pythonVersion": platform.python_version()},
+                        "target": {"value": None, "basisEvidenceIds": [], "status": "unknown"},
+                        "tools": [], "profile": "semantic-fact-model-1"}
+                    receipt = commit_bundle(store_path, {"session": session,
+                        "operationId": f"real-{name}-{query.source_digest}", "expectedGeneration": 0,
+                        "bundle": bundle, "artifacts": projection["artifacts"],
+                        "sourceObservations": projection["sourceObservations"]})
+                    self.assertEqual(receipt["state"], "stored")
+                    stored = read_bundle(store_path, analysis_id)
+                    selected = query_bundle(store_path, analysis_id, "all-supported-facts")
+                    expected_ids = {fact["factId"] for fact in bundle["facts"]}
+                    self.assertEqual({fact["factId"] for fact in stored["bundle"]["facts"]}, expected_ids)
+                    self.assertEqual({fact["factId"] for fact in selected["facts"]}, expected_ids)
 
     def test_real_python_query_projects_all_supported_kinds_into_one_valid_fact_set(self):
         with tempfile.TemporaryDirectory() as temporary:
