@@ -65,7 +65,8 @@
 
 角色：每项实现者负责产品及公开说明，开发侧公开测试按ADR-0011执行；独立审核/验收保持其输出所有权，隔离不足时不得称盲验收。每项只修改所列文件及同职责文档，不修改隐藏suite或其期望。
 
-- [ ] 10.1 **v2公共契约和反例**
+- [x] 10.1 **v2公共契约和反例**
+  - 完成证据：先运行新测试得到接口ImportError，再实现v2验证器及封闭Schema；模型测试98项通过（包含8项新v2正反测试），v1未改。
   - 依据/依赖：无；读取设计数据协议及正式模型/查询规格。
   - 交付与修改范围：新增 `contracts/semantic-model/semantic-entity-model-2.schema.json`、`skill/contracts/semantic-fact-request-2.schema.json`、`semantic-fact-result-2.schema.json`；修改公共类型目录/manifest及 `src/c2s_semantic_contract/validation.py`。
   - 输入/输出接口：`validate_semantic_entity_model_v2(document: object) -> dict`；返回valid及逐项diagnostics；新增sourceRecords、origin/premiseIds、acquisitionRuns及双coverage。

@@ -1218,3 +1218,51 @@ def validate_semantic_entity_model(document: dict) -> dict:
     result["diagnostics"] = diagnostics
     result["valid"] = not diagnostics
     return result
+
+
+def validate_semantic_entity_model_v2(document: object) -> dict:
+    """校验v2载荷及跨来源、主张、证据和实体引用，不执行项目工具。"""
+    schema_path = Path(__file__).resolve().parents[2] / 'contracts/semantic-model/semantic-entity-model-2.schema.json'
+    schema = json.loads(schema_path.read_text(encoding='utf-8'))
+    errors = [{'code': 'V2_STRUCTURE', 'path': list(e.path), 'message': e.message}
+              for e in Draft202012Validator(schema).iter_errors(document)]
+    if errors:
+        return {'valid': False, 'diagnostics': errors}
+    legacy = deepcopy(document)
+    for key in ('sourceRecords', 'sourceCoverage', 'acquisitionRuns', 'artifacts'):
+        legacy.pop(key)
+    legacy.update(version='1.0.0', profile='semantic-entity-model-1')
+    for claim in legacy['claims']:
+        for key in ('origin', 'premiseIds', 'method', 'legacyPayloadArtifactId'):
+            claim.pop(key, None)
+    old_result = validate_semantic_entity_model(legacy)
+    errors.extend(old_result['diagnostics'])
+    def fail(code, message):
+        errors.append({'code': code, 'message': message})
+    def unique(collection, key):
+        values = [item[key] for item in document[collection]]
+        if len(values) != len(set(values)):
+            fail('V2_DUPLICATE_ID', collection)
+        return set(values)
+    sources = unique('sourceRecords', 'recordId')
+    evidence = unique('evidence', 'evidenceId')
+    claims = unique('claims', 'claimId')
+    artifacts = unique('artifacts', 'artifactId')
+    unique('sourceCoverage', 'coverageId')
+    unique('acquisitionRuns', 'runId')
+    for record in document['sourceRecords']:
+        path = record['path'].replace('\\', '/')
+        if path.startswith('/') or '..' in path.split('/') or ':' in path:
+            fail('V2_SOURCE_PATH', path)
+        refs = set(record['parentRecordIds']) | {x['recordId'] for x in record['relatedRecords']}
+        if refs - sources or set(record['evidenceIds']) - evidence:
+            fail('V2_SOURCE_REFERENCE', record['recordId'])
+    for claim in document['claims']:
+        if claim['origin'] == 'derived_analysis' and set(claim['premiseIds']) - (sources | evidence | claims):
+            fail('V2_PREMISE_REFERENCE', claim['claimId'])
+        if claim['origin'] == 'unclassified_legacy' and claim['legacyPayloadArtifactId'] not in artifacts:
+            fail('V2_LEGACY_ARTIFACT', claim['claimId'])
+    for run in document['acquisitionRuns']:
+        if set(run['sourceRecordIds']) - sources or set(run['evidenceIds']) - evidence or set(run['artifactIds']) - artifacts:
+            fail('V2_RUN_REFERENCE', run['runId'])
+    return {'valid': not errors, 'diagnostics': errors}

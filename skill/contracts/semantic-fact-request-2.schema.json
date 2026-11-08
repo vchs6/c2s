@@ -1,0 +1,95 @@
+{
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "profile": {
+      "const": "semantic-fact-request-2"
+    },
+    "scopeId": {
+      "type": "string",
+      "minLength": 1
+    },
+    "view": {
+      "enum": [
+        "source",
+        "entity"
+      ]
+    },
+    "target": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "kind": {
+          "enum": [
+            "project",
+            "module",
+            "function",
+            "declaration",
+            "all",
+            "Project",
+            "Module",
+            "Capability",
+            "DataEntity",
+            "ComputationEntity",
+            "ExternalActor",
+            "TestEntity"
+          ]
+        },
+        "ref": {
+          "type": "object"
+        },
+        "path": {
+          "type": "string",
+          "minLength": 1
+        },
+        "name": {
+          "type": "string",
+          "minLength": 1
+        }
+      },
+      "required": [
+        "kind"
+      ]
+    },
+    "facets": {
+      "type": "array",
+      "minItems": 1,
+      "uniqueItems": true,
+      "items": {
+        "enum": [
+          "organization",
+          "attributes",
+          "relations",
+          "implementation",
+          "algorithm",
+          "tests"
+        ]
+      }
+    },
+    "detail": {
+      "enum": [
+        "list",
+        "self"
+      ]
+    },
+    "expandDepth": {
+      "type": "integer",
+      "minimum": 0,
+      "maximum": 8
+    },
+    "conditions": {
+      "type": "object"
+    }
+  },
+  "required": [
+    "profile",
+    "scopeId",
+    "view",
+    "target",
+    "facets",
+    "detail",
+    "expandDepth",
+    "conditions"
+  ],
+  "$schema": "https://json-schema.org/draft/2020-12/schema"
+}
