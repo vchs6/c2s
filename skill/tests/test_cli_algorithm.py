@@ -167,7 +167,7 @@ class AlgorithmCliTests(unittest.TestCase):
         with tempfile.TemporaryDirectory() as temporary:
             root = Path(temporary)
             (root / "main.py").write_text(
-                "def choose(flag):\n    if flag:\n        return 1\n    return 0\n", encoding="utf-8")
+                "def choose(flag):\n    \"\"\"Select a result.\"\"\"\n    if flag:\n        return 1\n    return 0\n", encoding="utf-8")
             (root / "lib.rs").write_text(
                 "fn answer(flag: bool) -> i32 { if flag { return 1; } 0 }\n", encoding="utf-8")
             output, errors = io.StringIO(), io.StringIO()
@@ -179,6 +179,7 @@ class AlgorithmCliTests(unittest.TestCase):
             choose = next(item for item in result["pseudocode"] if item["function"] == "choose")
             self.assertIn("如果 flag", choose["text"])
             self.assertIn("返回 1", choose["text"])
+            self.assertNotIn("Select a result", choose["text"])
             self.assertTrue(choose["evidence_refs"])
             self.assertFalse(choose["complete"])
             output = io.StringIO()

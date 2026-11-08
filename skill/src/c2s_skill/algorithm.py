@@ -747,6 +747,9 @@ def render_pseudocode(algorithm: dict, source: bytes) -> dict:
         span = step.get("source", {})
         raw = source[span.get("start_byte", 0):span.get("end_byte", 0)].decode("utf-8", errors="replace")
         statement = next((line.strip() for line in raw.splitlines() if line.strip()), "")
+        if statement.startswith(('"""', "'''")):
+            # Python docstrings are declaration documentation, not execution steps.
+            continue
         kind = step.get("kind", "opaque")
         if kind in {"select", "loop"}:
             statement = statement.splitlines()[0].strip()
