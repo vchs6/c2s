@@ -15,7 +15,7 @@ import subprocess
 import shutil
 from typing import Any, Iterable
 
-_PARSERS = {"native_manifest", "source_python", "source_rust", "cargo_metadata", "code_review_graph"}
+_PARSERS = {"native_manifest", "source_python", "source_rust", "cargo_metadata", "code_review_graph", "codegraph"}
 
 
 @dataclass(frozen=True, slots=True)
@@ -223,6 +223,11 @@ def parse_selected_tool_output(selection: ToolSelection, tool_id: str, response:
     tool = next((item for item in registry["tools"] if item.get("id") == tool_id), None)
     if tool is None:
         raise ValueError(f"selected tool {tool_id!r} is missing from the capability matrix")
+    if tool.get("parser") == "codegraph":
+        from .codegraph_adapter import parse_codegraph_response
+        return parse_codegraph_response({"toolVersion": tool_version,
+            "payload": response.get("payload", response)}, project_root,
+            response.get("queryKind", "query"))
     if tool.get("parser") == "code_review_graph":
         from .graph_tool_adapter import parse_code_review_graph_response
         return parse_code_review_graph_response(response, project_root, tool_version)

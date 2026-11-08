@@ -5,42 +5,75 @@
     {
       "id": "cargo-metadata",
       "parser": "cargo_metadata",
-      "provides": ["workspace.rust.members"],
-      "runtime": {"kind": "executable", "name": "cargo", "version": null},
+      "provides": [
+        "workspace.rust.members"
+      ],
+      "runtime": {
+        "kind": "executable",
+        "name": "cargo",
+        "version": null
+      },
       "host_os": "any",
       "target": null,
       "status": "lit",
       "validation": {
-        "tests": ["skill/tests/test_query.py"],
-        "evidence": ["docs/development/reviews/issues/10/acquisition-survey-2026-11-02/m1-native-interface.md"],
+        "tests": [
+          "skill/tests/test_query.py"
+        ],
+        "evidence": [
+          "docs/development/reviews/issues/10/acquisition-survey-2026-11-02/m1-native-interface.md"
+        ],
         "scope": "Cargo metadata --no-deps --offline on fixed Rust project; host Linux; arbitrary targets unknown"
       }
     },
     {
       "id": "code-review-graph",
       "parser": "code_review_graph",
-      "provides": ["calls.cross_file.candidates"],
-      "runtime": {"kind": "optional-python-module", "name": "code_review_graph", "packages": {"code-review-graph": "2.3.9"}},
+      "provides": [
+        "calls.cross_file.candidates"
+      ],
+      "runtime": {
+        "kind": "optional-python-module",
+        "name": "code_review_graph",
+        "packages": {
+          "code-review-graph": "2.3.9"
+        }
+      },
       "host_os": "any",
       "target": null,
       "status": "lit",
       "validation": {
-        "tests": ["skill/tests/test_graph_tool_adapter.py"],
-        "evidence": ["docs/development/reviews/issues/10/acquisition-survey-2026-11-02/experiment-results.json"],
+        "tests": [
+          "skill/tests/test_graph_tool_adapter.py"
+        ],
+        "evidence": [
+          "docs/development/reviews/issues/10/acquisition-survey-2026-11-02/experiment-results.json"
+        ],
         "scope": "Code Review Graph 2.3.9; fixed Click/Python and regex/Rust; graph freshness and complete enumeration unknown"
       }
     },
     {
       "id": "project-manifests",
       "parser": "native_manifest",
-      "provides": ["project.manifest"],
-      "runtime": {"kind": "builtin-python", "name": "tomllib", "python_version": "3.12.14"},
+      "provides": [
+        "project.manifest"
+      ],
+      "runtime": {
+        "kind": "builtin-python",
+        "name": "tomllib",
+        "python_version": "3.12.14"
+      },
       "host_os": "any",
       "target": null,
       "status": "lit",
       "validation": {
-        "tests": ["skill/tests/test_acquisition.py", "skill/tests/test_query.py"],
-        "evidence": ["docs/development/reviews/issues/10/acquisition-survey-2026-11-02/m1-native-interface.md"],
+        "tests": [
+          "skill/tests/test_acquisition.py",
+          "skill/tests/test_query.py"
+        ],
+        "evidence": [
+          "docs/development/reviews/issues/10/acquisition-survey-2026-11-02/m1-native-interface.md"
+        ],
         "scope": "Python TOML declarations; dynamic project metadata remains a gap"
       }
     },
@@ -54,13 +87,22 @@
         "source.python.algorithm_structure",
         "project.python.manifest"
       ],
-      "runtime": {"kind": "builtin-python", "name": "ast", "python_version": "3.12.14"},
+      "runtime": {
+        "kind": "builtin-python",
+        "name": "ast",
+        "python_version": "3.12.14"
+      },
       "host_os": "any",
       "target": null,
       "status": "lit",
       "validation": {
-        "tests": ["skill/tests/test_acquisition.py", "skill/tests/test_algorithm.py"],
-        "evidence": ["docs/development/reviews/issues/10/acquisition-survey-2026-11-02/experiment-results.json"],
+        "tests": [
+          "skill/tests/test_acquisition.py",
+          "skill/tests/test_algorithm.py"
+        ],
+        "evidence": [
+          "docs/development/reviews/issues/10/acquisition-survey-2026-11-02/experiment-results.json"
+        ],
         "scope": "Python 3 AST over fixed Click/Python project; dynamic bindings and runtime behavior unknown"
       }
     },
@@ -74,13 +116,25 @@
         "source.rust.algorithm_structure",
         "project.rust.manifest"
       ],
-      "runtime": {"kind": "python-module", "name": "tree_sitter_rust", "packages": {"tree-sitter": "0.26.0", "tree-sitter-rust": "0.24.2"}},
+      "runtime": {
+        "kind": "python-module",
+        "name": "tree_sitter_rust",
+        "packages": {
+          "tree-sitter": "0.26.0",
+          "tree-sitter-rust": "0.24.2"
+        }
+      },
       "host_os": "any",
       "target": null,
       "status": "lit",
       "validation": {
-        "tests": ["skill/tests/test_acquisition.py", "skill/tests/test_algorithm.py"],
-        "evidence": ["docs/development/reviews/issues/10/acquisition-survey-2026-11-02/experiment-results.json"],
+        "tests": [
+          "skill/tests/test_acquisition.py",
+          "skill/tests/test_algorithm.py"
+        ],
+        "evidence": [
+          "docs/development/reviews/issues/10/acquisition-survey-2026-11-02/experiment-results.json"
+        ],
         "scope": "Tree-sitter Rust grammar over fixed regex/Rust project; type resolution, macros and target conditions unknown"
       }
     },
@@ -88,64 +142,150 @@
       "id": "ast-grep",
       "kind": "tool",
       "parser": null,
-      "provides": ["source.multilanguage.pattern_search"],
-      "runtime": {"kind": "executable", "name": "ast-grep"},
-      "host_os": "any", "target": null, "status": "candidate",
-      "validation": {"tests": [], "evidence": [], "scope": "Documented Tree-sitter structural search; output parser not implemented or validated"}
+      "provides": [
+        "source.multilanguage.pattern_search"
+      ],
+      "runtime": {
+        "kind": "executable",
+        "name": "ast-grep"
+      },
+      "host_os": "any",
+      "target": null,
+      "status": "candidate",
+      "validation": {
+        "tests": [],
+        "evidence": [],
+        "scope": "Documented Tree-sitter structural search; output parser not implemented or validated"
+      }
     },
     {
       "id": "semgrep",
       "kind": "tool",
       "parser": null,
-      "provides": ["source.multilanguage.rule_results", "source.multilanguage.local_dataflow"],
-      "runtime": {"kind": "executable", "name": "semgrep"},
-      "host_os": "any", "target": null, "status": "candidate",
-      "validation": {"tests": [], "evidence": [], "scope": "README capability claims only; parser adapter and project coverage not validated"}
+      "provides": [
+        "source.multilanguage.rule_results",
+        "source.multilanguage.local_dataflow"
+      ],
+      "runtime": {
+        "kind": "executable",
+        "name": "semgrep"
+      },
+      "host_os": "any",
+      "target": null,
+      "status": "candidate",
+      "validation": {
+        "tests": [],
+        "evidence": [],
+        "scope": "README capability claims only; parser adapter and project coverage not validated"
+      }
     },
     {
       "id": "codeql",
       "kind": "tool",
       "parser": null,
-      "provides": ["source.multilanguage.dataflow"],
-      "runtime": {"kind": "executable", "name": "codeql"},
-      "host_os": "any", "target": null, "status": "candidate",
-      "validation": {"tests": [], "evidence": [], "scope": "Heavyweight candidate; license, language database and SARIF/BQRS parser remain unverified"}
+      "provides": [
+        "source.multilanguage.dataflow"
+      ],
+      "runtime": {
+        "kind": "executable",
+        "name": "codeql"
+      },
+      "host_os": "any",
+      "target": null,
+      "status": "candidate",
+      "validation": {
+        "tests": [],
+        "evidence": [],
+        "scope": "Heavyweight candidate; license, language database and SARIF/BQRS parser remain unverified"
+      }
     },
     {
       "id": "serena",
       "kind": "tool-skill",
       "parser": null,
-      "provides": ["symbol.definition", "symbol.references"],
-      "runtime": {"kind": "mcp-server", "name": "serena"},
-      "host_os": "any", "target": null, "status": "candidate",
-      "validation": {"tests": [], "evidence": [], "scope": "Symbol APIs surveyed; runtime output parser and complete enumeration not validated"}
+      "provides": [
+        "symbol.definition",
+        "symbol.references"
+      ],
+      "runtime": {
+        "kind": "mcp-server",
+        "name": "serena"
+      },
+      "host_os": "any",
+      "target": null,
+      "status": "candidate",
+      "validation": {
+        "tests": [],
+        "evidence": [],
+        "scope": "Symbol APIs surveyed; runtime output parser and complete enumeration not validated"
+      }
     },
     {
       "id": "gitnexus",
       "kind": "tool-skill",
       "parser": null,
-      "provides": ["project.symbol_graph", "project.call_graph"],
-      "runtime": {"kind": "mcp-server", "name": "gitnexus"},
-      "host_os": "any", "target": null, "status": "candidate",
-      "validation": {"tests": [], "evidence": [], "scope": "Tool/Skill outputs surveyed; parser and pagination/coverage not validated"}
+      "provides": [
+        "project.symbol_graph",
+        "project.call_graph"
+      ],
+      "runtime": {
+        "kind": "mcp-server",
+        "name": "gitnexus"
+      },
+      "host_os": "any",
+      "target": null,
+      "status": "candidate",
+      "validation": {
+        "tests": [],
+        "evidence": [],
+        "scope": "Tool/Skill outputs surveyed; parser and pagination/coverage not validated"
+      }
     },
     {
       "id": "codegraph",
-      "kind": "tool-skill",
-      "parser": null,
-      "provides": ["project.symbol_graph", "project.call_graph"],
-      "runtime": {"kind": "mcp-server", "name": "codegraph"},
-      "host_os": "any", "target": null, "status": "candidate",
-      "validation": {"tests": [], "evidence": [], "scope": "CLI/MCP outputs surveyed; parser, scope and pagination not validated"}
+      "kind": "tool",
+      "parser": "codegraph",
+      "provides": [
+        "source.graph.relationship_candidates"
+      ],
+      "runtime": {
+        "kind": "executable",
+        "name": "codegraph",
+        "version": "1.6.2"
+      },
+      "host_os": "linux",
+      "target": null,
+      "status": "candidate",
+      "validation": {
+        "tests": [
+          "skill/tests/test_codegraph_adapter.py"
+        ],
+        "evidence": [
+          "docs/development/reviews/semantic-facts/CodeGraph适配验证.md",
+          "docs/development/reviews/semantic-facts/CodeGraph适配验证.json"
+        ],
+        "scope": "CodeGraph 1.6.2真实Click/regex JSON已解析；Linux。仅候选关系，无绑定/全枚举/新鲜度证明，未证实相对现有组合的净覆盖收益，保持候选。"
+      }
     },
     {
       "id": "code-review-graph-explore-skill",
       "kind": "skill",
       "parser": null,
-      "provides": ["project.navigation_hints"],
-      "runtime": {"kind": "skill", "name": "build-graph, explore-codebase"},
-      "host_os": "any", "target": null, "status": "candidate",
-      "validation": {"tests": [], "evidence": [], "scope": "Upstream Skill instructions are not present in the active registry and have no machine parser"}
+      "provides": [
+        "project.navigation_hints"
+      ],
+      "runtime": {
+        "kind": "skill",
+        "name": "build-graph, explore-codebase"
+      },
+      "host_os": "any",
+      "target": null,
+      "status": "candidate",
+      "validation": {
+        "tests": [],
+        "evidence": [],
+        "scope": "Upstream Skill instructions are not present in the active registry and have no machine parser"
+      }
     }
   ]
 }

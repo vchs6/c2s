@@ -1,0 +1,11 @@
+# CodeGraph 1.6.2输出适配验证
+
+本次仅用MIT公开CLI，不启用商业服务或默认宿主配置。已在隔离Click/regex副本运行files/query/callers/callees四类JSON命令并调用产品解析器，8次输出均成功解析；原始响应及stderr保存在同名JSON，查询前逐文件对照固定检出，源文件不变。版本：Click 2247b35ea1c47c727d7a06e51fa280e12a863ff6；regex 94ac45b2a6e7b1c30927feb5b66c5ded5b7ad447。
+
+Click files返回100项；make_parser查询1候选、调用者1关系候选、被调用者2关系候选。regex files返回233项；ClassQuery::canonicalize查询10候选（stderr报告截断）、调用者1关系候选、被调用者12关系候选。路径均核对在项目内、行跨度可读；原生UID不替代实体身份。无调用点/绑定证明，不把enum构造候选当已解析函数调用。
+
+解析器始终保留GRAPH_INDEX_FRESHNESS_UNVERIFIED及GRAPH_ENUMERATION_UNPROVEN，stderr截断另列GRAPH_RESULTS_TRUNCATED。原始JSON对象/数组不会被误读为空成功。7项单测覆盖路径逃逸、非法协议、原始响应、版本及新鲜度和截断；既有CRG解析不改。
+
+矩阵保留candidate：虽已验证接口和局部候选，仍没有在相同请求、同覆盖口径上证明相对原生+CRG的净覆盖/成本收益。新增解析器不自动扩大必需依赖、不宣称全体调用或完整图解析；后续需要此候选时须完成覆盖收益验证后再点亮。默认生产栈仍使用已点亮原生工具和可选CRG。
+
+市场调研的冷建图记录可参照2026-11-08非商用调研；本次查询/解析不是新的冷索引性能基准，没有LLM调用，不报告词元节省。

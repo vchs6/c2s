@@ -1,7 +1,10 @@
 """v2来源、解释与兼容边界的公开测试。"""
 import copy
 import unittest
-from test_entity_model_contract import valid_entity_model
+if __package__:
+    from .test_entity_model_contract import valid_entity_model
+else:
+    from test_entity_model_contract import valid_entity_model
 from c2s_semantic_contract.validation import validate_semantic_entity_model_v2
 
 

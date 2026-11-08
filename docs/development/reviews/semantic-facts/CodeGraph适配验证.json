@@ -1,0 +1,3150 @@
+{
+  "tool": "CodeGraph",
+  "version": "1.6.2",
+  "results": [
+    {
+      "project": "click",
+      "commit": "2247b35ea1c47c727d7a06e51fa280e12a863ff6",
+      "queryKind": "files",
+      "sourceFilesVerified": 178,
+      "candidates": 100,
+      "relations": 0,
+      "diagnostics": [
+        {
+          "code": "GRAPH_INDEX_FRESHNESS_UNVERIFIED"
+        },
+        {
+          "code": "GRAPH_ENUMERATION_UNPROVEN"
+        }
+      ],
+      "rawArtifact": {
+        "artifactId": "42acc2e1d36ac680393ec9100746aaf54a0093c63600d8cdd89d66975e65ae82",
+        "kind": "tool_output",
+        "payload": {
+          "toolVersion": "1.6.2",
+          "payload": [
+            {
+              "path": ".github/ISSUE_TEMPLATE/config.yml",
+              "language": "yaml",
+              "nodeCount": 0,
+              "size": 332
+            },
+            {
+              "path": ".github/workflows/lock.yaml",
+              "language": "yaml",
+              "nodeCount": 0,
+              "size": 741
+            },
+            {
+              "path": ".github/workflows/nightly.yaml",
+              "language": "yaml",
+              "nodeCount": 0,
+              "size": 2821
+            },
+            {
+              "path": ".github/workflows/pre-commit.yaml",
+              "language": "yaml",
+              "nodeCount": 0,
+              "size": 1020
+            },
+            {
+              "path": ".github/workflows/publish.yaml",
+              "language": "yaml",
+              "nodeCount": 0,
+              "size": 1966
+            },
+            {
+              "path": ".github/workflows/tests.yaml",
+              "language": "yaml",
+              "nodeCount": 0,
+              "size": 2133
+            },
+            {
+              "path": ".github/workflows/zizmor.yaml",
+              "language": "yaml",
+              "nodeCount": 0,
+              "size": 654
+            },
+            {
+              "path": ".pre-commit-config.yaml",
+              "language": "yaml",
+              "nodeCount": 0,
+              "size": 925
+            },
+            {
+              "path": ".readthedocs.yaml",
+              "language": "yaml",
+              "nodeCount": 0,
+              "size": 504
+            },
+            {
+              "path": "docs/conf.py",
+              "language": "python",
+              "nodeCount": 26,
+              "size": 1996
+            },
+            {
+              "path": "examples/aliases/aliases.py",
+              "language": "python",
+              "nodeCount": 21,
+              "size": 4062
+            },
+            {
+              "path": "examples/colors/colors.py",
+              "language": "python",
+              "nodeCount": 4,
+              "size": 926
+            },
+            {
+              "path": "examples/completion/completion.py",
+              "language": "python",
+              "nodeCount": 11,
+              "size": 1388
+            },
+            {
+              "path": "examples/complex/complex/__init__.py",
+              "language": "python",
+              "nodeCount": 1,
+              "size": 0
+            },
+            {
+              "path": "examples/complex/complex/cli.py",
+              "language": "python",
+              "nodeCount": 15,
+              "size": 1608
+            },
+            {
+              "path": "examples/complex/complex/commands/__init__.py",
+              "language": "python",
+              "nodeCount": 1,
+              "size": 0
+            },
+            {
+              "path": "examples/complex/complex/commands/cmd_init.py",
+              "language": "python",
+              "nodeCount": 4,
+              "size": 385
+            },
+            {
+              "path": "examples/complex/complex/commands/cmd_status.py",
+              "language": "python",
+              "nodeCount": 4,
+              "size": 286
+            },
+            {
+              "path": "examples/imagepipe/imagepipe.py",
+              "language": "python",
+              "nodeCount": 27,
+              "size": 8257
+            },
+            {
+              "path": "examples/inout/inout.py",
+              "language": "python",
+              "nodeCount": 3,
+              "size": 722
+            },
+            {
+              "path": "examples/naval/naval.py",
+              "language": "python",
+              "nodeCount": 10,
+              "size": 1697
+            },
+            {
+              "path": "examples/repo/repo.py",
+              "language": "python",
+              "nodeCount": 16,
+              "size": 4714
+            },
+            {
+              "path": "examples/termui/termui.py",
+              "language": "python",
+              "nodeCount": 18,
+              "size": 4150
+            },
+            {
+              "path": "examples/validation/validation.py",
+              "language": "python",
+              "nodeCount": 7,
+              "size": 1453
+            },
+            {
+              "path": "src/click/__init__.py",
+              "language": "python",
+              "nodeCount": 66,
+              "size": 5145
+            },
+            {
+              "path": "src/click/_compat.py",
+              "language": "python",
+              "nodeCount": 69,
+              "size": 17939
+            },
+            {
+              "path": "src/click/_termui_impl.py",
+              "language": "python",
+              "nodeCount": 78,
+              "size": 32805
+            },
+            {
+              "path": "src/click/_textwrap.py",
+              "language": "python",
+              "nodeCount": 12,
+              "size": 6270
+            },
+            {
+              "path": "src/click/_utils.py",
+              "language": "python",
+              "nodeCount": 12,
+              "size": 1259
+            },
+            {
+              "path": "src/click/_winconsole.py",
+              "language": "python",
+              "nodeCount": 77,
+              "size": 8413
+            },
+            {
+              "path": "src/click/core.py",
+              "language": "python",
+              "nodeCount": 224,
+              "size": 157018
+            },
+            {
+              "path": "src/click/decorators.py",
+              "language": "python",
+              "nodeCount": 56,
+              "size": 21680
+            },
+            {
+              "path": "src/click/exceptions.py",
+              "language": "python",
+              "nodeCount": 47,
+              "size": 11862
+            },
+            {
+              "path": "src/click/formatting.py",
+              "language": "python",
+              "nodeCount": 25,
+              "size": 10444
+            },
+            {
+              "path": "src/click/globals.py",
+              "language": "python",
+              "nodeCount": 11,
+              "size": 1923
+            },
+            {
+              "path": "src/click/parser.py",
+              "language": "python",
+              "nodeCount": 44,
+              "size": 19052
+            },
+            {
+              "path": "src/click/shell_completion.py",
+              "language": "python",
+              "nodeCount": 63,
+              "size": 26172
+            },
+            {
+              "path": "src/click/termui.py",
+              "language": "python",
+              "nodeCount": 58,
+              "size": 35883
+            },
+            {
+              "path": "src/click/testing.py",
+              "language": "python",
+              "nodeCount": 67,
+              "size": 27584
+            },
+            {
+              "path": "src/click/types.py",
+              "language": "python",
+              "nodeCount": 142,
+              "size": 47335
+            },
+            {
+              "path": "src/click/utils.py",
+              "language": "python",
+              "nodeCount": 58,
+              "size": 21421
+            },
+            {
+              "path": "tests/conftest.py",
+              "language": "python",
+              "nodeCount": 4,
+              "size": 131
+            },
+            {
+              "path": "tests/test_abort_interrupt.py",
+              "language": "python",
+              "nodeCount": 26,
+              "size": 5357
+            },
+            {
+              "path": "tests/test_arguments.py",
+              "language": "python",
+              "nodeCount": 130,
+              "size": 38961
+            },
+            {
+              "path": "tests/test_basic.py",
+              "language": "python",
+              "nodeCount": 108,
+              "size": 28629
+            },
+            {
+              "path": "tests/test_chain.py",
+              "language": "python",
+              "nodeCount": 47,
+              "size": 5786
+            },
+            {
+              "path": "tests/test_command_decorators.py",
+              "language": "python",
+              "nodeCount": 19,
+              "size": 1880
+            },
+            {
+              "path": "tests/test_commands.py",
+              "language": "python",
+              "nodeCount": 82,
+              "size": 22179
+            },
+            {
+              "path": "tests/test_compat.py",
+              "language": "python",
+              "nodeCount": 26,
+              "size": 8515
+            },
+            {
+              "path": "tests/test_context.py",
+              "language": "python",
+              "nodeCount": 103,
+              "size": 23042
+            },
+            {
+              "path": "tests/test_custom_classes.py",
+              "language": "python",
+              "nodeCount": 22,
+              "size": 3022
+            },
+            {
+              "path": "tests/test_defaults.py",
+              "language": "python",
+              "nodeCount": 50,
+              "size": 19588
+            },
+            {
+              "path": "tests/test_deprecations.py",
+              "language": "python",
+              "nodeCount": 25,
+              "size": 9473
+            },
+            {
+              "path": "tests/test_exceptions/__init__.py",
+              "language": "python",
+              "nodeCount": 1,
+              "size": 0
+            },
+            {
+              "path": "tests/test_exceptions/test_FileError.py",
+              "language": "python",
+              "nodeCount": 3,
+              "size": 180
+            },
+            {
+              "path": "tests/test_formatting.py",
+              "language": "python",
+              "nodeCount": 52,
+              "size": 18345
+            },
+            {
+              "path": "tests/test_imports.py",
+              "language": "python",
+              "nodeCount": 8,
+              "size": 1560
+            },
+            {
+              "path": "tests/test_info_dict.py",
+              "language": "python",
+              "nodeCount": 22,
+              "size": 10390
+            },
+            {
+              "path": "tests/test_normalization.py",
+              "language": "python",
+              "nodeCount": 10,
+              "size": 1794
+            },
+            {
+              "path": "tests/test_options.py",
+              "language": "python",
+              "nodeCount": 269,
+              "size": 134294
+            },
+            {
+              "path": "tests/test_parser.py",
+              "language": "python",
+              "nodeCount": 8,
+              "size": 915
+            },
+            {
+              "path": "tests/test_shell_completion.py",
+              "language": "python",
+              "nodeCount": 68,
+              "size": 20449
+            },
+            {
+              "path": "tests/test_stream_lifecycle.py",
+              "language": "python",
+              "nodeCount": 60,
+              "size": 16258
+            },
+            {
+              "path": "tests/test_termui.py",
+              "language": "python",
+              "nodeCount": 164,
+              "size": 69687
+            },
+            {
+              "path": "tests/test_testing.py",
+              "language": "python",
+              "nodeCount": 101,
+              "size": 24315
+            },
+            {
+              "path": "tests/test_types/__init__.py",
+              "language": "python",
+              "nodeCount": 1,
+              "size": 0
+            },
+            {
+              "path": "tests/test_types/test_Choice.py",
+              "language": "python",
+              "nodeCount": 3,
+              "size": 224
+            },
+            {
+              "path": "tests/test_types/test_File.py",
+              "language": "python",
+              "nodeCount": 4,
+              "size": 907
+            },
+            {
+              "path": "tests/test_types/test_FloatRange.py",
+              "language": "python",
+              "nodeCount": 6,
+              "size": 1168
+            },
+            {
+              "path": "tests/test_types/test_FuncParamType.py",
+              "language": "python",
+              "nodeCount": 5,
+              "size": 539
+            },
+            {
+              "path": "tests/test_types/test_IntRange.py",
+              "language": "python",
+              "nodeCount": 5,
+              "size": 1219
+            },
+            {
+              "path": "tests/test_types/test_ParamType.py",
+              "language": "python",
+              "nodeCount": 7,
+              "size": 746
+            },
+            {
+              "path": "tests/test_types/test_Path.py",
+              "language": "python",
+              "nodeCount": 20,
+              "size": 5637
+            },
+            {
+              "path": "tests/test_types/test_convert_type.py",
+              "language": "python",
+              "nodeCount": 10,
+              "size": 3441
+            },
+            {
+              "path": "tests/test_utils/__init__.py",
+              "language": "python",
+              "nodeCount": 1,
+              "size": 0
+            },
+            {
+              "path": "tests/test_utils/test_KeepOpenFile.py",
+              "language": "python",
+              "nodeCount": 3,
+              "size": 331
+            },
+            {
+              "path": "tests/test_utils/test_LazyFile.py",
+              "language": "python",
+              "nodeCount": 3,
+              "size": 359
+            },
+            {
+              "path": "tests/test_utils/test__detect_program_name.py",
+              "language": "python",
+              "nodeCount": 7,
+              "size": 762
+            },
+            {
+              "path": "tests/test_utils/test__expand_args.py",
+              "language": "python",
+              "nodeCount": 4,
+              "size": 666
+            },
+            {
+              "path": "tests/test_utils/test_confirm.py",
+              "language": "python",
+              "nodeCount": 6,
+              "size": 1410
+            },
+            {
+              "path": "tests/test_utils/test_echo.py",
+              "language": "python",
+              "nodeCount": 16,
+              "size": 5107
+            },
+            {
+              "path": "tests/test_utils/test_echo_via_pager.py",
+              "language": "python",
+              "nodeCount": 22,
+              "size": 8795
+            },
+            {
+              "path": "tests/test_utils/test_format_filename.py",
+              "language": "python",
+              "nodeCount": 3,
+              "size": 383
+            },
+            {
+              "path": "tests/test_utils/test_make_default_short_help.py",
+              "language": "python",
+              "nodeCount": 4,
+              "size": 2362
+            },
+            {
+              "path": "tests/test_utils/test_open_file.py",
+              "language": "python",
+              "nodeCount": 20,
+              "size": 3421
+            },
+            {
+              "path": "tests/test_utils/test_prompt.py",
+              "language": "python",
+              "nodeCount": 17,
+              "size": 3155
+            },
+            {
+              "path": "tests/test_utils/test_sentinel.py",
+              "language": "python",
+              "nodeCount": 12,
+              "size": 2324
+            },
+            {
+              "path": "tests/test_utils/test_style.py",
+              "language": "python",
+              "nodeCount": 6,
+              "size": 4809
+            },
+            {
+              "path": "tests/typing/typing_aliased_group.py",
+              "language": "python",
+              "nodeCount": 9,
+              "size": 1192
+            },
+            {
+              "path": "tests/typing/typing_confirmation_option.py",
+              "language": "python",
+              "nodeCount": 4,
+              "size": 327
+            },
+            {
+              "path": "tests/typing/typing_edit.py",
+              "language": "python",
+              "nodeCount": 4,
+              "size": 305
+            },
+            {
+              "path": "tests/typing/typing_group_kw_options.py",
+              "language": "python",
+              "nodeCount": 4,
+              "size": 156
+            },
+            {
+              "path": "tests/typing/typing_help_option.py",
+              "language": "python",
+              "nodeCount": 4,
+              "size": 262
+            },
+            {
+              "path": "tests/typing/typing_options.py",
+              "language": "python",
+              "nodeCount": 4,
+              "size": 391
+            },
+            {
+              "path": "tests/typing/typing_password_option.py",
+              "language": "python",
+              "nodeCount": 5,
+              "size": 255
+            },
+            {
+              "path": "tests/typing/typing_path.py",
+              "language": "python",
+              "nodeCount": 8,
+              "size": 1480
+            },
+            {
+              "path": "tests/typing/typing_progressbar.py",
+              "language": "python",
+              "nodeCount": 7,
+              "size": 559
+            },
+            {
+              "path": "tests/typing/typing_prompt.py",
+              "language": "python",
+              "nodeCount": 7,
+              "size": 1546
+            },
+            {
+              "path": "tests/typing/typing_simple_example.py",
+              "language": "python",
+              "nodeCount": 4,
+              "size": 508
+            },
+            {
+              "path": "tests/typing/typing_version_option.py",
+              "language": "python",
+              "nodeCount": 4,
+              "size": 288
+            }
+          ],
+          "stderr": ""
+        }
+      }
+    },
+    {
+      "project": "click",
+      "commit": "2247b35ea1c47c727d7a06e51fa280e12a863ff6",
+      "queryKind": "query",
+      "sourceFilesVerified": 178,
+      "candidates": 1,
+      "relations": 0,
+      "diagnostics": [
+        {
+          "code": "GRAPH_INDEX_FRESHNESS_UNVERIFIED"
+        },
+        {
+          "code": "GRAPH_ENUMERATION_UNPROVEN"
+        }
+      ],
+      "rawArtifact": {
+        "artifactId": "e3fa30bdbb76d56291d3743d08ac0054731d19e76a459cd0390bbb1e83ae7bf8",
+        "kind": "tool_output",
+        "payload": {
+          "toolVersion": "1.6.2",
+          "payload": [
+            {
+              "node": {
+                "id": "method:c24f8f483b7b63141a7209490334d479",
+                "kind": "method",
+                "name": "make_parser",
+                "qualifiedName": "Command::make_parser",
+                "filePath": "src/click/core.py",
+                "language": "python",
+                "startLine": 1256,
+                "endLine": 1261,
+                "startColumn": 4,
+                "endColumn": 21,
+                "docstring": "Creates the underlying option parser for this command.",
+                "signature": "(self, ctx: Context) -> _OptionParser",
+                "visibility": null,
+                "isExported": false,
+                "isAsync": false,
+                "isStatic": false,
+                "isAbstract": false,
+                "updatedAt": 1794133991374
+              },
+              "score": 105.94814935486805
+            }
+          ],
+          "stderr": ""
+        }
+      }
+    },
+    {
+      "project": "click",
+      "commit": "2247b35ea1c47c727d7a06e51fa280e12a863ff6",
+      "queryKind": "callers",
+      "sourceFilesVerified": 178,
+      "candidates": 2,
+      "relations": 1,
+      "diagnostics": [
+        {
+          "code": "GRAPH_INDEX_FRESHNESS_UNVERIFIED"
+        },
+        {
+          "code": "GRAPH_ENUMERATION_UNPROVEN"
+        }
+      ],
+      "rawArtifact": {
+        "artifactId": "7f78d9cd5280ca7190743bb36f975e2ffc63a2fd831d74163192a2655850f146",
+        "kind": "tool_output",
+        "payload": {
+          "toolVersion": "1.6.2",
+          "payload": {
+            "symbol": "make_parser",
+            "targets": [
+              {
+                "name": "make_parser",
+                "kind": "method",
+                "filePath": "src/click/core.py",
+                "startLine": 1256,
+                "id": "method:c24f8f483b7b63141a7209490334d479",
+                "qualifiedName": "Command::make_parser",
+                "language": "python"
+              }
+            ],
+            "ambiguous": false,
+            "aggregation": "definition",
+            "filteredOut": false,
+            "definitions": [
+              {
+                "definition": {
+                  "name": "make_parser",
+                  "kind": "method",
+                  "filePath": "src/click/core.py",
+                  "startLine": 1256,
+                  "id": "method:c24f8f483b7b63141a7209490334d479",
+                  "qualifiedName": "Command::make_parser",
+                  "language": "python"
+                },
+                "roots": [
+                  "method:c24f8f483b7b63141a7209490334d479"
+                ],
+                "callers": [
+                  {
+                    "id": "method:94442748513b5543207bd359bed4a2b4",
+                    "name": "parse_args",
+                    "kind": "method",
+                    "filePath": "src/click/core.py",
+                    "startLine": 1396,
+                    "relationships": [
+                      "calls"
+                    ]
+                  }
+                ],
+                "edges": [
+                  {
+                    "source": "method:94442748513b5543207bd359bed4a2b4",
+                    "target": "method:c24f8f483b7b63141a7209490334d479",
+                    "kind": "calls",
+                    "metadata": {
+                      "confidence": 0.9,
+                      "resolvedBy": "exact-match",
+                      "refName": "make_parser"
+                    },
+                    "line": 1400,
+                    "column": 17,
+                    "provenance": null
+                  }
+                ],
+                "total": 1,
+                "limit": 20,
+                "truncated": false
+              }
+            ],
+            "callers": [
+              {
+                "name": "parse_args",
+                "kind": "method",
+                "filePath": "src/click/core.py",
+                "startLine": 1396,
+                "relationships": [
+                  "calls"
+                ]
+              }
+            ],
+            "total": 1,
+            "limit": 20,
+            "truncated": false
+          },
+          "stderr": ""
+        }
+      }
+    },
+    {
+      "project": "click",
+      "commit": "2247b35ea1c47c727d7a06e51fa280e12a863ff6",
+      "queryKind": "callees",
+      "sourceFilesVerified": 178,
+      "candidates": 3,
+      "relations": 2,
+      "diagnostics": [
+        {
+          "code": "GRAPH_INDEX_FRESHNESS_UNVERIFIED"
+        },
+        {
+          "code": "GRAPH_ENUMERATION_UNPROVEN"
+        }
+      ],
+      "rawArtifact": {
+        "artifactId": "1362c0d3305fedfd1d1467353b448f746389e4d1736e84460fec2427e3563cb9",
+        "kind": "tool_output",
+        "payload": {
+          "toolVersion": "1.6.2",
+          "payload": {
+            "symbol": "make_parser",
+            "targets": [
+              {
+                "name": "make_parser",
+                "kind": "method",
+                "filePath": "src/click/core.py",
+                "startLine": 1256,
+                "id": "method:c24f8f483b7b63141a7209490334d479",
+                "qualifiedName": "Command::make_parser",
+                "language": "python"
+              }
+            ],
+            "ambiguous": false,
+            "aggregation": "definition",
+            "filteredOut": false,
+            "definitions": [
+              {
+                "definition": {
+                  "name": "make_parser",
+                  "kind": "method",
+                  "filePath": "src/click/core.py",
+                  "startLine": 1256,
+                  "id": "method:c24f8f483b7b63141a7209490334d479",
+                  "qualifiedName": "Command::make_parser",
+                  "language": "python"
+                },
+                "roots": [
+                  "method:c24f8f483b7b63141a7209490334d479"
+                ],
+                "callees": [
+                  {
+                    "id": "method:9246b24427fd9c8ef60adaa1bd9a3642",
+                    "name": "get_params",
+                    "kind": "method",
+                    "filePath": "src/click/core.py",
+                    "startLine": 1132,
+                    "relationships": [
+                      "calls"
+                    ]
+                  },
+                  {
+                    "id": "class:fd4d91db2a1b913a8c9434137ce85fab",
+                    "name": "_OptionParser",
+                    "kind": "class",
+                    "filePath": "src/click/parser.py",
+                    "startLine": 224,
+                    "relationships": [
+                      "instantiates"
+                    ]
+                  }
+                ],
+                "edges": [
+                  {
+                    "source": "method:c24f8f483b7b63141a7209490334d479",
+                    "target": "method:9246b24427fd9c8ef60adaa1bd9a3642",
+                    "kind": "calls",
+                    "metadata": {
+                      "confidence": 0.9,
+                      "resolvedBy": "exact-match",
+                      "refName": "get_params"
+                    },
+                    "line": 1259,
+                    "column": 21,
+                    "provenance": null
+                  },
+                  {
+                    "source": "method:c24f8f483b7b63141a7209490334d479",
+                    "target": "class:fd4d91db2a1b913a8c9434137ce85fab",
+                    "kind": "instantiates",
+                    "metadata": {
+                      "confidence": 0.9,
+                      "resolvedBy": "import",
+                      "refName": "_OptionParser",
+                      "refKind": "calls"
+                    },
+                    "line": 1258,
+                    "column": 17,
+                    "provenance": null
+                  }
+                ],
+                "total": 2,
+                "limit": 20,
+                "truncated": false
+              }
+            ],
+            "callees": [
+              {
+                "name": "get_params",
+                "kind": "method",
+                "filePath": "src/click/core.py",
+                "startLine": 1132,
+                "relationships": [
+                  "calls"
+                ]
+              },
+              {
+                "name": "_OptionParser",
+                "kind": "class",
+                "filePath": "src/click/parser.py",
+                "startLine": 224,
+                "relationships": [
+                  "instantiates"
+                ]
+              }
+            ],
+            "total": 2,
+            "limit": 20,
+            "truncated": false
+          },
+          "stderr": ""
+        }
+      }
+    },
+    {
+      "project": "regex",
+      "commit": "94ac45b2a6e7b1c30927feb5b66c5ded5b7ad447",
+      "queryKind": "files",
+      "sourceFilesVerified": 451,
+      "candidates": 233,
+      "relations": 0,
+      "diagnostics": [
+        {
+          "code": "GRAPH_INDEX_FRESHNESS_UNVERIFIED"
+        },
+        {
+          "code": "GRAPH_ENUMERATION_UNPROVEN"
+        }
+      ],
+      "rawArtifact": {
+        "artifactId": "3fb2b89a5218a1be20c24ac7b28df600fd3c4ed7d8df883372be207942e00a9c",
+        "kind": "tool_output",
+        "payload": {
+          "toolVersion": "1.6.2",
+          "payload": [
+            {
+              "path": ".github/FUNDING.yml",
+              "language": "yaml",
+              "nodeCount": 0,
+              "size": 21
+            },
+            {
+              "path": ".github/ISSUE_TEMPLATE/config.yml",
+              "language": "yaml",
+              "nodeCount": 0,
+              "size": 234
+            },
+            {
+              "path": ".github/workflows/ci.yml",
+              "language": "yaml",
+              "nodeCount": 0,
+              "size": 9104
+            },
+            {
+              "path": "fuzz/fuzz_targets/ast_fuzz_match.rs",
+              "language": "rust",
+              "nodeCount": 4,
+              "size": 933
+            },
+            {
+              "path": "fuzz/fuzz_targets/ast_fuzz_match_bytes.rs",
+              "language": "rust",
+              "nodeCount": 4,
+              "size": 941
+            },
+            {
+              "path": "fuzz/fuzz_targets/ast_fuzz_regex.rs",
+              "language": "rust",
+              "nodeCount": 4,
+              "size": 617
+            },
+            {
+              "path": "fuzz/fuzz_targets/ast_roundtrip.rs",
+              "language": "rust",
+              "nodeCount": 9,
+              "size": 1947
+            },
+            {
+              "path": "fuzz/fuzz_targets/fuzz_regex_automata_deserialize_dense_dfa.rs",
+              "language": "rust",
+              "nodeCount": 3,
+              "size": 1433
+            },
+            {
+              "path": "fuzz/fuzz_targets/fuzz_regex_automata_deserialize_sparse_dfa.rs",
+              "language": "rust",
+              "nodeCount": 3,
+              "size": 1431
+            },
+            {
+              "path": "fuzz/fuzz_targets/fuzz_regex_lite_match.rs",
+              "language": "rust",
+              "nodeCount": 4,
+              "size": 1673
+            },
+            {
+              "path": "fuzz/fuzz_targets/fuzz_regex_match.rs",
+              "language": "rust",
+              "nodeCount": 4,
+              "size": 1958
+            },
+            {
+              "path": "regex-automata/src/dfa/accel.rs",
+              "language": "rust",
+              "nodeCount": 41,
+              "size": 20107
+            },
+            {
+              "path": "regex-automata/src/dfa/automaton.rs",
+              "language": "rust",
+              "nodeCount": 68,
+              "size": 96592
+            },
+            {
+              "path": "regex-automata/src/dfa/dense.rs",
+              "language": "rust",
+              "nodeCount": 236,
+              "size": 220188
+            },
+            {
+              "path": "regex-automata/src/dfa/determinize.rs",
+              "language": "rust",
+              "nodeCount": 23,
+              "size": 25695
+            },
+            {
+              "path": "regex-automata/src/dfa/minimize.rs",
+              "language": "rust",
+              "nodeCount": 24,
+              "size": 18026
+            },
+            {
+              "path": "regex-automata/src/dfa/mod.rs",
+              "language": "rust",
+              "nodeCount": 3,
+              "size": 15988
+            },
+            {
+              "path": "regex-automata/src/dfa/onepass.rs",
+              "language": "rust",
+              "nodeCount": 157,
+              "size": 134284
+            },
+            {
+              "path": "regex-automata/src/dfa/regex.rs",
+              "language": "rust",
+              "nodeCount": 32,
+              "size": 33409
+            },
+            {
+              "path": "regex-automata/src/dfa/remapper.rs",
+              "language": "rust",
+              "nodeCount": 27,
+              "size": 9958
+            },
+            {
+              "path": "regex-automata/src/dfa/search.rs",
+              "language": "rust",
+              "nodeCount": 14,
+              "size": 24902
+            },
+            {
+              "path": "regex-automata/src/dfa/sparse.rs",
+              "language": "rust",
+              "nodeCount": 116,
+              "size": 103430
+            },
+            {
+              "path": "regex-automata/src/dfa/special.rs",
+              "language": "rust",
+              "nodeCount": 23,
+              "size": 20851
+            },
+            {
+              "path": "regex-automata/src/dfa/start.rs",
+              "language": "rust",
+              "nodeCount": 12,
+              "size": 2696
+            },
+            {
+              "path": "regex-automata/src/hybrid/dfa.rs",
+              "language": "rust",
+              "nodeCount": 131,
+              "size": 190452
+            },
+            {
+              "path": "regex-automata/src/hybrid/error.rs",
+              "language": "rust",
+              "nodeCount": 27,
+              "size": 8442
+            },
+            {
+              "path": "regex-automata/src/hybrid/id.rs",
+              "language": "rust",
+              "nodeCount": 28,
+              "size": 14641
+            },
+            {
+              "path": "regex-automata/src/hybrid/mod.rs",
+              "language": "rust",
+              "nodeCount": 2,
+              "size": 6040
+            },
+            {
+              "path": "regex-automata/src/hybrid/regex.rs",
+              "language": "rust",
+              "nodeCount": 38,
+              "size": 34531
+            },
+            {
+              "path": "regex-automata/src/hybrid/search.rs",
+              "language": "rust",
+              "nodeCount": 15,
+              "size": 33048
+            },
+            {
+              "path": "regex-automata/src/lib.rs",
+              "language": "rust",
+              "nodeCount": 2,
+              "size": 30727
+            },
+            {
+              "path": "regex-automata/src/macros.rs",
+              "language": "rust",
+              "nodeCount": 1,
+              "size": 423
+            },
+            {
+              "path": "regex-automata/src/meta/error.rs",
+              "language": "rust",
+              "nodeCount": 29,
+              "size": 8604
+            },
+            {
+              "path": "regex-automata/src/meta/limited.rs",
+              "language": "rust",
+              "nodeCount": 6,
+              "size": 10232
+            },
+            {
+              "path": "regex-automata/src/meta/literal.rs",
+              "language": "rust",
+              "nodeCount": 5,
+              "size": 3257
+            },
+            {
+              "path": "regex-automata/src/meta/mod.rs",
+              "language": "rust",
+              "nodeCount": 2,
+              "size": 2746
+            },
+            {
+              "path": "regex-automata/src/meta/prefix.rs",
+              "language": "rust",
+              "nodeCount": 16,
+              "size": 8405
+            },
+            {
+              "path": "regex-automata/src/meta/regex.rs",
+              "language": "rust",
+              "nodeCount": 127,
+              "size": 149037
+            },
+            {
+              "path": "regex-automata/src/meta/reverse_inner.rs",
+              "language": "rust",
+              "nodeCount": 10,
+              "size": 13194
+            },
+            {
+              "path": "regex-automata/src/meta/reverse_suffix.rs",
+              "language": "rust",
+              "nodeCount": 22,
+              "size": 8363
+            },
+            {
+              "path": "regex-automata/src/meta/stopat.rs",
+              "language": "rust",
+              "nodeCount": 6,
+              "size": 8897
+            },
+            {
+              "path": "regex-automata/src/meta/strategy.rs",
+              "language": "rust",
+              "nodeCount": 163,
+              "size": 89636
+            },
+            {
+              "path": "regex-automata/src/meta/wrappers.rs",
+              "language": "rust",
+              "nodeCount": 107,
+              "size": 43978
+            },
+            {
+              "path": "regex-automata/src/nfa/mod.rs",
+              "language": "rust",
+              "nodeCount": 1,
+              "size": 3081
+            },
+            {
+              "path": "regex-automata/src/nfa/thompson/backtrack.rs",
+              "language": "rust",
+              "nodeCount": 68,
+              "size": 74664
+            },
+            {
+              "path": "regex-automata/src/nfa/thompson/builder.rs",
+              "language": "rust",
+              "nodeCount": 48,
+              "size": 59169
+            },
+            {
+              "path": "regex-automata/src/nfa/thompson/compiler.rs",
+              "language": "rust",
+              "nodeCount": 123,
+              "size": 87270
+            },
+            {
+              "path": "regex-automata/src/nfa/thompson/error.rs",
+              "language": "rust",
+              "nodeCount": 24,
+              "size": 6942
+            },
+            {
+              "path": "regex-automata/src/nfa/thompson/literal_trie.rs",
+              "language": "rust",
+              "nodeCount": 31,
+              "size": 21929
+            },
+            {
+              "path": "regex-automata/src/nfa/thompson/map.rs",
+              "language": "rust",
+              "nodeCount": 20,
+              "size": 12261
+            },
+            {
+              "path": "regex-automata/src/nfa/thompson/mod.rs",
+              "language": "rust",
+              "nodeCount": 3,
+              "size": 3716
+            },
+            {
+              "path": "regex-automata/src/nfa/thompson/nfa.rs",
+              "language": "rust",
+              "nodeCount": 78,
+              "size": 84571
+            },
+            {
+              "path": "regex-automata/src/nfa/thompson/pikevm.rs",
+              "language": "rust",
+              "nodeCount": 85,
+              "size": 97207
+            },
+            {
+              "path": "regex-automata/src/nfa/thompson/range_trie.rs",
+              "language": "rust",
+              "nodeCount": 50,
+              "size": 41826
+            },
+            {
+              "path": "regex-automata/src/util/alphabet.rs",
+              "language": "rust",
+              "nodeCount": 79,
+              "size": 40717
+            },
+            {
+              "path": "regex-automata/src/util/captures.rs",
+              "language": "rust",
+              "nodeCount": 83,
+              "size": 101513
+            },
+            {
+              "path": "regex-automata/src/util/determinize/mod.rs",
+              "language": "rust",
+              "nodeCount": 8,
+              "size": 31438
+            },
+            {
+              "path": "regex-automata/src/util/determinize/state.rs",
+              "language": "rust",
+              "nodeCount": 83,
+              "size": 34937
+            },
+            {
+              "path": "regex-automata/src/util/empty.rs",
+              "language": "rust",
+              "nodeCount": 5,
+              "size": 13516
+            },
+            {
+              "path": "regex-automata/src/util/escape.rs",
+              "language": "rust",
+              "nodeCount": 6,
+              "size": 2994
+            },
+            {
+              "path": "regex-automata/src/util/int.rs",
+              "language": "rust",
+              "nodeCount": 50,
+              "size": 6514
+            },
+            {
+              "path": "regex-automata/src/util/interpolate.rs",
+              "language": "rust",
+              "nodeCount": 18,
+              "size": 17269
+            },
+            {
+              "path": "regex-automata/src/util/iter.rs",
+              "language": "rust",
+              "nodeCount": 43,
+              "size": 37683
+            },
+            {
+              "path": "regex-automata/src/util/lazy.rs",
+              "language": "rust",
+              "nodeCount": 33,
+              "size": 18931
+            },
+            {
+              "path": "regex-automata/src/util/look.rs",
+              "language": "rust",
+              "nodeCount": 122,
+              "size": 97300
+            },
+            {
+              "path": "regex-automata/src/util/memchr.rs",
+              "language": "rust",
+              "nodeCount": 13,
+              "size": 2868
+            },
+            {
+              "path": "regex-automata/src/util/mod.rs",
+              "language": "rust",
+              "nodeCount": 1,
+              "size": 1963
+            },
+            {
+              "path": "regex-automata/src/util/pool.rs",
+              "language": "rust",
+              "nodeCount": 71,
+              "size": 57171
+            },
+            {
+              "path": "regex-automata/src/util/prefilter/aho_corasick.rs",
+              "language": "rust",
+              "nodeCount": 9,
+              "size": 6183
+            },
+            {
+              "path": "regex-automata/src/util/prefilter/byteset.rs",
+              "language": "rust",
+              "nodeCount": 9,
+              "size": 1508
+            },
+            {
+              "path": "regex-automata/src/util/prefilter/memchr.rs",
+              "language": "rust",
+              "nodeCount": 23,
+              "size": 4811
+            },
+            {
+              "path": "regex-automata/src/util/prefilter/memmem.rs",
+              "language": "rust",
+              "nodeCount": 9,
+              "size": 2610
+            },
+            {
+              "path": "regex-automata/src/util/prefilter/mod.rs",
+              "language": "rust",
+              "nodeCount": 38,
+              "size": 26633
+            },
+            {
+              "path": "regex-automata/src/util/prefilter/teddy.rs",
+              "language": "rust",
+              "nodeCount": 9,
+              "size": 6921
+            },
+            {
+              "path": "regex-automata/src/util/primitives.rs",
+              "language": "rust",
+              "nodeCount": 52,
+              "size": 27671
+            },
+            {
+              "path": "regex-automata/src/util/search.rs",
+              "language": "rust",
+              "nodeCount": 104,
+              "size": 74396
+            },
+            {
+              "path": "regex-automata/src/util/sparse_set.rs",
+              "language": "rust",
+              "nodeCount": 24,
+              "size": 8012
+            },
+            {
+              "path": "regex-automata/src/util/start.rs",
+              "language": "rust",
+              "nodeCount": 32,
+              "size": 17914
+            },
+            {
+              "path": "regex-automata/src/util/syntax.rs",
+              "language": "rust",
+              "nodeCount": 35,
+              "size": 17707
+            },
+            {
+              "path": "regex-automata/src/util/unicode_data/mod.rs",
+              "language": "rust",
+              "nodeCount": 1,
+              "size": 744
+            },
+            {
+              "path": "regex-automata/src/util/unicode_data/perl_word.rs",
+              "language": "rust",
+              "nodeCount": 2,
+              "size": 18305
+            },
+            {
+              "path": "regex-automata/src/util/utf8.rs",
+              "language": "rust",
+              "nodeCount": 8,
+              "size": 7254
+            },
+            {
+              "path": "regex-automata/src/util/wire.rs",
+              "language": "rust",
+              "nodeCount": 85,
+              "size": 35568
+            },
+            {
+              "path": "regex-automata/tests/dfa/api.rs",
+              "language": "rust",
+              "nodeCount": 11,
+              "size": 5440
+            },
+            {
+              "path": "regex-automata/tests/dfa/mod.rs",
+              "language": "rust",
+              "nodeCount": 1,
+              "size": 269
+            },
+            {
+              "path": "regex-automata/tests/dfa/onepass/mod.rs",
+              "language": "rust",
+              "nodeCount": 1,
+              "size": 45
+            },
+            {
+              "path": "regex-automata/tests/dfa/onepass/regression.rs",
+              "language": "rust",
+              "nodeCount": 3,
+              "size": 2596
+            },
+            {
+              "path": "regex-automata/tests/dfa/onepass/suite.rs",
+              "language": "rust",
+              "nodeCount": 12,
+              "size": 7299
+            },
+            {
+              "path": "regex-automata/tests/dfa/regression.rs",
+              "language": "rust",
+              "nodeCount": 3,
+              "size": 2587
+            },
+            {
+              "path": "regex-automata/tests/dfa/suite.rs",
+              "language": "rust",
+              "nodeCount": 23,
+              "size": 16173
+            },
+            {
+              "path": "regex-automata/tests/fuzz/dense.rs",
+              "language": "rust",
+              "nodeCount": 4,
+              "size": 2132
+            },
+            {
+              "path": "regex-automata/tests/fuzz/mod.rs",
+              "language": "rust",
+              "nodeCount": 1,
+              "size": 23
+            },
+            {
+              "path": "regex-automata/tests/fuzz/sparse.rs",
+              "language": "rust",
+              "nodeCount": 9,
+              "size": 5785
+            },
+            {
+              "path": "regex-automata/tests/gen/dense/mod.rs",
+              "language": "rust",
+              "nodeCount": 3,
+              "size": 902
+            },
+            {
+              "path": "regex-automata/tests/gen/dense/multi_pattern_v2.rs",
+              "language": "rust",
+              "nodeCount": 3,
+              "size": 1721
+            },
+            {
+              "path": "regex-automata/tests/gen/mod.rs",
+              "language": "rust",
+              "nodeCount": 1,
+              "size": 23
+            },
+            {
+              "path": "regex-automata/tests/gen/sparse/mod.rs",
+              "language": "rust",
+              "nodeCount": 3,
+              "size": 902
+            },
+            {
+              "path": "regex-automata/tests/gen/sparse/multi_pattern_v2.rs",
+              "language": "rust",
+              "nodeCount": 3,
+              "size": 1539
+            },
+            {
+              "path": "regex-automata/tests/hybrid/api.rs",
+              "language": "rust",
+              "nodeCount": 9,
+              "size": 7327
+            },
+            {
+              "path": "regex-automata/tests/hybrid/mod.rs",
+              "language": "rust",
+              "nodeCount": 1,
+              "size": 38
+            },
+            {
+              "path": "regex-automata/tests/hybrid/suite.rs",
+              "language": "rust",
+              "nodeCount": 18,
+              "size": 13232
+            },
+            {
+              "path": "regex-automata/tests/lib.rs",
+              "language": "rust",
+              "nodeCount": 5,
+              "size": 3590
+            },
+            {
+              "path": "regex-automata/tests/meta/mod.rs",
+              "language": "rust",
+              "nodeCount": 1,
+              "size": 29
+            },
+            {
+              "path": "regex-automata/tests/meta/suite.rs",
+              "language": "rust",
+              "nodeCount": 14,
+              "size": 8137
+            },
+            {
+              "path": "regex-automata/tests/nfa/mod.rs",
+              "language": "rust",
+              "nodeCount": 1,
+              "size": 14
+            },
+            {
+              "path": "regex-automata/tests/nfa/thompson/backtrack/mod.rs",
+              "language": "rust",
+              "nodeCount": 1,
+              "size": 45
+            },
+            {
+              "path": "regex-automata/tests/nfa/thompson/backtrack/regression.rs",
+              "language": "rust",
+              "nodeCount": 2,
+              "size": 808
+            },
+            {
+              "path": "regex-automata/tests/nfa/thompson/backtrack/suite.rs",
+              "language": "rust",
+              "nodeCount": 11,
+              "size": 8431
+            },
+            {
+              "path": "regex-automata/tests/nfa/thompson/mod.rs",
+              "language": "rust",
+              "nodeCount": 1,
+              "size": 92
+            },
+            {
+              "path": "regex-automata/tests/nfa/thompson/pikevm/mod.rs",
+              "language": "rust",
+              "nodeCount": 1,
+              "size": 45
+            },
+            {
+              "path": "regex-automata/tests/nfa/thompson/pikevm/regression.rs",
+              "language": "rust",
+              "nodeCount": 2,
+              "size": 763
+            },
+            {
+              "path": "regex-automata/tests/nfa/thompson/pikevm/suite.rs",
+              "language": "rust",
+              "nodeCount": 10,
+              "size": 5761
+            },
+            {
+              "path": "regex-capi/ctest/test.c",
+              "language": "c",
+              "nodeCount": 23,
+              "size": 16603
+            },
+            {
+              "path": "regex-capi/examples/iter.c",
+              "language": "c",
+              "nodeCount": 11,
+              "size": 3212
+            },
+            {
+              "path": "regex-capi/include/rure.h",
+              "language": "c",
+              "nodeCount": 12,
+              "size": 22052
+            },
+            {
+              "path": "regex-capi/src/error.rs",
+              "language": "rust",
+              "nodeCount": 15,
+              "size": 1908
+            },
+            {
+              "path": "regex-capi/src/lib.rs",
+              "language": "rust",
+              "nodeCount": 1,
+              "size": 96
+            },
+            {
+              "path": "regex-capi/src/macros.rs",
+              "language": "rust",
+              "nodeCount": 1,
+              "size": 1459
+            },
+            {
+              "path": "regex-capi/src/rure.rs",
+              "language": "rust",
+              "nodeCount": 31,
+              "size": 17466
+            },
+            {
+              "path": "regex-cli/args/api.rs",
+              "language": "rust",
+              "nodeCount": 8,
+              "size": 4921
+            },
+            {
+              "path": "regex-cli/args/backtrack.rs",
+              "language": "rust",
+              "nodeCount": 8,
+              "size": 2238
+            },
+            {
+              "path": "regex-cli/args/common.rs",
+              "language": "rust",
+              "nodeCount": 7,
+              "size": 2162
+            },
+            {
+              "path": "regex-cli/args/dfa.rs",
+              "language": "rust",
+              "nodeCount": 10,
+              "size": 9328
+            },
+            {
+              "path": "regex-cli/args/flags.rs",
+              "language": "rust",
+              "nodeCount": 24,
+              "size": 6818
+            },
+            {
+              "path": "regex-cli/args/haystack.rs",
+              "language": "rust",
+              "nodeCount": 12,
+              "size": 5097
+            },
+            {
+              "path": "regex-cli/args/hybrid.rs",
+              "language": "rust",
+              "nodeCount": 9,
+              "size": 9285
+            },
+            {
+              "path": "regex-cli/args/input.rs",
+              "language": "rust",
+              "nodeCount": 9,
+              "size": 5495
+            },
+            {
+              "path": "regex-cli/args/lite.rs",
+              "language": "rust",
+              "nodeCount": 7,
+              "size": 2563
+            },
+            {
+              "path": "regex-cli/args/meta.rs",
+              "language": "rust",
+              "nodeCount": 11,
+              "size": 10506
+            },
+            {
+              "path": "regex-cli/args/mod.rs",
+              "language": "rust",
+              "nodeCount": 14,
+              "size": 9179
+            },
+            {
+              "path": "regex-cli/args/onepass.rs",
+              "language": "rust",
+              "nodeCount": 8,
+              "size": 3368
+            },
+            {
+              "path": "regex-cli/args/overlapping.rs",
+              "language": "rust",
+              "nodeCount": 6,
+              "size": 1347
+            },
+            {
+              "path": "regex-cli/args/patterns.rs",
+              "language": "rust",
+              "nodeCount": 14,
+              "size": 6856
+            },
+            {
+              "path": "regex-cli/args/pikevm.rs",
+              "language": "rust",
+              "nodeCount": 8,
+              "size": 1394
+            },
+            {
+              "path": "regex-cli/args/syntax.rs",
+              "language": "rust",
+              "nodeCount": 12,
+              "size": 10008
+            },
+            {
+              "path": "regex-cli/args/thompson.rs",
+              "language": "rust",
+              "nodeCount": 10,
+              "size": 5763
+            },
+            {
+              "path": "regex-cli/cmd/compile_test.rs",
+              "language": "rust",
+              "nodeCount": 41,
+              "size": 25572
+            },
+            {
+              "path": "regex-cli/cmd/debug/dfa.rs",
+              "language": "rust",
+              "nodeCount": 10,
+              "size": 9940
+            },
+            {
+              "path": "regex-cli/cmd/debug/literal.rs",
+              "language": "rust",
+              "nodeCount": 8,
+              "size": 8192
+            },
+            {
+              "path": "regex-cli/cmd/debug/mod.rs",
+              "language": "rust",
+              "nodeCount": 8,
+              "size": 7122
+            },
+            {
+              "path": "regex-cli/cmd/find/capture/dfa.rs",
+              "language": "rust",
+              "nodeCount": 4,
+              "size": 2414
+            },
+            {
+              "path": "regex-cli/cmd/find/capture/mod.rs",
+              "language": "rust",
+              "nodeCount": 10,
+              "size": 14820
+            },
+            {
+              "path": "regex-cli/cmd/find/capture/nfa.rs",
+              "language": "rust",
+              "nodeCount": 5,
+              "size": 4731
+            },
+            {
+              "path": "regex-cli/cmd/find/half/dfa.rs",
+              "language": "rust",
+              "nodeCount": 6,
+              "size": 9557
+            },
+            {
+              "path": "regex-cli/cmd/find/half/mod.rs",
+              "language": "rust",
+              "nodeCount": 11,
+              "size": 10785
+            },
+            {
+              "path": "regex-cli/cmd/find/match/dfa.rs",
+              "language": "rust",
+              "nodeCount": 7,
+              "size": 10059
+            },
+            {
+              "path": "regex-cli/cmd/find/match/mod.rs",
+              "language": "rust",
+              "nodeCount": 10,
+              "size": 9946
+            },
+            {
+              "path": "regex-cli/cmd/find/match/nfa.rs",
+              "language": "rust",
+              "nodeCount": 5,
+              "size": 4730
+            },
+            {
+              "path": "regex-cli/cmd/find/mod.rs",
+              "language": "rust",
+              "nodeCount": 8,
+              "size": 2646
+            },
+            {
+              "path": "regex-cli/cmd/find/which/dfa.rs",
+              "language": "rust",
+              "nodeCount": 6,
+              "size": 6351
+            },
+            {
+              "path": "regex-cli/cmd/find/which/mod.rs",
+              "language": "rust",
+              "nodeCount": 8,
+              "size": 7214
+            },
+            {
+              "path": "regex-cli/cmd/find/which/nfa.rs",
+              "language": "rust",
+              "nodeCount": 4,
+              "size": 2240
+            },
+            {
+              "path": "regex-cli/cmd/generate/fowler.rs",
+              "language": "rust",
+              "nodeCount": 18,
+              "size": 14210
+            },
+            {
+              "path": "regex-cli/cmd/generate/mod.rs",
+              "language": "rust",
+              "nodeCount": 4,
+              "size": 841
+            },
+            {
+              "path": "regex-cli/cmd/generate/serialize/dfa.rs",
+              "language": "rust",
+              "nodeCount": 35,
+              "size": 24903
+            },
+            {
+              "path": "regex-cli/cmd/generate/serialize/mod.rs",
+              "language": "rust",
+              "nodeCount": 3,
+              "size": 673
+            },
+            {
+              "path": "regex-cli/cmd/generate/unicode.rs",
+              "language": "rust",
+              "nodeCount": 13,
+              "size": 6574
+            },
+            {
+              "path": "regex-cli/cmd/mod.rs",
+              "language": "rust",
+              "nodeCount": 3,
+              "size": 860
+            },
+            {
+              "path": "regex-cli/logger.rs",
+              "language": "rust",
+              "nodeCount": 8,
+              "size": 2015
+            },
+            {
+              "path": "regex-cli/main.rs",
+              "language": "rust",
+              "nodeCount": 3,
+              "size": 953
+            },
+            {
+              "path": "regex-cli/util.rs",
+              "language": "rust",
+              "nodeCount": 10,
+              "size": 1920
+            },
+            {
+              "path": "regex-lite/src/error.rs",
+              "language": "rust",
+              "nodeCount": 4,
+              "size": 904
+            },
+            {
+              "path": "regex-lite/src/hir/mod.rs",
+              "language": "rust",
+              "nodeCount": 64,
+              "size": 31158
+            },
+            {
+              "path": "regex-lite/src/hir/parse.rs",
+              "language": "rust",
+              "nodeCount": 136,
+              "size": 82581
+            },
+            {
+              "path": "regex-lite/src/int.rs",
+              "language": "rust",
+              "nodeCount": 9,
+              "size": 2039
+            },
+            {
+              "path": "regex-lite/src/interpolate.rs",
+              "language": "rust",
+              "nodeCount": 15,
+              "size": 16446
+            },
+            {
+              "path": "regex-lite/src/lib.rs",
+              "language": "rust",
+              "nodeCount": 2,
+              "size": 36308
+            },
+            {
+              "path": "regex-lite/src/nfa.rs",
+              "language": "rust",
+              "nodeCount": 58,
+              "size": 26605
+            },
+            {
+              "path": "regex-lite/src/pikevm.rs",
+              "language": "rust",
+              "nodeCount": 50,
+              "size": 37826
+            },
+            {
+              "path": "regex-lite/src/pool.rs",
+              "language": "rust",
+              "nodeCount": 19,
+              "size": 4213
+            },
+            {
+              "path": "regex-lite/src/string.rs",
+              "language": "rust",
+              "nodeCount": 126,
+              "size": 107555
+            },
+            {
+              "path": "regex-lite/src/utf8.rs",
+              "language": "rust",
+              "nodeCount": 13,
+              "size": 7964
+            },
+            {
+              "path": "regex-lite/tests/fuzz/mod.rs",
+              "language": "rust",
+              "nodeCount": 5,
+              "size": 1773
+            },
+            {
+              "path": "regex-lite/tests/lib.rs",
+              "language": "rust",
+              "nodeCount": 3,
+              "size": 1220
+            },
+            {
+              "path": "regex-lite/tests/string.rs",
+              "language": "rust",
+              "nodeCount": 7,
+              "size": 5455
+            },
+            {
+              "path": "regex-syntax/benches/bench.rs",
+              "language": "rust",
+              "nodeCount": 10,
+              "size": 1234
+            },
+            {
+              "path": "regex-syntax/src/ast/mod.rs",
+              "language": "rust",
+              "nodeCount": 239,
+              "size": 61318
+            },
+            {
+              "path": "regex-syntax/src/ast/parse.rs",
+              "language": "rust",
+              "nodeCount": 174,
+              "size": 221008
+            },
+            {
+              "path": "regex-syntax/src/ast/print.rs",
+              "language": "rust",
+              "nodeCount": 47,
+              "size": 18428
+            },
+            {
+              "path": "regex-syntax/src/ast/visitor.rs",
+              "language": "rust",
+              "nodeCount": 45,
+              "size": 19004
+            },
+            {
+              "path": "regex-syntax/src/debug.rs",
+              "language": "rust",
+              "nodeCount": 7,
+              "size": 3615
+            },
+            {
+              "path": "regex-syntax/src/either.rs",
+              "language": "rust",
+              "nodeCount": 4,
+              "size": 194
+            },
+            {
+              "path": "regex-syntax/src/error.rs",
+              "language": "rust",
+              "nodeCount": 26,
+              "size": 10511
+            },
+            {
+              "path": "regex-syntax/src/hir/interval.rs",
+              "language": "rust",
+              "nodeCount": 50,
+              "size": 22792
+            },
+            {
+              "path": "regex-syntax/src/hir/literal.rs",
+              "language": "rust",
+              "nodeCount": 120,
+              "size": 115701
+            },
+            {
+              "path": "regex-syntax/src/hir/mod.rs",
+              "language": "rust",
+              "nodeCount": 259,
+              "size": 146864
+            },
+            {
+              "path": "regex-syntax/src/hir/print.rs",
+              "language": "rust",
+              "nodeCount": 35,
+              "size": 21899
+            },
+            {
+              "path": "regex-syntax/src/hir/translate.rs",
+              "language": "rust",
+              "nodeCount": 174,
+              "size": 128438
+            },
+            {
+              "path": "regex-syntax/src/hir/visitor.rs",
+              "language": "rust",
+              "nodeCount": 22,
+              "size": 7892
+            },
+            {
+              "path": "regex-syntax/src/lib.rs",
+              "language": "rust",
+              "nodeCount": 16,
+              "size": 17020
+            },
+            {
+              "path": "regex-syntax/src/parser.rs",
+              "language": "rust",
+              "nodeCount": 20,
+              "size": 10864
+            },
+            {
+              "path": "regex-syntax/src/rank.rs",
+              "language": "rust",
+              "nodeCount": 2,
+              "size": 4438
+            },
+            {
+              "path": "regex-syntax/src/unicode.rs",
+              "language": "rust",
+              "nodeCount": 90,
+              "size": 36744
+            },
+            {
+              "path": "regex-syntax/src/unicode_tables/age.rs",
+              "language": "rust",
+              "nodeCount": 29,
+              "size": 40438
+            },
+            {
+              "path": "regex-syntax/src/unicode_tables/case_folding_simple.rs",
+              "language": "rust",
+              "nodeCount": 2,
+              "size": 67576
+            },
+            {
+              "path": "regex-syntax/src/unicode_tables/general_category.rs",
+              "language": "rust",
+              "nodeCount": 39,
+              "size": 158564
+            },
+            {
+              "path": "regex-syntax/src/unicode_tables/grapheme_cluster_break.rs",
+              "language": "rust",
+              "nodeCount": 15,
+              "size": 32905
+            },
+            {
+              "path": "regex-syntax/src/unicode_tables/mod.rs",
+              "language": "rust",
+              "nodeCount": 1,
+              "size": 1258
+            },
+            {
+              "path": "regex-syntax/src/unicode_tables/perl_decimal.rs",
+              "language": "rust",
+              "nodeCount": 3,
+              "size": 1878
+            },
+            {
+              "path": "regex-syntax/src/unicode_tables/perl_space.rs",
+              "language": "rust",
+              "nodeCount": 3,
+              "size": 651
+            },
+            {
+              "path": "regex-syntax/src/unicode_tables/perl_word.rs",
+              "language": "rust",
+              "nodeCount": 2,
+              "size": 18305
+            },
+            {
+              "path": "regex-syntax/src/unicode_tables/property_bool.rs",
+              "language": "rust",
+              "nodeCount": 67,
+              "size": 266293
+            },
+            {
+              "path": "regex-syntax/src/unicode_tables/property_names.rs",
+              "language": "rust",
+              "nodeCount": 2,
+              "size": 10930
+            },
+            {
+              "path": "regex-syntax/src/unicode_tables/property_values.rs",
+              "language": "rust",
+              "nodeCount": 2,
+              "size": 33890
+            },
+            {
+              "path": "regex-syntax/src/unicode_tables/script.rs",
+              "language": "rust",
+              "nodeCount": 172,
+              "size": 34715
+            },
+            {
+              "path": "regex-syntax/src/unicode_tables/script_extension.rs",
+              "language": "rust",
+              "nodeCount": 172,
+              "size": 43190
+            },
+            {
+              "path": "regex-syntax/src/unicode_tables/sentence_break.rs",
+              "language": "rust",
+              "nodeCount": 16,
+              "size": 53345
+            },
+            {
+              "path": "regex-syntax/src/unicode_tables/word_break.rs",
+              "language": "rust",
+              "nodeCount": 20,
+              "size": 26915
+            },
+            {
+              "path": "regex-syntax/src/utf8.rs",
+              "language": "rust",
+              "nodeCount": 46,
+              "size": 18984
+            },
+            {
+              "path": "regex-test/lib.rs",
+              "language": "rust",
+              "nodeCount": 146,
+              "size": 61593
+            },
+            {
+              "path": "src/builders.rs",
+              "language": "rust",
+              "nodeCount": 87,
+              "size": 107638
+            },
+            {
+              "path": "src/bytes.rs",
+              "language": "rust",
+              "nodeCount": 2,
+              "size": 3817
+            },
+            {
+              "path": "src/error.rs",
+              "language": "rust",
+              "nodeCount": 10,
+              "size": 4206
+            },
+            {
+              "path": "src/find_byte.rs",
+              "language": "rust",
+              "nodeCount": 4,
+              "size": 621
+            },
+            {
+              "path": "src/lib.rs",
+              "language": "rust",
+              "nodeCount": 5,
+              "size": 59891
+            },
+            {
+              "path": "src/pattern.rs",
+              "language": "rust",
+              "nodeCount": 9,
+              "size": 1921
+            },
+            {
+              "path": "src/regex/bytes.rs",
+              "language": "rust",
+              "nodeCount": 132,
+              "size": 101672
+            },
+            {
+              "path": "src/regex/mod.rs",
+              "language": "rust",
+              "nodeCount": 1,
+              "size": 45
+            },
+            {
+              "path": "src/regex/string.rs",
+              "language": "rust",
+              "nodeCount": 120,
+              "size": 97680
+            },
+            {
+              "path": "src/regexset/bytes.rs",
+              "language": "rust",
+              "nodeCount": 40,
+              "size": 24378
+            },
+            {
+              "path": "src/regexset/mod.rs",
+              "language": "rust",
+              "nodeCount": 1,
+              "size": 45
+            },
+            {
+              "path": "src/regexset/string.rs",
+              "language": "rust",
+              "nodeCount": 40,
+              "size": 23921
+            },
+            {
+              "path": "tests/fuzz/mod.rs",
+              "language": "rust",
+              "nodeCount": 12,
+              "size": 6609
+            },
+            {
+              "path": "tests/lib.rs",
+              "language": "rust",
+              "nodeCount": 3,
+              "size": 1293
+            },
+            {
+              "path": "tests/misc.rs",
+              "language": "rust",
+              "nodeCount": 18,
+              "size": 4230
+            },
+            {
+              "path": "tests/regression.rs",
+              "language": "rust",
+              "nodeCount": 12,
+              "size": 2729
+            },
+            {
+              "path": "tests/regression_fuzz.rs",
+              "language": "rust",
+              "nodeCount": 7,
+              "size": 1797
+            },
+            {
+              "path": "tests/replace.rs",
+              "language": "rust",
+              "nodeCount": 3,
+              "size": 3665
+            },
+            {
+              "path": "tests/searcher.rs",
+              "language": "rust",
+              "nodeCount": 1,
+              "size": 2386
+            },
+            {
+              "path": "tests/suite_bytes.rs",
+              "language": "rust",
+              "nodeCount": 6,
+              "size": 4051
+            },
+            {
+              "path": "tests/suite_bytes_set.rs",
+              "language": "rust",
+              "nodeCount": 5,
+              "size": 2615
+            },
+            {
+              "path": "tests/suite_string.rs",
+              "language": "rust",
+              "nodeCount": 6,
+              "size": 4166
+            },
+            {
+              "path": "tests/suite_string_set.rs",
+              "language": "rust",
+              "nodeCount": 5,
+              "size": 2756
+            }
+          ],
+          "stderr": ""
+        }
+      }
+    },
+    {
+      "project": "regex",
+      "commit": "94ac45b2a6e7b1c30927feb5b66c5ded5b7ad447",
+      "queryKind": "query",
+      "sourceFilesVerified": 451,
+      "candidates": 10,
+      "relations": 0,
+      "diagnostics": [
+        {
+          "code": "GRAPH_INDEX_FRESHNESS_UNVERIFIED"
+        },
+        {
+          "code": "GRAPH_ENUMERATION_UNPROVEN"
+        },
+        {
+          "code": "GRAPH_RESULTS_TRUNCATED",
+          "message": "Results truncated at 10; pass --limit to widen.\n"
+        }
+      ],
+      "rawArtifact": {
+        "artifactId": "9c39b99c083d3dbbdddce0b2fd349462fb1ca6a2d2066587ec2e9b0d927f0318",
+        "kind": "tool_output",
+        "payload": {
+          "toolVersion": "1.6.2",
+          "payload": [
+            {
+              "node": {
+                "id": "method:10074ad895588b6b981f6cf6b2f70781",
+                "kind": "method",
+                "name": "canonicalize",
+                "qualifiedName": "ClassQuery::canonicalize",
+                "filePath": "regex-syntax/src/unicode.rs",
+                "language": "rust",
+                "startLine": 238,
+                "endLine": 285,
+                "startColumn": 4,
+                "endColumn": 5,
+                "signature": "(&self) -> Result<CanonicalClassQuery, Error>",
+                "visibility": "private",
+                "isExported": false,
+                "isAsync": false,
+                "isStatic": false,
+                "isAbstract": false,
+                "returnType": "Result",
+                "updatedAt": 1794133994329
+              },
+              "score": 37.61685388178623
+            },
+            {
+              "node": {
+                "id": "method:a1f89c85285c2a7b94bb09afbf79629a",
+                "kind": "method",
+                "name": "canonicalize",
+                "qualifiedName": "StateSet::canonicalize",
+                "filePath": "regex-automata/src/dfa/minimize.rs",
+                "language": "rust",
+                "startLine": 358,
+                "endLine": 361,
+                "startColumn": 4,
+                "endColumn": 5,
+                "signature": "(&mut self)",
+                "visibility": "private",
+                "isExported": false,
+                "isAsync": false,
+                "isStatic": false,
+                "isAbstract": false,
+                "updatedAt": 1794133993819
+              },
+              "score": 24.707064913630823
+            },
+            {
+              "node": {
+                "id": "function:77021567f7d2b2702aaa736610687867",
+                "kind": "function",
+                "name": "class_canonicalize_unicode",
+                "qualifiedName": "class_canonicalize_unicode",
+                "filePath": "regex-syntax/src/hir/mod.rs",
+                "language": "rust",
+                "startLine": 3192,
+                "endLine": 3227,
+                "startColumn": 4,
+                "endColumn": 5,
+                "signature": "()",
+                "visibility": "private",
+                "isExported": false,
+                "isAsync": false,
+                "isStatic": false,
+                "isAbstract": false,
+                "updatedAt": 1794133994313
+              },
+              "score": 24.687938387009048
+            },
+            {
+              "node": {
+                "id": "function:9edf02573983a86ffa1e6b1bfa62f48b",
+                "kind": "function",
+                "name": "class_canonicalize_bytes",
+                "qualifiedName": "class_canonicalize_bytes",
+                "filePath": "regex-syntax/src/hir/mod.rs",
+                "language": "rust",
+                "startLine": 3230,
+                "endLine": 3265,
+                "startColumn": 4,
+                "endColumn": 5,
+                "signature": "()",
+                "visibility": "private",
+                "isExported": false,
+                "isAsync": false,
+                "isStatic": false,
+                "isAbstract": false,
+                "updatedAt": 1794133994313
+              },
+              "score": 24.687938387009048
+            },
+            {
+              "node": {
+                "id": "method:197c965a0c4eaaf3ea17a81f62404127",
+                "kind": "method",
+                "name": "canonicalize",
+                "qualifiedName": "Class::canonicalize",
+                "filePath": "regex-lite/src/hir/mod.rs",
+                "language": "rust",
+                "startLine": 476,
+                "endLine": 500,
+                "startColumn": 4,
+                "endColumn": 5,
+                "docstring": "Converts this set into a canonical ordering.",
+                "signature": "(&mut self)",
+                "visibility": "private",
+                "isExported": false,
+                "isAsync": false,
+                "isStatic": false,
+                "isAbstract": false,
+                "updatedAt": 1794133994173
+              },
+              "score": 24.57421584792573
+            },
+            {
+              "node": {
+                "id": "method:eacbcb7f07db9e44ba093bb1ea647b62",
+                "kind": "method",
+                "name": "canonicalize",
+                "qualifiedName": "IntervalSet::canonicalize",
+                "filePath": "regex-syntax/src/hir/interval.rs",
+                "language": "rust",
+                "startLine": 370,
+                "endLine": 395,
+                "startColumn": 4,
+                "endColumn": 5,
+                "docstring": "Converts this set into a canonical ordering.",
+                "signature": "(&mut self)",
+                "visibility": "private",
+                "isExported": false,
+                "isAsync": false,
+                "isStatic": false,
+                "isAbstract": false,
+                "updatedAt": 1794133994288
+              },
+              "score": 24.57421584792573
+            },
+            {
+              "node": {
+                "id": "method:48eead2c33223a6eef948a5da299c2ef",
+                "kind": "method",
+                "name": "canonical_binary",
+                "qualifiedName": "ClassQuery::canonical_binary",
+                "filePath": "regex-syntax/src/unicode.rs",
+                "language": "rust",
+                "startLine": 287,
+                "endLine": 321,
+                "startColumn": 4,
+                "endColumn": 5,
+                "signature": "(\n        &self,\n        name: &str,\n    ) -> Result<CanonicalClassQuery, Error>",
+                "visibility": "private",
+                "isExported": false,
+                "isAsync": false,
+                "isStatic": false,
+                "isAbstract": false,
+                "returnType": "Result",
+                "updatedAt": 1794133994329
+              },
+              "score": 22.64758438962837
+            },
+            {
+              "node": {
+                "id": "function:49b4dd1c4f643e0b124bd953bbc47499",
+                "kind": "function",
+                "name": "hir_uclass_query",
+                "qualifiedName": "hir_uclass_query",
+                "filePath": "regex-syntax/src/hir/translate.rs",
+                "language": "rust",
+                "startLine": 1485,
+                "endLine": 1487,
+                "startColumn": 4,
+                "endColumn": 5,
+                "signature": "(query: ClassQuery<'_>) -> Hir",
+                "visibility": "private",
+                "isExported": false,
+                "isAsync": false,
+                "isStatic": false,
+                "isAbstract": false,
+                "returnType": "Hir",
+                "updatedAt": 1794133994327
+              },
+              "score": 20.878636215873264
+            },
+            {
+              "node": {
+                "id": "enum:fa878a1a632aabb732ba27fc7283faa1",
+                "kind": "enum",
+                "name": "ClassQuery",
+                "qualifiedName": "ClassQuery",
+                "filePath": "regex-syntax/src/unicode.rs",
+                "language": "rust",
+                "startLine": 216,
+                "endLine": 235,
+                "startColumn": 0,
+                "endColumn": 1,
+                "visibility": "public",
+                "isExported": false,
+                "isAsync": false,
+                "isStatic": false,
+                "isAbstract": false,
+                "updatedAt": 1794133994329
+              },
+              "score": 19.25291815297659
+            },
+            {
+              "node": {
+                "id": "function:98597d93e6ba8349ef02f0a9e954884c",
+                "kind": "function",
+                "name": "class",
+                "qualifiedName": "class",
+                "filePath": "regex-syntax/src/unicode.rs",
+                "language": "rust",
+                "startLine": 351,
+                "endLine": 383,
+                "startColumn": 0,
+                "endColumn": 1,
+                "docstring": "Looks up a Unicode class given a query. If one doesn't exist, then\n`None` is returned.",
+                "signature": "(query: ClassQuery<'_>) -> Result<hir::ClassUnicode, Error>",
+                "visibility": "public",
+                "isExported": false,
+                "isAsync": false,
+                "isStatic": false,
+                "isAbstract": false,
+                "returnType": "Result",
+                "updatedAt": 1794133994329
+              },
+              "score": 19.06884723383177
+            }
+          ],
+          "stderr": "Results truncated at 10; pass --limit to widen.\n"
+        }
+      }
+    },
+    {
+      "project": "regex",
+      "commit": "94ac45b2a6e7b1c30927feb5b66c5ded5b7ad447",
+      "queryKind": "callers",
+      "sourceFilesVerified": 451,
+      "candidates": 2,
+      "relations": 1,
+      "diagnostics": [
+        {
+          "code": "GRAPH_INDEX_FRESHNESS_UNVERIFIED"
+        },
+        {
+          "code": "GRAPH_ENUMERATION_UNPROVEN"
+        }
+      ],
+      "rawArtifact": {
+        "artifactId": "a27d6f8df464ddb78f83db260f3f9c17458aa768a705660f6519d255cafac7cf",
+        "kind": "tool_output",
+        "payload": {
+          "toolVersion": "1.6.2",
+          "payload": {
+            "symbol": "ClassQuery::canonicalize",
+            "targets": [
+              {
+                "name": "canonicalize",
+                "kind": "method",
+                "filePath": "regex-syntax/src/unicode.rs",
+                "startLine": 238,
+                "id": "method:10074ad895588b6b981f6cf6b2f70781",
+                "qualifiedName": "ClassQuery::canonicalize",
+                "language": "rust"
+              }
+            ],
+            "ambiguous": false,
+            "aggregation": "definition",
+            "filteredOut": false,
+            "definitions": [
+              {
+                "definition": {
+                  "name": "canonicalize",
+                  "kind": "method",
+                  "filePath": "regex-syntax/src/unicode.rs",
+                  "startLine": 238,
+                  "id": "method:10074ad895588b6b981f6cf6b2f70781",
+                  "qualifiedName": "ClassQuery::canonicalize",
+                  "language": "rust"
+                },
+                "roots": [
+                  "method:10074ad895588b6b981f6cf6b2f70781"
+                ],
+                "callers": [
+                  {
+                    "id": "function:98597d93e6ba8349ef02f0a9e954884c",
+                    "name": "class",
+                    "kind": "function",
+                    "filePath": "regex-syntax/src/unicode.rs",
+                    "startLine": 351,
+                    "relationships": [
+                      "calls"
+                    ]
+                  }
+                ],
+                "edges": [
+                  {
+                    "source": "function:98597d93e6ba8349ef02f0a9e954884c",
+                    "target": "method:10074ad895588b6b981f6cf6b2f70781",
+                    "kind": "calls",
+                    "metadata": {
+                      "confidence": 0.9,
+                      "resolvedBy": "instance-method",
+                      "refName": "query.canonicalize"
+                    },
+                    "line": 354,
+                    "column": 10,
+                    "provenance": null
+                  }
+                ],
+                "total": 1,
+                "limit": 20,
+                "truncated": false
+              }
+            ],
+            "callers": [
+              {
+                "name": "class",
+                "kind": "function",
+                "filePath": "regex-syntax/src/unicode.rs",
+                "startLine": 351,
+                "relationships": [
+                  "calls"
+                ]
+              }
+            ],
+            "total": 1,
+            "limit": 20,
+            "truncated": false
+          },
+          "stderr": ""
+        }
+      }
+    },
+    {
+      "project": "regex",
+      "commit": "94ac45b2a6e7b1c30927feb5b66c5ded5b7ad447",
+      "queryKind": "callees",
+      "sourceFilesVerified": 451,
+      "candidates": 13,
+      "relations": 12,
+      "diagnostics": [
+        {
+          "code": "GRAPH_INDEX_FRESHNESS_UNVERIFIED"
+        },
+        {
+          "code": "GRAPH_ENUMERATION_UNPROVEN"
+        }
+      ],
+      "rawArtifact": {
+        "artifactId": "7736c4cc3eb0d8e8afa6509924aa74fbc592e209386c399d6f5336a52cee1af5",
+        "kind": "tool_output",
+        "payload": {
+          "toolVersion": "1.6.2",
+          "payload": {
+            "symbol": "ClassQuery::canonicalize",
+            "targets": [
+              {
+                "name": "canonicalize",
+                "kind": "method",
+                "filePath": "regex-syntax/src/unicode.rs",
+                "startLine": 238,
+                "id": "method:10074ad895588b6b981f6cf6b2f70781",
+                "qualifiedName": "ClassQuery::canonicalize",
+                "language": "rust"
+              }
+            ],
+            "ambiguous": false,
+            "aggregation": "definition",
+            "filteredOut": false,
+            "definitions": [
+              {
+                "definition": {
+                  "name": "canonicalize",
+                  "kind": "method",
+                  "filePath": "regex-syntax/src/unicode.rs",
+                  "startLine": 238,
+                  "id": "method:10074ad895588b6b981f6cf6b2f70781",
+                  "qualifiedName": "ClassQuery::canonicalize",
+                  "language": "rust"
+                },
+                "roots": [
+                  "method:10074ad895588b6b981f6cf6b2f70781"
+                ],
+                "callees": [
+                  {
+                    "id": "enum_member:1cb005d9ec931de8a8818a5669fc8b22",
+                    "name": "Script",
+                    "kind": "enum_member",
+                    "filePath": "regex-syntax/src/unicode.rs",
+                    "startLine": 334,
+                    "relationships": [
+                      "calls"
+                    ]
+                  },
+                  {
+                    "id": "enum_member:39760ace7243337eb5ca364fd329058b",
+                    "name": "GeneralCategory",
+                    "kind": "enum_member",
+                    "filePath": "regex-syntax/src/unicode.rs",
+                    "startLine": 332,
+                    "relationships": [
+                      "calls"
+                    ]
+                  },
+                  {
+                    "id": "function:45d05228251b880ebc51bd8ea2d2f928",
+                    "name": "canonical_gencat",
+                    "kind": "function",
+                    "filePath": "regex-syntax/src/unicode.rs",
+                    "startLine": 501,
+                    "relationships": [
+                      "calls"
+                    ]
+                  },
+                  {
+                    "id": "function:5b42c7f91e02852403ecef0cc79f9c4d",
+                    "name": "symbolic_name_normalize",
+                    "kind": "function",
+                    "filePath": "regex-syntax/src/unicode.rs",
+                    "startLine": 879,
+                    "relationships": [
+                      "calls"
+                    ]
+                  },
+                  {
+                    "id": "function:6e2489d5f89b7be9d4528ab8e3bee070",
+                    "name": "canonical_prop",
+                    "kind": "function",
+                    "filePath": "regex-syntax/src/unicode.rs",
+                    "startLine": 530,
+                    "relationships": [
+                      "calls"
+                    ]
+                  },
+                  {
+                    "id": "function:89d1ebc0274f68f144d49002987d6bfd",
+                    "name": "canonical_script",
+                    "kind": "function",
+                    "filePath": "regex-syntax/src/unicode.rs",
+                    "startLine": 515,
+                    "relationships": [
+                      "calls"
+                    ]
+                  },
+                  {
+                    "id": "function:bb2680efac0aaf218f93c1369f1db0df",
+                    "name": "property_values",
+                    "kind": "function",
+                    "filePath": "regex-syntax/src/unicode.rs",
+                    "startLine": 587,
+                    "relationships": [
+                      "calls"
+                    ]
+                  },
+                  {
+                    "id": "function:d6806a2e11896ec9fd7126a4098b2b39",
+                    "name": "canonical_value",
+                    "kind": "function",
+                    "filePath": "regex-syntax/src/unicode.rs",
+                    "startLine": 575,
+                    "relationships": [
+                      "calls"
+                    ]
+                  },
+                  {
+                    "id": "method:48eead2c33223a6eef948a5da299c2ef",
+                    "name": "canonical_binary",
+                    "kind": "method",
+                    "filePath": "regex-syntax/src/unicode.rs",
+                    "startLine": 287,
+                    "relationships": [
+                      "calls"
+                    ]
+                  },
+                  {
+                    "id": "enum_member:8bec0c1f4712467b2c0098a090280446",
+                    "name": "ByValue",
+                    "kind": "enum_member",
+                    "filePath": "regex-syntax/src/unicode.rs",
+                    "startLine": 229,
+                    "relationships": [
+                      "instantiates"
+                    ]
+                  },
+                  {
+                    "id": "enum:eb3a29a89fe8d6d68207999374a12c94",
+                    "name": "CanonicalClassQuery",
+                    "kind": "enum",
+                    "filePath": "regex-syntax/src/unicode.rs",
+                    "startLine": 328,
+                    "relationships": [
+                      "references"
+                    ]
+                  },
+                  {
+                    "id": "enum:f02de913cbe55a73694e503c6f272fce",
+                    "name": "Error",
+                    "kind": "enum",
+                    "filePath": "regex-syntax/src/unicode.rs",
+                    "startLine": 17,
+                    "relationships": [
+                      "references"
+                    ]
+                  }
+                ],
+                "edges": [
+                  {
+                    "source": "method:10074ad895588b6b981f6cf6b2f70781",
+                    "target": "enum_member:1cb005d9ec931de8a8818a5669fc8b22",
+                    "kind": "calls",
+                    "metadata": {
+                      "confidence": 0.95,
+                      "resolvedBy": "qualified-name",
+                      "refName": "CanonicalClassQuery::Script"
+                    },
+                    "line": 263,
+                    "column": 24,
+                    "provenance": null
+                  },
+                  {
+                    "source": "method:10074ad895588b6b981f6cf6b2f70781",
+                    "target": "enum_member:39760ace7243337eb5ca364fd329058b",
+                    "kind": "calls",
+                    "metadata": {
+                      "confidence": 0.95,
+                      "resolvedBy": "qualified-name",
+                      "refName": "CanonicalClassQuery::GeneralCategory"
+                    },
+                    "line": 256,
+                    "column": 24,
+                    "provenance": null
+                  },
+                  {
+                    "source": "method:10074ad895588b6b981f6cf6b2f70781",
+                    "target": "function:45d05228251b880ebc51bd8ea2d2f928",
+                    "kind": "calls",
+                    "metadata": {
+                      "confidence": 0.9,
+                      "resolvedBy": "exact-match",
+                      "refName": "canonical_gencat"
+                    },
+                    "line": 252,
+                    "column": 42,
+                    "provenance": null
+                  },
+                  {
+                    "source": "method:10074ad895588b6b981f6cf6b2f70781",
+                    "target": "function:5b42c7f91e02852403ecef0cc79f9c4d",
+                    "kind": "calls",
+                    "metadata": {
+                      "confidence": 0.9,
+                      "resolvedBy": "exact-match",
+                      "refName": "symbolic_name_normalize"
+                    },
+                    "line": 243,
+                    "column": 36,
+                    "provenance": null
+                  },
+                  {
+                    "source": "method:10074ad895588b6b981f6cf6b2f70781",
+                    "target": "function:6e2489d5f89b7be9d4528ab8e3bee070",
+                    "kind": "calls",
+                    "metadata": {
+                      "confidence": 0.9,
+                      "resolvedBy": "exact-match",
+                      "refName": "canonical_prop"
+                    },
+                    "line": 246,
+                    "column": 39,
+                    "provenance": null
+                  },
+                  {
+                    "source": "method:10074ad895588b6b981f6cf6b2f70781",
+                    "target": "function:89d1ebc0274f68f144d49002987d6bfd",
+                    "kind": "calls",
+                    "metadata": {
+                      "confidence": 0.9,
+                      "resolvedBy": "exact-match",
+                      "refName": "canonical_script"
+                    },
+                    "line": 259,
+                    "column": 42,
+                    "provenance": null
+                  },
+                  {
+                    "source": "method:10074ad895588b6b981f6cf6b2f70781",
+                    "target": "function:bb2680efac0aaf218f93c1369f1db0df",
+                    "kind": "calls",
+                    "metadata": {
+                      "confidence": 0.9,
+                      "resolvedBy": "exact-match",
+                      "refName": "property_values"
+                    },
+                    "line": 266,
+                    "column": 41,
+                    "provenance": null
+                  },
+                  {
+                    "source": "method:10074ad895588b6b981f6cf6b2f70781",
+                    "target": "function:d6806a2e11896ec9fd7126a4098b2b39",
+                    "kind": "calls",
+                    "metadata": {
+                      "confidence": 0.9,
+                      "resolvedBy": "exact-match",
+                      "refName": "canonical_value"
+                    },
+                    "line": 271,
+                    "column": 34,
+                    "provenance": null
+                  },
+                  {
+                    "source": "method:10074ad895588b6b981f6cf6b2f70781",
+                    "target": "method:48eead2c33223a6eef948a5da299c2ef",
+                    "kind": "calls",
+                    "metadata": {
+                      "confidence": 0.9,
+                      "resolvedBy": "qualified-name",
+                      "refName": "self.canonical_binary"
+                    },
+                    "line": 240,
+                    "column": 40,
+                    "provenance": null
+                  },
+                  {
+                    "source": "method:10074ad895588b6b981f6cf6b2f70781",
+                    "target": "enum_member:8bec0c1f4712467b2c0098a090280446",
+                    "kind": "instantiates",
+                    "metadata": {
+                      "confidence": 0.7,
+                      "resolvedBy": "exact-match",
+                      "refName": "ByValue"
+                    },
+                    "line": 277,
+                    "column": 24,
+                    "provenance": null
+                  },
+                  {
+                    "source": "method:10074ad895588b6b981f6cf6b2f70781",
+                    "target": "enum:eb3a29a89fe8d6d68207999374a12c94",
+                    "kind": "references",
+                    "metadata": {
+                      "confidence": 0.9,
+                      "resolvedBy": "exact-match",
+                      "refName": "CanonicalClassQuery"
+                    },
+                    "line": 238,
+                    "column": 37,
+                    "provenance": null
+                  },
+                  {
+                    "source": "method:10074ad895588b6b981f6cf6b2f70781",
+                    "target": "enum:f02de913cbe55a73694e503c6f272fce",
+                    "kind": "references",
+                    "metadata": {
+                      "confidence": 0.7,
+                      "resolvedBy": "exact-match",
+                      "refName": "Error"
+                    },
+                    "line": 238,
+                    "column": 58,
+                    "provenance": null
+                  }
+                ],
+                "total": 12,
+                "limit": 20,
+                "truncated": false
+              }
+            ],
+            "callees": [
+              {
+                "name": "Script",
+                "kind": "enum_member",
+                "filePath": "regex-syntax/src/unicode.rs",
+                "startLine": 334,
+                "relationships": [
+                  "calls"
+                ]
+              },
+              {
+                "name": "GeneralCategory",
+                "kind": "enum_member",
+                "filePath": "regex-syntax/src/unicode.rs",
+                "startLine": 332,
+                "relationships": [
+                  "calls"
+                ]
+              },
+              {
+                "name": "canonical_gencat",
+                "kind": "function",
+                "filePath": "regex-syntax/src/unicode.rs",
+                "startLine": 501,
+                "relationships": [
+                  "calls"
+                ]
+              },
+              {
+                "name": "symbolic_name_normalize",
+                "kind": "function",
+                "filePath": "regex-syntax/src/unicode.rs",
+                "startLine": 879,
+                "relationships": [
+                  "calls"
+                ]
+              },
+              {
+                "name": "canonical_prop",
+                "kind": "function",
+                "filePath": "regex-syntax/src/unicode.rs",
+                "startLine": 530,
+                "relationships": [
+                  "calls"
+                ]
+              },
+              {
+                "name": "canonical_script",
+                "kind": "function",
+                "filePath": "regex-syntax/src/unicode.rs",
+                "startLine": 515,
+                "relationships": [
+                  "calls"
+                ]
+              },
+              {
+                "name": "property_values",
+                "kind": "function",
+                "filePath": "regex-syntax/src/unicode.rs",
+                "startLine": 587,
+                "relationships": [
+                  "calls"
+                ]
+              },
+              {
+                "name": "canonical_value",
+                "kind": "function",
+                "filePath": "regex-syntax/src/unicode.rs",
+                "startLine": 575,
+                "relationships": [
+                  "calls"
+                ]
+              },
+              {
+                "name": "canonical_binary",
+                "kind": "method",
+                "filePath": "regex-syntax/src/unicode.rs",
+                "startLine": 287,
+                "relationships": [
+                  "calls"
+                ]
+              },
+              {
+                "name": "ByValue",
+                "kind": "enum_member",
+                "filePath": "regex-syntax/src/unicode.rs",
+                "startLine": 229,
+                "relationships": [
+                  "instantiates"
+                ]
+              },
+              {
+                "name": "CanonicalClassQuery",
+                "kind": "enum",
+                "filePath": "regex-syntax/src/unicode.rs",
+                "startLine": 328,
+                "relationships": [
+                  "references"
+                ]
+              },
+              {
+                "name": "Error",
+                "kind": "enum",
+                "filePath": "regex-syntax/src/unicode.rs",
+                "startLine": 17,
+                "relationships": [
+                  "references"
+                ]
+              }
+            ],
+            "total": 12,
+            "limit": 20,
+            "truncated": false
+          },
+          "stderr": ""
+        }
+      }
+    }
+  ]
+}

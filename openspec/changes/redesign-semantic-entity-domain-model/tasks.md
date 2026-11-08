@@ -115,7 +115,8 @@
   - 定向命令：`PYTHONPATH=src:skill/src .local/analysis-venv/bin/python -m unittest discover -s skill/tests -p test_request_store.py -v`。
   - 通过/失败与证据：`skill/README.md`描述外置数据库与状态；源输入/profile不匹配不复用；冲突和证据保留，存储失败与语义取得分别报告；丢失补证或虚报保存失败。 每项绑定提交、输入版本、命令与实跑结果，失败保留未完成，不用历史测试数代替新测试。
 
-- [ ] 10.6 **可选CodeGraph解析及生产矩阵验证**
+- [x] 10.6 **可选CodeGraph解析及生产矩阵验证**
+  - 完成证据：解析器红绿7测试、固定Click/regex四类真实JSON共8次运行解析通过，原始响应/stderr及来源核对入验证工件；无净覆盖收益证据，依任务条件保留candidate而不点亮完整图能力。
   - 依据/依赖：10.1–10.2；非商用工具组合及解析点亮要求，现有CRG不重写。
   - 交付与修改范围：新增 `skill/src/c2s_skill/codegraph_adapter.py`、`skill/tests/test_codegraph_adapter.py`；修改 `capability_matrix.py`、`skill/contracts/tool-capabilities.json`；验证记录 `docs/development/reviews/semantic-facts/CodeGraph适配验证.md`。
   - 输入/输出接口：`parse_codegraph_response(response: dict | list, root: Path, query_kind: str) -> dict`返回来源/调用候选、原始工件、工具版本及coverage诊断；通过tool_runner执行显式query/files/callers/callees子命令，不运行宿主安装/自动配置。
