@@ -151,3 +151,5 @@ PYTHONPATH=src:skill/src .local/analysis-venv/bin/python3 scripts/verify_semanti
 `collect_source_records(root, scan, request)`在没有语义实体映射时仍保留目录、清单、包、工作空间、源码模块及声明。来源记录和语义实体身份独立，重复取得复用来源键并追加证据；工具解释分歧保留为观察差异。`scan_project`可传`source_paths`限制实际解析文件，完整inventory仍保留，未解析/非源文件在来源覆盖中显式列出。该切片尚未接入默认CLI，不宣称v2查询和存储已经完成。
 
 v2局部构造接口`construct_requested_entities`只对计划需要的实体和描述面构造解释，解释均为带premiseIds/method的暂定主张；不按实体类型固定分配E视角。仅algorithm描述面请求会调用算法lowerer，并将步骤证据纳入档案引用。实现视图保持partial_static_syntax_projection；宽泛实现类型仍不能推断业务类型或值域。
+
+v2存储接口`read_request`按scope、输入指纹与配置隔离快照，并按target/facets返回可复用覆盖；部分静态结果保留原缺口。`commit_request`在单事务中注册、合并补证、写覆盖和操作回执，同操作同载荷幂等、异载荷拒绝；取消/失败不发布完成覆盖。数据库仍须放在分析目录外；保存失败不能吞掉已取得事实，旧profile表保持独立。

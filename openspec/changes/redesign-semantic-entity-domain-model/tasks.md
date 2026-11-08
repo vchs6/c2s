@@ -105,7 +105,8 @@
   - 定向命令：`PYTHONPATH=src:skill/src .local/analysis-venv/bin/python -m unittest discover -s skill/tests -p test_construction_v2.py -v`。
   - 通过/失败与证据：文档标明direct_source不是行为证明；只有实际完成need发布覆盖，来源解释标暂定并有premises；固定kind→E视角或全仓构造则失败。 每项绑定提交、输入版本、命令与实跑结果，失败保留未完成，不用历史测试数代替新测试。
 
-- [ ] 10.5 **细粒度持久化与原子补缺**
+- [x] 10.5 **细粒度持久化与原子补缺**
+  - 完成证据：先观察7项接口缺失失败，后8项存储测试通过（含8次并发操作补证和SQLite触发器失败注入）；既有实体存储回归通过。v2独立按scope/输入/配置隔离，事务内合并、注册、覆盖及回执原子提交。
   - 依据/依赖：10.1及10.4；增量存储、状态独立和输入固定约束。
   - 交付与修改范围：修改 `semantic_store.py`；新增 `skill/tests/test_request_store.py`，保留现有M1/v1存储测试。
   - 输入/输出接口：`SemanticEntityStore.read_request(scope_id, request, input_fingerprint, configuration_digest) -> dict`；`commit_request(operation_id, document, request) -> dict`；v2独立表、事务内读取generation合并。

@@ -968,6 +968,14 @@ class SemanticEntityStore:
         return json.loads(row[0]) if row else []
 
 
+    def read_request(self, scope_id: str, request: dict, input_fingerprint: str,
+                     configuration_digest: str) -> dict:
+        return _read_request_v2(self, scope_id, request, input_fingerprint, configuration_digest)
+
+    def commit_request(self, operation_id: str, document: dict, request: dict) -> dict:
+        return _commit_request_v2(self, operation_id, document, request)
+
+
 def _merge_entity_archives(old: dict, new: dict) -> dict:
     """Merge additional records without overwriting conflicting claims."""
     result = json.loads(_json(old))
@@ -1031,3 +1039,127 @@ def _merge_entity_record(old: dict, new: dict) -> dict:
                     | set(item["valueRange"].get("evidenceIds", [])))
     result["attributes"] = sorted(attributes.values(), key=lambda item: item["attributeId"])
     return result
+
+
+def _v2_tables(connection):
+    connection.execute('''CREATE TABLE IF NOT EXISTS semantic_entity_v2_archives(
+        scope_id TEXT NOT NULL, fingerprint TEXT NOT NULL, config TEXT NOT NULL,
+        generation INTEGER NOT NULL, payload TEXT NOT NULL,
+        PRIMARY KEY(scope_id,fingerprint,config))''')
+    connection.execute('''CREATE TABLE IF NOT EXISTS semantic_entity_v2_operations(
+        scope_id TEXT NOT NULL, operation_id TEXT NOT NULL, digest TEXT NOT NULL,
+        fingerprint TEXT NOT NULL, config TEXT NOT NULL, receipt TEXT NOT NULL,
+        PRIMARY KEY(scope_id,operation_id))''')
+
+
+def _merge_v2_documents(old: dict, new: dict) -> dict:
+    """合并同一固定输入上的补证，语义冲突不以最后写入覆盖。"""
+    result=json.loads(_json(old))
+    ids={'entities':lambda x:_identity_key(x['ref']), 'claims':lambda x:x['claimId'],
+         'relations':lambda x:x['relationId'],'continuityCandidates':lambda x:x['candidateId'],
+         'sourceMappings':lambda x:x['mappingId'],'evidence':lambda x:x['evidenceId'],
+         'coverage':lambda x:x['coverageId'],'sourceRecords':lambda x:x['recordId'],
+         'sourceCoverage':lambda x:x['coverageId'],'acquisitionRuns':lambda x:x['runId'],
+         'artifacts':lambda x:x['artifactId']}
+    for collection,key in ids.items():
+        records={key(x):x for x in result.get(collection,[])}
+        for item in new.get(collection,[]):
+            rid=key(item)
+            if rid not in records:records[rid]=item;continue
+            previous=records[rid]
+            if previous==item:continue
+            if collection=='entities':
+                records[rid]=_merge_entity_record(previous,item);continue
+            if collection in {'claims','relations','sourceRecords','sourceMappings'}:
+                merged=json.loads(_json(previous))
+                for field,value in item.items():
+                    if field in {'evidenceIds','sourceConstructIds','parentRecordIds','relatedRecords'}:
+                        merged[field]=list({_json(x):x for x in merged.get(field,[])+value}.values())
+                    elif field=='value' and collection=='sourceRecords':
+                        merged[field]={'observations':list({_json(x):x for x in
+                            merged.get(field,{}).get('observations',[])+value.get('observations',[])}.values())}
+                    elif field=='status' and collection=='sourceRecords':
+                        states={'not_acquired':0,'unsupported':0,'partial':1,'obtained':2}
+                        merged[field]=max([value,merged[field]],key=lambda x:states[x])
+                    elif field not in merged:merged[field]=value
+                    elif merged[field]!=value:raise ValueError(f'v2记录内容冲突：{collection}:{rid}:{field}')
+                records[rid]=merged
+            else:raise ValueError(f'v2记录内容冲突：{collection}:{rid}')
+        result[collection]=list(records.values())
+    return result
+
+
+def _read_request_v2(store, scope_id, request, fingerprint, config):
+    with store._connect() as connection:
+        _v2_tables(connection)
+        row=connection.execute('SELECT generation,payload FROM semantic_entity_v2_archives WHERE scope_id=? AND fingerprint=? AND config=?',
+                               (scope_id,fingerprint,config)).fetchone()
+        any_row=connection.execute('SELECT fingerprint FROM semantic_entity_v2_archives WHERE scope_id=? LIMIT 1',(scope_id,)).fetchone()
+    if row is None:
+        return {'model':None,'generation':0,'reusedFacets':[],
+                'diagnostics':[{'code':'INPUT_CHANGED' if any_row and any_row[0]!=fingerprint else 'CONFIGURATION_CHANGED'}] if any_row else []}
+    model=json.loads(row[1]);reused=set()
+    for cov in model['sourceCoverage']:
+        applicable=cov['inputFingerprint']==fingerprint and cov['configurationDigest']==config
+        applicable=applicable and cov['view']==request['view'] and (cov['target']==request['target'] or cov['target']=={'kind':'all'})
+        applicable=applicable and cov['conditions']==request.get('conditions',{})
+        if applicable and cov['status'] in {'obtained','partial'} and not any(d.get('retryable') for d in cov['diagnostics']):
+            reused.update(cov['facets'])
+    return {'model':model,'generation':row[0],'reusedFacets':sorted(reused),'diagnostics':[]}
+
+
+def _commit_request_v2(store, operation_id, document, request):
+    from c2s_semantic_contract.validation import validate_semantic_entity_model_v2
+    document=json.loads(_json(document))
+    if not operation_id or document.get('scopeId')!=request['scopeId']:
+        raise ValueError('v2操作标识或范围不匹配')
+    checked=validate_semantic_entity_model_v2(document)
+    if not checked['valid']:raise ValueError('无效v2档案：'+_json(checked['diagnostics']))
+    if not document['sourceCoverage']:raise ValueError('v2提交缺少请求覆盖记录')
+    first=document['sourceCoverage'][0];fp=first['inputFingerprint'];cfg=first['configurationDigest'];scope=document['scopeId']
+    if any(c['inputFingerprint']!=fp or c['configurationDigest']!=cfg for c in document['sourceCoverage']):
+        raise ValueError('不能混合不同输入或配置的覆盖')
+    digest=_sha(_json({'request':request,'document':document}).encode())
+    if any(run['status'] in {'cancelled','failed'} for run in document['acquisitionRuns']):
+        for cov in document['sourceCoverage']:
+            cov['status']='not_acquired';cov['diagnostics'].append({'code':'ACQUISITION_UNFINISHED','retryable':True})
+    for collection in ('coverage','sourceCoverage'):
+        for cov in document[collection]:cov['coverageId']+=':'+_sha(operation_id.encode())[:16]
+    run_id='operation:'+operation_id
+    document['acquisitionRuns'].append({'runId':run_id,'inputFingerprint':fp,'configurationDigest':cfg,
+        'status':'partial' if any(c['status']!='obtained' for c in document['sourceCoverage']) else 'completed',
+        'tools':[],'sourceRecordIds':[x['recordId'] for x in document['sourceRecords']],
+        'evidenceIds':[x['evidenceId'] for x in document['evidence']],
+        'artifactIds':[x['artifactId'] for x in document['artifacts']]})
+    with store._connect() as connection:
+        _v2_tables(connection)
+        connection.execute('BEGIN IMMEDIATE')
+        old_op=connection.execute('SELECT digest,receipt FROM semantic_entity_v2_operations WHERE scope_id=? AND operation_id=?',
+                                  (scope,operation_id)).fetchone()
+        row=connection.execute('SELECT generation,payload FROM semantic_entity_v2_archives WHERE scope_id=? AND fingerprint=? AND config=?',
+                               (scope,fp,cfg)).fetchone()
+        if old_op:
+            if old_op[0]!=digest:raise ValueError('同一操作标识不能提交不同内容')
+            return {**json.loads(old_op[1]),'model':json.loads(row[1])}
+        merged=_merge_v2_documents(json.loads(row[1]),document) if row else document
+        checked=validate_semantic_entity_model_v2(merged)
+        if not checked['valid']:raise ValueError('v2合并引用不合法：'+_json(checked['diagnostics']))
+        for entity in merged['entities']:
+            for key in entity['sourceKeys']:
+                if not key.startswith('candidate:'):continue
+                identity_key=_json(entity['ref']['identity'])
+                existing=connection.execute('SELECT identity_key,kind FROM semantic_entity_registry WHERE scope_id=? AND source_key=?',
+                                            (scope,key)).fetchone()
+                if existing and (existing[0]!=identity_key or existing[1]!=entity['ref']['kind']):
+                    raise ValueError('注册身份冲突，不能按名字或路径合并')
+                if not existing:
+                    payload={'ref':entity['ref'],'sourceKey':key,'name':entity['name'],'evidenceIds':[]}
+                    connection.execute('INSERT INTO semantic_entity_registry VALUES(?,?,?,?,?)',
+                        (scope,key,identity_key,entity['ref']['kind'],_json(payload)))
+        generation=row[0]+1 if row else 1
+        connection.execute('INSERT OR REPLACE INTO semantic_entity_v2_archives VALUES(?,?,?,?,?)',
+                           (scope,fp,cfg,generation,_json(merged)))
+        receipt={'status':'saved','generation':generation,'operationId':operation_id}
+        connection.execute('INSERT INTO semantic_entity_v2_operations VALUES(?,?,?,?,?,?)',
+                           (scope,operation_id,digest,fp,cfg,_json(receipt)))
+    return {**receipt,'model':merged}
