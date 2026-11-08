@@ -497,6 +497,18 @@
           "payload"
         ]
       }
+    },
+    "status": {
+      "enum": [
+        "obtained",
+        "partial",
+        "not_found",
+        "ambiguous",
+        "not_acquired"
+      ]
+    },
+    "complete": {
+      "type": "boolean"
     }
   },
   "required": [

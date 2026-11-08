@@ -36,6 +36,8 @@ def collect_source_records(root: Path, scan: ProjectScan, request: dict) -> dict
                 'language':construct.language,'syntaxKind':construct.syntax_kind,'name':construct.name,
                 'path':construct.path,'sha256':construct.source_sha256,'startByte':construct.start_byte,
                 'endByte':construct.end_byte,'parserId':construct.parser_id,'parserVersion':construct.parser_version,
+                'opaque':construct.opaque,
+                **({'declaredType':construct.declared_type} if construct.declared_type is not None else {}),
                 **({'parentConstructId':construct.parent_id} if construct.parent_id else {})})
         if value is not None:
             observations=item.setdefault('value',{'observations':[]})['observations']

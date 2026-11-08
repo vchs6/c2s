@@ -661,6 +661,8 @@ def construct_requested_entities(root: Path, scan: ProjectScan, plan: dict) -> d
             ref=plan.get('registry',{}).get(c['candidateId']) or {'identity':{'authority':'c2s',
                 'domainId':scope,'localId':_digest(f'{scope}\0{source_key}')},'kind':c['kind']}
             refs[c['candidateId']]=ref
+            for attribute in c.get('attributes',[]):
+                if attribute.get('implementationType') is None:attribute.pop('implementationType',None)
             document['entities'].append({'ref':ref,'name':c['name'],'aliases':[],
                 'description':c['description'],'attributes':c.get('attributes',[]),
                 'sourceKeys':[source_key,*c['sourceConstructIds']],'observationViews':[]})

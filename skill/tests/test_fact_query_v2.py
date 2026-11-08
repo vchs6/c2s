@@ -105,7 +105,71 @@ class FactQueryV2Tests(unittest.TestCase):
         from c2s_skill.semantic_entity_query import query_entity_store_v2
         from c2s_skill.query import query_project_v2
         first=query_project_v2(self.root,'function:run',self.store)
-        q=first['request'];fp=source_fingerprint(self.root);cfg=analysis_profile_digest()
+        q=first['request'];fp=source_fingerprint(self.root);cfg=first['cost']['configurationDigest']
         with patch('c2s_skill.fact_query.scan_project',side_effect=AssertionError('仓库查询不能重构')):
             second=query_entity_store_v2(self.store,q,fp,cfg)
         self.assertEqual(first['items'],second['items'])
+
+    def test_reused_source_index_retains_parser_metadata(self):
+        execute_fact_query(self.root,'modules',self.store)
+        result=execute_fact_query(self.root,{'view':'entity','target':{'kind':'DataEntity','name':'Record'},'detail':'self'},self.store)
+        fields=[r for r in result['sourceRecords'] if r.get('sourceConstruct',{}).get('syntaxKind')=='field_declaration']
+        self.assertTrue(fields)
+        self.assertTrue(all(len(r['value']['observations'])==1 for r in fields))
+
+    def test_reused_opaque_source_stays_unresolved(self):
+        (self.root/'broken.py').write_text('def broken(:')
+        execute_fact_query(self.root,'modules',self.store)
+        result=execute_fact_query(self.root,'all-declarations',self.store)
+        self.assertTrue(any(r.get('sourceConstruct',{}).get('opaque') for r in result['sourceRecords']))
+        self.assertTrue(any(c['status']=='partial' for c in result['coverage']))
+
+    def test_entity_name_and_source_path_disambiguation(self):
+        (self.root/'other.py').write_text('def run():\n return 2\n')
+        q={'view':'entity','target':{'kind':'ComputationEntity','name':'run','path':'m.py'},'facets':['algorithm'],'detail':'self'}
+        result=execute_fact_query(self.root,q,self.store)
+        self.assertEqual(1,len(result['items']))
+        self.assertTrue(any('pseudocode' in s for s in result['sourceRecords']))
+
+    def test_workspace_members_use_native_metadata_not_all_declarations(self):
+        from c2s_skill.acquisition import Fact
+        (self.root/'Cargo.toml').write_text('[workspace]\nmembers=["crates/*"]\n')
+        member=self.root/'crates/a';member.mkdir(parents=True)
+        (member/'Cargo.toml').write_text('[package]\nname="a"\nversion="0.1.0"\n')
+        def metadata(root,*,raw_output=None):
+            if raw_output is not None:raw_output.append({'metadata':{'packages':[{'name':'a'}]},'toolVersion':'test'})
+            source=(root/'Cargo.toml').read_text()
+            return [Fact('workspace:a','workspace_member','a','Cargo.toml',0,len(source.encode()),'E1','observation',source,'crates/a/Cargo.toml')],None
+        with patch('c2s_skill.fact_query.cargo_workspace_facts',side_effect=metadata) as cargo:
+            result=execute_fact_query(self.root,'workspace-members',self.store)
+        self.assertEqual(['a'],[i['name'] for i in result['items']]);self.assertEqual(1,cargo.call_count)
+        self.assertTrue(result['artifacts'])
+
+    def test_confirmed_empty_module_list_not_not_acquired(self):
+        (self.root/'m.py').unlink()
+        result=execute_fact_query(self.root,'modules',self.store)
+        self.assertEqual([],result['items'])
+        self.assertEqual('obtained',result['status']);self.assertTrue(result['complete'])
+        self.assertNotIn('TARGET_NOT_ACQUIRED',[d['code'] for d in result['diagnostics']])
+
+    def test_entity_detail_does_not_include_unrelated_diagnostics(self):
+        def ent(n):return {'ref':{'kind':'Module','identity':{'authority':'t','domainId':'s','localId':n}},'name':n,'attributes':[]}
+        a,b=ent('a'),ent('b')
+        model={'entities':[a,b],'sourceRecords':[],'relations':[],'claims':[],'evidence':[],'sourceMappings':[],
+               'sourceCoverage':[{'coverageId':'broad','view':'entity','target':{'kind':'all'},'facets':['attributes'],
+                'status':'partial','inputFingerprint':'f','configurationDigest':'c','conditions':{},
+                'processedPaths':[],'unprocessedPaths':[],
+                'diagnostics':[{'code':'PROVISIONAL','entity':a['ref']},{'code':'PROVISIONAL','entity':b['ref']}]}]}
+        q=normalize_fact_request({'view':'entity','target':{'kind':'Module','ref':a['ref']},'detail':'self','facets':['attributes']})
+        result=project_fact_result(model,q)
+        self.assertEqual([{'code':'PROVISIONAL','entity':a['ref']}],result['diagnostics'])
+        self.assertEqual(result['diagnostics'],result['coverage'][0]['diagnostics'])
+
+    def test_archive_projection_does_not_invent_algorithm_coverage(self):
+        from c2s_skill.semantic_entity_query import query_entity_store_v2
+        first=execute_fact_query(self.root,'modules',self.store)
+        q=normalize_fact_request({'scopeId':first['request']['scopeId'],'view':'source',
+            'target':{'kind':'function','name':'run'},'facets':['algorithm'],'detail':'self'})
+        result=query_entity_store_v2(self.store,q,first['cost']['inputFingerprint'],first['cost']['configurationDigest'])
+        self.assertFalse(result['complete'])
+        self.assertIn('FACET_NOT_ACQUIRED',[d['code'] for d in result['diagnostics']])

@@ -145,7 +145,8 @@
   - 定向命令：`PYTHONPATH=src:skill/src .local/analysis-venv/bin/python -m unittest discover -s skill/tests -p test_model_v2_migration.py -v`。
   - 通过/失败与证据：v1、旧完整profile、M1原档案不改写；切换前备份可回读，新profile显式选择，信息损失具名报告；无损声明不实或反写旧表失败。 每项绑定提交、输入版本、命令与实跑结果，失败保留未完成，不用历史测试数代替新测试。
 
-- [ ] 10.9 **真实项目全集遍历与同范围成本集成**
+- [x] 10.9 **真实项目全集遍历与同范围成本集成**
+  - 完成证据：验证器缺失接口/遗漏主张检测红测试后6项测试通过；固定Click来源4138/实体2610、regex来源19041/实体4712逐项查询回读，全部主张/关系/映射及字节证据核对通过。原生普通类型/函数声明分别2078、4907；两项目各显式验证1个核心算法，未请求算法不冒称已展开；冷热事实/缺口一致，重复解析0文件。
   - 依据/依赖：10.2–10.8；质量、范围、词元和来源证据要求。
   - 交付与修改范围：新增 Python3 `scripts/verify_source_fact_refactor.py`；新增 `skill/tests/test_refactor_verifier.py`；产物 `docs/development/reviews/semantic-facts/非DDD真实项目验证.md`及对应JSON。
   - 输入/输出接口：脚本参数--project、--expected-commit、--store、--output；调用公开v2接口，遍历所有已发布记录与缺口及每个来源/实体查询目标，逐项比较存储回读和证据摘要。

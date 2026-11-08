@@ -153,7 +153,7 @@ def _namespace_construct(construct: SourceConstruct, project_root: Path) -> Sour
                    if construct.parent_id else None))
 
 
-def cargo_workspace_facts(root: Path) -> tuple[list[Fact], str | None]:
+def cargo_workspace_facts(root: Path, *, raw_output: list[dict] | None = None) -> tuple[list[Fact], str | None]:
     """Resolve workspace package membership with Cargo without resolving dependencies."""
     manifest = root / "Cargo.toml"
     if not manifest.is_file() or manifest.is_symlink():
@@ -167,7 +167,16 @@ def cargo_workspace_facts(root: Path) -> tuple[list[Fact], str | None]:
              "--manifest-path", str(manifest)],
             cwd=root, check=True, capture_output=True, text=True, timeout=20,
         )
+        if raw_output is not None:
+            raw_output.append({"stdout": completed.stdout, "stderr": completed.stderr})
         metadata = json.loads(completed.stdout)
+        if raw_output is not None:
+            raw_output[-1]["metadata"] = metadata
+            try:
+                raw_output[-1]["toolVersion"] = subprocess.run([cargo, "--version"], capture_output=True,
+                    text=True, check=True, timeout=3).stdout.strip()
+            except (OSError, subprocess.SubprocessError):
+                raw_output[-1]["toolVersion"] = "unknown"
         source = manifest.read_bytes()
         facts = []
         for package in metadata.get("packages", []):

@@ -148,7 +148,7 @@ def _run_v2_cli(args, root):
         runner=lambda tool_id,q:{"response":raw_graph,"toolVersion":args.graph_version}
     result=execute_fact_query(root,request,SemanticEntityStore(args.store) if args.store else None,
                               cache=QueryResultCache(args.cache) if args.cache else None,tool_runner=runner)
-    good=bool(result["items"]) and not result["diagnostics"] and all(c["status"]=="obtained" for c in result["coverage"])
+    good=result.get("complete",False) and result["persistence"]["status"]!="failed"
     return render_fact_result(result,args.format or "json"),0 if good else 2
 
 

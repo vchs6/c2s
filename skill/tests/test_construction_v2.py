@@ -52,3 +52,11 @@ class ConstructionV2Tests(unittest.TestCase):
         self.assertTrue(result['valid'],result['diagnostics'])
         record=next(r for r in m['sourceRecords'] if 'algorithm' in r)
         self.assertLessEqual(set(record['algorithm']['evidence_refs']),{e['evidenceId'] for e in m['evidence']})
+
+    def test_unknown_implementation_type_omitted_not_null(self):
+        (self.root/'untyped.py').write_text('class Unknown:\n value = None\n')
+        self.scan=scan_project(self.root)
+        m=self.build({'view':'entity','target':{'kind':'DataEntity','name':'Unknown'},'detail':'self'})
+        result=validate_semantic_entity_model_v2(m)
+        self.assertTrue(result['valid'],result['diagnostics'])
+        self.assertNotIn('implementationType',m['entities'][0]['attributes'][0])

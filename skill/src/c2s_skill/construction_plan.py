@@ -16,6 +16,7 @@ def matching_records(request: dict, records: list[dict]) -> list[dict]:
         if target.get('ref') and target['ref'] not in (item.get('ref'),{'recordId':item.get('recordId')}):continue
         legacy=request.get('conditions',{}).get('legacySelector')
         if legacy=='classes' and not any(x in syntax for x in ('class','struct','enum','trait')):continue
+        if legacy=='workspace-members' and not any(v.get('nativeWorkspaceMember') for v in item.get('value',{}).get('observations',[])):continue
         out.append(item)
     return out
 
