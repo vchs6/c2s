@@ -85,7 +85,8 @@
   - 定向命令：`PYTHONPATH=src:skill/src .local/analysis-venv/bin/python -m unittest discover -s skill/tests -p test_source_records.py -v`。
   - 通过/失败与证据：`skill/README.md`记录来源查询与范围；模块未映射仍可查、嵌套工程不伪归属，未处理文件列明；静默丢路径或越界则失败。 每项绑定提交、输入版本、命令与实跑结果，失败保留未完成，不用历史测试数代替新测试。
 
-- [ ] 10.3 **规范请求和按需计划**
+- [x] 10.3 **规范请求和按需计划**
+  - 完成证据：接口缺失红测试后实现规范请求及计划；5项计划测试与3项请求测试通过，覆盖同名歧义、单函数算法、已得描述面复用和工具缺口。
   - 依据/依赖：10.1–10.2；查询触发/同主体补缺和实体自身属性完整要求。
   - 交付与修改范围：新增 `fact_request.py`、`construction_plan.py`；修改 `capability_matrix.py`；测试 `skill/tests/test_fact_request.py`、`test_construction_plan.py`。
   - 输入/输出接口：`normalize_fact_request(value: dict | str) -> dict`；`plan_fact_request(request: dict, available: dict, inventory: list[dict]) -> dict`；needs包含目标、facets、前置及理由。

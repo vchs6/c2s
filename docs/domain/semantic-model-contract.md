@@ -23,3 +23,5 @@
 ## v2实施进度
 
 已新增semantic-entity-model-2的封闭Schema与`validate_semantic_entity_model_v2`：来源组织、直接/推导/旧载荷未分类主张、取得运行及来源覆盖分别校验；v1引用和实体规则继续复用。请求/结果v2 Schema已建立，来源记录不能冒实体引用，未分类旧主张必须保留原载荷工件。当前仅契约切片完成，默认运行路径仍为v1。
+
+v2请求经normalize_fact_request规范化，entity/self隐含自身attributes；同名候选不自动选择。plan_fact_request只计划请求缺少的描述面，未定位函数先建立声明索引；工具能力未覆盖时保留TOOL_UNAVAILABLE。该接口尚在集成阶段，默认CLI仍为v1。
