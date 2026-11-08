@@ -739,20 +739,23 @@ def render_pseudocode(algorithm: dict, source: bytes) -> dict:
     references = set()
     steps = sorted(body.get("steps", []), key=lambda item: (
             item.get("source", {}).get("start_byte", 0), item.get("source", {}).get("end_byte", 0)))
-    false_branch_targets = {edge.get("to_step") for edge in body.get("control_edges", [])
-                            if edge.get("kind") == "branch_false"}
+    step_regions = {step.get("step_id"): step.get("region_id", "r0") for step in steps}
+    false_branch_sources = {edge.get("to_step"): edge.get("from_step")
+                            for edge in body.get("control_edges", []) if edge.get("kind") == "branch_false"}
     for step in steps:
-        if step.get("step_id") in false_branch_targets:
-            lines.append("  " * max(0, depth(step.get("region_id", "r0")) - 1) + "否则")
+        if step.get("step_id") in false_branch_sources:
+            source_step = false_branch_sources[step.get("step_id")]
+            lines.append("  " * depth(step_regions.get(source_step, "r0")) + "否则")
         span = step.get("source", {})
         raw = source[span.get("start_byte", 0):span.get("end_byte", 0)].decode("utf-8", errors="replace")
-        statement = next((line.strip() for line in raw.splitlines() if line.strip()), "")
-        if statement.startswith(('"""', "'''")):
+        source_lines = [line.strip() for line in raw.splitlines() if line.strip()]
+        statement = " ".join(source_lines)
+        if source_lines and source_lines[0].startswith(('"""', "'''")):
             # Python docstrings are declaration documentation, not execution steps.
             continue
         kind = step.get("kind", "opaque")
         if kind in {"select", "loop"}:
-            statement = statement.splitlines()[0].strip()
+            statement = source_lines[0] if source_lines else ""
             if kind == "select" and statement.startswith("match"):
                 statement = "按值匹配 " + statement.removeprefix("match").strip()
                 keyword = ""
@@ -772,6 +775,8 @@ def render_pseudocode(algorithm: dict, source: bytes) -> dict:
             statement = re.sub(r"^raise\b", "", statement).strip() or "当前异常"
         elif kind == "call":
             statement = re.sub(r";\s*$", "", statement)
+        elif kind in {"handle", "resource"}:
+            statement = source_lines[0] if source_lines else ""
         prefix = translations.get(kind, "未解析步骤")
         lines.append("  " * depth(step.get("region_id", "r0")) + f"{prefix} {statement}".rstrip())
         references.update(step.get("evidence_refs", []))

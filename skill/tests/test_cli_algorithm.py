@@ -191,6 +191,21 @@ class AlgorithmCliTests(unittest.TestCase):
                           if item["function"] == "answer")
             self.assertIn("如果 flag", answer["text"])
             self.assertIn("返回 1", answer["text"])
+
+    def test_pseudocode_preserves_all_lines_of_multiline_statements(self):
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            (root / "main.py").write_text(
+                "def render(items):\n    result = build(\n        items,\n        option=\"all\",\n    )\n    return result\n",
+                encoding="utf-8")
+            output = io.StringIO()
+            with contextlib.redirect_stdout(output), contextlib.redirect_stderr(io.StringIO()):
+                status = main(["query", "--root", str(root), "--select", "function:render",
+                               "--format", "json"])
+            self.assertEqual(status, 0)
+            rendered = json.loads(output.getvalue())["pseudocode"][0]["text"]
+            self.assertIn("option=\"all\"", rendered)
+            self.assertIn("items", rendered)
             (root / "main.py").write_text(
                 "def choose(flag):\n    if flag:\n        return 1\n    else:\n        return 2\n", encoding="utf-8")
             output = io.StringIO()
