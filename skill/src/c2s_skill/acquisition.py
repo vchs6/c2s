@@ -182,7 +182,7 @@ def cargo_workspace_facts(root: Path) -> tuple[list[Fact], str | None]:
         return [], "TOOL_FAILED:cargo-metadata"
 
 
-def _python_facts(path: str, source: bytes, tree: ast.AST) -> list[Fact]:
+def _python_facts(path: str, source: bytes, tree: ast.AST, *, include_implementation: bool = True) -> list[Fact]:
     facts: list[Fact] = []
     parents = {child: parent for parent in ast.walk(tree) for child in ast.iter_child_nodes(parent)}
 
@@ -244,7 +244,7 @@ def _python_facts(path: str, source: bytes, tree: ast.AST) -> list[Fact]:
                 end = sum(len(line) for line in lines[:doc.end_lineno - 1]) + doc.end_col_offset
                 facts.append(_make_fact(path, source, "behavior_contract", node.name, start, end,
                                         scope_name(node)))
-        if isinstance(node, algorithm_nodes):
+        if include_implementation and isinstance(node, algorithm_nodes):
             lines = source.splitlines(keepends=True)
             start = sum(len(line) for line in lines[:node.lineno - 1]) + node.col_offset
             end = sum(len(line) for line in lines[:node.end_lineno - 1]) + node.end_col_offset
@@ -465,7 +465,7 @@ def _walk_syntax(root):
         stack.extend(reversed(node.children))
 
 
-def _rust_facts(path: str, source: bytes, root) -> tuple[list[Fact], int, bool]:
+def _rust_facts(path: str, source: bytes, root, *, include_implementation: bool = True) -> tuple[list[Fact], int, bool]:
     facts: list[Fact] = []
     syntax_nodes = 0
     parse_complete = True
@@ -519,7 +519,7 @@ def _rust_facts(path: str, source: bytes, root) -> tuple[list[Fact], int, bool]:
                 target = node.child_by_field_name("type")
                 if target:
                     owner_name = source[target.start_byte:target.end_byte].decode()
-        if node.type == "let_declaration":
+        if include_implementation and node.type == "let_declaration":
             pattern = node.child_by_field_name("pattern")
             if pattern:
                 for binding in binding_nodes(pattern):
@@ -536,7 +536,7 @@ def _rust_facts(path: str, source: bytes, root) -> tuple[list[Fact], int, bool]:
             if name_node:
                 name = source[name_node.start_byte:name_node.end_byte].decode()
                 facts.append(_make_fact(path, source, "variant", name, node.start_byte, node.end_byte, owner_name))
-        if node.type in algorithm_nodes:
+        if include_implementation and node.type in algorithm_nodes:
             facts.append(_make_fact(path, source, "algorithm_step", node.type,
                                     node.start_byte, node.end_byte, owner_name))
         pending_doc: tuple[int, int] | None = None
@@ -570,13 +570,13 @@ def _rust_facts(path: str, source: bytes, root) -> tuple[list[Fact], int, bool]:
     return facts, syntax_nodes, parse_complete
 
 
-def parse_source(path: str, source: bytes, language: str) -> ParseResult:
+def parse_source(path: str, source: bytes, language: str, *, include_implementation: bool = True) -> ParseResult:
     """Parse one source file and emit stable, evidence-backed declaration facts."""
     diagnostics: list[str] = []
     if language == "python":
         try:
             tree = ast.parse(source, filename=path)
-            facts = _python_facts(path, source, tree)
+            facts = _python_facts(path, source, tree, include_implementation=include_implementation)
             constructs = _python_source_constructs(path, source, tree)
             syntax_nodes = sum(1 for _ in ast.walk(tree))
             complete = True
@@ -591,7 +591,7 @@ def parse_source(path: str, source: bytes, language: str) -> ParseResult:
         import tree_sitter_rust
         parser = Parser(Language(tree_sitter_rust.language()))
         tree = parser.parse(source)
-        facts, syntax_nodes, complete = _rust_facts(path, source, tree.root_node)
+        facts, syntax_nodes, complete = _rust_facts(path, source, tree.root_node, include_implementation=include_implementation)
         constructs = _rust_source_constructs(path, source, tree.root_node)
         if not complete:
             diagnostics.append("PARSE_ERROR:tree-sitter-error-node")
@@ -603,7 +603,8 @@ def parse_source(path: str, source: bytes, language: str) -> ParseResult:
 
 def scan_project(root: Path, source_languages: set[str] | None = None,
                  inventory: tuple | None = None,
-                 source_paths: frozenset[str] | None = None) -> ProjectScan:
+                 source_paths: frozenset[str] | None = None,
+                 include_implementation: bool = True) -> ProjectScan:
     """Parse selected regular source languages and inventory all project paths."""
     root = root.resolve(strict=True)
     parsed: list[ParseResult] = []
@@ -627,7 +628,7 @@ def scan_project(root: Path, source_languages: set[str] | None = None,
         if source_languages is not None and language not in source_languages:
             continue
         try:
-            parsed.append(parse_source(relative, path.read_bytes(), language))
+            parsed.append(parse_source(relative, path.read_bytes(), language, include_implementation=include_implementation))
         except OSError as error:
             parsed.append(ParseResult(relative, language, "", (), 0, False,
                                       (f"READ_ERROR:{type(error).__name__}",)))

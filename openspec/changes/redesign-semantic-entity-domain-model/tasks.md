@@ -125,7 +125,8 @@
   - 定向命令：`PYTHONPATH=src:skill/src .local/analysis-venv/bin/python -m unittest discover -s skill/tests -p test_codegraph_adapter.py -v`。
   - 通过/失败与证据：按信息覆盖对比CRG/原生组合及许可、冷索引成本；仅具体已验证能力点亮。未获得覆盖净收益时保留候选并记录不选择原因；任务完成不等于工具必须选入必需栈，未测能力不得点亮。 每项绑定提交、输入版本、命令与实跑结果，失败保留未完成，不用历史测试数代替新测试。
 
-- [ ] 10.7 **统一查询和算法回读**
+- [x] 10.7 **统一查询和算法回读**
+  - 完成证据：缺统一模块/CLI参数红测试后，15项查询测试、2项v2 CLI测试、19项原CLI回归通过。覆盖档案回读无重构、缓存跨版本隔离、实体属性/循环/保存失败、原始图响应及实体ref算法映射；固定Click两条README命令已实跑。
   - 依据/依赖：10.3–10.5；10.6可选后端未通过不阻塞原生组合。
   - 交付与修改范围：新增 `fact_query.py`；修改 `query.py`、`semantic_entity_query.py`、`store.py`、`__main__.py`；新增 `skill/tests/test_fact_query_v2.py`、`test_cli_v2.py`。
   - 输入/输出接口：`execute_fact_query(root: Path, request: dict, store, *, tool_runner=None) -> dict`；JSON/Markdown从semantic-fact-result-2投影；CLI增加--model-profile，旧选择器转source视图，函数伪代码复用现有渲染器。

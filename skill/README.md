@@ -153,3 +153,16 @@ PYTHONPATH=src:skill/src .local/analysis-venv/bin/python3 scripts/verify_semanti
 v2局部构造接口`construct_requested_entities`只对计划需要的实体和描述面构造解释，解释均为带premiseIds/method的暂定主张；不按实体类型固定分配E视角。仅algorithm描述面请求会调用算法lowerer，并将步骤证据纳入档案引用。实现视图保持partial_static_syntax_projection；宽泛实现类型仍不能推断业务类型或值域。
 
 v2存储接口`read_request`按scope、输入指纹与配置隔离快照，并按target/facets返回可复用覆盖；部分静态结果保留原缺口。`commit_request`在单事务中注册、合并补证、写覆盖和操作回执，同操作同载荷幂等、异载荷拒绝；取消/失败不发布完成覆盖。数据库仍须放在分析目录外；保存失败不能吞掉已取得事实，旧profile表保持独立。
+
+## v2统一查询（显式选择）
+
+当前默认仍是v1。以下v2命令已在固定Click检出实跑；部分静态覆盖返回退出码2，不能据此声称全部行为语义已取得。
+
+```bash
+PYTHONPATH=src:skill/src .local/analysis-venv/bin/python -m c2s_skill query --root .local/real-projects/click --select modules --model-profile semantic-entity-model-2 --store /tmp/c2s-v2-cli.sqlite --format json
+PYTHONPATH=src:skill/src .local/analysis-venv/bin/python -m c2s_skill query --root .local/real-projects/click --select function:make_parser --model-profile semantic-entity-model-2 --store /tmp/c2s-v2-cli.sqlite --format json
+```
+
+这两次分别取得91个源码模块、1个函数；第二次复用来源索引，解析0文件、降低1函数。JSON/Markdown来自同一规范结果，原始工具工件、证据及缺口可回读。`query_project_v2`是公开执行入口，`query_entity_store_v2`只查询给定输入/配置下的已有档案，不重构来源。v2缓存以规范请求、协议版本、输入指纹及配置隔离；v1缓存不能命中v2。
+
+sourceRecords表示来源组织，items是请求目标；实体self详情保留自身全部已取得属性，子实体按expandDepth展开（0至8），循环与歧义有独立诊断。`--request`可传请求JSON。显式`--graph-output`仍按已点亮CRG解析器导入，保存原始响应和新鲜度缺口；CodeGraph目前仍是候选，不会默认执行。

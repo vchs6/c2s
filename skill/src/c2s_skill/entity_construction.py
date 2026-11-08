@@ -690,9 +690,13 @@ def construct_requested_entities(root: Path, scan: ProjectScan, plan: dict) -> d
         diagnostics.extend(constructed['diagnostics'])
     if 'algorithm' in facets:
         function_request={**request,'target':{**target,'kind':'function'}}
-        selected=matching_records(function_request,document['sourceRecords'])
-        if not target.get('name') and not target.get('ref') and target['kind'] not in {'function','ComputationEntity'}:
-            selected=[]
+        if request['view']=='entity':
+            mapped={m['sourceConstruct']['constructId'] for m in document['sourceMappings']
+                    if m.get('target',{}).get('kind')=='ComputationEntity'}
+            selected=[r for r in document['sourceRecords'] if mapped.intersection(r['sourceConstructIds'])
+                      and 'function' in r.get('sourceConstruct',{}).get('syntaxKind','')]
+        else:
+            selected=matching_records(function_request,document['sourceRecords'])
         for record in selected:
             c=record['sourceConstruct'];source_bytes=(root/record['path']).read_bytes()
             lower=algorithms.extract_python_algorithm if c['language']=='python' else algorithms.extract_rust_algorithm

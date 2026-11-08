@@ -104,6 +104,54 @@ def _persist_semantic_entity_archive(root: Path, database: Path, implementation_
                 "state": "stored" if query["constructionStatus"] == "constructed" else "already_stored"}}
 
 
+DEFAULT_MODEL_PROFILE = "semantic-entity-model-1"
+
+
+def _run_v2_cli(args, root):
+    from .fact_query import execute_fact_query, render_fact_result
+    from .fact_request import normalize_fact_request
+    if args.select and len(args.select)!=1:
+        raise ValueError("v2要求一个规范请求；多描述面请用JSON请求facets")
+    raw=args.request or (args.select[0] if args.select else None)
+    if args.query=="algorithm":
+        if not args.all_functions and not (args.source and args.function):
+            raise ValueError("单函数算法需要--source和--function")
+        if args.all_functions and (args.source or args.function):
+            raise ValueError("全函数请求不能同时指定单函数")
+        raw={"view":"entity" if args.semantic_facts else "source",
+             "target":{"kind":"ComputationEntity" if args.semantic_facts else "function"},
+             "facets":["implementation","algorithm"],"detail":"self"}
+        if args.source:raw["target"]["path"]=args.source
+        if args.function:raw["target"]["name"]=args.function
+    elif args.query=="entities":
+        if not raw:raise ValueError("entities需要--select或结构化--request")
+        if isinstance(raw,str) and raw.startswith(("entity:","expand:")):
+            raw={"view":"entity","target":{"kind":"all","name":raw.split(":",1)[1]},
+                 "detail":"self","expandDepth":8 if raw.startswith("expand:") else 0}
+        elif raw in {"entities","all-entities","project"}:
+            raw={"view":"entity","target":{"kind":"Project" if raw=="project" else "all"},
+                 "facets":["organization","attributes"],"detail":"self" if raw=="project" else "list"}
+    if raw is None:raise ValueError("需要--select或--request")
+    if isinstance(raw,str) and raw.lstrip().startswith("{"):raw=json.loads(raw)
+    request=normalize_fact_request(raw)
+    if args.query=="entities":
+        request["view"]="entity";request=normalize_fact_request(request)
+    if args.cache and args.store and args.cache.resolve()==args.store.resolve():
+        raise ValueError("缓存和事实档案必须使用不同文件")
+    runner=None
+    if args.graph_output:
+        if args.graph_output.resolve().is_relative_to(root):raise ValueError("图输出应位于分析项目外")
+        raw_graph=json.loads(args.graph_output.read_text(encoding="utf-8"))
+        request["facets"]=sorted(set(request["facets"])|{"relations"})
+        request["conditions"]["graphOutputDigest"]=hashlib.sha256(args.graph_output.read_bytes()).hexdigest()
+        request["conditions"]["graphVersion"]=args.graph_version or "unknown"
+        runner=lambda tool_id,q:{"response":raw_graph,"toolVersion":args.graph_version}
+    result=execute_fact_query(root,request,SemanticEntityStore(args.store) if args.store else None,
+                              cache=QueryResultCache(args.cache) if args.cache else None,tool_runner=runner)
+    good=bool(result["items"]) and not result["diagnostics"] and all(c["status"]=="obtained" for c in result["coverage"])
+    return render_fact_result(result,args.format or "json"),0 if good else 2
+
+
 def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(prog="c2s-skill")
     parser.add_argument("query", choices=["query", "algorithm", "entities"])
@@ -124,12 +172,15 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("--output", type=Path, help="write the report outside the analyzed project")
     parser.add_argument("--cache", type=Path, help="optional SQLite query-result cache outside the analyzed project")
     parser.add_argument("--store", type=Path, help="SQLite archive outside the analyzed project (profile depends on command)")
+    parser.add_argument("--model-profile", choices=["semantic-entity-model-1", "semantic-entity-model-2"], default=DEFAULT_MODEL_PROFILE, help="选择实体档案和响应协议；v1用于兼容")
     args = parser.parse_args(argv)
     try:
         root = args.root.resolve(strict=True)
         if args.output and args.output.resolve().is_relative_to(root):
             raise ValueError("output must be outside the analyzed project")
-        if args.query == "entities":
+        if args.model_profile == "semantic-entity-model-2":
+            rendered, status = _run_v2_cli(args, root)
+        elif args.query == "entities":
             if not args.select or len(args.select) != 1 or args.request:
                 raise ValueError("entities requires exactly one --select selector")
             if not args.store:

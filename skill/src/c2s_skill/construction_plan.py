@@ -6,7 +6,7 @@ def matching_records(request: dict, records: list[dict]) -> list[dict]:
     target=request['target'];kind=target['kind'];out=[]
     for item in records:
         syntax=item.get('sourceConstruct',{}).get('syntaxKind','')
-        match=(kind=='all' or item.get('kind')==kind or
+        match=(kind=='all' or item.get('kind',item.get('ref',{}).get('kind'))==kind or
                (kind=='module' and item.get('kind')=='source_module') or
                (kind=='project' and item.get('kind')=='project_manifest') or
                (kind=='function' and ('function' in syntax or 'method' in syntax)))
@@ -23,7 +23,7 @@ def matching_records(request: dict, records: list[dict]) -> list[dict]:
 def plan_fact_request(request: dict, available: dict, inventory: list[dict]) -> dict:
     records=available.get('sourceRecords',[]) if request['view']=='source' else available.get('entities',[])
     candidates=matching_records(request,records)
-    result={'needs':[],'selectedTools':[],'sourcePaths':[],'stopReasons':[],'diagnostics':[], 'candidates':candidates}
+    result={'request':request,'needs':[],'selectedTools':[],'sourcePaths':[],'stopReasons':[],'diagnostics':[], 'candidates':candidates}
     target=request['target']
     if (target.get('name') or target.get('ref')) and len(candidates)>1:
         result['diagnostics']=[{'code':'AMBIGUOUS_TARGET','candidates':[c.get('recordId',c.get('ref')) for c in candidates]}]
