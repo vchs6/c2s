@@ -25,3 +25,7 @@
 已新增semantic-entity-model-2的封闭Schema与`validate_semantic_entity_model_v2`：来源组织、直接/推导/旧载荷未分类主张、取得运行及来源覆盖分别校验；v1引用和实体规则继续复用。请求/结果v2 Schema已建立，来源记录不能冒实体引用，未分类旧主张必须保留原载荷工件。当前仅契约切片完成，默认运行路径仍为v1。
 
 v2请求经normalize_fact_request规范化，entity/self隐含自身attributes；同名候选不自动选择。plan_fact_request只计划请求缺少的描述面，未定位函数先建立声明索引；工具能力未覆盖时保留TOOL_UNAVAILABLE。该接口尚在集成阶段，默认CLI仍为v1。
+
+## v1到v2兼容转换
+
+`import_entity_v1`验证原档案后保留实体ref/证据和完整legacy_payload工件。无法确证来源类型的旧主张使用unclassified_legacy，不能满足当前请求覆盖；来源组织只从既有sourceMappings保守转换。`export_entity_v1`返回document及逐字段/集合losses，导出不删除v2内容。`backup_entity_archive`使用SQLite在线备份和逐表回读，备份路径必须不存在，失败不改旧档案。当前默认仍为v1；转换API不自动切换默认。

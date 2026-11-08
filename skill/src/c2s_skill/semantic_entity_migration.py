@@ -101,3 +101,95 @@ def export_legacy_bundle(model: dict) -> dict:
             losses.append({"code": "ENTITY_ATTRIBUTES_UNMAPPED", "recordId": entity["ref"]["identity"]["localId"],
                            "reason": "实体属性和值域不能投影到旧事实而不丢失类型信息。"})
     return {"bundle": bundle, "losses": sorted(losses, key=lambda item: (item["code"], item["recordId"]))}
+
+
+def import_entity_v1(document: dict) -> dict:
+    """确定性转换v1实体档案；未知来源分类保留为受限旧载荷。"""
+    from copy import deepcopy
+    from .source_records import stable_id
+    from c2s_semantic_contract.validation import validate_semantic_entity_model, validate_semantic_entity_model_v2
+    valid=validate_semantic_entity_model(document)
+    if not valid['valid']:raise ValueError('v1实体档案无效，不能升级')
+    model=deepcopy(document);model.update(version='2.0.0',profile='semantic-entity-model-2')
+    model.setdefault('sourceMappings',[])
+    artifact_id='legacy:'+stable_id(document)
+    model['artifacts']=[{'artifactId':artifact_id,'kind':'legacy_payload','payload':deepcopy(document)}]
+    for claim in model['claims']:
+        claim['origin']='unclassified_legacy';claim['legacyPayloadArtifactId']=artifact_id
+    fingerprint='legacy:'+stable_id(document);config='legacy:unverified'
+    records={}
+    for mapping in model['sourceMappings']:
+        c=mapping['sourceConstruct'];record_id=stable_id([model['scopeId'],fingerprint,c['path'],c['startByte'],c['endByte'],c['syntaxKind']])
+        if record_id not in records:
+            records[record_id]={'recordId':record_id,'kind':'source_module' if c['syntaxKind']=='module' else 'declaration',
+                'name':c['name'],'path':c['path'],'sourceConstructIds':[c['constructId']],
+                'parentRecordIds':[],'relatedRecords':[],'evidenceIds':[],
+                'status':'partial','sourceConstruct':deepcopy(c)}
+        records[record_id]['evidenceIds']=sorted(set(records[record_id]['evidenceIds'])|set(mapping['evidenceIds']))
+    by_construct={x['sourceConstruct']['constructId']:x['recordId'] for x in records.values()}
+    for rec in records.values():
+        parent=rec['sourceConstruct'].get('parentConstructId')
+        if parent in by_construct:rec['parentRecordIds']=[by_construct[parent]]
+    model['sourceRecords']=list(records.values())
+    model['sourceCoverage']=[{'coverageId':'legacy-coverage:'+stable_id(document),
+        'inputFingerprint':fingerprint,'configurationDigest':config,'view':'entity','target':{'kind':'all'},
+        'facets':['attributes','relations','implementation','tests'],'conditions':{},'status':'not_acquired',
+        'processedPaths':[],'unprocessedPaths':sorted({x['path'] for x in records.values()}),
+        'diagnostics':[{'code':'UNCLASSIFIED_LEGACY','artifactId':artifact_id,'retryable':True}]}]
+    model['acquisitionRuns']=[{'runId':'legacy-import:'+stable_id(document),'inputFingerprint':fingerprint,
+        'configurationDigest':config,'status':'partial','tools':[],
+        'sourceRecordIds':list(records),'evidenceIds':[x['evidenceId'] for x in model['evidence']],
+        'artifactIds':[artifact_id]}]
+    valid=validate_semantic_entity_model_v2(model)
+    if not valid['valid']:raise ValueError('转换后的v2档案不合法：'+str(valid['diagnostics']))
+    return model
+
+
+def export_entity_v1(document: dict) -> dict:
+    """导出可表达的v1投影并逐项报告信息损失，不删除v2原档案。"""
+    from copy import deepcopy
+    from c2s_semantic_contract.validation import validate_semantic_entity_model_v2, validate_semantic_entity_model
+    if not validate_semantic_entity_model_v2(document)['valid']:raise ValueError('v2实体档案无效')
+    old=deepcopy(document);old.update(version='1.0.0',profile='semantic-entity-model-1')
+    losses=[]
+    for field in ('sourceRecords','sourceCoverage','acquisitionRuns','artifacts'):
+        if old[field]:losses.append({'code':'V1_UNREPRESENTABLE_COLLECTION','path':'/'+field,'count':len(old[field])})
+        old.pop(field)
+    for index,claim in enumerate(old['claims']):
+        for field in ('origin','method','premiseIds','legacyPayloadArtifactId'):
+            if field in claim:
+                losses.append({'code':'V1_UNREPRESENTABLE_FIELD','path':f'/claims/{index}/{field}'})
+                claim.pop(field)
+    original=next((a['payload'] for a in document['artifacts'] if a['kind']=='legacy_payload'),None)
+    if original is not None and 'sourceMappings' not in original and not old.get('sourceMappings'):
+        old.pop('sourceMappings',None)
+    if not validate_semantic_entity_model(old)['valid']:raise ValueError('v1投影引用或结构无效')
+    return {'document':old,'losses':losses}
+
+
+def backup_entity_archive(store, destination: Path) -> dict:
+    """使用SQLite在线备份及逐表回读，不覆盖既有文件。"""
+    import os
+    from pathlib import Path
+    import sqlite3
+    import hashlib
+    destination=Path(destination).resolve()
+    if destination==store.path or destination.exists():raise ValueError('备份路径必须尚不存在且不同于原档案')
+    destination.parent.mkdir(parents=True,exist_ok=True)
+    fd=os.open(destination,os.O_CREAT|os.O_EXCL|os.O_WRONLY,0o600);os.close(fd)
+    try:
+        with store._connect() as source, sqlite3.connect(destination) as target:
+            source.execute('BEGIN')
+            source.backup(target)
+            if target.execute('PRAGMA integrity_check').fetchone()[0]!='ok':raise ValueError('备份完整性检查失败')
+            tables=[row[0] for row in source.execute("SELECT name FROM sqlite_master WHERE type='table'")]
+            for table in tables:
+                name='"'+table.replace('"','""')+'"'
+                left=source.execute('SELECT * FROM '+name).fetchall()
+                right=target.execute('SELECT * FROM '+name).fetchall()
+                if sorted(left,key=repr)!=sorted(right,key=repr):raise ValueError('备份逐表回读不一致')
+        return {'status':'verified','path':str(destination),'tables':len(tables),
+                'sha256':hashlib.sha256(destination.read_bytes()).hexdigest()}
+    except BaseException:
+        destination.unlink(missing_ok=True)
+        raise

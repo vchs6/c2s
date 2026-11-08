@@ -135,7 +135,8 @@
   - 定向命令：`PYTHONPATH=src:skill/src .local/analysis-venv/bin/python -m unittest discover -s skill/tests -p test_fact_query_v2.py -v`。
   - 通过/失败与证据：另运行test_cli_v2.py；README每个命令实跑；同一实体细节与source视图均可查，失败明确、不自动挑同名目标，不回退全仓重建；双输出差异失败。 每项绑定提交、输入版本、命令与实跑结果，失败保留未完成，不用历史测试数代替新测试。
 
-- [ ] 10.8 **v1兼容转换与可回滚候选**
+- [x] 10.8 **v1兼容转换与可回滚候选**
+  - 完成证据：新增接口红测试后，5项v2迁移与4项旧迁移测试通过；实体ref/证据与原始payload保留，旧主张标unclassified_legacy，导出具名losses，SQLite在线备份逐表回读一致且拒绝覆盖既有文件。默认profile尚未切换。
   - 依据/依赖：10.5、10.7；兼容档案边界。
   - 交付与修改范围：修改 `semantic_entity_migration.py`；新增 `skill/tests/test_model_v2_migration.py`，更新 `docs/domain/semantic-model-contract.md`。
   - 输入/输出接口：`import_entity_v1(document: dict) -> dict`、`export_entity_v1(document: dict) -> dict`；导出包含document及losses；实体ref保持，新增解释来源不明确时记录unclassified_legacy、legacyPayloadArtifactId及UNCLASSIFIED_LEGACY诊断，不捏造premises。
