@@ -602,14 +602,24 @@ def parse_source(path: str, source: bytes, language: str) -> ParseResult:
 
 
 def scan_project(root: Path, source_languages: set[str] | None = None,
-                 inventory: tuple | None = None) -> ProjectScan:
+                 inventory: tuple | None = None,
+                 source_paths: frozenset[str] | None = None) -> ProjectScan:
     """Parse selected regular source languages and inventory all project paths."""
     root = root.resolve(strict=True)
     parsed: list[ParseResult] = []
     inventory = tuple(inventory if inventory is not None
                        else inventory_tree(root, excluded_dirs=frozenset({".git"})))
+    if source_paths is not None:
+        for selected in source_paths:
+            selected_path = Path(selected)
+            if selected_path.is_absolute() or ".." in selected_path.parts or "\\" in selected or ":" in selected:
+                raise ValueError("选择的源路径越界")
+            if not (root / selected_path).resolve().is_relative_to(root):
+                raise ValueError("选择的源路径越界")
     for entry in inventory:
         relative = entry.path
+        if source_paths is not None and relative not in source_paths:
+            continue
         path = root / relative
         if entry.kind != "file" or path.suffix not in {".py", ".rs"}:
             continue

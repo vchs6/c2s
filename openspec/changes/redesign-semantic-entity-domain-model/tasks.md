@@ -75,7 +75,8 @@
   - 定向命令：`PYTHONPATH=src .local/analysis-venv/bin/python -m unittest discover -s tests/semantic_model -v`。
   - 通过/失败与证据：输出契约与`docs/domain/semantic-model-contract.md`同步；结构、引用和direct/derived约束正反测试全过，任一v1破坏或来源身份冒实体则失败。 每项绑定提交、输入版本、命令与实跑结果，失败保留未完成，不用历史测试数代替新测试。
 
-- [ ] 10.2 **独立来源组织与有界解析**
+- [x] 10.2 **独立来源组织与有界解析**
+  - 完成证据：新增来源记录7项测试先ImportError后全部通过；原有获取器回归通过。支持有界源文件解析、嵌套清单组织、稳定来源身份及解析分歧证据；默认查询尚未切换。
   - 依据/依赖：10.1。保留上游组织与实现参考、全目录范围规格。
   - 交付与修改范围：新增 `skill/src/c2s_skill/source_records.py`；修改 `acquisition.py`、`inventory.py`；测试 `skill/tests/test_source_records.py`、`test_acquisition.py`。
   - 输入/输出接口：`collect_source_records(root: Path, scan: ProjectScan, request: dict) -> dict`；`scan_project`新增source_paths，None显式全扫描，集合只解析选定路径。

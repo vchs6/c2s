@@ -145,3 +145,7 @@ PYTHONPATH=src:skill/src .local/analysis-venv/bin/python3 scripts/verify_semanti
 可用`PYTHONPATH=skill/src .local/analysis-venv/bin/python -m c2s_skill algorithm --root .local/real-projects/click --source examples/naval/naval.py --function ship_move`或将根目录换成regex、源文件换成`.rs`路径，按需获得单个Python/Rust函数的JSON算法描述。请求只读取根目录内的一个常规源码文件，拒绝越界路径和符号链接；响应带源码摘要、结构校验、`complete=false`及来源/类型/调用/数据流等显式缺口。该输出是静态语法投影，不能当作完整CFG、类型检查结果、测试结论或行为等价证明。
 
 结构化算法source-to-body回归清单锁定regex/R5、Click/P7和nlohmann-json/C5 commit，位于`skill/tests/fixtures/algorithm-source-checklists.json`。R5/P7按自动lowering的step做映射；C5当前以人工审阅的opaque记录保留SAX错误回调结果和输入效果，C++自动lowering仍不支持。测试只证明固定来源片段与公开映射用例一致，不证明算法与完整运行时行为等价。
+
+## v2来源组织实施切片
+
+`collect_source_records(root, scan, request)`在没有语义实体映射时仍保留目录、清单、包、工作空间、源码模块及声明。来源记录和语义实体身份独立，重复取得复用来源键并追加证据；工具解释分歧保留为观察差异。`scan_project`可传`source_paths`限制实际解析文件，完整inventory仍保留，未解析/非源文件在来源覆盖中显式列出。该切片尚未接入默认CLI，不宣称v2查询和存储已经完成。
