@@ -58,3 +58,99 @@
 ## 9. ADR-0013规格与提案修订
 
 - [x] 9.1 核对全部7份正式规格、全部16项活动提案及其规格增量，修订目标、非DDD方法、源码/实体映射、查询、证据覆盖和工具点亮规则；同步受影响设计、任务边界及当前入口。输出：`docs/development/reviews/semantic-facts/非DDD规格提案审核-2026-11-08.md`及逐文件矩阵。验证：OpenSpec全库严格校验、原件完整性、仓库测试及差异检查；保留历史ADR/原件、旧任务证据，不归档或修改产品实现。审核为当前会话文档自审，不声称独立盲验收。
+
+## 10. 非DDD上游事实提取重构（当前唯一实施任务）
+
+设计：`docs/superpowers/specs/2026-11-08-非DDD事实提取重构设计.md`。本节路径未写目录前缀的产品.py文件均位于`skill/src/c2s_skill/`。本节全部产品任务尚未实施；前1–9节是历史交付/文档记录，不代表本节通过。以本节为唯一新版本整合任务表；其他提案中的M1/既有父任务不因本节完成自动勾选。执行前读取设计及对应正式规格，采用superpowers:executing-plans；公开开发测试与私有独立验收分开。
+
+角色：每项实现者负责产品及公开说明，开发侧公开测试按ADR-0011执行；独立审核/验收保持其输出所有权，隔离不足时不得称盲验收。每项只修改所列文件及同职责文档，不修改隐藏suite或其期望。
+
+- [ ] 10.1 **v2公共契约和反例**
+  - 依据/依赖：无；读取设计数据协议及正式模型/查询规格。
+  - 交付与修改范围：新增 `contracts/semantic-model/semantic-entity-model-2.schema.json`、`skill/contracts/semantic-fact-request-2.schema.json`、`semantic-fact-result-2.schema.json`；修改公共类型目录/manifest及 `src/c2s_semantic_contract/validation.py`。
+  - 输入/输出接口：`validate_semantic_entity_model_v2(document: object) -> dict`；返回valid及逐项diagnostics；新增sourceRecords、origin/premiseIds、acquisitionRuns及双coverage。
+  - 公开验证断言：`tests/semantic_model/test_model_v2.py`：test_source_entity_identity_separated、test_missing_premise_rejected、test_source_relation_dangling_rejected、test_optional_views_not_entity_kind、test_unclassified_legacy_requires_original_payload；非法目标/缺字段必须拒绝，v1夹具原样可读。
+  - 执行步骤：先新增上述失败测试并运行取得真实失败；再实现所列最小接口；运行定向命令并检查退出码；补齐对应文档与产物，自审差异后提交。不得仅新增与实现逐行同构的断言。
+  - 定向命令：`PYTHONPATH=src .local/analysis-venv/bin/python -m unittest discover -s tests/semantic_model -v`。
+  - 通过/失败与证据：输出契约与`docs/domain/semantic-model-contract.md`同步；结构、引用和direct/derived约束正反测试全过，任一v1破坏或来源身份冒实体则失败。 每项绑定提交、输入版本、命令与实跑结果，失败保留未完成，不用历史测试数代替新测试。
+
+- [ ] 10.2 **独立来源组织与有界解析**
+  - 依据/依赖：10.1。保留上游组织与实现参考、全目录范围规格。
+  - 交付与修改范围：新增 `skill/src/c2s_skill/source_records.py`；修改 `acquisition.py`、`inventory.py`；测试 `skill/tests/test_source_records.py`、`test_acquisition.py`。
+  - 输入/输出接口：`collect_source_records(root: Path, scan: ProjectScan, request: dict) -> dict`；`scan_project`新增source_paths，None显式全扫描，集合只解析选定路径。
+  - 公开验证断言：test_module_without_semantic_mapping_queryable、test_nested_manifest_ownership_unresolved、test_hidden_examples_inventory_retained、test_selected_paths_do_not_parse_unrelated、test_reacquisition_same_source_record_id、test_tool_disagreement_preserves_claims；对照实际文件和构造字节跨度。
+  - 执行步骤：先新增上述失败测试并运行取得真实失败；再实现所列最小接口；运行定向命令并检查退出码；补齐对应文档与产物，自审差异后提交。不得仅新增与实现逐行同构的断言。
+  - 定向命令：`PYTHONPATH=src:skill/src .local/analysis-venv/bin/python -m unittest discover -s skill/tests -p test_source_records.py -v`。
+  - 通过/失败与证据：`skill/README.md`记录来源查询与范围；模块未映射仍可查、嵌套工程不伪归属，未处理文件列明；静默丢路径或越界则失败。 每项绑定提交、输入版本、命令与实跑结果，失败保留未完成，不用历史测试数代替新测试。
+
+- [ ] 10.3 **规范请求和按需计划**
+  - 依据/依赖：10.1–10.2；查询触发/同主体补缺和实体自身属性完整要求。
+  - 交付与修改范围：新增 `fact_request.py`、`construction_plan.py`；修改 `capability_matrix.py`；测试 `skill/tests/test_fact_request.py`、`test_construction_plan.py`。
+  - 输入/输出接口：`normalize_fact_request(value: dict | str) -> dict`；`plan_fact_request(request: dict, available: dict, inventory: list[dict]) -> dict`；needs包含目标、facets、前置及理由。
+  - 公开验证断言：test_self_detail_includes_all_own_attributes、test_ambiguous_name_returns_candidates、test_first_algorithm_request_targets_one_function、test_repeat_request_only_plans_missing_facet、test_tool_unavailable_is_gap；校验解析/算法调用记录，不仅测试返回数量。
+  - 执行步骤：先新增上述失败测试并运行取得真实失败；再实现所列最小接口；运行定向命令并检查退出码；补齐对应文档与产物，自审差异后提交。不得仅新增与实现逐行同构的断言。
+  - 定向命令：`PYTHONPATH=src:skill/src .local/analysis-venv/bin/python -m unittest discover -s skill/tests -p test_construction_plan.py -v`。
+  - 通过/失败与证据：另运行test_fact_request.py；更新设计接口示例；请求未命中不触发全仓候选或算法，缺工具不伪成功；无界扩取失败。 每项绑定提交、输入版本、命令与实跑结果，失败保留未完成，不用历史测试数代替新测试。
+
+- [ ] 10.4 **证据分类与按目标构造**
+  - 依据/依赖：10.1–10.3；非DDD解释边界、属性与子实体和源码映射要求。
+  - 交付与修改范围：修改 `entity_construction.py`、`algorithm.py`；新增 `skill/tests/test_construction_v2.py`。
+  - 输入/输出接口：`construct_requested_entities(root: Path, scan: ProjectScan, plan: dict) -> dict`返回v2局部实体、来源记录、主张/证据、映射和逐need覆盖；复用现有算法函数。
+  - 公开验证断言：test_class_does_not_confirm_business_requirement、test_rule_claim_records_premises、test_views_derived_from_content_not_kind、test_unmapped_construct_retained、test_algorithm_not_run_for_attribute_request、test_attribute_unknown_domain_preserved。
+  - 执行步骤：先新增上述失败测试并运行取得真实失败；再实现所列最小接口；运行定向命令并检查退出码；补齐对应文档与产物，自审差异后提交。不得仅新增与实现逐行同构的断言。
+  - 定向命令：`PYTHONPATH=src:skill/src .local/analysis-venv/bin/python -m unittest discover -s skill/tests -p test_construction_v2.py -v`。
+  - 通过/失败与证据：文档标明direct_source不是行为证明；只有实际完成need发布覆盖，来源解释标暂定并有premises；固定kind→E视角或全仓构造则失败。 每项绑定提交、输入版本、命令与实跑结果，失败保留未完成，不用历史测试数代替新测试。
+
+- [ ] 10.5 **细粒度持久化与原子补缺**
+  - 依据/依赖：10.1及10.4；增量存储、状态独立和输入固定约束。
+  - 交付与修改范围：修改 `semantic_store.py`；新增 `skill/tests/test_request_store.py`，保留现有M1/v1存储测试。
+  - 输入/输出接口：`SemanticEntityStore.read_request(scope_id, request, input_fingerprint, configuration_digest) -> dict`；`commit_request(operation_id, document, request) -> dict`；v2独立表、事务内读取generation合并。
+  - 公开验证断言：test_duplicate_operation_idempotent、test_operation_id_different_payload_rejected、test_concurrent_missing_facets_no_lost_update、test_cancel_keeps_unfinished_gap、test_readback_without_analysis、test_input_changed_not_reused；失败注入证明无半包可见。
+  - 执行步骤：先新增上述失败测试并运行取得真实失败；再实现所列最小接口；运行定向命令并检查退出码；补齐对应文档与产物，自审差异后提交。不得仅新增与实现逐行同构的断言。
+  - 定向命令：`PYTHONPATH=src:skill/src .local/analysis-venv/bin/python -m unittest discover -s skill/tests -p test_request_store.py -v`。
+  - 通过/失败与证据：`skill/README.md`描述外置数据库与状态；源输入/profile不匹配不复用；冲突和证据保留，存储失败与语义取得分别报告；丢失补证或虚报保存失败。 每项绑定提交、输入版本、命令与实跑结果，失败保留未完成，不用历史测试数代替新测试。
+
+- [ ] 10.6 **可选CodeGraph解析及生产矩阵验证**
+  - 依据/依赖：10.1–10.2；非商用工具组合及解析点亮要求，现有CRG不重写。
+  - 交付与修改范围：新增 `skill/src/c2s_skill/codegraph_adapter.py`、`skill/tests/test_codegraph_adapter.py`；修改 `capability_matrix.py`、`skill/contracts/tool-capabilities.json`；验证记录 `docs/development/reviews/semantic-facts/CodeGraph适配验证.md`。
+  - 输入/输出接口：`parse_codegraph_response(response: dict | list, root: Path, query_kind: str) -> dict`返回来源/调用候选、原始工件、工具版本及coverage诊断；通过tool_runner执行显式query/files/callers/callees子命令，不运行宿主安装/自动配置。
+  - 公开验证断言：test_cli_array_parsed、test_path_escape_rejected、test_unbounded_search_not_full_enumeration、test_missing_freshness_is_gap、test_raw_response_preserved；隔离Click/regex运行固定1.6.2并解析真实JSON，核对源码及遗漏。
+  - 执行步骤：先新增上述失败测试并运行取得真实失败；再实现所列最小接口；运行定向命令并检查退出码；补齐对应文档与产物，自审差异后提交。不得仅新增与实现逐行同构的断言。
+  - 定向命令：`PYTHONPATH=src:skill/src .local/analysis-venv/bin/python -m unittest discover -s skill/tests -p test_codegraph_adapter.py -v`。
+  - 通过/失败与证据：按信息覆盖对比CRG/原生组合及许可、冷索引成本；仅具体已验证能力点亮。未获得覆盖净收益时保留候选并记录不选择原因；任务完成不等于工具必须选入必需栈，未测能力不得点亮。 每项绑定提交、输入版本、命令与实跑结果，失败保留未完成，不用历史测试数代替新测试。
+
+- [ ] 10.7 **统一查询和算法回读**
+  - 依据/依赖：10.3–10.5；10.6可选后端未通过不阻塞原生组合。
+  - 交付与修改范围：新增 `fact_query.py`；修改 `query.py`、`semantic_entity_query.py`、`store.py`、`__main__.py`；新增 `skill/tests/test_fact_query_v2.py`、`test_cli_v2.py`。
+  - 输入/输出接口：`execute_fact_query(root: Path, request: dict, store, *, tool_runner=None) -> dict`；JSON/Markdown从semantic-fact-result-2投影；CLI增加--model-profile，旧选择器转source视图，函数伪代码复用现有渲染器。
+  - 公开验证断言：test_stored_algorithm_query_no_reconstruction、test_unmapped_module_returned、test_own_attributes_not_depth_limited、test_cycle_depth_eight_stops、test_json_markdown_same_ids_and_gaps、test_save_error_preserves_facts、test_target_not_found_vs_not_acquired、test_v1_cache_never_hits_v2、test_normalized_request_profile_cache_key、test_input_config_change_cache_miss；请求/结果profile、规范请求摘要、输入及配置全部进入缓存键。
+  - 执行步骤：先新增上述失败测试并运行取得真实失败；再实现所列最小接口；运行定向命令并检查退出码；补齐对应文档与产物，自审差异后提交。不得仅新增与实现逐行同构的断言。
+  - 定向命令：`PYTHONPATH=src:skill/src .local/analysis-venv/bin/python -m unittest discover -s skill/tests -p test_fact_query_v2.py -v`。
+  - 通过/失败与证据：另运行test_cli_v2.py；README每个命令实跑；同一实体细节与source视图均可查，失败明确、不自动挑同名目标，不回退全仓重建；双输出差异失败。 每项绑定提交、输入版本、命令与实跑结果，失败保留未完成，不用历史测试数代替新测试。
+
+- [ ] 10.8 **v1兼容转换与可回滚候选**
+  - 依据/依赖：10.5、10.7；兼容档案边界。
+  - 交付与修改范围：修改 `semantic_entity_migration.py`；新增 `skill/tests/test_model_v2_migration.py`，更新 `docs/domain/semantic-model-contract.md`。
+  - 输入/输出接口：`import_entity_v1(document: dict) -> dict`、`export_entity_v1(document: dict) -> dict`；导出包含document及losses；实体ref保持，新增解释来源不明确时记录unclassified_legacy、legacyPayloadArtifactId及UNCLASSIFIED_LEGACY诊断，不捏造premises。
+  - 公开验证断言：test_v1_refs_evidence_unchanged、test_unknown_origin_not_direct、test_export_reports_unrepresentable_sources、test_backup_readback_equal、test_failed_upgrade_keeps_v1_default。
+  - 执行步骤：先新增上述失败测试并运行取得真实失败；再实现所列最小接口；运行定向命令并检查退出码；补齐对应文档与产物，自审差异后提交。不得仅新增与实现逐行同构的断言。
+  - 定向命令：`PYTHONPATH=src:skill/src .local/analysis-venv/bin/python -m unittest discover -s skill/tests -p test_model_v2_migration.py -v`。
+  - 通过/失败与证据：v1、旧完整profile、M1原档案不改写；切换前备份可回读，新profile显式选择，信息损失具名报告；无损声明不实或反写旧表失败。 每项绑定提交、输入版本、命令与实跑结果，失败保留未完成，不用历史测试数代替新测试。
+
+- [ ] 10.9 **真实项目全集遍历与同范围成本集成**
+  - 依据/依赖：10.2–10.8；质量、范围、词元和来源证据要求。
+  - 交付与修改范围：新增 Python3 `scripts/verify_source_fact_refactor.py`；新增 `skill/tests/test_refactor_verifier.py`；产物 `docs/development/reviews/semantic-facts/非DDD真实项目验证.md`及对应JSON。
+  - 输入/输出接口：脚本参数--project、--expected-commit、--store、--output；调用公开v2接口，遍历所有已发布记录与缺口及每个来源/实体查询目标，逐项比较存储回读和证据摘要。
+  - 公开验证断言：test_verifier_detects_missing_record、test_verifier_rejects_changed_source、test_verifier_does_not_equate_source_with_semantic_coverage；固定Click/regex提交分别独立运行，包含嵌套项目、测试及示例；原生清单对照来源覆盖，候选语义不冒真值。
+  - 执行步骤：先新增上述失败测试并运行取得真实失败；再实现所列最小接口；运行定向命令并检查退出码；补齐对应文档与产物，自审差异后提交。不得仅新增与实现逐行同构的断言。
+  - 定向命令：`PYTHONPATH=src:skill/src .local/analysis-venv/bin/python -m unittest discover -s skill/tests -p test_refactor_verifier.py -v`。
+  - 通过/失败与证据：真实运行记录所有命令、环境、指纹、逐项差异；比较同请求冷/热耗时、解析数、算法调用数、工具索引/SQLite及实际模型词元。范围不等禁止报收益；任何悬空引用、回读丢数据或隐瞒gap失败。 每项绑定提交、输入版本、命令与实跑结果，失败保留未完成，不用历史测试数代替新测试。
+
+- [ ] 10.10 **默认切换与交付核验**
+  - 依据/依赖：10.8–10.9全部通过；不由任务文件存在判通过。
+  - 交付与修改范围：修改 `__main__.py`及 `skill/README.md`；新增 `skill/tests/test_v2_cutover.py`；产物 `docs/development/reviews/semantic-facts/非DDD重构交付核验.md`。
+  - 输入/输出接口：默认profile切换到semantic-entity-model-2，--model-profile显式选择兼容读取；切换前备份读回验证，保存v2、v1及M1边界及回滚步骤。
+  - 公开验证断言：test_default_writes_v2_only、test_legacy_reads_still_available、test_rollback_restores_readable_backup；运行全仓、Skill、契约、严格OpenSpec及原件校验，公开CI结果与私有验收状态分别列示。
+  - 执行步骤：先新增上述失败测试并运行取得真实失败；再实现所列最小接口；运行定向命令并检查退出码；补齐对应文档与产物，自审差异后提交。不得仅新增与实现逐行同构的断言。
+  - 定向命令：`npm test && npm run validate && npm run check:artifacts`。
+  - 通过/失败与证据：另运行PYTHONPATH=src:skill/src .local/analysis-venv/bin/python -m unittest discover -s skill/tests -v；仅全部前置有证据才切换，失败维持旧默认；不自动发行、归档或删除兼容数据。 每项绑定提交、输入版本、命令与实跑结果，失败保留未完成，不用历史测试数代替新测试。
