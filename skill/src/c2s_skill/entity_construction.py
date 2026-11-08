@@ -132,7 +132,8 @@ def _markdown_candidates(root: Path, scan: ProjectScan, candidates: list[dict], 
                             "evidenceId": evidence_id})
 
 
-def construct_semantic_entity_candidates(root: Path, scan: ProjectScan | None = None) -> dict:
+def construct_semantic_entity_candidates(root: Path, scan: ProjectScan | None = None,
+                                         *, include_documentation: bool = True) -> dict:
     """Create provisional semantic candidates with source, documentation and type evidence.
 
     Candidate IDs identify only this construction result. Persistent EntityIds are
@@ -359,8 +360,9 @@ def construct_semantic_entity_candidates(root: Path, scan: ProjectScan | None = 
             mappings.append({"candidateId": owner["candidateId"],
                 "sourceConstructId": construct.construct_id, "role": "implementation_reference"})
 
-    _markdown_candidates(root, scan, candidates, evidence, relation_candidates, diagnostics,
-                         project_candidate_id)
+    if include_documentation:
+        _markdown_candidates(root, scan, candidates, evidence, relation_candidates, diagnostics,
+                             project_candidate_id)
     if project_candidate_id:
         existing_pairs = {(item["subjectCandidateId"], item["targetCandidateId"])
                           for item in relation_candidates if item["predicate"] == "defines"}
@@ -614,3 +616,119 @@ def construct_and_query_semantic_entities(root: Path, store, selector: str = "pr
     result["constructionStatus"] = "constructed"
     result["constructionDiagnostics"] = constructed["diagnostics"]
     return result
+
+
+def construct_requested_entities(root: Path, scan: ProjectScan, plan: dict) -> dict:
+    """按请求生成v2局部包，来源事实与语义解释分别保留。"""
+    from dataclasses import replace
+    from .source_records import collect_source_records, stable_id
+    from .construction_plan import matching_records
+    from . import algorithm as algorithms
+    request=plan['request'];scope=request['scopeId'];target=request['target']
+    facets={need['facet'] for need in plan['needs']}
+    source=collect_source_records(root,scan,request)
+    document={'version':'2.0.0','profile':'semantic-entity-model-2','scopeId':scope,
+              'entities':[],'claims':[],'relations':[],'continuityCandidates':[],
+              'sourceMappings':[],'evidence':source['evidence'],'coverage':[],
+              'sourceRecords':source['sourceRecords'],'sourceCoverage':source['sourceCoverage'],
+              'acquisitionRuns':[],'artifacts':[]}
+    diagnostics=source['diagnostics']
+    if request['view']=='entity':
+        parsed=[]
+        for file in scan.files:
+            if target.get('path') and file.path!=target['path']:continue
+            constructs=list(file.constructs)
+            if target.get('name'):
+                selected={c.construct_id for c in constructs if c.name==target['name']}
+                for c in constructs:
+                    if c.parent_id in selected:selected.add(c.construct_id)
+                constructs=[c for c in constructs if c.construct_id in selected]
+            parsed.append(replace(file,constructs=tuple(constructs),facts=tuple(
+                f for f in file.facts if f.kind not in {'algorithm_step','local_binding','behavior_contract'})))
+        narrow_scan=replace(scan,files=tuple(parsed))
+        constructed=construct_semantic_entity_candidates(root,narrow_scan,
+            include_documentation=target['kind'] in {'Project','Module','Capability','all'})
+        candidates=[c for c in constructed['candidates'] if (target['kind']=='all' or c['kind']==target['kind'])
+                    and (not target.get('name') or c['name']==target['name'])]
+        if target.get('ref'):
+            candidates=[c for c in candidates if plan.get('registry',{}).get(c['candidateId'])==target['ref']]
+        refs={}
+        evidence={e['evidenceId']:e for e in document['evidence']}
+        evidence.update({e['evidenceId']:e for e in constructed['evidence']})
+        document['evidence']=list(evidence.values())
+        for c in candidates:
+            source_key=f"candidate:{c['kind']}:{c['candidateId']}"
+            ref=plan.get('registry',{}).get(c['candidateId']) or {'identity':{'authority':'c2s',
+                'domainId':scope,'localId':_digest(f'{scope}\0{source_key}')},'kind':c['kind']}
+            refs[c['candidateId']]=ref
+            document['entities'].append({'ref':ref,'name':c['name'],'aliases':[],
+                'description':c['description'],'attributes':c.get('attributes',[]),
+                'sourceKeys':[source_key,*c['sourceConstructIds']],'observationViews':[]})
+            document['claims'].append({'claimId':stable_id([ref,'interpretation',c['description']]),
+                'subject':ref,'predicate':'interpretation','value':c['description'],
+                'evidenceIds':c['evidenceIds'],'claimStatus':'provisional',
+                'origin':'derived_analysis','premiseIds':c['evidenceIds'],
+                'method':'source_shape_candidate_v2'})
+            document['coverage'].append({'coverageId':stable_id([ref,request,scan.source_digest]),
+                'entity':ref,'selector':','.join(sorted(facets)),'status':'obtained',
+                'inputFingerprint':scan.source_digest,'analyzerVersion':analysis_profile_digest()})
+            diagnostics.append({'code':'SEMANTIC_INTERPRETATION_PROVISIONAL','entity':ref})
+        by_construct={c.construct_id:c for f in scan.files for c in f.constructs}
+        for mapping in constructed['sourceMappings']:
+            if mapping['candidateId'] not in refs:continue
+            construct=by_construct[mapping['sourceConstructId']]
+            record=next((s for s in document['sourceRecords'] if construct.construct_id in s['sourceConstructIds']),None)
+            if record:
+                document['sourceMappings'].append({'mappingId':stable_id(mapping),
+                    'target':refs[mapping['candidateId']], 'sourceConstruct':record['sourceConstruct'],
+                    'role':mapping['role'],'mappingStatus':'partial','evidenceIds':record['evidenceIds']})
+        for rel in constructed['relationCandidates']:
+            if rel['subjectCandidateId'] in refs and rel['targetCandidateId'] in refs:
+                document['relations'].append({'relationId':stable_id(rel),'predicate':rel['predicate'],
+                    'subject':refs[rel['subjectCandidateId']],'target':refs[rel['targetCandidateId']],
+                    'evidenceIds':rel['evidenceIds'],'condition':{'kind':'true'},'claimStatus':'provisional'})
+        diagnostics.extend(constructed['diagnostics'])
+    if 'algorithm' in facets:
+        function_request={**request,'target':{**target,'kind':'function'}}
+        selected=matching_records(function_request,document['sourceRecords'])
+        if not target.get('name') and not target.get('ref') and target['kind'] not in {'function','ComputationEntity'}:
+            selected=[]
+        for record in selected:
+            c=record['sourceConstruct'];source_bytes=(root/record['path']).read_bytes()
+            lower=algorithms.extract_python_algorithm if c['language']=='python' else algorithms.extract_rust_algorithm
+            try:
+                algorithm=lower(source_bytes,record['path'],record['name'],c['startByte'])['algorithm']
+            except ValueError as error:
+                diagnostics.append({'code':'ALGORITHM_NOT_ACQUIRED','recordId':record['recordId'],'message':str(error)})
+                continue
+            raw_refs=algorithm.get('evidence_refs',[])
+            spans={eid:step.get('source',{}) for step in algorithm['body']['steps'] for eid in step.get('evidence_refs',[])}
+            evidence_refs={eid:stable_id([scan.source_digest,eid]) for eid in raw_refs}
+            for eid,scoped in evidence_refs.items():
+                span=spans.get(eid,{})
+                document['evidence'].append({'evidenceId':scoped,'source':'input',
+                    'description':'算法步骤的静态来源投影','path':record['path'],'sha256':c['sha256'],
+                    'startByte':span.get('start_byte',c['startByte']),
+                    'endByte':span.get('end_byte',c['endByte']),'method':'static_algorithm_lowering'})
+            def remap_evidence(value):
+                if isinstance(value,dict):
+                    for key,child in value.items():
+                        if key=='evidence_refs':value[key]=[evidence_refs.get(e,e) for e in child]
+                        else:remap_evidence(child)
+                elif isinstance(value,list):
+                    for child in value:remap_evidence(child)
+            remap_evidence(algorithm)
+            record['algorithm']=algorithm;record['pseudocode']=algorithms.render_pseudocode(algorithm,source_bytes)
+            record['status']='partial'
+            diagnostics.append({'code':'ALGORITHM_STATIC_PARTIAL','recordId':record['recordId']})
+            for mapping in document['sourceMappings']:
+                if mapping['sourceConstruct']['constructId']==c['constructId']:
+                    mapping['implementationView']={'algorithm':algorithm,'semanticFactBundle':{},
+                        'sourceObservations':{'inputFingerprint':scan.source_digest},'artifacts':[],
+                        'graphToolResult':None,'completeness':'partial_static_syntax_projection',
+                        'pseudocode':record['pseudocode']}
+    for coverage in document['sourceCoverage']:
+        coverage['view']=request['view'];coverage['facets']=sorted(facets)
+        if diagnostics:coverage['status']='partial'
+        coverage['diagnostics']=diagnostics
+    return document

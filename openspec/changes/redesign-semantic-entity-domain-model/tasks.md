@@ -95,7 +95,8 @@
   - 定向命令：`PYTHONPATH=src:skill/src .local/analysis-venv/bin/python -m unittest discover -s skill/tests -p test_construction_plan.py -v`。
   - 通过/失败与证据：另运行test_fact_request.py；更新设计接口示例；请求未命中不触发全仓候选或算法，缺工具不伪成功；无界扩取失败。 每项绑定提交、输入版本、命令与实跑结果，失败保留未完成，不用历史测试数代替新测试。
 
-- [ ] 10.4 **证据分类与按目标构造**
+- [x] 10.4 **证据分类与按目标构造**
+  - 完成证据：新接口红测试后实现局部构造；8项v2测试及11项既有构造测试通过。额外红绿回归证明算法实体映射通过v2校验且步骤证据引用闭合；无固定kind→视角映射。
   - 依据/依赖：10.1–10.3；非DDD解释边界、属性与子实体和源码映射要求。
   - 交付与修改范围：修改 `entity_construction.py`、`algorithm.py`；新增 `skill/tests/test_construction_v2.py`。
   - 输入/输出接口：`construct_requested_entities(root: Path, scan: ProjectScan, plan: dict) -> dict`返回v2局部实体、来源记录、主张/证据、映射和逐need覆盖；复用现有算法函数。
