@@ -61,7 +61,7 @@
 
 ## 10. 非DDD上游事实提取重构（当前唯一实施任务）
 
-设计：`docs/superpowers/specs/2026-11-08-非DDD事实提取重构设计.md`。本节路径未写目录前缀的产品.py文件均位于`skill/src/c2s_skill/`。本节全部产品任务尚未实施；前1–9节是历史交付/文档记录，不代表本节通过。以本节为唯一新版本整合任务表；其他提案中的M1/既有父任务不因本节完成自动勾选。执行前读取设计及对应正式规格，采用superpowers:executing-plans；公开开发测试与私有独立验收分开。
+设计：`docs/superpowers/specs/2026-11-08-非DDD事实提取重构设计.md`。本节路径未写目录前缀的产品.py文件均位于`skill/src/c2s_skill/`。本节按用户授权进入实施；实际状态以各任务勾选及交付核验为准。前1–9节是历史交付/文档记录，不代表本节通过。以本节为唯一新版本整合任务表；其他提案中的M1/既有父任务不因本节完成自动勾选。执行前读取设计及对应正式规格，采用superpowers:executing-plans；公开开发测试与私有独立验收分开。
 
 角色：每项实现者负责产品及公开说明，开发侧公开测试按ADR-0011执行；独立审核/验收保持其输出所有权，隔离不足时不得称盲验收。每项只修改所列文件及同职责文档，不修改隐藏suite或其期望。
 
@@ -155,7 +155,8 @@
   - 定向命令：`PYTHONPATH=src:skill/src .local/analysis-venv/bin/python -m unittest discover -s skill/tests -p test_refactor_verifier.py -v`。
   - 通过/失败与证据：真实运行记录所有命令、环境、指纹、逐项差异；比较同请求冷/热耗时、解析数、算法调用数、工具索引/SQLite及实际模型词元。范围不等禁止报收益；任何悬空引用、回读丢数据或隐瞒gap失败。 每项绑定提交、输入版本、命令与实跑结果，失败保留未完成，不用历史测试数代替新测试。
 
-- [ ] 10.10 **默认切换与交付核验**
+- [x] 10.10 **默认切换与交付核验**
+  - 完成证据：默认仅写v2、旧档案读取、自动验证备份与回滚4项通过；最终审核7类Important全部复现并修复，13项回归通过；Skill全套270/270、npm133/133、契约98/98、严格OpenSpec23/23、原件4项及diff检查通过。固定Click/regex最终配置全集遍历valid，增加定向→全量→定向一致性；证据见`docs/development/reviews/semantic-facts/非DDD重构交付核验.md`。远程CI未核实，私有盲验收未执行，不自动归档。
   - 依据/依赖：10.8–10.9全部通过；不由任务文件存在判通过。
   - 交付与修改范围：修改 `__main__.py`及 `skill/README.md`；新增 `skill/tests/test_v2_cutover.py`；产物 `docs/development/reviews/semantic-facts/非DDD重构交付核验.md`。
   - 输入/输出接口：默认profile切换到semantic-entity-model-2，--model-profile显式选择兼容读取；切换前备份读回验证，保存v2、v1及M1边界及回滚步骤。

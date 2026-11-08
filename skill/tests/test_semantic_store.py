@@ -10,7 +10,12 @@ from unittest.mock import patch
 
 from c2s_skill.semantic_store import (SemanticFactStore, canonicalize_m1, commit_m1,
                                       fact_key_m1, read_m1)
-from c2s_skill.__main__ import main
+from c2s_skill.__main__ import main as _main
+
+
+def main(args):
+    """本组历史协议断言显式验证v1兼容入口。"""
+    return _main([*args, "--model-profile", "semantic-entity-model-1"])
 
 
 def empty_bundle():

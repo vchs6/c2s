@@ -163,7 +163,7 @@ def run_verification(project: Path, expected_commit: str, store_path: Path, algo
             if not separator:raise ValueError('算法参数格式为相对路径::函数名')
             requests.append(normalize_fact_request({'scopeId':scope,'view':'entity',
                 'target':{'kind':'ComputationEntity','name':name,'path':path},'facets':['algorithm','implementation'],'detail':'self'}))
-        metrics=[];model=None
+        metrics=[];model=None;target_first=None;query_order_checks=[]
         for request in requests:
             cold=execute_fact_query(root,request,store)
             hot=execute_fact_query(root,request,store)
@@ -174,6 +174,25 @@ def run_verification(project: Path, expected_commit: str, store_path: Path, algo
             if not same:raise ValueError('重复查询的事实或缺口不一致')
             if not cold['items']:raise ValueError('指定验证请求未取得目标：'+json.dumps(cold['diagnostics'],ensure_ascii=False)[:1000])
             model=store.read_request(scope,request,fingerprint,cold['cost']['configurationDigest'])['model']
+            if len(metrics)==1 and request['view']=='source' and request['target']=={'kind':'all'}:
+                sources=model['sourceRecords']
+                field_parents={r['sourceConstruct'].get('parentConstructId') for r in sources
+                               if r.get('sourceConstruct',{}).get('syntaxKind')=='field_declaration'}
+                sample=next((r for r in sources if r.get('sourceConstruct',{}).get('syntaxKind') in
+                             {'class_declaration','struct_declaration'} and
+                             r['sourceConstruct']['constructId'] in field_parents),None)
+                if sample:
+                    targeted=normalize_fact_request({'scopeId':scope,'view':'entity','detail':'self',
+                        'target':{'kind':'DataEntity','name':sample['name'],'path':sample['path']},'facets':['attributes']})
+                    requests.insert(1,targeted)
+            elif request['view']=='entity' and request['target']['kind']=='DataEntity':
+                target_first=(request,cold['items'][0]['attributes'])
+            elif request['view']=='entity' and request['target']=={'kind':'all'} and target_first:
+                after=execute_fact_query(root,target_first[0],store)
+                same=bool(after['items']) and target_first[1]==after['items'][0]['attributes']
+                query_order_checks.append({'target':target_first[0]['target'],'sameAttributes':same,
+                    'targetedBeforeBroader':True,'afterBroaderParsedFiles':after['cost']['parsedFiles']})
+                if not same:raise ValueError('定向→全范围→定向查询的属性发生不一致')
         checked=verify_published_model(model,root,expected_fingerprint=fingerprint)
         if source_fingerprint(root)!=fingerprint:raise ValueError('隔离源项目被分析修改')
         if source_fingerprint(project)!=original:raise ValueError('原始输入项目发生变化')
@@ -183,7 +202,7 @@ def run_verification(project: Path, expected_commit: str, store_path: Path, algo
                      'rustGrammar':importlib.metadata.version('tree-sitter-rust'),'target':'未验证；不由host推定'}
         return {'project':project.name,'commit':expected_commit,'inputFingerprint':fingerprint,
                 'environment':environment,'sourceTreeUnchanged':True,
-                'verification':checked,'requests':metrics,'databaseBytes':store_path.stat().st_size,
+                'verification':checked,'requests':metrics,'queryOrderChecks':query_order_checks,'databaseBytes':store_path.stat().st_size,
                 'llmUsage':'未使用；不宣称词元节省','coverageScope':'全部已发布来源/实体/证据/关系和显式请求算法；未请求算法未展开，语义解释不视为已证明完整。'}
 
 

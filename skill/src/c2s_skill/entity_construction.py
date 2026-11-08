@@ -171,7 +171,20 @@ def construct_semantic_entity_candidates(root: Path, scan: ProjectScan | None = 
     for construct in constructs:
         if construct.parent_id:
             constructs_by_parent.setdefault(construct.parent_id, []).append(construct)
-    enum_values: dict[str, tuple[list[str], list[str]]] = {}
+    construct_lookup = {c.construct_id:c for c in constructs}
+    enum_values = {}
+    enum_scopes = {}
+    def local_enum(type_name, owner):
+        # 只接受同文件、词法作用域内唯一的简单类型名；跨模块绑定没有解析证据。
+        if not type_name or not re.fullmatch(r"[A-Za-z_][A-Za-z0-9_]*",type_name):return None
+        scope=owner.parent_id
+        while True:
+            matches=enum_scopes.get((owner.path,scope,type_name),[])
+            if matches:return matches[0] if len(matches)==1 else None
+            parent=construct_lookup.get(scope)
+            if parent is None:break
+            scope=parent.parent_id
+        return None
     computation_candidates_by_name: dict[str, list[dict]] = {}
     diagnostics: list[dict] = []
     for construct in constructs:
@@ -183,7 +196,8 @@ def construct_semantic_entity_candidates(root: Path, scan: ProjectScan | None = 
                 record = _construct_evidence(root, variant, description="枚举成员源码声明")
                 evidence[record["evidenceId"]] = record
                 value_ids.append(record["evidenceId"])
-            enum_values[construct.name] = ([item.name for item in variants], value_ids)
+            enum_values[construct.construct_id] = ([item.name for item in variants], value_ids)
+            enum_scopes.setdefault((construct.path,construct.parent_id,construct.name),[]).append(construct)
 
     for construct in constructs:
         if construct.opaque:
@@ -202,8 +216,8 @@ def construct_semantic_entity_candidates(root: Path, scan: ProjectScan | None = 
                 evidence[field_evidence["evidenceId"]] = field_evidence
                 attribute_evidence_ids.append(field_evidence["evidenceId"])
                 implementation_type = _field_implementation_type(field)
-                enum_name = implementation_type.rsplit("::", 1)[-1].rsplit(".", 1)[-1] if implementation_type else None
-                values, range_evidence = enum_values.get(enum_name, ([], []))
+                enum = local_enum(implementation_type,construct)
+                values, range_evidence = enum_values.get(enum.construct_id if enum else None, ([], []))
                 value_range = ({"kind": "finite_set", "values": values,
                                 "evidenceIds": range_evidence} if values and range_evidence
                                else {"kind": "unknown"})
@@ -308,7 +322,9 @@ def construct_semantic_entity_candidates(root: Path, scan: ProjectScan | None = 
         for attribute in candidate["attributes"]:
             implementation_type = attribute.get("implementationType")
             if implementation_type:
-                enum_owners.setdefault(implementation_type.rsplit("::", 1)[-1].rsplit(".", 1)[-1], []).append(candidate)
+                owner=construct_lookup.get(candidate["sourceConstructIds"][0])
+                enum=local_enum(implementation_type,owner) if owner else None
+                if enum:enum_owners.setdefault(enum.construct_id,[]).append(candidate)
     implementation_kinds = {"class_declaration", "struct_declaration", "enum_declaration", "enum_variant",
         "generic_parameter", "generic_parameter_list", "import_declaration",
         "decorator_application", "attribute_application", "macro_definition", "macro_invocation",
@@ -326,10 +342,10 @@ def construct_semantic_entity_candidates(root: Path, scan: ProjectScan | None = 
             continue
         if construct.syntax_kind not in implementation_kinds or construct.construct_id in candidate_for_construct:
             continue
-        owners = enum_owners.get(construct.name, []) if construct.syntax_kind == "enum_declaration" else []
+        owners = enum_owners.get(construct.construct_id, []) if construct.syntax_kind == "enum_declaration" else []
         if construct.syntax_kind == "enum_variant" and construct.parent_id:
             parent = construct_lookup.get(construct.parent_id)
-            owners = enum_owners.get(parent.name, []) if parent else []
+            owners = enum_owners.get(parent.construct_id, []) if parent else []
         ancestor_id = construct.parent_id
         while not owners and ancestor_id:
             owner = candidate_for_construct.get(ancestor_id)
@@ -635,11 +651,14 @@ def construct_requested_entities(root: Path, scan: ProjectScan, plan: dict) -> d
     diagnostics=source['diagnostics']
     if request['view']=='entity':
         parsed=[]
+        need_tests=bool(facets.intersection({'tests','relations'}))
         for file in scan.files:
-            if target.get('path') and file.path!=target['path']:continue
+            if target.get('path') and file.path!=target['path'] and not need_tests:continue
             constructs=list(file.constructs)
             if target.get('name'):
-                selected={c.construct_id for c in constructs if c.name==target['name']}
+                selected={c.construct_id for c in constructs if c.name==target['name'] and (not target.get('path') or c.path==target['path'])}
+                selected.update(c.construct_id for c in constructs if c.syntax_kind in {'enum_declaration','enum_variant'}
+                    or (need_tests and c.syntax_kind=='function_declaration' and (c.name.startswith('test_') or '#[test]' in c.text)))
                 for c in constructs:
                     if c.parent_id in selected:selected.add(c.construct_id)
                 constructs=[c for c in constructs if c.construct_id in selected]
@@ -652,6 +671,14 @@ def construct_requested_entities(root: Path, scan: ProjectScan, plan: dict) -> d
                     and (not target.get('name') or c['name']==target['name'])]
         if target.get('ref'):
             candidates=[c for c in candidates if plan.get('registry',{}).get(c['candidateId'])==target['ref']]
+        seed_ids={c['candidateId'] for c in candidates}
+        dependency_ids=set()
+        if need_tests:
+            for rel in constructed['relationCandidates']:
+                if 'relations' not in facets and rel['predicate']!='verified_by':continue
+                if rel['subjectCandidateId'] in seed_ids:dependency_ids.add(rel['targetCandidateId'])
+                if rel['targetCandidateId'] in seed_ids:dependency_ids.add(rel['subjectCandidateId'])
+        candidates=[c for c in constructed['candidates'] if c['candidateId'] in seed_ids|dependency_ids]
         refs={}
         evidence={e['evidenceId']:e for e in document['evidence']}
         evidence.update({e['evidenceId']:e for e in constructed['evidence']})
@@ -684,7 +711,14 @@ def construct_requested_entities(root: Path, scan: ProjectScan, plan: dict) -> d
                 document['sourceMappings'].append({'mappingId':stable_id(mapping),
                     'target':refs[mapping['candidateId']], 'sourceConstruct':record['sourceConstruct'],
                     'role':mapping['role'],'mappingStatus':'partial','evidenceIds':record['evidenceIds']})
+        candidate_paths={c['candidateId']:{evidence[eid].get('path') for eid in c['evidenceIds'] if eid in evidence and evidence[eid].get('path')} for c in candidates}
+        nested_boundaries={str(Path(r['path']).parent) for r in source['sourceRecords'] if r['kind']=='project_manifest' and str(Path(r['path']).parent)!='.'}
         for rel in constructed['relationCandidates']:
+            paths=candidate_paths.get(rel['targetCandidateId'],set())
+            if rel['predicate']=='defines' and any(any(p==boundary or p.startswith(boundary+'/') for boundary in nested_boundaries) for p in paths):
+                diagnostics.append({'code':'PROJECT_OWNERSHIP_UNRESOLVED','candidateId':rel['targetCandidateId'],
+                    'reason':'嵌套清单边界不能由根项目与路径包含直接证明归属'})
+                continue
             if rel['subjectCandidateId'] in refs and rel['targetCandidateId'] in refs:
                 document['relations'].append({'relationId':stable_id(rel),'predicate':rel['predicate'],
                     'subject':refs[rel['subjectCandidateId']],'target':refs[rel['targetCandidateId']],

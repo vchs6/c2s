@@ -91,5 +91,131 @@
     "expandDepth",
     "conditions"
   ],
-  "$schema": "https://json-schema.org/draft/2020-12/schema"
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$defs": {
+    "sourceRef": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "recordId"
+      ],
+      "properties": {
+        "recordId": {
+          "type": "string",
+          "minLength": 1
+        }
+      }
+    },
+    "entityRef": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "identity",
+        "kind"
+      ],
+      "properties": {
+        "identity": {
+          "$ref": "#/$defs/identity"
+        },
+        "kind": {
+          "enum": [
+            "Project",
+            "Module",
+            "Capability",
+            "DataEntity",
+            "ComputationEntity",
+            "ExternalActor",
+            "TestEntity"
+          ]
+        }
+      }
+    },
+    "identity": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "authority",
+        "domainId",
+        "localId"
+      ],
+      "properties": {
+        "authority": {
+          "$ref": "#/$defs/id"
+        },
+        "domainId": {
+          "$ref": "#/$defs/id"
+        },
+        "localId": {
+          "$ref": "#/$defs/id"
+        }
+      }
+    },
+    "id": {
+      "type": "string",
+      "minLength": 1
+    }
+  },
+  "allOf": [
+    {
+      "if": {
+        "properties": {
+          "view": {
+            "const": "source"
+          }
+        }
+      },
+      "then": {
+        "properties": {
+          "target": {
+            "properties": {
+              "kind": {
+                "enum": [
+                  "project",
+                  "module",
+                  "function",
+                  "declaration",
+                  "all"
+                ]
+              },
+              "ref": {
+                "$ref": "#/$defs/sourceRef"
+              }
+            }
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "view": {
+            "const": "entity"
+          }
+        }
+      },
+      "then": {
+        "properties": {
+          "target": {
+            "properties": {
+              "kind": {
+                "enum": [
+                  "Project",
+                  "Module",
+                  "Capability",
+                  "DataEntity",
+                  "ComputationEntity",
+                  "ExternalActor",
+                  "TestEntity",
+                  "all"
+                ]
+              },
+              "ref": {
+                "$ref": "#/$defs/entityRef"
+              }
+            }
+          }
+        }
+      }
+    }
+  ]
 }

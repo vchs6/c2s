@@ -80,6 +80,38 @@ def collect_source_records(root: Path, scan: ProjectScan, request: dict) -> dict
                 construct.path,construct.name,construct.start_byte,construct.end_byte,construct.syntax_kind,
                 ev,construct,{'declaredType':construct.declared_type})
             construct_records[construct.construct_id]=rec
+    # 语言前端的直接语法事实补齐源码构造目录未单独列出的导入、赋值和局部绑定。
+    from .acquisition import SourceConstruct, _construct_parser_version
+    from .entity_construction import _fact_evidence
+    synthetics=[]
+    for parsed in scan.files:
+        source_bytes=(root/parsed.path).read_bytes()
+        existing={(c.start_byte,c.end_byte,c.syntax_kind) for c in parsed.constructs}
+        parser_id,parser_version=_construct_parser_version(parsed.language)
+        kinds={'import':'import_declaration','constant':'assignment_binding','constant_item':'constant_declaration',
+               'static_item':'static_declaration','local_binding':'local_binding','behavior_contract':'contract_documentation'}
+        for fact in parsed.facts:
+            kind=kinds.get(fact.kind)
+            if not kind or (fact.start_byte,fact.end_byte,kind) in existing:continue
+            if fact.kind=='behavior_contract':
+                if not set(request.get('facets',[])).intersection({'implementation','algorithm'}):continue
+                target=request.get('target',{})
+                if target.get('name') and fact.name!=target['name']:continue
+                if target.get('path') and fact.path!=target['path']:continue
+            parents=[c for c in parsed.constructs if c.start_byte<=fact.start_byte and c.end_byte>=fact.end_byte]
+            parent=min(parents,key=lambda c:c.end_byte-c.start_byte) if parents else None
+            cid=stable_id([scope,scan.source_digest,'source_fact',fact.path,fact.start_byte,fact.end_byte,kind])
+            construct=SourceConstruct(cid,'source_fact:'+fact.id,parsed.language,kind,fact.name,
+                fact.path,fact.start_byte,fact.end_byte,parent.construct_id if parent else None,
+                hashlib.sha256(source_bytes).hexdigest(),parser_id,parser_version,False,fact.text)
+            ev=_fact_evidence(root,fact);ev['description']='源码直接语法记录'
+            item=record('declaration',fact.path,fact.name,fact.start_byte,fact.end_byte,kind,ev,construct,
+                        {'factKind':fact.kind,'owner':fact.owner,'text':fact.text,'claimMode':fact.claim_mode,'layer':fact.layer})
+            construct_records[cid]=item;synthetics.append(construct)
+    for construct in synthetics:
+        parent=construct_records.get(construct.parent_id)
+        pid=parent['recordId'] if parent else module_ids.get(construct.path)
+        if pid:construct_records[construct.construct_id]['parentRecordIds']=[pid]
     for parsed in scan.files:
         for construct in parsed.constructs:
             rec=construct_records[construct.construct_id]

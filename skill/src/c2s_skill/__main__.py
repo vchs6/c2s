@@ -104,12 +104,14 @@ def _persist_semantic_entity_archive(root: Path, database: Path, implementation_
                 "state": "stored" if query["constructionStatus"] == "constructed" else "already_stored"}}
 
 
-DEFAULT_MODEL_PROFILE = "semantic-entity-model-1"
+DEFAULT_MODEL_PROFILE = "semantic-entity-model-2"
 
 
 def _run_v2_cli(args, root):
     from .fact_query import execute_fact_query, render_fact_result
     from .fact_request import normalize_fact_request
+    if args.query=="query" and (args.source or args.function or args.all_functions or args.semantic_facts):
+        raise ValueError("这些算法选项只用于algorithm命令")
     if args.select and len(args.select)!=1:
         raise ValueError("v2要求一个规范请求；多描述面请用JSON请求facets")
     raw=args.request or (args.select[0] if args.select else None)
@@ -127,12 +129,13 @@ def _run_v2_cli(args, root):
         if not raw:raise ValueError("entities需要--select或结构化--request")
         if isinstance(raw,str) and raw.startswith(("entity:","expand:")):
             raw={"view":"entity","target":{"kind":"all","name":raw.split(":",1)[1]},
-                 "detail":"self","expandDepth":8 if raw.startswith("expand:") else 0}
+                 "detail":"self","expandDepth":8 if raw.startswith("expand:") else 0,"conditions":{"legacyEntitySelector":True}}
         elif raw in {"entities","all-entities","project"}:
             raw={"view":"entity","target":{"kind":"Project" if raw=="project" else "all"},
                  "facets":["organization","attributes"],"detail":"self" if raw=="project" else "list"}
     if raw is None:raise ValueError("需要--select或--request")
     if isinstance(raw,str) and raw.lstrip().startswith("{"):raw=json.loads(raw)
+    if args.query=="entities" and isinstance(raw,dict):raw["view"]="entity"
     request=normalize_fact_request(raw)
     if args.query=="entities":
         request["view"]="entity";request=normalize_fact_request(request)

@@ -4,6 +4,7 @@ from .capability_matrix import load_tool_matrix, select_tools, detect_available_
 
 def matching_records(request: dict, records: list[dict]) -> list[dict]:
     target=request['target'];kind=target['kind'];out=[]
+    by_construct={cid:r for r in records for cid in r.get('sourceConstructIds',[])}
     for item in records:
         syntax=item.get('sourceConstruct',{}).get('syntaxKind','')
         match=(kind=='all' or item.get('kind',item.get('ref',{}).get('kind'))==kind or
@@ -14,8 +15,25 @@ def matching_records(request: dict, records: list[dict]) -> list[dict]:
         if target.get('name') and item.get('name')!=target['name']:continue
         if target.get('path') and item.get('path')!=target['path']:continue
         if target.get('ref') and target['ref'] not in (item.get('ref'),{'recordId':item.get('recordId')}):continue
+        owner=request.get('conditions',{}).get('qualifiedOwner')
+        if owner:
+            chain=[];parent=item.get('sourceConstruct',{}).get('parentConstructId');seen=set()
+            while parent in by_construct and parent not in seen:
+                seen.add(parent);ancestor=by_construct[parent]
+                if ancestor.get('sourceConstruct',{}).get('syntaxKind')!='module':chain.insert(0,ancestor['name'])
+                parent=ancestor.get('sourceConstruct',{}).get('parentConstructId')
+            if '.'.join(chain)!=owner:continue
         legacy=request.get('conditions',{}).get('legacySelector')
         if legacy=='classes' and not any(x in syntax for x in ('class','struct','enum','trait')):continue
+        if legacy=='imports' and syntax!='import_declaration':continue
+        if legacy=='constants' and syntax not in {'assignment_binding','constant_declaration','static_declaration'}:continue
+        if legacy=='local-bindings' and syntax!='local_binding':continue
+        if legacy=='behavior-contracts' and syntax!='contract_documentation':continue
+        if legacy=='algorithm-structure' and not ('function' in syntax or 'method' in syntax):continue
+        if legacy=='all-declarations' and item.get('kind') not in {'declaration','test_entry'}:continue
+        if legacy=='definitions' and syntax not in {'class_declaration','struct_declaration','enum_declaration',
+            'trait_declaration','field_declaration','enum_variant','function_declaration','assignment_binding',
+            'constant_declaration','static_declaration','type_alias_declaration','module','module_declaration','implementation_block'}:continue
         if legacy=='workspace-members' and not any(v.get('nativeWorkspaceMember') for v in item.get('value',{}).get('observations',[])):continue
         out.append(item)
     return out

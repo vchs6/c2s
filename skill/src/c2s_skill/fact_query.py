@@ -6,7 +6,7 @@ import json
 import sqlite3
 import time
 from uuid import uuid4
-from .acquisition import (scan_project, analysis_profile_digest, SourceConstruct, ParseResult, cargo_workspace_facts)
+from .acquisition import (scan_project, analysis_profile_digest, SourceConstruct, ParseResult, Fact, cargo_workspace_facts)
 from .inventory import inventory_tree, source_fingerprint
 from .fact_request import normalize_fact_request
 from .source_records import collect_source_records, stable_id
@@ -84,6 +84,9 @@ def project_fact_result(model: dict, request: dict, *, index: dict | None = None
             {'name':r.get('name'),'path':r.get('path'),'ref':r.get('ref'),'recordId':r.get('recordId')} for r in candidates]}]
         return result
     if view=='source':
+        if request['conditions'].get('legacySelector')=='members':
+            parents={r['recordId'] for r in candidates}
+            candidates=[r for r in records if r['kind'] in {'declaration','test_entry'} and parents.intersection(r['parentRecordIds'])]
         selected={r['recordId']:r for r in candidates}
         result['items']=list(candidates)
         if 'relations' in request['facets']:
@@ -193,7 +196,7 @@ def project_fact_result(model: dict, request: dict, *, index: dict | None = None
 
 def _scan_from_records(root, model, paths, inventory):
     """复用已取声明，只重新读取来源字节以核验；缺失文件才调用语法解析。"""
-    constructs={};parsed_paths=set();contents={}
+    constructs={};parsed_paths=set();contents={};source_facts={}
     for record in model.get('sourceRecords',[]):
         c=record.get('sourceConstruct')
         if not c or c['path'] not in paths:continue
@@ -204,13 +207,19 @@ def _scan_from_records(root, model, paths, inventory):
             c['path'],c['startByte'],c['endByte'],c.get('parentConstructId'),c['sha256'],
             c['parserId'],c['parserVersion'],c.get('opaque',False),source[c['startByte']:c['endByte']].decode('utf-8',errors='replace'),
             c.get('declaredType'))
-        constructs[construct.construct_id]=construct;parsed_paths.add(c['path'])
+        if construct.source_key.startswith('source_fact:'):
+            observation=next((v for v in record.get('value',{}).get('observations',[]) if 'factKind' in v),{})
+            source_facts.setdefault(c['path'],[]).append(Fact(construct.source_key.removeprefix('source_fact:'),
+                observation.get('factKind','constant'),construct.name,construct.path,construct.start_byte,
+                construct.end_byte,observation.get('layer','E2'),observation.get('claimMode','syntax'),construct.text,observation.get('owner')))
+        else:constructs[construct.construct_id]=construct
+        parsed_paths.add(c['path'])
     missing=set(paths)-parsed_paths
     scan=scan_project(root,inventory=tuple(inventory),source_paths=frozenset(missing),include_implementation=False)
     files=list(scan.files)
     for path in sorted(parsed_paths):
         cs=tuple(c for c in constructs.values() if c.path==path)
-        files.append(ParseResult(path,cs[0].language,cs[0].source_sha256,(),0,
+        files.append(ParseResult(path,cs[0].language,cs[0].source_sha256,tuple(source_facts.get(path,[])),0,
                                  not any(c.opaque for c in cs),('OPAQUE_SOURCE_REUSED',) if any(c.opaque for c in cs) else (),cs))
     return replace(scan,files=tuple(files)),len(missing)
 
@@ -225,10 +234,24 @@ def execute_fact_query(root: Path, request: dict | str, store=None, *, tool_runn
         result['diagnostics']=[{'code':'INVALID_REQUEST','message':str(error),'request':request}];return result
     if q['scopeId']=='default':q['scopeId']='project:'+hashlib.sha256(str(root).encode()).hexdigest()
     fingerprint=source_fingerprint(root);config=v2_configuration_digest();diagnostics=[]
+    if q['conditions'].pop('legacyEntitySelector',False) and store is not None:
+        try:
+            prior=store.read_request(q['scopeId'],q,fingerprint,config)['model']
+            matches=[e for e in (prior or {}).get('entities',[]) if e['ref']['identity']['localId']==q['target'].get('name')]
+            if len(matches)==1:q['target']={'kind':matches[0]['ref']['kind'],'ref':matches[0]['ref']}
+        except (ValueError,OSError,sqlite3.Error) as error:
+            diagnostics.append({'code':'STORE_READ_FAILED','message':str(error)})
     if cache is not None:
         try:cached=cache.load_v2(root,q,fingerprint,config)
         except (ValueError,OSError,sqlite3.Error) as error:
             cached=None;diagnostics.append({'code':'CACHE_READ_FAILED','message':str(error)})
+        if cached is not None and (cached['persistence']['status']=='failed' or any(d.get('retryable') for d in cached['diagnostics'])):
+            cached=None
+        if cached is not None and store is not None:
+            try:
+                stored=store.read_request(q['scopeId'],q,fingerprint,config)
+                if stored['model'] is None or set(q['facets'])-set(stored['reusedFacets']):cached=None
+            except (ValueError,OSError,sqlite3.Error):cached=None
         if cached is not None:
             cached['persistence']={'status':'cache_hit'};cached['cost']={'parsedFiles':0,'algorithmFunctions':0,'elapsedSeconds':time.monotonic()-started,'llmTokens':None,'llmStatus':'not_used','inputFingerprint':fingerprint,'configurationDigest':config}
             return cached
@@ -272,16 +295,37 @@ def execute_fact_query(root: Path, request: dict | str, store=None, *, tool_runn
             diagnostics.extend(plan['diagnostics'])
         if plan['needs'] and not any(d['code']=='AMBIGUOUS_TARGET' for d in diagnostics):
             paths=[] if q['conditions'].get('legacySelector')=='workspace-members' else plan['sourcePaths']
-            if scan is None:
+            if q['view']=='entity' and set(q['facets']).intersection({'tests','relations'}):
+                paths=[i['path'] for i in inventory_dicts if i['kind']=='file' and i['path'].endswith(('.py','.rs'))]
+            selector=q['conditions'].get('legacySelector')
+            if selector in {'local-bindings','behavior-contracts','all-supported-facts'}:
+                scan=scan_project(root,inventory=tuple(inventory),source_paths=frozenset(paths),
+                                  include_implementation=selector in {'local-bindings','all-supported-facts'})
+                parsed_count=len(scan.files)
+            elif scan is None:
                 scan,parsed_count=_scan_from_records(root,model,paths,inventory)
             plan['request']=q
             plan['registry']={key.rsplit(':',1)[-1]:e['ref'] for e in model['entities'] for key in e['sourceKeys'] if key.startswith('candidate:')}
             new=construct_requested_entities(root,scan,plan)
-            if q['conditions'].get('legacySelector')=='workspace-members':
+            if q['conditions'].get('legacySelector')=='workspace-members' or (q['conditions'].get('legacySelector')=='all-supported-facts' and (root/'Cargo.toml').is_file()):
                 _attach_workspace_members(new,q,root)
+            if 'relations' in q['facets'] and q['view']=='source' and tool_runner is None:
+                for coverage in new['sourceCoverage']:
+                    coverage['status']='partial'
+                    coverage['diagnostics'].append({'code':'RELATIONS_NOT_ACQUIRED','facet':'relations','retryable':True,
+                        'reason':'未执行关系取得后端；声明解析不能证明调用关系覆盖'})
             if tool_runner is not None and 'relations' in q['facets']:
                 _attach_graph_result(new,q,root,tool_runner)
             for cov in new['sourceCoverage']:cov['configurationDigest']=config
+            observed_tools={(r['sourceConstruct']['parserId'],r['sourceConstruct']['parserVersion'])
+                            for r in new['sourceRecords'] if 'sourceConstruct' in r}
+            observed_tools.update((e['toolName'],e.get('toolVersion','unknown')) for e in new['evidence'] if e.get('toolName'))
+            new['acquisitionRuns'].append({'runId':'acquisition:'+str(uuid4()),'inputFingerprint':fingerprint,
+                'configurationDigest':config,'status':'partial' if any(c['status']!='obtained' for c in new['sourceCoverage']) else 'completed',
+                'tools':[{'name':name,'version':version} for name,version in sorted(observed_tools)],
+                'sourceRecordIds':[r['recordId'] for r in new['sourceRecords']],
+                'evidenceIds':[e['evidenceId'] for e in new['evidence']],
+                'artifactIds':[a['artifactId'] for a in new['artifacts']]})
             alg_count=sum('algorithm' in r for r in new['sourceRecords'])
             if source_fingerprint(root)!=fingerprint:raise ValueError('INPUT_CHANGED：查询期间输入发生变化')
             from c2s_semantic_contract.validation import validate_semantic_entity_model_v2
@@ -294,6 +338,7 @@ def execute_fact_query(root: Path, request: dict | str, store=None, *, tool_runn
                     readback=store.read_request(q['scopeId'],q,fingerprint,config)
                     if readback['model'] is None:raise ValueError('保存后无法规范回读')
                     model=readback['model'];persist={'status':'saved','generation':saved['generation']}
+                    if saved.get('backup'):persist['backup']=saved['backup']
                 except (ValueError,OSError,sqlite3.Error) as error:
                     persist={'status':'failed','diagnostic':str(error)}
                     diagnostics.append({'code':'PERSISTENCE_FAILED','message':str(error)})
@@ -304,7 +349,7 @@ def execute_fact_query(root: Path, request: dict | str, store=None, *, tool_runn
     result['persistence']=persist
     result['cost']={'parsedFiles':parsed_count,'algorithmFunctions':alg_count,'elapsedSeconds':time.monotonic()-started,'llmTokens':None,'llmStatus':'not_used','inputFingerprint':fingerprint,'configurationDigest':config}
     _finalize_status(result)
-    if cache is not None:
+    if cache is not None and persist['status']!='failed' and not any(d.get('retryable') for d in result['diagnostics']):
         try:cache.save_v2(root,q,fingerprint,config,result)
         except (ValueError,OSError,sqlite3.Error) as error:result['diagnostics'].append({'code':'CACHE_WRITE_FAILED','message':str(error)})
     return result
@@ -386,12 +431,15 @@ def _attach_workspace_members(model,request,root):
         path=fact.owner or 'Cargo.toml'
         observation={'nativeWorkspaceMember':True,'packageName':fact.name,'manifestPath':path}
         if raw:observation['artifactId']=stable_id(['cargo_metadata',raw[0]])
-        model['sourceRecords'].append({'recordId':stable_id([request['scopeId'],fact.id,'native_workspace_member']),
+        model['sourceRecords'].append({'recordId':stable_id([request['scopeId'],model['sourceCoverage'][0]['inputFingerprint'],fact.id,'native_workspace_member']),
             'kind':'package','name':fact.name,'path':path,'sourceConstructIds':[],
             'parentRecordIds':parents,'relatedRecords':[],'evidenceIds':[ev['evidenceId']],
             'status':'obtained','value':{'observations':[observation]}})
     for cov in model['sourceCoverage']:
-        cov['status']='not_acquired' if gap else 'obtained'
-        cov['diagnostics']=([{'code':'WORKSPACE_NOT_ACQUIRED','message':gap,'retryable':True}] if gap else [])
+        workspace_only=request['conditions'].get('legacySelector')=='workspace-members'
+        if workspace_only:cov['diagnostics']=[];cov['status']='obtained'
+        if gap:
+            cov['status']='not_acquired' if workspace_only else 'partial'
+            cov['diagnostics'].append({'code':'WORKSPACE_NOT_ACQUIRED','message':gap,'retryable':True})
         for payload in raw:
             cov['diagnostics'].append({'code':'WORKSPACE_TOOL_EVIDENCE','artifactId':stable_id(['cargo_metadata',payload])})

@@ -26,3 +26,8 @@ class CliV2Tests(unittest.TestCase):
                 status=main(['entities','--root',t,'--request',json.dumps({'target':{'kind':'DataEntity','name':'Record'},'detail':'self'}),
                              '--model-profile','semantic-entity-model-2','--format','json'])
             self.assertEqual('Record',json.loads(output.getvalue())['items'][0]['name'])
+
+    def test_invalid_option_combinations_are_rejected(self):
+        with tempfile.TemporaryDirectory() as t:
+            with contextlib.redirect_stdout(io.StringIO()), contextlib.redirect_stderr(io.StringIO()):
+                self.assertEqual(64,main(['query','--root',t,'--select','functions','--all-functions']))

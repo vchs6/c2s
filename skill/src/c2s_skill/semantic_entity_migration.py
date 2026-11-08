@@ -193,3 +193,18 @@ def backup_entity_archive(store, destination: Path) -> dict:
     except BaseException:
         destination.unlink(missing_ok=True)
         raise
+
+
+def prepare_v2_backup(store) -> dict | None:
+    """首次写入v2且存在v1实体档案时，先生成独立、验证过的备份。"""
+    import sqlite3
+    from uuid import uuid4
+    if not store.path.is_file():return None
+    with sqlite3.connect(store.path.as_uri()+'?mode=ro',uri=True) as connection:
+        tables={r[0] for r in connection.execute("SELECT name FROM sqlite_master WHERE type='table'")}
+        if 'semantic_entity_archives' not in tables:return None
+        if not connection.execute('SELECT 1 FROM semantic_entity_archives LIMIT 1').fetchone():return None
+        if ('semantic_entity_v2_archives' in tables and
+                connection.execute('SELECT 1 FROM semantic_entity_v2_archives LIMIT 1').fetchone()):return None
+    destination=store.path.with_name(store.path.name+'.pre-v2-'+uuid4().hex+'.sqlite')
+    return backup_entity_archive(store,destination)

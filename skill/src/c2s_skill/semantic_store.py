@@ -1014,14 +1014,14 @@ def _merge_entity_archives(old: dict, new: dict) -> dict:
     return result
 
 
-def _merge_entity_record(old: dict, new: dict) -> dict:
+def _merge_entity_record(old: dict, new: dict, *, allow_refinement: bool = False) -> dict:
     result = json.loads(_json(old))
     for field in ("ref", "name", "description"):
         if old[field] != new[field]:
             raise ValueError(f"conflicting entity {field}: {_identity_key(old['ref'])}")
     for field in ("aliases", "sourceKeys", "observationViews"):
         result[field] = sorted(set(old[field]) | set(new[field]))
-    attributes = {item["attributeId"]: item for item in old["attributes"]}
+    attributes = {item["attributeId"]: item for item in result["attributes"]}
     for item in new["attributes"]:
         previous = attributes.get(item["attributeId"])
         if previous is None:
@@ -1031,6 +1031,12 @@ def _merge_entity_record(old: dict, new: dict) -> dict:
             right = {k: v for k, v in item.items() if k not in {"evidenceIds", "valueRange"}}
             left_range = {k: v for k, v in previous["valueRange"].items() if k != "evidenceIds"}
             right_range = {k: v for k, v in item["valueRange"].items() if k != "evidenceIds"}
+            if allow_refinement and left==right and left_range!=right_range:
+                if left_range=={"kind":"unknown"}:
+                    previous["valueRange"]=json.loads(_json(item["valueRange"]))
+                    left_range=right_range
+                elif right_range=={"kind":"unknown"}:
+                    right_range=left_range
             if left != right or left_range != right_range:
                 raise ValueError(f"conflicting attribute: {item['attributeId']}")
             previous["evidenceIds"] = sorted(set(previous["evidenceIds"]) | set(item["evidenceIds"]))
@@ -1069,7 +1075,7 @@ def _merge_v2_documents(old: dict, new: dict) -> dict:
             previous=records[rid]
             if previous==item:continue
             if collection=='entities':
-                records[rid]=_merge_entity_record(previous,item);continue
+                records[rid]=_merge_entity_record(previous,item,allow_refinement=True);continue
             if collection in {'claims','relations','sourceRecords','sourceMappings'}:
                 merged=json.loads(_json(previous))
                 for field,value in item.items():
@@ -1131,6 +1137,8 @@ def _commit_request_v2(store, operation_id, document, request):
         'tools':[],'sourceRecordIds':[x['recordId'] for x in document['sourceRecords']],
         'evidenceIds':[x['evidenceId'] for x in document['evidence']],
         'artifactIds':[x['artifactId'] for x in document['artifacts']]})
+    from .semantic_entity_migration import prepare_v2_backup
+    backup=prepare_v2_backup(store)
     with store._connect() as connection:
         _v2_tables(connection)
         connection.execute('BEGIN IMMEDIATE')
@@ -1160,6 +1168,7 @@ def _commit_request_v2(store, operation_id, document, request):
         connection.execute('INSERT OR REPLACE INTO semantic_entity_v2_archives VALUES(?,?,?,?,?)',
                            (scope,fp,cfg,generation,_json(merged)))
         receipt={'status':'saved','generation':generation,'operationId':operation_id}
+        if backup:receipt['backup']=backup
         connection.execute('INSERT INTO semantic_entity_v2_operations VALUES(?,?,?,?,?,?)',
                            (scope,operation_id,digest,fp,cfg,_json(receipt)))
     return {**receipt,'model':merged}

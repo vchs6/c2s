@@ -173,3 +173,23 @@ class FactQueryV2Tests(unittest.TestCase):
         result=query_entity_store_v2(self.store,q,first['cost']['inputFingerprint'],first['cost']['configurationDigest'])
         self.assertFalse(result['complete'])
         self.assertIn('FACET_NOT_ACQUIRED',[d['code'] for d in result['diagnostics']])
+
+    def test_legacy_source_selectors_keep_their_information(self):
+        (self.root/'m.py').write_text('import os\nVALUE=3\ndef run(x):\n "documentation"\n y=x+1\n return y\n')
+        imports=execute_fact_query(self.root,'imports',self.store)
+        self.assertEqual(['os'],[r['name'] for r in imports['items']])
+        constants=execute_fact_query(self.root,'constants',self.store)
+        self.assertIn('VALUE',[r['name'] for r in constants['items']])
+        self.assertTrue(all(r.get('sourceConstruct',{}).get('syntaxKind') in {'assignment_binding','constant_declaration','static_declaration'} for r in constants['items']))
+        bindings=execute_fact_query(self.root,'local-bindings',self.store)
+        self.assertEqual(['y'],[r['name'] for r in bindings['items']])
+        docs=execute_fact_query(self.root,'behavior-contracts',self.store)
+        self.assertTrue(any('documentation' in json.dumps(r) for r in docs['items']))
+        structure=execute_fact_query(self.root,'algorithm-structure',self.store)
+        self.assertEqual(1,len(structure['items']));self.assertIn('algorithm',structure['items'][0])
+
+    def test_members_selector_returns_direct_members_only(self):
+        (self.root/'m.py').write_text('class Record:\n key: str\n def get(self):\n  local=1\n  return self.key\n')
+        result=execute_fact_query(self.root,'members:Record',self.store)
+        self.assertEqual({'key','get'},{i['name'] for i in result['items']})
+        self.assertNotIn('local',[i['name'] for i in result['items']])

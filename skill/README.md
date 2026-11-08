@@ -1,8 +1,12 @@
 # c2s语义事实查询Skill
 
-状态：原型实现中。当前可对Python与Rust源文件进行全目录语法遍历，提取类/结构体、字段、函数、导入、常量、源码文档行为说明及常见控制流/调用/运算步骤，并按selector或有限自然语言请求查询，返回JSON或Markdown。每条记录带项目根命名空间内的稳定fact ID、主体ID、源路径和UTF-8字节范围；同一函数的声明、文档契约和算法步骤共享`subject_id`。`evidence_included`标明本次请求是否附带源码片段。`claim_mode`区分语法、声明、Cargo元数据和文档陈述，不代表已验证运行时行为。fact/subject ID绑定分析根路径，移动检出目录后会改变。
+当前默认使用`semantic-entity-model-2`及统一请求/结果协议。可按需查询Python/Rust项目的来源目录、嵌套清单、源码模块、声明、语义实体候选、属性与关系、实现引用、测试关联、算法及伪代码。JSON和Markdown来自同一规范结果；`sourceRecords`保存来源组织，`items`保存请求目标，主张、证据、覆盖、缺口和持久化状态分别返回。
 
-旧兼容模型保留`semantic-fact-model-1`扩展profile和封闭的E0–E4类型/谓词目录，并可读取已保存的旧事实；当前默认写入profile为`semantic-entity-model-1`。它仍不是完整的项目语义事实获取器，缺少类型解析、绑定证明、工程/构建系统的广泛读取及语言条件提取。算法source-to-body审定已有固定版本的regex/R5、Click/P7和nlohmann-json/C5清单；C5是人工编写的C++ opaque案例，只有R5/P7由当前Rust/Python lowerer生成。body到文本投影只呈现已有step/edge和缺口，不证明清单覆盖全部源码或行为等价。算法描述契约结构校验切片位于`skill/contracts/semantic-algorithm.schema.json`和`c2s_skill.algorithm.validate_algorithms`；项目管理归属以resolved/ambiguous/unresolved及候选Project IDs独立表达，当前语言lowering保留unresolved；实现引用可多值。契约要求输入/输出、前提、正常/错误/终止结果、效果和顺序约束分别记录证据覆盖状态；校验器检查步骤身份、区域/控制/数据引用、计算语义字段及opaque边界。`c2s_skill.algorithm.extract_python_algorithm(...)`和`extract_rust_algorithm(...)`可从指定Python函数或Rust函数生成带源码字节跨度、控制区域和显式缺口的初步算法描述。单函数算法请求可通过`--graph-output`导入Code Review Graph `callees_of` JSON，并映射成`behavior.calls`候选关系；适配器保存原始JSON工具证据、检查路径/计数/遗漏并映射到本地源码声明。图索引与当前源码摘要无法核对时必有`GRAPH_INDEX_FRESHNESS_UNVERIFIED`缺口，coverage保持不完整，不能把图关系当已证明绑定。`algorithm --all-functions`会遍历项目中发现的Python/Rust函数，逐个生成结构化算法结果，并报告解析失败与未处理路径；该模式仍不等于全项目语义完整，也没有接入通用`function:`查询结果；生成物不等于行为完整或源码等价证明。宏展开、条件编译、多态/动态调用、反射、运行时行为和工程配置语义没有完整覆盖；所以当前结果的`complete=true`仅表示所选事实类别的获取没有已知缺口，并不表示项目的所有语义事实均已取得。结果会附带全目录清单和未处理路径；源文件解析目前只覆盖`.py`与`.rs`。`classes`、`functions`和`all-declarations`只返回顶层条目，不附带类型体/函数体；须请求`definitions`、指定`function:名称`或`all-supported-facts`才会附带相应源码体。SQLite结果缓存绑定项目树摘要及分析配置摘要（分析器、Python/平台、Tree-sitter和Cargo版本）；缓存写入失败时事实仍返回，并通过独立持久化状态报告，逐项构造事务恢复和supersedes lineage尚未实现。机器输出契约位于`contracts/semantic-fact-query.schema.json`。请把本原型用于开发与明确范围查询，不作为完整语义验收结论。
+按目标和描述面补缺，重复查询复用同一输入/分析配置下的覆盖；解析器、工具矩阵或产品源码改变后缓存失效。源码组织不依赖实体映射；实体解释保持有证据的暂定主张。数据属性不被递归深度省略，枚举值域仅在同文件词法作用域内有唯一类型引用时采用，未知绑定不按裸名称跨模块猜测。算法/伪代码仍为部分静态投影，不证明运行时行为或等价性；宏展开、动态调用、完整类型绑定等未解析项保留缺口。
+
+目录盘点涵盖隐藏、忽略、测试及示例路径，实际语法前端覆盖`.py`与`.rs`。基础组合为Python AST、Rust Tree-sitter及TOML/Cargo，图后端只在显式请求与能力验证后使用；CodeGraph保持候选。未执行关系取得时不会将声明解析冒充relations完整覆盖。完整性只针对本次请求与已支持类别，不声称穷尽项目所有语义。
+
+旧`semantic-entity-model-1`、`semantic-fact-model-1`及M1继续提供显式兼容接口。旧源码查询协议中的fact/subject ID、subject_id、claim_mode、顶层条目和原文投影规则只适用于v1；默认v2使用独立来源记录与实体身份。默认写入、备份及回滚见文末。
 
 ## 历史M1与旧完整档案兼容契约
 
@@ -56,7 +60,7 @@ PYTHONPATH=skill/src .local/analysis-venv/bin/python -m unittest discover -s ski
 
 Python包来自包索引；Rust安装来源为官方https://rust-lang.org/tools/install/，使用项目本地RUSTUP_HOME/CARGO_HOME且不改shell profile。当前安装路径`.local/analysis-venv`、`.local/rustup`、`.local/cargo`均为开发临时目录，不随Skill发行。
 
-Code Review Graph `build-graph`/`explore-codebase` Skills只作为工具导航资料，不是本会话已注册的可调用Skill，也不把其短文本结果当语义事实；确定性API结果由专用解析器消费。ast-grep、Semgrep、Serena、GitNexus、CodeGraph和CodeQL CLI未安装；按覆盖矩阵暂不进入必需组合。具体比较见`../docs/development/reviews/issues/10/acquisition-survey-2026-11-02/tool-selection.md`。
+Code Review Graph `build-graph`/`explore-codebase` Skills只作为工具导航资料，不是本会话已注册的可调用Skill，也不把其短文本结果当语义事实；确定性API结果由专用解析器消费。ast-grep、Semgrep、Serena、GitNexus和CodeQL CLI不作为必需运行依赖；CodeGraph 1.6.2（Apache-2.0、npm开源项目）已临时安装并验证files/query/callers/callees输出解析，但覆盖收益尚未达到点亮条件，保持candidate；按覆盖矩阵暂不进入必需组合。具体比较见`../docs/development/reviews/issues/10/acquisition-survey-2026-11-02/tool-selection.md`。
 
 ## 重建当前开发环境
 
@@ -102,9 +106,9 @@ CI账户配置与公开容器探针的命令、最小权限、安装来源及安
 
 档案保存身份、属性、关系、主张状态、来源证据、`SourceConstruct`及`sourceMappings`。源码映射保留语言、语法种类、父构造、解析器版本、相对路径、SHA-256和UTF-8字节区间；映射未解决时不丢弃构造，而是保留定位与缺口。宏、泛型、闭包、枚举等记录为语言实现参考，不会因此自动变成领域实体。测试实体与测试函数入口分开，只有唯一解析到本地计算实体的调用才会形成暂定验证关系。
 
-查询使用项目范围和结构化选择器。`project`返回项目实体的直接子实体引用和摘要；`entity:<localId>`返回单体全部属性、主张、关系、证据、来源映射及覆盖状态；`expand:<localId>`显式逐层展开并受最大深度限制。中文名称可解析，未知目标和歧义目标分别返回缺口状态。Markdown和JSON从同一查询结果投影。重复输入与相同解析配置复用覆盖；源码、解析器或工具矩阵指纹变化后旧覆盖标为需复核。扫描粒度目前是全项目支持范围，尚未实现单属性粒度的增量解析。
+查询使用项目范围和结构化选择器。`project`返回项目实体的直接子实体引用和摘要；`entity:<localId>`返回单体全部属性、主张、关系、证据、来源映射及覆盖状态；`expand:<localId>`显式逐层展开并受最大深度限制。中文名称可解析，未知目标和歧义目标分别返回缺口状态。Markdown和JSON从同一查询结果投影。重复输入与相同解析配置复用覆盖；源码、解析器或工具矩阵指纹变化后旧覆盖标为需复核。本段描述显式v1兼容入口的全项目扫描行为；默认v2按下文的目标与描述面补缺。
 
-命令行中的`entities`与`query --store`均读写`semantic-entity-model-1`实体档案；`query`原有的classes/functions等选择器仍返回源码事实视图，同时构造并存储同一项目范围的实体档案。`algorithm --semantic-facts --store`也写实体档案；其`semantic_fact_bundle`字段仅为向现有调用方提供的内存兼容投影，不会写入旧档案。旧完整profile的`commit_bundle`写入接口已拒绝新写入，`read_bundle`/`query_bundle`仍可读取旧档案。示例：
+显式`--model-profile semantic-entity-model-1`时，命令行中的`entities`与`query --store`保持既有v1实体档案兼容行为；`query`原有的classes/functions等选择器仍返回源码事实视图，同时构造并存储同一项目范围的实体档案。`algorithm --semantic-facts --store`也写实体档案；其`semantic_fact_bundle`字段仅为向现有调用方提供的内存兼容投影，不会写入旧档案。旧完整profile的`commit_bundle`写入接口已拒绝新写入，`read_bundle`/`query_bundle`仍可读取旧档案。示例：
 
 ```bash
 PYTHONPATH=src:skill/src .local/analysis-venv/bin/python3 -m c2s_skill entities --root /path/to/project --select entities --store /tmp/project-entities.sqlite --format json
@@ -148,15 +152,15 @@ PYTHONPATH=src:skill/src .local/analysis-venv/bin/python3 scripts/verify_semanti
 
 ## v2来源组织实施切片
 
-`collect_source_records(root, scan, request)`在没有语义实体映射时仍保留目录、清单、包、工作空间、源码模块及声明。来源记录和语义实体身份独立，重复取得复用来源键并追加证据；工具解释分歧保留为观察差异。`scan_project`可传`source_paths`限制实际解析文件，完整inventory仍保留，未解析/非源文件在来源覆盖中显式列出。该切片尚未接入默认CLI，不宣称v2查询和存储已经完成。
+`collect_source_records(root, scan, request)`在没有语义实体映射时仍保留目录、清单、包、工作空间、源码模块及声明。来源记录和语义实体身份独立，重复取得复用来源键并追加证据；工具解释分歧保留为观察差异。`scan_project`可传`source_paths`限制实际解析文件，完整inventory仍保留，未解析/非源文件在来源覆盖中显式列出。现已接入默认v2统一查询及存储。
 
 v2局部构造接口`construct_requested_entities`只对计划需要的实体和描述面构造解释，解释均为带premiseIds/method的暂定主张；不按实体类型固定分配E视角。仅algorithm描述面请求会调用算法lowerer，并将步骤证据纳入档案引用。实现视图保持partial_static_syntax_projection；宽泛实现类型仍不能推断业务类型或值域。
 
 v2存储接口`read_request`按scope、输入指纹与配置隔离快照，并按target/facets返回可复用覆盖；部分静态结果保留原缺口。`commit_request`在单事务中注册、合并补证、写覆盖和操作回执，同操作同载荷幂等、异载荷拒绝；取消/失败不发布完成覆盖。数据库仍须放在分析目录外；保存失败不能吞掉已取得事实，旧profile表保持独立。
 
-## v2统一查询（显式选择）
+## v2统一查询（当前默认）
 
-当前默认仍是v1。以下v2命令已在固定Click检出实跑；部分静态覆盖返回退出码2，不能据此声称全部行为语义已取得。
+默认profile为semantic-entity-model-2，显式选择参数仍可使用。以下v2命令已在固定Click检出实跑；部分静态覆盖返回退出码2，不能据此声称全部行为语义已取得。
 
 ```bash
 PYTHONPATH=src:skill/src .local/analysis-venv/bin/python -m c2s_skill query --root .local/real-projects/click --select modules --model-profile semantic-entity-model-2 --store /tmp/c2s-v2-cli.sqlite --format json
@@ -166,3 +170,16 @@ PYTHONPATH=src:skill/src .local/analysis-venv/bin/python -m c2s_skill query --ro
 这两次分别取得91个源码模块、1个函数；第二次复用来源索引，解析0文件、降低1函数。JSON/Markdown来自同一规范结果，原始工具工件、证据及缺口可回读。`query_project_v2`是公开执行入口，`query_entity_store_v2`只查询给定输入/配置下的已有档案，不重构来源。v2缓存以规范请求、协议版本、输入指纹及配置隔离；v1缓存不能命中v2。
 
 sourceRecords表示来源组织，items是请求目标；实体self详情保留自身全部已取得属性，子实体按expandDepth展开（0至8），循环与歧义有独立诊断。`--request`可传请求JSON。显式`--graph-output`仍按已点亮CRG解析器导入，保存原始响应和新鲜度缺口；CodeGraph目前仍是候选，不会默认执行。
+
+
+## 默认切换、备份和回滚
+
+默认命令返回semantic-fact-result-2，并只向v2独立表写新事实。旧v1实体、旧完整profile和M1接口/档案保留；显式`--model-profile semantic-entity-model-1`仅用于既有协议兼容，不会迁移或覆盖v2表。新调用请使用`execute_fact_query`或`query_project_v2`，纯档案查询使用`query_entity_store_v2`。
+
+首次向含v1实体档案的数据库写v2时，先用SQLite在线备份生成同目录`<档案名>.pre-v2-<唯一标识>.sqlite`，执行integrity_check和逐表回读比较；失败则不写v2，并返回persistence.failed。回执persistence.backup给出路径、摘要和验证状态；备份文件不会被覆盖。并发首次写入允许生成多个独立备份，后续已有v2数据时不重复备份。数据库、结果、缓存及备份均须位于分析项目外，正常查询不联网；Cargo metadata仅--no-deps --offline。
+
+回滚时先停止写入并另存当前数据库和v2产物，然后用回执备份的完整SQLite文件恢复到独立路径，指定该路径和`--model-profile semantic-entity-model-1`验证旧实体查询；若需恢复历史默认行为，检出切换前版本。禁止把v2载荷直接覆盖v1表。Python API `backup_entity_archive`也可手动生成经验证的外置备份。
+
+退出码0表示本请求范围完整，2表示有静态缺口或保存失败，64表示无效请求。部分算法和图关系会保留已取得内容并返回2。覆盖完整只针对本次请求，不承诺穷尽全部语义、类型、动态行为或运行时等价。当前验证平台Linux，Python/Rust静态提取；其他语言、host/target及词元收益未验证。
+
+最终复现与验证证据见[非DDD重构交付核验](../docs/development/reviews/semantic-facts/非DDD重构交付核验.md)和[真实项目验证](../docs/development/reviews/semantic-facts/非DDD真实项目验证.md)。本次为共享工作区公开开发验证，私有盲验收未执行。

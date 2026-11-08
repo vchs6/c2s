@@ -8,7 +8,12 @@ import unittest
 from pathlib import Path
 from unittest.mock import patch
 
-from c2s_skill.__main__ import main
+from c2s_skill.__main__ import main as _main
+
+
+def main(args):
+    """本组历史协议断言显式验证v1兼容入口。"""
+    return _main([*args, "--model-profile", "semantic-entity-model-1"])
 
 
 class AlgorithmCliTests(unittest.TestCase):

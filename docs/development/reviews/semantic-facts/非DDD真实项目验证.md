@@ -6,8 +6,8 @@
 
 | 项目 | 来源记录查询 | 实体详情查询 | 主张核对 | 关系核对 | 实现映射核对 | 原生类型/函数盘点对照 | 显式算法 |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| click | 4138 | 2610 | 2610 | 2668 | 4448 | 2078 | 1 |
-| regex | 19041 | 4712 | 4712 | 4712 | 12698 | 4907 | 1 |
+| click | 7313 | 2610 | 2610 | 2582 | 4448 | 2078 | 1 |
+| regex | 19041 | 4712 | 4712 | 418 | 12264 | 4907 | 1 |
 
 全部已发布集合均经v2契约和引用检查；每个来源记录按ref查询逐字比较，每个实体的属性、主张、关系、映射逐项比较，所有路径证据的SHA-256及字节边界核对。另用Python AST及直接Rust语法节点盘点类型和可调用定义，未用构造器自身计数充当外部真值。诊断全部遍历并保留；源码覆盖不等于业务解释或语义真值完整。
 
@@ -30,4 +30,11 @@ PYTHONPATH=src:skill/src .local/analysis-venv/bin/python scripts/verify_source_f
 PYTHONPATH=src:skill/src .local/analysis-venv/bin/python scripts/verify_source_fact_refactor.py --project .local/real-projects/regex --expected-commit 94ac45b2a6e7b1c30927feb5b66c5ded5b7ad447 --store /tmp/c2s-v2-regex-fresh.sqlite --output /tmp/c2s-v2-regex-result.json --algorithm regex-syntax/src/hir/interval.rs::canonicalize
 ```
 
-验证器6项测试包含故意删除来源记录、改动输入、破坏证据跨度、模拟查询丢主张，以及索引/普通投影等价；必须能发现这些错误。结果属于公开开发与集成证据，不是私有盲验收。默认切换及最终候选版本核验由任务10.10负责。
+验证器6项测试包含故意删除来源记录、改动输入、破坏证据跨度、模拟查询丢主张，以及索引/普通投影等价；必须能发现这些错误。结果属于公开开发与集成证据，不是私有盲验收。默认v2切换及最终候选版本核验由任务10.10完成，见交付核验。
+
+
+## 最终候选与查询顺序验证
+
+最终两个报告均来自审核修正后的产品配置，配置摘要为`34c1e63cc4cc9ce2d39113b83c2b60d3089c17de4c857cc6697f52dc6bb7c61f`。Click选择URL数据实体（examples/validation/validation.py），regex选择FuzzData（fuzz/fuzz_targets/ast_fuzz_match.rs），依次执行定向属性→全部实体→定向属性；属性一致，后次解析0文件。最初来源请求后仅插入一次定向样本，原生工作空间反例已覆盖验证器重复插入错误。JSON保存各请求耗时、数据库体量、实际调用的工具证据及覆盖，不以被中断的运行冒充最终结论。
+
+根Project不再越过嵌套清单自动拥有全部实体，因此关系数量与旧报告不同；未决归属诊断保留。静态测试关联仍为带调用/断言证据的候选，不证明测试已执行或运行时绑定正确。

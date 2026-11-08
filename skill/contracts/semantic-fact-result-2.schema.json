@@ -98,7 +98,69 @@
         "expandDepth",
         "conditions"
       ],
-      "$schema": "https://json-schema.org/draft/2020-12/schema"
+      "allOf": [
+        {
+          "if": {
+            "properties": {
+              "view": {
+                "const": "source"
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "target": {
+                "properties": {
+                  "kind": {
+                    "enum": [
+                      "project",
+                      "module",
+                      "function",
+                      "declaration",
+                      "all"
+                    ]
+                  },
+                  "ref": {
+                    "$ref": "#/$defs/sourceRef"
+                  }
+                }
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "view": {
+                "const": "entity"
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "target": {
+                "properties": {
+                  "kind": {
+                    "enum": [
+                      "Project",
+                      "Module",
+                      "Capability",
+                      "DataEntity",
+                      "ComputationEntity",
+                      "ExternalActor",
+                      "TestEntity",
+                      "all"
+                    ]
+                  },
+                  "ref": {
+                    "$ref": "#/$defs/entityRef"
+                  }
+                }
+              }
+            }
+          }
+        }
+      ]
     },
     "items": {
       "type": "array",
@@ -478,6 +540,33 @@
         "generation": {
           "type": "integer",
           "minimum": 1
+        },
+        "backup": {
+          "type": "object",
+          "required": [
+            "status",
+            "path",
+            "tables",
+            "sha256"
+          ],
+          "additionalProperties": false,
+          "properties": {
+            "status": {
+              "const": "verified"
+            },
+            "path": {
+              "type": "string",
+              "minLength": 1
+            },
+            "tables": {
+              "type": "integer",
+              "minimum": 1
+            },
+            "sha256": {
+              "type": "string",
+              "pattern": "^[a-f0-9]{64}$"
+            }
+          }
         }
       },
       "required": [
@@ -1296,6 +1385,19 @@
             "stale",
             "review_required"
           ]
+        }
+      }
+    },
+    "sourceRef": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "recordId"
+      ],
+      "properties": {
+        "recordId": {
+          "type": "string",
+          "minLength": 1
         }
       }
     }

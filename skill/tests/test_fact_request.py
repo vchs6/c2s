@@ -14,3 +14,15 @@ class FactRequestTests(unittest.TestCase):
     def test_invalid_query_rejected(self):
         for q in ['do anything',{'target':{'kind':'unknown'}},{'expandDepth':9},{'facets':['invent']}]:
             with self.assertRaises(ValueError):normalize_fact_request(q)
+
+    def test_legacy_source_selectors_have_v2_views(self):
+        for selector in ['imports','constants','local-bindings','behavior-contracts','algorithm-structure']:
+            self.assertEqual('source',normalize_fact_request(selector)['view'])
+
+    def test_fixed_chinese_request_has_source_view(self):
+        self.assertEqual('classes',normalize_fact_request('有哪些类')['conditions']['legacySelector'])
+    def test_reference_shape_matches_view_and_facets_are_strings(self):
+        for q in [{'view':'entity','target':{'kind':'all','ref':{'recordId':'source'}}},
+                  {'view':'source','target':{'kind':'all','ref':{'identity':{}}}},
+                  {'facets':[{'bad':True}]}]:
+            with self.assertRaises(ValueError):normalize_fact_request(q)

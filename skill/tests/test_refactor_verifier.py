@@ -60,3 +60,27 @@ class RefactorVerifierTests(unittest.TestCase):
         with patch.object(verifier,'project_fact_result',side_effect=lose_claims):
             result=verify_published_model(model,self.root,expected_fingerprint=self.fp)
         self.assertFalse(result['valid']);self.assertIn('CLAIM_QUERY_LOSS',[d['code'] for d in result['diagnostics']])
+
+    def test_real_verifier_exercises_target_before_broader_query(self):
+        import subprocess
+        from verify_source_fact_refactor import run_verification
+        (self.root/'m.rs').write_text('enum Color { Red, Blue }\nstruct Data { color: Color }\n')
+        (self.root/'Cargo.toml').write_text('[package]\nname="order-check"\nversion="0.1.0"\n[lib]\npath="m.rs"\n')
+        subprocess.run(['git','init','-q'],cwd=self.root,check=True)
+        subprocess.run(['git','add','.'],cwd=self.root,check=True)
+        subprocess.run(['git','-c','user.name=公开验证','-c','user.email=test@example.invalid','commit','-qm','固定公开夹具'],cwd=self.root,check=True)
+        commit=subprocess.check_output(['git','rev-parse','HEAD'],cwd=self.root,text=True).strip()
+        import os
+        from unittest.mock import patch
+        import verify_source_fact_refactor as verifier
+        cargo=Path(__file__).resolve().parents[2]/'.local/cargo/bin/cargo'
+        if not cargo.is_file():self.skipTest('此原生工作空间顺序回归需要本地Cargo')
+        original=verifier.execute_fact_query;calls=[]
+        def bounded(*args,**kwargs):
+            calls.append(args[1])
+            if len(calls)>12:raise RuntimeError('验证器重复插入请求导致无界循环')
+            return original(*args,**kwargs)
+        with patch.dict(os.environ,{'CARGO':str(cargo),'RUSTUP_HOME':str(cargo.parents[2]/'rustup'),'CARGO_HOME':str(cargo.parents[1])}), patch.object(verifier,'execute_fact_query',side_effect=bounded):
+            result=run_verification(self.root,commit,Path(self.tmp.name)/'ordered.sqlite',[])
+        self.assertTrue(result['queryOrderChecks'])
+        self.assertTrue(all(check['sameAttributes'] for check in result['queryOrderChecks']))
