@@ -43,8 +43,10 @@
 
 ## 远程状态记录
 
-2026-11-08实际只读检查：git ls-remote可读回main（当时d73a5b9）；gh run list经代理返回Forbidden，去除代理后直连API连接失败；环境状态已实际确认受限网络策略已生效，其允许列表未包含api.github.com。因此远程公开CI结果暂未能核实，不将本地检查写成远程CI通过。最终推送及main提交读回另记本节。
+2026-11-08实际只读检查：git ls-remote可读回main（当时d73a5b9）；gh run list经代理返回Forbidden，去除代理后直连API连接失败；环境状态已实际确认受限网络策略已生效，其允许列表未包含api.github.com。因此远程公开CI结果暂未能核实，不将本地检查写成远程CI通过。重构实现提交`14bc583dfa4940f2c705faf8da6bb69f5e00c155`已通过git push推送至main；随后git ls-remote origin refs/heads/main实际读回相同完整提交号。远程基点d73a5b9到14bc583正常前进，无force；包含任务10.9及10.10交付。后续保存本回执的文档提交不改变已验证产品代码与配置摘要。
 
 完整执行裁定及代价见[执行裁定](非DDD执行裁定.md)，没有延后Minor。
 
 最终Click与regex验证均valid：来源分别7313/19041条、实体分别2610/4712个，全部已发布主张、关系、映射、证据及显式算法逐项回读通过，查询顺序一致。最终产品配置摘要：`34c1e63cc4cc9ce2d39113b83c2b60d3089c17de4c857cc6697f52dc6bb7c61f`。没有对未请求算法或全部业务语义真值作穷尽声明。
+
+最终OpenSpec apply instructions实际返回32/32 complete；本变更保留活动状态，未自动archive。工作目录清理只针对本轮Superpowers临时执行目录，不删除宿主工作区、历史原件或其他计划目录。
