@@ -195,3 +195,7 @@
 ## Progress — 2026-11-07, algorithm facts in full semantic profile
 
 - Added `project_algorithm_to_semantic_model` to map algorithm steps, regions, body links and typed control edges into a full-profile bundle. Python/Rust lowerers now retain the source file digest, and projection rejects stale source text, invalid spans and root escapes. Opaque operations, omissions and unlocated steps remain gaps. Query-declaration identities are not implicitly merged with algorithm-local implementation IDs. Python and Rust targeted projection tests pass; the full Skill suite passed 88 tests, the semantic-model suite passed 74 tests, root `npm test` passed 109 tests, strict OpenSpec validation passed 21 items, and artifact/diff checks passed.
+
+## ADR-0013 当前约束（2026-11-08）
+
+实体及类型化关系组织事实；E0–E4仅为可选观察视角。保留条件、来源、引用和有界覆盖检查，不建立DDD聚合或业务边界；旧模型目录仅在兼容范围使用。 依据：`docs/decisions/0013-非DDD语义事实模型.md`。历史执行记录中的DDD或旧模型表述不构成现行约束。本轮只进行文档修订，产品重构完成状态不变。

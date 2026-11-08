@@ -1,42 +1,37 @@
 schema: spec-driven
 context: |
-  c2s develops a language-independent software-project semantic-fact extraction Skill.
-  Artifacts use Chinese; preserve OpenSpec structural headings and SHALL/MUST.
-  Use DDD for ubiquitous language, identity and invariants; do not preselect aggregates or storage.
-  Accepted layers: E0 engineering organization, E1 build/assembly/delivery,
-  E2 program structure/interfaces, E3 operational contracts, E4 algorithms/local semantics.
-  Layers are organization scales, not a mandatory containment/refinement chain.
-  Approved scope is recorded in docs/decisions/0001-five-semantic-layers.md.
-  Imported research under docs/domain and docs/development/reviews is evidence, not automatically approved specs.
-  Coordinate actual OpenSpec instructions with installed Superpowers Skills.
-  All repository-owned scripts and tests MUST use Python 3; pinned third-party CLIs remain upstream tools.
-  Current authorization: ADR-0009 permits preparation and continuous development after readiness gates pass.
-  Do not request the same implementation approval again; current isolation/readiness remain unproven.
-  Issues/comments/labels/schedules MUST NOT start work. Current maintenance Runner permits plan/smoke only.
-  Distinguish user authorization, technical readiness and actual acceptance evidence; authorization does not waive gates.
-  Cover functional and nonfunctional requirements, including query performance/cost/scaling and cross-language/cross-platform matrices.
-  Minimize actual LLM input/output tokens needed to extract and maintain layered semantic facts while preserving required semantics, correctness and evidence; metering/budgets alone do not satisfy this goal.
-  Compare deterministic processing, cross-layer reuse, incremental work and minimal model context; do not claim measured savings without evidence.
-  Source language, Skill host platform and analyzed-project target platform are separate dimensions; do not claim universal support.
-  ADR-0010 clarifies bidirectional blind authoring, not total mutual invisibility. Deterministic CI needs no AI call.
-  Test authors MUST NOT access candidate c2s implementations; real analyzed project sources remain allowed inputs.
-  Delivery has five independent roles: coding, code review, test authoring, test execution, final verification.
-  Coders MUST NOT author or access independent tests; private suites require proven access isolation, including candidate processes.
-  Shared agent filesystems are not isolation. Use authoritative tasks; complete readiness before implementation.
-  Current product versions are 0.b.c; planning does not bump tooling/contract versions or publish a release.
+  c2s提取上游软件项目事实；内容使用中文，保留OpenSpec结构标题和SHALL/MUST。
+  当前目标与方法依据docs/decisions/0013-非DDD语义事实模型.md及ADR-0012。
+  采用语义实体、属性、关系、证据、源码构造和实现/测试映射；不采用DDD建模约束，不强制六边形架构。
+  E0–E4仅为可选观察视角，不是强制层次、实体类别或身份组成部分。
+  保留上游项目组织、模块结构、数据与计算及算法实现参考；不生成迁移方案、设计价值判断或组织动机解释。
+  来源直接陈述和分析解释分别记录；推导必须带证据及暂定/冲突/未决状态。
+  工具按所需事实覆盖选择非商用可用组件；候选调研、解析验证和能力点亮分开。
+  导入研究和历史ADR保留来源，不自动构成当前规格。OpenSpec及Superpowers工作纪律继续适用。
+  自维护脚本和测试使用Python3，固定上游CLI及工具源码不擅改。
+  ADR-0009授权持续开发；ADR-0011允许共享非盲模式推进，隔离不足须如实报告，不能声称私有盲验收通过。
+  Issue、评论、标签、定时均不启动工作；维护Runner只plan/smoke，不重复索取已有授权。
+  首期Rust/Python；host与项目target分别记录，单次分析输入保持不变；所有平台和能力组合逐项验证。
+  查询返回请求范围内完整事实及缺口，实体详情包含自身全部已取得属性，子实体按要求展开；双输出来源一致。
+  查询按需启动，复用适用事实；不得提前全目录构造解释或以工具top-k/索引完成冒充完整。
+  同输入、同请求及缺口口径测量性能与实际LLM词元，包含冷索引、工具内部模型和重试成本；未测不报收益。
+  五类交付职责保持输出所有权独立；独立验收作者不能读取候选实现，编码者不能访问私有用例。
+  当前共享权限不能证明隔离，公开测试只能作为开发证据；确定性CI不必调用模型。
+  使用唯一任务表；工件存在、历史任务完成、结构校验均不代表产品按新目标重构完成。
+  当前产品版本0.b.c，工具/契约版本分别管理；不自动发布或归档。
 rules:
   proposal:
-    - State scope, affected capabilities and exclusions; tooling-only changes may explicitly skip_specs.
+    - 写明范围、受影响能力及排除项；纯工具变更可明确skip_specs。
   design:
-    - Distinguish observed evidence, accepted decisions, delegated agent decisions and proposed implementation choices.
-    - Include workload/scale/environment-bound nonfunctional goals and language/host/target support boundaries.
+    - 区分来源观察、用户决定、委托技术选择与候选设计。
+    - 说明负载、环境、性能成本及语言/host/target支持边界，不预选DDD架构。
   tasks:
-    - Every task records upstream basis, deliverable paths, verification, pass and failure conditions.
-    - Use one authoritative task list; Superpowers plans reference it.
+    - 每项任务记录依据、产物路径、验证与成败条件。
+    - 使用唯一任务表，Superpowers计划引用该表，不复制产品计划。
 operations:
   apply:
     guidance:
-      - Retrieve apply instructions and verify each task; artifact existence is not implementation completion.
+      - 取得apply指令并核对任务及上下文；规划工件存在不等于实现完成。
   archive:
     guidance:
-      - Do not archive without an explicit user request.
+      - 没有用户明确要求时不得归档。

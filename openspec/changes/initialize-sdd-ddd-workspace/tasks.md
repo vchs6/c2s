@@ -40,3 +40,7 @@
 
 - 本初始化变更保持active，不自动archive。
 - 下一产品变更为define-layered-semantic-fact-model；正式规格和机器可读公共定义不在本初始化中冒充完成。
+
+## ADR-0013 当前约束（2026-11-08）
+
+保留OpenSpec、Superpowers及导入原件追溯；DDD初始化方向已由ADR-0013取代。目录名称和已完成任务是历史记录，不是当前产品架构约束。 依据：`docs/decisions/0013-非DDD语义事实模型.md`。历史执行记录中的DDD或旧模型表述不构成现行约束。本轮只进行文档修订，产品重构完成状态不变。

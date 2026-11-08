@@ -50,3 +50,11 @@
 ## 8. 切换后复核补充
 
 - [x] 8.1 验证本地Cargo metadata并持久化E1 workspace观察。依据：6.3复核发现本地Cargo shim需要显式`RUSTUP_HOME`/`CARGO_HOME`；Cargo packages不等同语义模块。输出：Project上的`workspaceMemberPackage`主张、E1视角、证据与coverage；metadata失败时记录`not_acquired`；README/规格/验证记录同步。验证：真实regex项目Cargo metadata和`workspace-members`查询返回7/7且无gap；隔离Cargo fixture写入实体档案后逐项查询包主张；缺少Cargo时返回not_acquired及gap；不创建Cargo package语义实体；虚拟workspace以暂定Project范围保存构建观察，不制造package实体。完成证据：本地toolchain离线元数据7/7、真实regex经同库实体详情查询读回7条E1主张；成功、工具不可用、虚拟workspace正反fixture通过；Skill全套170/170、OpenSpec全库23/23、仓库测试125/125、模型契约90/90、工件4/4全部通过。
+
+## ADR-0013 当前约束（2026-11-08）
+
+保留语义实体、属性、关系、源码构造、证据及测试映射；取消DDD解释。既有实现和切换任务记录保留其原证据，新目标下的实现差距须另行核对，不因旧任务完成自动通过。 依据：`docs/decisions/0013-非DDD语义事实模型.md`。历史执行记录中的DDD或旧模型表述不构成现行约束。本轮只进行文档修订，产品重构完成状态不变。
+
+## 9. ADR-0013规格与提案修订
+
+- [x] 9.1 核对全部7份正式规格、全部16项活动提案及其规格增量，修订目标、非DDD方法、源码/实体映射、查询、证据覆盖和工具点亮规则；同步受影响设计、任务边界及当前入口。输出：`docs/development/reviews/semantic-facts/非DDD规格提案审核-2026-11-08.md`及逐文件矩阵。验证：OpenSpec全库严格校验、原件完整性、仓库测试及差异检查；保留历史ADR/原件、旧任务证据，不归档或修改产品实现。审核为当前会话文档自审，不声称独立盲验收。

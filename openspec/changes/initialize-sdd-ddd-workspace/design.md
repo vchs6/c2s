@@ -15,7 +15,7 @@
 1. OpenSpec使用官方init生成的Codex Skills，保留默认spec-driven schema；纯工具变更skip_specs，不为校验虚构产品需求。后续模型定义另开变更。
 2. Superpowers采用官方obra/superpowers的固定git子模块，项目本地Codex marketplace只引用该源，不复制或修改上游技能。使用codex plugin marketplace/add/list命令验证，避免声称存在superpowers init。
 3. docs/domain/drafts保留早期原件；docs/domain/proposals保留案例定义；docs/development/reviews存放Battle及证据；docs/workflow/archives存配置ZIP。原件字节不改，迁移清单记录SHA-256。
-4. ADR-0001只确认五层组织方案及用户已明确的DDD方向，不把候选字段、谓词和完整语法一并批准。三/四层少数意见作为历史证据保留。
+4. ADR-0001记录历史五视角及DDD方向；当前模型方法按ADR-0013取代，不把候选字段、谓词和完整语法一并批准。三/四层少数意见作为历史证据保留。
 5. AGENTS.md协调OpenSpec的工件生命周期和Superpowers的分析、规划、执行、验证。约束、计划和任务互相引用，不维护两份矛盾待办。
 6. Node包仅用于开发工具。许可证改为与仓库既有Apache-2.0一致，删除npm init生成的失败测试占位；node_modules不提交。
 
@@ -28,3 +28,7 @@
 ## Migration Plan
 
 按任务完成工具初始化、工件迁移、规则与决策、校验及提交。当前初始化变更保持active，不运行archive。工具源由git子模块回退，项目设置由本次提交回退；原件哈希用于确认迁移未改写。
+
+## ADR-0013 当前约束（2026-11-08）
+
+保留OpenSpec、Superpowers及导入原件追溯；DDD初始化方向已由ADR-0013取代。目录名称和已完成任务是历史记录，不是当前产品架构约束。 依据：`docs/decisions/0013-非DDD语义事实模型.md`。历史执行记录中的DDD或旧模型表述不构成现行约束。本轮只进行文档修订，产品重构完成状态不变。

@@ -15,3 +15,7 @@
 - [x] 2.1 依据审核修订，交付`docs/planning/program-2026-11-01/bundle-manifest.json`、`verification.md`和台账。检查：逐文件SHA-256/集合摘要、全库严格validate、check:artifacts、git diff --check及正式基线/产品代码路径审计。通过：摘要可重算、未决列明、不冻结/不实施状态准确；失败：校验失败、摘要漂移或越界变更。
 
 - [x] 2.2 按ADR-0012复核全部非归档提案与领域模型影响。交付：`docs/development/reviews/semantic-facts/semantic-entity-proposal-alignment.md`；验证：文件系统16项非归档提案全部各有且仅有一行结论，14项受影响项与实际改动一致，2项无影响项保留其原范围。此补充不将当前旧profile切换状态视为完成。
+
+## ADR-0013 当前约束（2026-11-08）
+
+重新核对全部正式规格与活动提案的目标、定义、证据、查询和兼容边界；逐项记录修改或无影响结论。文档一致性与产品实现、真实项目验收分别报告。 依据：`docs/decisions/0013-非DDD语义事实模型.md`。历史执行记录中的DDD或旧模型表述不构成现行约束。本轮只进行文档修订，产品重构完成状态不变。

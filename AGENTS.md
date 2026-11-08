@@ -1,6 +1,6 @@
 # c2s代理入口
 
-开发软件项目语义事实提取Skill，遵循DDD、OpenSpec及Superpowers。先读README和本次任务相关规格、变更及下表所需文档，按需加载，不重复通读全部资料。
+开发软件项目语义事实提取Skill，采用ADR-0013的非DDD上游事实模型，遵循OpenSpec及Superpowers。先读README和本次任务相关规格、变更及下表所需文档，按需加载，不重复通读全部资料。
 
 ## 当前授权与工作边界
 
@@ -14,7 +14,7 @@
 
 | 任务 | 必读文档 |
 | --- | --- |
-| 领域/公共契约 | `docs/domain/foundation.md`、相关`openspec/specs/`、ADR-0001至0008及原模型变更 |
+| 领域/公共契约 | `docs/domain/foundation.md`、相关`openspec/specs/`、ADR-0012、ADR-0013及相关模型变更 |
 | 范围/架构/资源 | `docs/project/constraints.md`及相应design |
 | 角色/执行/证据 | `docs/workflow/agent-governance.md` |
 | 新取舍/反例/需求变更 | `docs/workflow/decision-policy.md`；实质领域争议再读`battle-protocol.md`并真实独立讨论 |

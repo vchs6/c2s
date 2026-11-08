@@ -39,3 +39,7 @@
 - [x] 5.1 关闭自动事件并实现指定Issue的规划入口。依据：新规格前3项；交付：issue-worker.yml、Python入口/选择器/模型与发布守卫、test_manual_planning.py。验证：先运行新回归观察失败，再运行全量npm test；通过：事件/无编号/越权/apply全部拒绝、旧令牌不转apply、既有变更精确范围和摘要有效；失败：扫描其他Issue、触发模型或产品写入。
 - [x] 5.2 更新治理、OpenSpec规则、工作流说明及表单。依据：新规格持续规划/指标/门禁；交付：AGENTS、config、planning-mode/issue-worker说明、README和表单。验证：核对功能/非功能/跨语言跨平台、委托裁决、主规格与候选、整体批准与实施分离；通过：与运行入口一致，无产品实现或归档；失败：旧自动触发/评论实施说明仍作为当前用法。
 - [x] 5.3 验证、独立复核并先发布入口修正，再顺序创建规划Issue。依据：用户当前顺序要求与新规格追溯；交付：docs/development/reviews/manual-planning-switch.md、Git提交与规划议题清单。验证：npm test、check:artifacts、严格validate、diff检查、远程workflow与旧运行状态；通过：关闭自动入口后才创建事项，Issue含依赖/交付/验收且不启动；失败：先建Issue、模型或产品未运行却称已验证。
+
+## ADR-0013 当前约束（2026-11-08）
+
+手动启动、Issue不自动执行及授权边界继续有效；治理工作不引入DDD模型要求。产品工作量按本次请求的上游事实及证据衡量。 依据：`docs/decisions/0013-非DDD语义事实模型.md`。历史执行记录中的DDD或旧模型表述不构成现行约束。本轮只进行文档修订，产品重构完成状态不变。

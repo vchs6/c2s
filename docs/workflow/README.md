@@ -1,4 +1,4 @@
-# OpenSpec、Superpowers与DDD协作
+# OpenSpec与Superpowers协作
 
 OpenSpec实际命令：`npm run openspec -- new change <name>`，随后status、逐工件instructions、instructions apply及validate。Slash命令或`$openspec-propose`是代理Skill入口，不是终端子命令。CLI返回的指令仍需代理按模板撰写工件。
 
@@ -19,7 +19,7 @@ npm run codex -- plugin list --json
 
 ## 分工与门槛
 
-DDD：统一词汇、身份、不变量与领域边界。OpenSpec：proposal/spec/design/tasks的权威工件及变更生命周期。Superpowers：需求澄清、计划、实施、调试和验证方法。
+事实模型：依ADR-0013组织语义实体、属性、关系和证据，不采用DDD建模约束。OpenSpec：proposal/spec/design/tasks的权威工件及变更生命周期。Superpowers：需求澄清、计划、实施、调试和验证方法。
 
 工具/文档初始化用skip_specs:true；产品行为变更必须有规格增量。Superpowers计划引用OpenSpec tasks，不维护另一份会漂移的清单。实现新功能时遵循适用的TDD和独立审查；仅归档资料用哈希验证，不虚构产品测试。
 

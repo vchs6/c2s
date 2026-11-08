@@ -1,8 +1,8 @@
 # c2s — Code to Semantics
 
-按DDD和规格驱动开发的软件项目语义事实提取Skill项目。已取得连续开发授权（ADR-0009）；依据ADR-0011，未验证的双向盲编写和私有验收隔离不再阻塞开发。隔离现状与报告边界见[readiness](docs/planning/program-2026-11-01/readiness.md)。
+按规格驱动开发的上游软件项目语义事实提取Skill项目。当前模型决策见[ADR-0013](docs/decisions/0013-非DDD语义事实模型.md)：语义实体、源码实现参考和证据构成事实模型，不采用DDD建模约束。已取得连续开发授权（ADR-0009）；依据ADR-0011，未验证的双向盲编写和私有验收隔离不再阻塞开发。隔离现状与报告边界见[readiness](docs/planning/program-2026-11-01/readiness.md)。
 
-已确认五层方向见[ADR-0001](docs/decisions/0001-five-semantic-layers.md)。已确认主规格见[事实模型](openspec/specs/semantic-fact-model/spec.md)和[查询响应](openspec/specs/semantic-fact-query/spec.md)，批准范围见[ADR-0002](docs/decisions/0002-confirmed-specification-baseline.md)。完整候选定义、证据和旧稿见[会话资料索引](docs/session/README.md)，不能将其全部视为已生效规格。
+现行实体模型依据ADR-0012及ADR-0013，E0–E4仅作为可选事实观察视角；历史五视角决定见[ADR-0001](docs/decisions/0001-five-semantic-layers.md)。已确认主规格见[事实模型](openspec/specs/semantic-fact-model/spec.md)和[查询响应](openspec/specs/semantic-fact-query/spec.md)，批准范围见[ADR-0002](docs/decisions/0002-confirmed-specification-baseline.md)。完整候选定义、证据和旧稿见[会话资料索引](docs/session/README.md)，不能将其全部视为已生效规格。
 
 当前确认的查询需求见[ADR-0007](docs/decisions/0007-confirmed-system-query-requirements.md)：返回符合请求的顶层完整事实、不递归展开、如实报告缺口，同时提供报告与结构数据。另见[分析范围](openspec/specs/semantic-analysis-scope/spec.md)、[按需补充](openspec/specs/lazy-semantic-fact-construction/spec.md)和[评价边界](openspec/specs/semantic-analysis-quality/spec.md)。系统需求确认不等于产品实施批准。
 

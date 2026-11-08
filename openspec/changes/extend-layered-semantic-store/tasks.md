@@ -12,3 +12,7 @@
 - [x] 2.1 （M1）普通selector全模型构造和持久化。依据：`project_query_to_semantic_model`及能力矩阵。交付：query CLI使用full profile和规范回读。验证：project/classes/members/functions/local-bindings/behavior-contracts/algorithm-structure/all-supported-facts被写入full store且覆盖/缺口准确；M1选择兼容。
 - [x] 2.2 （M1）算法语义存储与仓库查询。依据：`project_algorithm_to_semantic_model`及`semantic-fact-query`。交付：算法CLI保存E4 facts，query --store从覆盖命中回读范围bundle。验证：重复查询不重复执行工具；请求selector隔离；同subject只补缺层；source/profile失配不复用。
 - [x] 2.3 （M1）端到端项目验证。依据：ADR-0011开发侧工作模式。交付：真实Python与Rust项目全selector存储/查询测试与README。验证：遍历所有支持事实并逐ID比对构造结果和仓库结果；验证schema、OpenSpec、artifact；如实标注未做私有盲验收。
+
+## ADR-0013 当前约束（2026-11-08）
+
+该提案记录旧完整档案的历史交付。当前新写入使用实体档案，旧档案只读兼容；历史写入场景不重新授权旧profile写入，不能作为新模型的分层组织依据。 依据：`docs/decisions/0013-非DDD语义事实模型.md`。历史执行记录中的DDD或旧模型表述不构成现行约束。本轮只进行文档修订，产品重构完成状态不变。
