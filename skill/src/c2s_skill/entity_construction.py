@@ -75,21 +75,34 @@ def _markdown_candidates(root: Path, scan: ProjectScan, candidates: list[dict], 
         in_comment = False
         for line in text.splitlines(keepends=True):
             original_line = line
-            fence_match = re.match(r"^ {0,3}(`{3,}|~{3,})(.*)$", line)
-            if fence is not None or fence_match:
-                if fence is None:
-                    fence = fence_match.group(1)
-                elif (fence_match and fence_match.group(1)[0] == fence[0]
-                      and len(fence_match.group(1)) >= len(fence)
-                      and not fence_match.group(2).strip()):
+            # 围栏中的HTML注释是普通文本；注释中的围栏没有语法作用。
+            if fence is not None:
+                closing = re.match(r"^ {0,3}(`{3,}|~{3,})[ \t]*(?:\r?\n)?$", line)
+                if closing and closing.group(1)[0] == fence[0] and len(closing.group(1)) >= len(fence):
                     fence = None
                 byte_offset += len(original_line.encode("utf-8"))
                 continue
-            if in_comment or "<!--" in line:
-                if not in_comment:
-                    in_comment = True
-                if "-->" in line:
+            visible = []
+            position = 0
+            while position < len(line):
+                if in_comment:
+                    end = line.find("-->", position)
+                    if end < 0:
+                        break
+                    position = end + 3
                     in_comment = False
+                else:
+                    start = line.find("<!--", position)
+                    if start < 0:
+                        visible.append(line[position:])
+                        break
+                    visible.append(line[position:start])
+                    position = start + 4
+                    in_comment = True
+            line = "".join(visible)
+            opening = re.match(r"^ {0,3}(`{3,}|~{3,})(.*)$", line)
+            if opening:
+                fence = opening.group(1)
                 byte_offset += len(original_line.encode("utf-8"))
                 continue
             heading = re.match(r"^(#{1,6})\s+(.+?)\s*#*\s*(?:\r?\n)?$", line)
@@ -106,9 +119,9 @@ def _markdown_candidates(root: Path, scan: ProjectScan, candidates: list[dict], 
                     name, separator, description = label.partition(":")
                     name = name.strip().strip("`*_")
                     if not name:
-                        byte_offset += len(line.encode("utf-8"))
+                        byte_offset += len(original_line.encode("utf-8"))
                         continue
-                    line_bytes = line.encode("utf-8")
+                    line_bytes = original_line.encode("utf-8")
                     start = byte_offset
                     end = start + len(line_bytes.rstrip(b"\r\n"))
                     content_digest = hashlib.sha256(raw).hexdigest()
@@ -132,7 +145,7 @@ def _markdown_candidates(root: Path, scan: ProjectScan, candidates: list[dict], 
                         relations.append({"predicate": "defines", "subjectCandidateId": project_candidate_id,
                             "targetCandidateId": candidate_id, "epistemicStatus": "provisional",
                             "evidenceIds": [evidence_id]})
-            byte_offset += len(line.encode("utf-8"))
+            byte_offset += len(original_line.encode("utf-8"))
     if module_count == 0:
         evidence_id = _digest(f"gap\0Module\0{scan.source_digest}")
         evidence[evidence_id] = {"evidenceId": evidence_id, "source": "analysis", "description":

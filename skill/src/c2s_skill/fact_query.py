@@ -39,6 +39,7 @@ def prepare_fact_projection_index(model: dict) -> dict:
     index={'sourceById':{s['recordId']:s for s in model.get('sourceRecords',[])},
            'entityById':{_identity_key(e['ref']):e for e in model.get('entities',[])},
            'evidenceById':{e['evidenceId']:e for e in model.get('evidence',[])},
+           'claimById':{c['claimId']:c for c in model.get('claims',[])},
            'claims':{},'relations':{},'mappings':{},'sourcesByConstruct':{},'coverageDiagnostics':{}}
     for claim in model.get('claims',[]):index['claims'].setdefault(_identity_key(claim['subject']),[]).append(claim)
     for relation in model.get('relations',[]):
@@ -169,16 +170,44 @@ def project_fact_result(model: dict, request: dict, *, index: dict | None = None
     if missing:
         result['diagnostics'].append({'code':'FACET_NOT_ACQUIRED','facets':sorted(missing)})
     wanted=set()
+    premises=[]
     def evidence_refs(value):
         if isinstance(value,dict):
             for key,child in value.items():
-                if key in {'evidenceIds','evidence_refs','premiseIds'}:
+                if key == 'premiseIds':premises.extend(child)
+                elif key in {'evidenceIds','evidence_refs'}:
                     wanted.update(child)
                 elif key=='evidenceId' and isinstance(child,str):wanted.add(child)
                 else:evidence_refs(child)
         elif isinstance(value,list):
             for child in value:evidence_refs(child)
     evidence_refs(result['items']);evidence_refs(result['sourceRecords']);evidence_refs(result['claims']);evidence_refs(result['diagnostics'])
+    # 前提有来源、主张、证据三个合法引用域；只补证明依赖，不展开关联实体。
+    seen_premises=set()
+    source_ids={s['recordId'] for s in result['sourceRecords']}
+    claim_ids={c['claimId'] for c in result['claims']}
+    while premises:
+        premise=premises.pop()
+        if premise in seen_premises:continue
+        seen_premises.add(premise)
+        if premise in index['evidenceById']:
+            wanted.add(premise)
+        elif premise in index['sourceById']:
+            pending_sources=[index['sourceById'][premise]]
+            while pending_sources:
+                source=pending_sources.pop()
+                if source['recordId'] in source_ids:continue
+                source_ids.add(source['recordId']);result['sourceRecords'].append(source)
+                evidence_refs(source)
+                pending_sources.extend(index['sourceById'][pid] for pid in source['parentRecordIds']
+                                       if pid in index['sourceById'] and pid not in source_ids)
+        elif premise in index['claimById']:
+            claim=index['claimById'][premise]
+            if premise not in claim_ids:
+                claim_ids.add(premise);result['claims'].append(claim)
+            evidence_refs(claim)
+        else:
+            result['diagnostics'].append({'code':'PREMISE_REFERENCE_MISSING','premiseId':premise})
     for eid in sorted(wanted-set(index['evidenceById'])):
         result['diagnostics'].append({'code':'EVIDENCE_REFERENCE_MISSING','evidenceId':eid})
     result['evidence']=[index['evidenceById'][eid] for eid in sorted(wanted) if eid in index['evidenceById']]
@@ -239,6 +268,7 @@ def execute_fact_query(root: Path, request: dict | str, store=None, *, tool_runn
         result['diagnostics']=[{'code':'INVALID_REQUEST','message':str(error),'request':request}];return result
     if q['scopeId']=='default':q['scopeId']='project:'+hashlib.sha256(str(root).encode()).hexdigest()
     fingerprint=source_fingerprint(root);config=v2_configuration_digest();diagnostics=[]
+    refresh_graph=tool_runner is not None and 'relations' in q['facets']
     if q['conditions'].pop('legacyEntitySelector',False) and store is not None:
         try:
             prior=store.read_request(q['scopeId'],q,fingerprint,config)['model']
@@ -246,7 +276,7 @@ def execute_fact_query(root: Path, request: dict | str, store=None, *, tool_runn
             if len(matches)==1:q['target']={'kind':matches[0]['ref']['kind'],'ref':matches[0]['ref']}
         except (ValueError,OSError,sqlite3.Error) as error:
             diagnostics.append({'code':'STORE_READ_FAILED','message':str(error)})
-    if cache is not None:
+    if cache is not None and not refresh_graph:
         try:cached=cache.load_v2(root,q,fingerprint,config)
         except (ValueError,OSError,sqlite3.Error) as error:
             cached=None;diagnostics.append({'code':'CACHE_READ_FAILED','message':str(error)})
@@ -264,6 +294,8 @@ def execute_fact_query(root: Path, request: dict | str, store=None, *, tool_runn
     if store is not None:
         try:available=store.read_request(q['scopeId'],q,fingerprint,config)
         except (ValueError,OSError,sqlite3.Error) as error:diagnostics.append({'code':'STORE_READ_FAILED','message':str(error)})
+    if refresh_graph:
+        available['reusedFacets']=[f for f in available['reusedFacets'] if f!='relations']
     model=available['model'] or _empty_model(q['scopeId'])
     missing=set(q['facets'])-set(available['reusedFacets'])
     parsed_count=0;alg_count=0;persist={'status':'reused' if not missing else 'not_requested'}
@@ -392,7 +424,9 @@ def _attach_graph_result(model, request, root, runner):
             eid=stable_id(['tool_evidence',artifact_id])
             model['evidence'].append({'evidenceId':eid,'source':'tool_output','description':'图工具结构化响应：'+artifact_id,
                 'method':'structured_output','toolName':'code-review-graph','toolVersion':version or 'unknown'})
-            diagnostics.extend({'code':d.code,'message':d.message,'artifactId':artifact_id} for d in parsed.diagnostics)
+            diagnostics.extend({'code':d.code,'message':d.message,'artifactId':artifact_id,
+                                **({'retryable':True} if d.code!='GRAPH_INDEX_FRESHNESS_UNVERIFIED' else {})}
+                               for d in parsed.diagnostics)
             diagnostics.append({'code':'GRAPH_TOOL_EVIDENCE','artifactId':artifact_id,'evidenceIds':[eid]})
             for call in parsed.call_sites:
                 parents=[r for r in model['sourceRecords'] if r['path']==call.caller_path

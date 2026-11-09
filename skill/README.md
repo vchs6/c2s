@@ -82,3 +82,5 @@ receipt = backup_entity_archive(SemanticEntityStore('/tmp/project-v2.sqlite'), P
 来源覆盖以请求涉及的已支持Python/Rust源码为范围；其他文件保留在完整目录盘点与内容指纹中，并在`outOfScopePaths`单列，不因此降低源码声明查询状态。文档仍可形成带证据的候选；这不表示文档已被完整语义解释。指纹流式读取所有可见文件，不默认排除node_modules/target。
 
 同范围重试更新有效覆盖、去重相同取得运行，独立操作回执仍保存审计历史。不能把有效模型不膨胀解释为审计数据库永不增长。投影发现悬空证据或工件引用会明确诊断，SQLite事务结束后显式关闭连接。
+
+图输出通过`--graph-output`显式提供时，每次都处理该新输入，不被旧响应缓存屏蔽；结构化工具失败可以重试。前提引用区分来源记录、主张和证据，仅补证明依赖；未知前提报告`PREMISE_REFERENCE_MISSING`。失败或取消的取证不会抹除先前已取得的partial覆盖。

@@ -49,3 +49,13 @@ class PublicReproducibilityTests(unittest.TestCase):
             before = analysis_profile_digest()
         with patch('importlib.metadata.version', side_effect=versions('0.24.3')):
             self.assertNotEqual(before, analysis_profile_digest())
+    def test_unconfigured_cargo_is_not_accepted_as_native_test_prerequisite(self):
+        from real_project_support import require_usable_cargo
+        import subprocess
+        failed = subprocess.CompletedProcess(['cargo', '--version'], 1, '', 'no default toolchain')
+        with patch('subprocess.run', return_value=failed), patch.dict(os.environ, {'C2S_REQUIRE_REAL_PROJECTS': '0'}):
+            with self.assertRaises(unittest.SkipTest):
+                require_usable_cargo(self, 'cargo')
+        with patch('subprocess.run', return_value=failed), patch.dict(os.environ, {'C2S_REQUIRE_REAL_PROJECTS': '1'}):
+            with self.assertRaises(AssertionError):
+                require_usable_cargo(self, 'cargo')

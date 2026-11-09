@@ -89,6 +89,8 @@ class RefactorVerifierTests(unittest.TestCase):
         cargo_env={'CARGO':str(cargo)}
         if local_cargo:cargo_env.update({'RUSTUP_HOME':str(cargo.parents[2]/'rustup'),'CARGO_HOME':str(cargo.parents[1])})
         with patch.dict(os.environ,cargo_env), patch.object(verifier,'execute_fact_query',side_effect=bounded):
+            from real_project_support import require_usable_cargo
+            require_usable_cargo(self, cargo)
             result=run_verification(self.root,commit,Path(self.tmp.name)/'ordered.sqlite',[])
         self.assertTrue(result['queryOrderChecks'])
         self.assertTrue(all(check['sameAttributes'] for check in result['queryOrderChecks']))

@@ -52,3 +52,77 @@ class ReviewCorrectnessTests(unittest.TestCase):
         except RuntimeError:pass
         with self.assertRaises(sqlite3.ProgrammingError):c.execute('SELECT 1')
         with self.store._connect() as again:self.assertEqual(0,again.execute('SELECT count(*) FROM checkpoint').fetchone()[0])
+    def test_failed_or_cancelled_retry_preserves_previously_partial_coverage(self):
+        import copy
+        from c2s_skill.acquisition import scan_project
+        from c2s_skill.entity_construction import construct_requested_entities
+        from c2s_skill.fact_request import normalize_fact_request
+        q = normalize_fact_request('modules'); q['scopeId'] = '保留已取得部分'
+        m = construct_requested_entities(self.root, scan_project(self.root),
+                                        {'request': q, 'needs': [{'facet': 'organization'}]})
+        cov = m['sourceCoverage'][0]; cov['status'] = 'partial'
+        cov['diagnostics'] = [{'code': 'DELIBERATE_GAP'}]
+        fp, cfg = cov['inputFingerprint'], cov['configurationDigest']
+        self.store.commit_request('首次取得', m, q)
+        before = self.store.read_request(q['scopeId'], q, fp, cfg)
+        for status in ('failed', 'cancelled'):
+            retry = copy.deepcopy(m)
+            retry['acquisitionRuns'] = [{'runId': status, 'inputFingerprint': fp,
+                'configurationDigest': cfg, 'status': status, 'tools': [],
+                'sourceRecordIds': [], 'evidenceIds': [], 'artifactIds': []}]
+            self.store.commit_request(status, retry, q)
+            after = self.store.read_request(q['scopeId'], q, fp, cfg)
+            self.assertEqual(before['reusedFacets'], after['reusedFacets'])
+            self.assertEqual(before['model']['sourceCoverage'], after['model']['sourceCoverage'])
+    def test_valid_source_and_claim_premises_are_not_missing_evidence(self):
+        from c2s_semantic_contract.validation import validate_semantic_entity_model_v2
+        r = execute_fact_query(self.root, {'view':'entity', 'target':{'kind':'ComputationEntity','name':'run'}, 'detail':'self'}, self.store)
+        m = self.model(r)
+        import copy
+        claim = m['claims'][0]; other = copy.deepcopy(claim)
+        other['claimId'] += ':premise'
+        proof_source = copy.deepcopy(m['sourceRecords'][0])
+        proof_source['recordId'] += ':premise-source'
+        proof_source['sourceConstructIds'] = []
+        proof_source.pop('sourceConstruct', None)
+        m['sourceRecords'].append(proof_source)
+        m['claims'].append(other)
+        claim['premiseIds'] = [proof_source['recordId'], other['claimId']]
+        self.assertTrue(validate_semantic_entity_model_v2(m)['valid'])
+        p = project_fact_result(m, r['request'])
+        self.assertNotIn('EVIDENCE_REFERENCE_MISSING', {d['code'] for d in p['diagnostics']})
+        self.assertIn(proof_source['recordId'], {s['recordId'] for s in p['sourceRecords']})
+        self.assertEqual(1, len(p['items']))
+        claim['premiseIds'].append('missing:premise')
+        p = project_fact_result(m, r['request'])
+        self.assertIn('PREMISE_REFERENCE_MISSING', {d['code'] for d in p['diagnostics']})
+        self.assertFalse(p['complete'])
+    def test_graph_error_result_can_be_retried_with_recovered_output(self):
+        q = {'target':{'kind':'function','name':'run'}, 'facets':['relations']}
+        raw = {'status':'error', 'error':'backend temporarily unavailable',
+               'pattern':'callees_of', 'target':'m.py::run', 'result_count':0,
+               'results_omitted':0, 'results':[], 'edges':[]}
+        execute_fact_query(self.root, q, self.store,
+                           tool_runner=lambda *a: {'response':raw, 'toolVersion':'2.3.9'})
+        calls = []
+        def recovered(*args):
+            calls.append(args)
+            return {'response':{**raw, 'status':'ok'}, 'toolVersion':'2.3.9'}
+        r = execute_fact_query(self.root, q, self.store, tool_runner=recovered)
+        self.assertEqual(1, len(calls))
+        self.assertNotIn('GRAPH_TOOL_FAILED', {d['code'] for d in r['diagnostics']})
+        self.assertEqual(1, len(r['coverage']))
+    def test_explicit_new_graph_output_bypasses_a_reusable_response_cache(self):
+        q = {'target':{'kind':'function','name':'run'}, 'facets':['relations']}
+        cache = QueryResultCache(Path(self.tmp.name)/'responses.sqlite')
+        raw = {'status':'ok', 'pattern':'callees_of', 'target':'m.py::run',
+               'result_count':0, 'results_omitted':0, 'results':[], 'edges':[]}
+        calls = []
+        def supplied(*args):
+            calls.append(args)
+            return {'response':{**raw,'snapshot':len(calls)}, 'toolVersion':'2.3.9'}
+        first = execute_fact_query(self.root, q, self.store, cache=cache, tool_runner=supplied)
+        second = execute_fact_query(self.root, q, self.store, cache=cache, tool_runner=supplied)
+        self.assertEqual(2, len(calls))
+        self.assertNotEqual({a['artifactId'] for a in first['artifacts']}, {a['artifactId'] for a in second['artifacts']})
+        self.assertIn('GRAPH_INDEX_FRESHNESS_UNVERIFIED', {d['code'] for d in second['diagnostics']})

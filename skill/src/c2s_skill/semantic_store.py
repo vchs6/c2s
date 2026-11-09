@@ -110,7 +110,7 @@ def _merge_v2_documents(old: dict, new: dict) -> dict:
             if collection in {'sourceCoverage','coverage'}:
                 fields=('inputFingerprint','configurationDigest','view','target','facets','conditions') if collection=='sourceCoverage' else ('entity','selector','inputFingerprint','analyzerVersion')
                 if any(previous.get(f)!=item.get(f) for f in fields):raise ValueError('覆盖身份冲突：'+rid)
-                if previous['status']=='obtained' and item['status'] in {'not_acquired','unsupported'}:continue
+                if previous['status'] in {'obtained','partial'} and item['status'] in {'not_acquired','unsupported'}:continue
                 records[rid]=item
                 continue
             if collection=='entities':

@@ -41,3 +41,15 @@ class ReviewPerformanceTests(unittest.TestCase):
     def test_members_selector_accepts_supported_chinese_and_english_forms(self):
         from c2s_skill.request_selectors import normalize_request
         self.assertEqual(normalize_request('类型A的成员有哪些'), normalize_request('members of 类型A'))
+    def test_markdown_comments_do_not_open_fences_or_end_other_comments(self):
+        samples = [
+            '## Modules\n<!-- first --> <!--\n- fake: still comment\n-->\n- actual: documented\n',
+            '<!--\n```\n-->\n## Modules\n- actual: documented\n',
+            '## Modules\n~~~markdown\n<!--\n~~~\n- actual: documented\n',
+        ]
+        for markdown in samples:
+            with self.subTest(markdown=markdown), tempfile.TemporaryDirectory() as t:
+                root = Path(t); (root/'m.py').write_text('def run():\n return 1\n')
+                (root/'README.md').write_text(markdown)
+                r = execute_fact_query(root, {'view':'entity', 'target':{'kind':'Module'}, 'detail':'self'})
+                self.assertEqual(['actual'], [i['name'] for i in r['items']])
