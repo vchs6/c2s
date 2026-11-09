@@ -1,0 +1,14 @@
+{
+  "valid": true,
+  "retries": 128,
+  "sameFailureModelBytes": 5481,
+  "sameFailureCoverage": 1,
+  "sameFailureAcquisitionRuns": 1,
+  "recoveryVerified": true,
+  "postRecoveryReuses": 8,
+  "operations": 130,
+  "configurationDigest": "5a2af503c02ab5a01d3c8d4d7fa08fc6d866d021d7084d230b6cc59a4e7015cf",
+  "elapsedSeconds": 21.27025374999903,
+  "limits": "操作回执保留历史；此结果不声称整个数据库有界或图索引新鲜度已证明。",
+  "testedProductCommit": "d64957fe789d8595bfaa51edb9af061f6f661a4d"
+}

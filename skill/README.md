@@ -84,3 +84,5 @@ receipt = backup_entity_archive(SemanticEntityStore('/tmp/project-v2.sqlite'), P
 同范围重试更新有效覆盖、去重相同取得运行，独立操作回执仍保存审计历史。不能把有效模型不膨胀解释为审计数据库永不增长。投影发现悬空证据或工件引用会明确诊断，SQLite事务结束后显式关闭连接。
 
 图输出通过`--graph-output`显式提供时，每次都处理该新输入，不被旧响应缓存屏蔽；结构化工具失败可以重试。前提引用区分来源记录、主张和证据，仅补证明依赖；未知前提报告`PREMISE_REFERENCE_MISSING`。失败或取消的取证不会抹除先前已取得的partial覆盖。
+
+连续失败重试与恢复可用`python3 scripts/verify_retry_recovery.py --retries 128 --output /tmp/c2s-retry-verification.json`复现；只生成临时项目、外置SQLite及指定报告，不发送网络请求。实际环境、逐项修复、独立审核和远程CI回执见`docs/development/reviews/semantic-facts/公开审核修复核验.md`。

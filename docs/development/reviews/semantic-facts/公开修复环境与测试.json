@@ -1,0 +1,150 @@
+{
+  "testedProductCommit": "d64957fe789d8595bfaa51edb9af061f6f661a4d",
+  "environments": [
+    {
+      "python": "3.12.5",
+      "executable": "/tmp/c2s-public-venv-3125/bin/python",
+      "dependencies": {
+        "jsonschema": "4.26.0",
+        "tree-sitter": "0.26.0",
+        "tree-sitter-rust": "0.24.2"
+      },
+      "optionalPackages": {
+        "code_review_graph": false,
+        "tree_sitter_python": false
+      },
+      "platform": "Linux-6.18.57-x86_64-with-glibc2.41"
+    },
+    {
+      "python": "3.12.14",
+      "executable": "/tmp/c2s-public-venv-31214/bin/python",
+      "dependencies": {
+        "jsonschema": "4.26.0",
+        "tree-sitter": "0.26.0",
+        "tree-sitter-rust": "0.24.2"
+      },
+      "optionalPackages": {
+        "code_review_graph": false,
+        "tree_sitter_python": false
+      },
+      "platform": "Linux-6.18.57-x86_64-with-glibc2.41"
+    }
+  ],
+  "cleanTests": [
+    {
+      "python": "3.12.5",
+      "mode": "干净检出无外部夹具",
+      "topLevel": {
+        "run": 137,
+        "skipped": 0,
+        "seconds": 2.932
+      },
+      "skill": {
+        "run": 207,
+        "skipped": 8,
+        "seconds": 20.817
+      },
+      "failures": 0,
+      "errors": 0,
+      "logSha256": "dc83dc1006e0d263938d49f88a26e9710228f1505e9a22a883c06452cb8858a7"
+    },
+    {
+      "python": "3.12.5",
+      "mode": "固定项目与Cargo强制集成",
+      "topLevel": {
+        "run": 137,
+        "skipped": 0,
+        "seconds": 2.65
+      },
+      "skill": {
+        "run": 207,
+        "skipped": 0,
+        "seconds": 33.236
+      },
+      "failures": 0,
+      "errors": 0,
+      "logSha256": "035b946d03c32bd7dabacf555fc7af7e728ddc907098a9bb60fe787eb0aa5c80"
+    },
+    {
+      "python": "3.12.14",
+      "mode": "干净检出无外部夹具",
+      "topLevel": {
+        "run": 137,
+        "skipped": 0,
+        "seconds": 2.693
+      },
+      "skill": {
+        "run": 207,
+        "skipped": 8,
+        "seconds": 17.554
+      },
+      "failures": 0,
+      "errors": 0,
+      "logSha256": "b414b7bebcef0edfd3792c59d8ce6e5a08ec4f7edbe8e660dfda88de057958b3"
+    },
+    {
+      "python": "3.12.14",
+      "mode": "固定项目与Cargo强制集成",
+      "topLevel": {
+        "run": 137,
+        "skipped": 0,
+        "seconds": 2.474
+      },
+      "skill": {
+        "run": 207,
+        "skipped": 0,
+        "seconds": 31.083
+      },
+      "failures": 0,
+      "errors": 0,
+      "logSha256": "ca728c447ab835912b7a2cfe2cdebc2005ae50c02348c2eaef4f8370ee067ccc"
+    }
+  ],
+  "fixtures": {
+    "click": {
+      "commit": "2247b35ea1c47c727d7a06e51fa280e12a863ff6",
+      "verified": true
+    },
+    "regex": {
+      "commit": "94ac45b2a6e7b1c30927feb5b66c5ded5b7ad447",
+      "verified": true
+    },
+    "nlohmann-json": {
+      "commit": "9c349b1d7c393c6bc6dbbe4191e332e3bb4100b8",
+      "verified": true
+    }
+  },
+  "strictOpenSpec": {
+    "passed": 23,
+    "failed": 0
+  },
+  "immutableArtifactsVerified": 4,
+  "remoteCI": {
+    "verified": true,
+    "passed": true,
+    "commit": "d64957fe789d8595bfaa51edb9af061f6f661a4d",
+    "url": "https://github.com/vchs6/c2s/actions/runs/42550322650",
+    "status": "WORKFLOW_RUN_STATUS_COMPLETED",
+    "conclusion": "WORKFLOW_RUN_CONCLUSION_SUCCESS",
+    "workflow": ".github/workflows/validate.yml",
+    "source": "公开GitHub Actions网页内嵌结构化数据",
+    "apiAvailable": false,
+    "logsInspected": false,
+    "artifactsDownloaded": false
+  },
+  "independentReview": {
+    "commit": "0562949874cbe6451ca6f823e2d1efb15fae076c",
+    "critical": 0,
+    "important": 5,
+    "minor": 0,
+    "authorTddClosure": 5,
+    "secondReview": false
+  },
+  "limits": [
+    "私有盲验收未执行",
+    "未验证跨平台或上游运行时等价",
+    "未测量LLM词元收益",
+    "完整CommonMark和全部编码支持未宣称",
+    "全树内容指纹仍有线性I/O成本"
+  ]
+}

@@ -1,0 +1,38 @@
+{
+  "readbackAtUtc": "2026-11-09T02:33:53.433306+00:00",
+  "source": "公开GitHub Actions网页内嵌结构化数据",
+  "sourceUrl": "https://github.com/vchs6/c2s/actions?query=branch%3Amain",
+  "target": {
+    "commit": "d64957fe789d8595bfaa51edb9af061f6f661a4d",
+    "url": "https://github.com/vchs6/c2s/actions/runs/42550322650",
+    "status": "WORKFLOW_RUN_STATUS_COMPLETED",
+    "conclusion": "WORKFLOW_RUN_CONCLUSION_SUCCESS",
+    "workflow": ".github/workflows/validate.yml"
+  },
+  "runs": [
+    {
+      "commit": "d64957fe789d8595bfaa51edb9af061f6f661a4d",
+      "url": "https://github.com/vchs6/c2s/actions/runs/42550322650",
+      "status": "WORKFLOW_RUN_STATUS_COMPLETED",
+      "conclusion": "WORKFLOW_RUN_CONCLUSION_SUCCESS",
+      "workflow": ".github/workflows/validate.yml"
+    },
+    {
+      "commit": "8cad3652d046756ecd4ebce1e47691086dc7024b",
+      "url": "https://github.com/vchs6/c2s/actions/runs/42549610369",
+      "status": "WORKFLOW_RUN_STATUS_COMPLETED",
+      "conclusion": "WORKFLOW_RUN_CONCLUSION_SUCCESS",
+      "workflow": ".github/workflows/validate.yml"
+    },
+    {
+      "commit": "0562949874cbe6451ca6f823e2d1efb15fae076c",
+      "url": "https://github.com/vchs6/c2s/actions/runs/42548501579",
+      "status": "WORKFLOW_RUN_STATUS_COMPLETED",
+      "conclusion": "WORKFLOW_RUN_CONCLUSION_SUCCESS",
+      "workflow": ".github/workflows/validate.yml"
+    }
+  ],
+  "apiAvailable": false,
+  "logsInspected": false,
+  "artifactsDownloaded": false
+}

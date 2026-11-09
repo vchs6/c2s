@@ -177,7 +177,7 @@
 
 依据用户修复指令及公开复现设计；不是照单执行附件建议，不改变完整盘点与固定输入要求。
 
-- [ ] 12.1 **支持环境与已有图输出**。先增test_public_reproducibility.py：3.12.5可查询、3.13明确不可用；无CRG仍解析给定输出且保留缺口；缺真实夹具一致skip、强制集成缺夹具失败。修capability_matrix/工具矩阵/环境检查/fact_query及现有真实源码测试；固定最小依赖与夹具准备脚本。定向unittest与干净检出运行成功后提交。
-- [ ] 12.2 **覆盖、重试、读侧引用与SQLite生命周期**。先增test_review_correctness.py：README不污染modules；重复retryable覆盖/运行模型不膨胀、恢复可补证；缺证据/工件有诊断；连接退出及异常后关闭、旧文件不改。修source_records/semantic_store/store/archive_backup/fact_query。保留操作回执幂等和审计历史，完整Skill回归通过后提交。
-- [ ] 12.3 **性能、文档与维护工作流**。先增字节偏移多字节/单次切行、流式完整指纹、Markdown围栏与状态伪造反例。修acquisition/algorithm/inventory/entity_construction、Issue worker状态编码/校验与最小环境、固定Action SHA；npm test纳入Skill，CI含3.12补丁矩阵和固定项目强制集成，更新README。全库及干净检出检查通过后提交。
-- [ ] 12.4 **独立审核、实际复现与交付**。两个真实Python3.12补丁版本、无可选包独立环境、干净Git检出、固定Click/regex全集遍历及长序列重试/恢复核验；最终新上下文只读审核完整项目和外部全部条目，实质问题RED→GREEN闭环。保存逐项报告、实际环境/跳过/CI边界；OpenSpec严格/工件/全套通过，main推送并读回。不称盲验收或未核实的远程CI通过。
+- [x] 12.1 **支持环境与已有图输出**。先增test_public_reproducibility.py：3.12.5可查询、3.13明确不可用；无CRG仍解析给定输出且保留缺口；缺真实夹具一致skip、强制集成缺夹具失败。修capability_matrix/工具矩阵/环境检查/fact_query及现有真实源码测试；固定最小依赖与夹具准备脚本。定向unittest与干净检出运行成功后提交。
+- [x] 12.2 **覆盖、重试、读侧引用与SQLite生命周期**。先增test_review_correctness.py：README不污染modules；重复retryable覆盖/运行模型不膨胀、恢复可补证；缺证据/工件有诊断；连接退出及异常后关闭、旧文件不改。修source_records/semantic_store/store/archive_backup/fact_query。保留操作回执幂等和审计历史，完整Skill回归通过后提交。
+- [x] 12.3 **性能、文档与维护工作流**。先增字节偏移多字节/单次切行、流式完整指纹、Markdown围栏与状态伪造反例。修acquisition/algorithm/inventory/entity_construction、Issue worker状态编码/校验与最小环境、固定Action SHA；npm test纳入Skill，CI含3.12补丁矩阵和固定项目强制集成，更新README。全库及干净检出检查通过后提交。
+- [x] 12.4 **独立审核、实际复现与交付**（最终产品d64957f；两真实补丁版本各137+207无跳过，固定Click/regex全集valid，128次失败重试及恢复回归通过；公开CI42550322650 SUCCESS，报告与脚本入仓）。两个真实Python3.12补丁版本、无可选包独立环境、干净Git检出、固定Click/regex全集遍历及长序列重试/恢复核验；最终新上下文只读审核完整项目和外部全部条目，实质问题RED→GREEN闭环。保存逐项报告、实际环境/跳过/CI边界；OpenSpec严格/工件/全套通过，main推送并读回。不称盲验收或未核实的远程CI通过。
