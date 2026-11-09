@@ -1,5 +1,7 @@
 """自包含Skill的白名单构建、完整性校验与事务安装。"""
 import argparse
+from contextlib import contextmanager
+import errno
 import hashlib
 import json
 import os
@@ -126,36 +128,121 @@ def _unpack(archive,destination):
     return root
 
 
+def _identity(path):
+    try:
+        value=Path(path).lstat()
+        return value.st_dev,value.st_ino,stat.S_IFMT(value.st_mode)
+    except FileNotFoundError:return None
+
+
+def _rename_exclusive(source,target):
+    """原子移动且绝不覆盖并发出现的目标。"""
+    if os.name=='nt':
+        os.rename(source,target)
+        return
+    import ctypes
+    library=ctypes.CDLL(None,use_errno=True)
+    if sys.platform.startswith('linux'):
+        function=getattr(library,'renameat2',None)
+        if function is None:raise OSError(errno.ENOTSUP,'平台没有原子不覆盖移动接口')
+        function.argtypes=[ctypes.c_int,ctypes.c_char_p,ctypes.c_int,ctypes.c_char_p,ctypes.c_uint]
+        function.restype=ctypes.c_int
+        result=function(-100,os.fsencode(source),-100,os.fsencode(target),1)
+    elif sys.platform=='darwin':
+        function=getattr(library,'renamex_np',None)
+        if function is None:raise OSError(errno.ENOTSUP,'平台没有原子不覆盖移动接口')
+        function.argtypes=[ctypes.c_char_p,ctypes.c_char_p,ctypes.c_uint]
+        function.restype=ctypes.c_int
+        result=function(os.fsencode(source),os.fsencode(target),4)
+    else:raise OSError(errno.ENOTSUP,'平台没有已适配的原子不覆盖移动接口')
+    if result:
+        code=ctypes.get_errno()
+        raise OSError(code,os.strerror(code),str(target))
+
+
+@contextmanager
+def _installation_lock(target):
+    key=hashlib.sha256(os.fsencode(target)).hexdigest()[:24]
+    lock=target.parent/('.codesemantics-lock-'+key)
+    try:lock.mkdir()
+    except FileExistsError as error:
+        raise FileExistsError('同目标安装正在进行或锁尚未核实清理：'+str(lock)) from error
+    try:yield
+    finally:lock.rmdir()
+
+
+def _private_path(parent,prefix):
+    path=Path(tempfile.mkdtemp(prefix=prefix,dir=parent));path.rmdir()
+    return path
+
+
+def _remove_owned(path,identity):
+    if _identity(path)!=identity:return False
+    retired=_private_path(path.parent,'.codesemantics-retired-')
+    _rename_exclusive(path,retired)
+    if _identity(retired)!=identity:
+        try:_rename_exclusive(retired,path)
+        except OSError:
+            raise ValueError('并发对象保留于：'+str(retired))
+        return False
+    shutil.rmtree(retired)
+    return True
+
+
 def install_bundle(source,target,*,replace=False,prepare=None):
     source=Path(source);target=Path(os.path.abspath(target))
-    if target.is_symlink():raise ValueError('安装目标不能为链接')
-    if target.exists():
-        if not replace:raise FileExistsError(str(target))
-        validate_bundle(target,allow_environment=True)
     with tempfile.TemporaryDirectory(prefix='codesemantics-input-') as temp:
         source_root=_unpack(source,Path(temp)) if source.is_file() else source
         manifest=validate_bundle(source_root,allow_environment=True)
         target.parent.mkdir(parents=True,exist_ok=True)
-        stage=Path(tempfile.mkdtemp(prefix='.codesemantics-stage-',dir=target.parent))
-        backup=None;published=False
-        try:
-            for name in [*manifest['files'],'manifest.json']:
-                path=stage/name;path.parent.mkdir(parents=True,exist_ok=True);shutil.copyfile(source_root/name,path)
-            validate_bundle(stage)
-            if target.exists():
-                backup=Path(tempfile.mkdtemp(prefix='.codesemantics-backup-',dir=target.parent));backup.rmdir()
-                target.rename(backup)
-            stage.rename(target);published=True
-            if prepare:prepare(target)
-            validate_bundle(target,allow_environment=True)
-        except BaseException:
-            if published and target.exists():shutil.rmtree(target)
-            if backup is not None and backup.exists():backup.rename(target)
-            raise
-        finally:
-            if stage.exists():shutil.rmtree(stage)
-        if backup is not None:shutil.rmtree(backup)
-    return {'installed':True,'name':NAME,'version':VERSION,'target':str(target),'runtimePrepared':prepare is not None}
+        with _installation_lock(target):
+            original=_identity(target)
+            if target.is_symlink():raise ValueError('安装目标不能为链接')
+            if original is not None:
+                if not replace:raise FileExistsError(str(target))
+                validate_bundle(target,allow_environment=True)
+                if _identity(target)!=original:raise ValueError('目标在校验期间发生变化')
+            stage=Path(tempfile.mkdtemp(prefix='.codesemantics-stage-',dir=target.parent))
+            stage_identity=_identity(stage)
+            backup=None;published=False;retained=[]
+            try:
+                for name in [*manifest['files'],'manifest.json']:
+                    path=stage/name;path.parent.mkdir(parents=True,exist_ok=True);shutil.copyfile(source_root/name,path)
+                validate_bundle(stage)
+                if original is not None:
+                    if _identity(target)!=original:raise ValueError('目标在准备期间发生变化')
+                    validate_bundle(target,allow_environment=True)
+                    backup=_private_path(target.parent,'.codesemantics-backup-')
+                    _rename_exclusive(target,backup)
+                    if _identity(backup)!=original:raise ValueError('目标在发布期间发生变化')
+                    validate_bundle(backup,allow_environment=True)
+                _rename_exclusive(stage,target);published=True
+                if _identity(target)!=stage_identity:raise ValueError('目标在发布后发生变化')
+                if prepare:prepare(target)
+                if _identity(target)!=stage_identity:raise ValueError('目标在环境准备期间发生变化')
+                validate_bundle(target,allow_environment=True)
+            except BaseException as error:
+                if published:
+                    try:
+                        if not _remove_owned(target,stage_identity):retained.append(str(target))
+                    except (OSError,ValueError) as cleanup:retained.append(str(cleanup))
+                if backup is not None and _identity(backup) is not None:
+                    try:_rename_exclusive(backup,target)
+                    except OSError:retained.append(str(backup))
+                if retained:
+                    raise ValueError('安装失败；未删除并发目标，需核实的保留路径：'+'；'.join(retained)) from error
+                raise
+            finally:
+                if _identity(stage) is not None:
+                    if not _remove_owned(stage,stage_identity):
+                        raise ValueError('临时目录身份已变化，未删除：'+str(stage))
+            if backup is not None:
+                try:
+                    if not _remove_owned(backup,original):retained.append(str(backup))
+                except (OSError,ValueError):retained.append(str(backup))
+    receipt={'installed':True,'name':NAME,'version':VERSION,'target':str(target),'runtimePrepared':prepare is not None}
+    if retained:receipt['retainedPaths']=retained
+    return receipt
 
 
 def default_target(assistant,scope,user_home,project):

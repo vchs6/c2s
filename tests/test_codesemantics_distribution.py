@@ -94,3 +94,42 @@ class DistributionTests(unittest.TestCase):
         from scripts.codesemantics_release import _relative
         for name in ('NUL','runtime/CON.txt','scripts/COM1.py','scripts/name.','scripts/name '):
             with self.subTest(name=name),self.assertRaises(ValueError):_relative(name)
+
+    def test_target_appearing_during_preparation_is_never_overwritten(self):
+        bundle=self.bundle();_,install,*_=self.api();target=self.base/'installed'
+        from scripts import codesemantics_release as release
+        real_validate=release.validate_bundle;created=[]
+        def synchronized(path,*args,**kwargs):
+            result=real_validate(path,*args,**kwargs)
+            if Path(path).name.startswith('.codesemantics-stage-') and not created:
+                target.mkdir();(target/'user-file.txt').write_text('必须保留');created.append(True)
+            return result
+        with patch.object(release,'validate_bundle',side_effect=synchronized):
+            with self.assertRaises(FileExistsError):install(bundle,target)
+        self.assertEqual('必须保留',(target/'user-file.txt').read_text())
+
+    def test_concurrent_installs_are_serialized_even_with_replace(self):
+        import threading
+        bundle=self.bundle();_,install,*_=self.api();target=self.base/'installed'
+        entered=threading.Event();resume=threading.Event();errors=[]
+        def prepare(path):entered.set();resume.wait(5)
+        def first():
+            try:install(bundle,target,prepare=prepare)
+            except BaseException as error:errors.append(error)
+        worker=threading.Thread(target=first);worker.start()
+        try:
+            self.assertTrue(entered.wait(5))
+            with self.assertRaises(FileExistsError):install(bundle,target,replace=True)
+        finally:resume.set();worker.join(5)
+        self.assertFalse(worker.is_alive());self.assertEqual([],errors)
+
+    def test_rollback_does_not_delete_a_concurrently_replaced_target(self):
+        bundle=self.bundle();_,install,*_=self.api();target=self.base/'installed';install(bundle,target)
+        def changed(path):
+            path.rename(self.base/'interrupted-owned-install')
+            path.mkdir();(path/'user-file.txt').write_text('必须保留')
+            raise RuntimeError('环境准备失败且目标已改变')
+        with self.assertRaises((ValueError,RuntimeError)):install(bundle,target,replace=True,prepare=changed)
+        self.assertEqual('必须保留',(target/'user-file.txt').read_text())
+        backups=list(self.base.glob('.codesemantics-backup-*'))
+        self.assertEqual(1,len(backups));self.assertTrue((backups[0]/'SKILL.md').is_file())
