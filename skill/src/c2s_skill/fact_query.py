@@ -208,7 +208,7 @@ def project_fact_result(model: dict, request: dict, *, index: dict | None = None
             evidence_refs(claim)
         else:
             result['diagnostics'].append({'code':'PREMISE_REFERENCE_MISSING','premiseId':premise})
-    for eid in sorted(wanted-set(index['evidenceById'])):
+    for eid in sorted(eid for eid in wanted if eid not in index['evidenceById']):
         result['diagnostics'].append({'code':'EVIDENCE_REFERENCE_MISSING','evidenceId':eid})
     result['evidence']=[index['evidenceById'][eid] for eid in sorted(wanted) if eid in index['evidenceById']]
     artifact_ids=set()

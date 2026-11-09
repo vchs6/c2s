@@ -53,3 +53,23 @@ class ReviewPerformanceTests(unittest.TestCase):
                 (root/'README.md').write_text(markdown)
                 r = execute_fact_query(root, {'view':'entity', 'target':{'kind':'Module'}, 'detail':'self'})
                 self.assertEqual(['actual'], [i['name'] for i in r['items']])
+    def test_targeted_projection_does_not_copy_unrelated_evidence_index(self):
+        import tracemalloc
+        from c2s_skill.fact_query import prepare_fact_projection_index, project_fact_result
+        from c2s_skill.semantic_store import SemanticEntityStore
+        with tempfile.TemporaryDirectory() as t:
+            base = Path(t); root = base/'p'; root.mkdir()
+            (root/'m.py').write_text('def run():\n return 1\n')
+            store = SemanticEntityStore(base/'facts.sqlite')
+            r = execute_fact_query(root, 'modules', store)
+            m = store.read_request(r['request']['scopeId'], r['request'], r['cost']['inputFingerprint'], r['cost']['configurationDigest'])['model']
+            m['evidence'].extend({'evidenceId':f'unrelated:{i}', 'source':'analysis', 'description':'无关证据'} for i in range(50000))
+            index = prepare_fact_projection_index(m)
+            tracemalloc.start()
+            try:
+                projected = project_fact_result(m, r['request'], index=index)
+                peak = tracemalloc.get_traced_memory()[1]
+            finally:
+                tracemalloc.stop()
+            self.assertEqual(r['items'], projected['items'])
+            self.assertLess(peak, 1024*1024, '定向投影不应复制整个无关证据索引')
