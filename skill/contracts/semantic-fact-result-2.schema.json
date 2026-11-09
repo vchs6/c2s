@@ -315,7 +315,7 @@
             "enum": [
               "direct_source",
               "derived_analysis",
-              "unclassified_legacy"
+              "artifact_observation"
             ]
           },
           "premiseIds": {
@@ -329,7 +329,7 @@
             "type": "string",
             "minLength": 1
           },
-          "legacyPayloadArtifactId": {
+          "artifactId": {
             "type": "string",
             "minLength": 1
           }
@@ -359,13 +359,13 @@
             "if": {
               "properties": {
                 "origin": {
-                  "const": "unclassified_legacy"
+                  "const": "artifact_observation"
                 }
               }
             },
             "then": {
               "required": [
-                "legacyPayloadArtifactId"
+                "artifactId"
               ]
             }
           }
@@ -949,7 +949,7 @@
           "enum": [
             "direct_source",
             "derived_analysis",
-            "unclassified_legacy"
+            "artifact_observation"
           ]
         },
         "premiseIds": {
@@ -963,7 +963,7 @@
           "type": "string",
           "minLength": 1
         },
-        "legacyPayloadArtifactId": {
+        "artifactId": {
           "type": "string",
           "minLength": 1
         }
@@ -993,13 +993,13 @@
           "if": {
             "properties": {
               "origin": {
-                "const": "unclassified_legacy"
+                "const": "artifact_observation"
               }
             }
           },
           "then": {
             "required": [
-              "legacyPayloadArtifactId"
+              "artifactId"
             ]
           }
         }
@@ -1230,7 +1230,7 @@
                   "const": "1.0.0"
                 },
                 "format": {
-                  "const": "c2s-pseudocode-1"
+                  "const": "codesemantics-pseudocode-1"
                 },
                 "function": {
                   "type": "string"

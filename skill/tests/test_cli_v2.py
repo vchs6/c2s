@@ -5,7 +5,7 @@ import json
 import tempfile
 import unittest
 from pathlib import Path
-from c2s_skill.__main__ import main
+from codesemantics.__main__ import main
 
 class CliV2Tests(unittest.TestCase):
     def test_explicit_profile_query(self):

@@ -190,7 +190,7 @@ def _rust_test_calls(text: str) -> tuple[set[str],set[str],bool]:
             tokens=next((c for c in node.named_children if c.type=='token_tree'),None)
             if macro_name in assertion_macros and tokens is not None and depth<4:
                 signals.add(macro_name)
-                fragment=b'fn __c2s_probe(){ ('+source[tokens.start_byte+1:tokens.end_byte-1]+b'); }'
+                fragment=b'fn __codesemantics_probe(){ ('+source[tokens.start_byte+1:tokens.end_byte-1]+b'); }'
                 tree=parser.parse(fragment)
                 if tree.root_node.has_error:unresolved=True
                 else:inspect(tree.root_node,fragment,depth+1)
@@ -539,7 +539,7 @@ def construct_requested_entities(root: Path, scan: ProjectScan, plan: dict) -> d
         document['evidence']=list(evidence.values())
         for c in candidates:
             source_key=f"candidate:{c['kind']}:{c['candidateId']}"
-            ref=plan.get('registry',{}).get(c['candidateId']) or {'identity':{'authority':'c2s',
+            ref=plan.get('registry',{}).get(c['candidateId']) or {'identity':{'authority':'codesemantics',
                 'domainId':scope,'localId':_digest(f'{scope}\0{source_key}')},'kind':c['kind']}
             refs[c['candidateId']]=ref
             for attribute in c.get('attributes',[]):

@@ -5,9 +5,9 @@ from pathlib import Path
 
 from jsonschema import Draft202012Validator
 
-from c2s_skill.algorithm import (_index_python_functions, _index_rust_functions,
+from codesemantics.algorithm import (_index_python_functions, _index_rust_functions,
                                  extract_python_algorithm, extract_rust_algorithm, validate_algorithms)
-from c2s_semantic_contract.algorithm_projection import check_source_coverage, project_algorithm
+from codesemantics_contract.algorithm_projection import check_source_coverage, project_algorithm
 
 
 def _algorithm(steps=None, control_edges=None, data_edges=None):

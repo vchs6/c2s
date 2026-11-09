@@ -5,7 +5,7 @@ if __package__:
     from .test_entity_model_contract import valid_entity_model
 else:
     from test_entity_model_contract import valid_entity_model
-from c2s_semantic_contract.validation import validate_semantic_entity_model_v2
+from codesemantics_contract.validation import validate_semantic_entity_model_v2
 
 
 def model_v2():
@@ -48,13 +48,13 @@ class ModelV2Tests(unittest.TestCase):
         m['entities'][0]['ref']['kind']='E0'
         self.assertFalse(validate_semantic_entity_model_v2(m)['valid'])
 
-    def test_unclassified_legacy_requires_original_payload(self):
+    def test_artifact_observation_requires_original_payload(self):
         m=model_v2()
         m['claims']=[{'claimId':'old','subject':m['entities'][0]['ref'],'predicate':'purpose',
             'value':'旧解释','evidenceIds':['ev-1'],'claimStatus':'provisional',
-            'origin':'unclassified_legacy'}]
+            'origin':'artifact_observation'}]
         self.assertFalse(validate_semantic_entity_model_v2(m)['valid'])
-        m['claims'][0]['legacyPayloadArtifactId']='old-payload'
+        m['claims'][0]['artifactId']='old-payload'
         m['artifacts']=[{'artifactId':'old-payload','kind':'legacy_payload','payload':{'old':True}}]
         self.assertTrue(validate_semantic_entity_model_v2(m)['valid'])
 

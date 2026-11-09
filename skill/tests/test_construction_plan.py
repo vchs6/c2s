@@ -1,7 +1,7 @@
 """计划只对请求缺口分配工作，不因缓存不足构造全仓语义。"""
 import unittest
-from c2s_skill.fact_request import normalize_fact_request
-from c2s_skill.construction_plan import plan_fact_request
+from codesemantics.fact_request import normalize_fact_request
+from codesemantics.construction_plan import plan_fact_request
 
 class ConstructionPlanTests(unittest.TestCase):
     def setUp(self):

@@ -97,7 +97,7 @@ def analysis_profile_digest() -> str:
             dependencies[name] = "unavailable"
     matrix_path = Path(__file__).resolve().parents[2] / "contracts" / "tool-capabilities.json"
     matrix_digest = hashlib.sha256(matrix_path.read_bytes()).hexdigest() if matrix_path.is_file() else "unavailable"
-    profile = {"analyzer": "c2s-semantic-facts/0.7.0", "python": platform.python_version(),
+    profile = {"analyzer": "codesemantics/0.1.0", "python": platform.python_version(),
                "platform": platform.platform(), "parsers": dependencies, "cargo": cargo_version,
                "tool_capability_matrix": matrix_digest}
     return hashlib.sha256(json.dumps(profile, sort_keys=True, separators=(",", ":")).encode()).hexdigest()

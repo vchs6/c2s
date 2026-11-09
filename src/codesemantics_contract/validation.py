@@ -1,15 +1,14 @@
-"""V2公开结构契约与内部共用不变量；不提供旧档案兼容接口。"""
+"""语义事实公开结构契约与引用不变量。"""
 from __future__ import annotations
 import json
 import hashlib
-from copy import deepcopy
 from pathlib import Path
 from jsonschema import Draft202012Validator
 from jsonschema.exceptions import SchemaError
 _ROOT = Path(__file__).resolve().parents[2]
 
 
-_SEMANTIC_ENTITY_SCHEMA_PATH = _ROOT / "contracts" / "semantic-model" / "semantic-entity-model.schema.json"
+_SEMANTIC_ENTITY_SCHEMA_PATH = _ROOT / "contracts" / "semantic-model" / "semantic-entity-model-2.schema.json"
 
 
 _SEMANTIC_ENTITY_TYPES_PATH = _ROOT / "contracts" / "semantic-model" / "semantic-entity-types.json"
@@ -18,10 +17,10 @@ _SEMANTIC_ENTITY_TYPES_PATH = _ROOT / "contracts" / "semantic-model" / "semantic
 _SEMANTIC_ENTITY_PREDICATES_PATH = _ROOT / "contracts" / "semantic-model" / "semantic-entity-predicates.json"
 
 
-_SEMANTIC_ENTITY_MANIFEST_PATH = _ROOT / "contracts" / "semantic-model" / "semantic-entity-catalog-manifest.json"
+_SEMANTIC_ENTITY_MANIFEST_PATH = _ROOT / "contracts" / "semantic-model" / "semantic-entity-v2-catalog-manifest.json"
 
 
-_TRUSTED_SEMANTIC_ENTITY_MANIFEST_SHA256 = "5e83c994ea4a980e550fe62e4e5d3ece3ba0b587d0a9f0b25ffde7ba1d707a0e"
+_TRUSTED_SEMANTIC_ENTITY_MANIFEST_SHA256 = "a3daabf7b79eed782977286138f67380d7a63827d0522575bfa9110e25dc701c"
 
 
 def _diagnostic(stage: str, rule_code: str, message: str, *, record_ref: str | None = None,
@@ -54,8 +53,7 @@ def _validate_semantic_entity_catalogs() -> tuple[dict | None, list[dict]]:
                       _SEMANTIC_ENTITY_SCHEMA_PATH.name: catalogs["schema"]}
     expected_digests = {name: _canonical_digest(value) for name, value in expected_files.items()}
     if (_canonical_digest(manifest) != _TRUSTED_SEMANTIC_ENTITY_MANIFEST_SHA256
-            or manifest.get("version") != "1.0.0" or manifest.get("profile") != "semantic-entity-model-1"
-            or manifest.get("ruleSetId") != "semantic-entity-model-1.0.0"
+            or manifest.get("version") != "2.0.0" or manifest.get("profile") != "semantic-entity-model-2"
             or manifest.get("digests") != expected_digests):
         return None, [_diagnostic("catalog", "ENTITY_CATALOG_DIGEST_MISMATCH",
                                   "语义实体目录清单与版本化目录内容不一致。")]
@@ -294,15 +292,8 @@ def validate_semantic_entity_model_v2(document: object) -> dict:
               for e in Draft202012Validator(schema).iter_errors(document)]
     if errors:
         return {'valid': False, 'diagnostics': errors}
-    legacy = deepcopy(document)
-    for key in ('sourceRecords', 'sourceCoverage', 'acquisitionRuns', 'artifacts'):
-        legacy.pop(key)
-    legacy.update(version='1.0.0', profile='semantic-entity-model-1')
-    for claim in legacy['claims']:
-        for key in ('origin', 'premiseIds', 'method', 'legacyPayloadArtifactId'):
-            claim.pop(key, None)
-    old_result = _core_validate_semantic_entity_model(legacy)
-    errors.extend(old_result['diagnostics'])
+    core_result = _core_validate_semantic_entity_model(document)
+    errors.extend(core_result['diagnostics'])
     def fail(code, message):
         errors.append({'code': code, 'message': message})
     def unique(collection, key):
@@ -356,8 +347,8 @@ def validate_semantic_entity_model_v2(document: object) -> dict:
     for claim in document['claims']:
         if claim['origin'] == 'derived_analysis' and set(claim['premiseIds']) - (sources | evidence | claims):
             fail('V2_PREMISE_REFERENCE', claim['claimId'])
-        if claim['origin'] == 'unclassified_legacy' and claim['legacyPayloadArtifactId'] not in artifacts:
-            fail('V2_LEGACY_ARTIFACT', claim['claimId'])
+        if claim['origin'] == 'artifact_observation' and claim['artifactId'] not in artifacts:
+            fail('MODEL_ARTIFACT_REFERENCE', claim['claimId'])
     for run in document['acquisitionRuns']:
         if set(run['sourceRecordIds']) - sources or set(run['evidenceIds']) - evidence or set(run['artifactIds']) - artifacts:
             fail('V2_RUN_REFERENCE', run['runId'])

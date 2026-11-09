@@ -3,10 +3,10 @@ import tempfile
 import unittest
 from pathlib import Path
 from concurrent.futures import ThreadPoolExecutor
-from c2s_skill.semantic_store import SemanticEntityStore
-from c2s_skill.acquisition import scan_project
-from c2s_skill.entity_construction import construct_requested_entities
-from c2s_skill.fact_request import normalize_fact_request
+from codesemantics.semantic_store import SemanticEntityStore
+from codesemantics.acquisition import scan_project
+from codesemantics.entity_construction import construct_requested_entities
+from codesemantics.fact_request import normalize_fact_request
 
 class RequestStoreTests(unittest.TestCase):
     def setUp(self):

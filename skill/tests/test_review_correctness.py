@@ -3,9 +3,9 @@ import sqlite3
 import tempfile
 import unittest
 from pathlib import Path
-from c2s_skill.fact_query import execute_fact_query,project_fact_result
-from c2s_skill.semantic_store import SemanticEntityStore
-from c2s_skill.store import QueryResultCache
+from codesemantics.fact_query import execute_fact_query,project_fact_result
+from codesemantics.semantic_store import SemanticEntityStore
+from codesemantics.store import QueryResultCache
 
 class ReviewCorrectnessTests(unittest.TestCase):
     def setUp(self):
@@ -54,9 +54,9 @@ class ReviewCorrectnessTests(unittest.TestCase):
         with self.store._connect() as again:self.assertEqual(0,again.execute('SELECT count(*) FROM checkpoint').fetchone()[0])
     def test_failed_or_cancelled_retry_preserves_previously_partial_coverage(self):
         import copy
-        from c2s_skill.acquisition import scan_project
-        from c2s_skill.entity_construction import construct_requested_entities
-        from c2s_skill.fact_request import normalize_fact_request
+        from codesemantics.acquisition import scan_project
+        from codesemantics.entity_construction import construct_requested_entities
+        from codesemantics.fact_request import normalize_fact_request
         q = normalize_fact_request('modules'); q['scopeId'] = '保留已取得部分'
         m = construct_requested_entities(self.root, scan_project(self.root),
                                         {'request': q, 'needs': [{'facet': 'organization'}]})
@@ -75,7 +75,7 @@ class ReviewCorrectnessTests(unittest.TestCase):
             self.assertEqual(before['reusedFacets'], after['reusedFacets'])
             self.assertEqual(before['model']['sourceCoverage'], after['model']['sourceCoverage'])
     def test_valid_source_and_claim_premises_are_not_missing_evidence(self):
-        from c2s_semantic_contract.validation import validate_semantic_entity_model_v2
+        from codesemantics_contract.validation import validate_semantic_entity_model_v2
         r = execute_fact_query(self.root, {'view':'entity', 'target':{'kind':'ComputationEntity','name':'run'}, 'detail':'self'}, self.store)
         m = self.model(r)
         import copy

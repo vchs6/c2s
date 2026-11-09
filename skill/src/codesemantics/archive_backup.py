@@ -1,4 +1,4 @@
-"""SQLite档案的显式完整备份，不导入或导出旧模型。"""
+"""SQLite档案的显式完整备份与一致性核验。"""
 from pathlib import Path
 from .sqlite_lifecycle import open_sqlite
 

@@ -29,14 +29,14 @@ def _diagnostic(code: str, path: str, message: str) -> dict[str, str]:
 
 
 def _source_offset(source: bytes, node: ast.AST) -> tuple[int, int]:
-    offsets = getattr(node, "_c2s_line_offsets", None)
+    offsets = getattr(node, "_codesemantics_line_offsets", None)
     return node_span(node, offsets if offsets is not None else line_offsets(source))
 
 
 def _attach_line_offsets(tree, source):
     offsets = line_offsets(source)
     for node in ast.walk(tree):
-        node._c2s_line_offsets = offsets
+        node._codesemantics_line_offsets = offsets
 
 
 def _index_python_functions(source: bytes) -> tuple[ast.Module, dict[ast.AST, ast.AST], dict[int, ast.AST]]:
@@ -71,7 +71,7 @@ def extract_python_algorithm(source: bytes, path: str, function_name: str,
         tree = _tree if _tree is not None else ast.parse(source, filename=path)
     except SyntaxError as error:
         raise ValueError(f"invalid Python syntax in {path}:{error.lineno}: {error.msg}") from error
-    if not hasattr(tree, "_c2s_line_offsets"):
+    if not hasattr(tree, "_codesemantics_line_offsets"):
         _attach_line_offsets(tree, source)
     parents = _parents if _parents is not None else {
         child: parent for parent in ast.walk(tree) for child in ast.iter_child_nodes(parent)}
@@ -790,7 +790,7 @@ def render_pseudocode(algorithm: dict, source: bytes) -> dict:
         prefix = translations.get(kind, "未解析步骤")
         lines.append("  " * depth(step.get("region_id", "r0")) + f"{prefix} {statement}".rstrip())
         references.update(step.get("evidence_refs", []))
-    return {"schema_version": "1.0.0", "format": "c2s-pseudocode-1", "function": algorithm.get("problem"),
+    return {"schema_version": "1.0.0", "format": "codesemantics-pseudocode-1", "function": algorithm.get("problem"),
             "text": "\n".join(lines), "complete": False,
             "evidence_refs": sorted(references), "omissions": list(algorithm.get("omissions", [])),
             "claim_scope": "source_mapped_partial_pseudocode"}

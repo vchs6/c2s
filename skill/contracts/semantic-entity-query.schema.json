@@ -1,7 +1,7 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "urn:c2s:semantic-entity-query:1.0.0",
-  "title": "C2S 语义实体查询请求",
+  "$id": "urn:codesemantics:semantic-entity-query:1.0.0",
+  "title": "codesemantics 语义实体查询请求",
   "type": "object",
   "additionalProperties": false,
   "required": ["version", "profile", "scopeId", "selector"],

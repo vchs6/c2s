@@ -21,7 +21,7 @@ def project_query_to_m1(query_result, registrations: list[dict] | None = None,
     not retained by the query API. Those evidence records therefore remain unchecked.
     """
     root = Path(query_result.root).resolve(strict=True)
-    from c2s_skill.inventory import source_fingerprint
+    from codesemantics.inventory import source_fingerprint
 
     if source_fingerprint(root) != query_result.source_digest:
         raise ValueError("project sources changed after the query scan; rerun the query before projecting M1")

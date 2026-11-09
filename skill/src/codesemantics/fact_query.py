@@ -22,14 +22,14 @@ def _empty_model(scope):
 
 
 def v2_configuration_digest() -> str:
-    """解释器/工具配置加实际产品源码，避免代码升级后误复用旧结果。"""
+    """解释器/工具配置加实际产品源码，避免代码升级后误复用其他结果。"""
     module_root=Path(__file__).resolve().parent
     files=sorted(module_root.glob('*.py'))
     files+=sorted((module_root.parents[1]/'contracts').glob('*2.schema.json'))
     files+=[module_root.parents[1]/'contracts/semantic-algorithm.schema.json']
     repo=module_root.parents[2]
     files+=sorted((repo/'contracts/semantic-model').glob('*.json'))
-    files+=[repo/'src/c2s_semantic_contract/validation.py']
+    files+=[repo/'src/codesemantics_contract/validation.py']
     digests=[(p.name,hashlib.sha256(p.read_bytes()).hexdigest()) for p in files if p.is_file()]
     return stable_id([analysis_profile_digest(),digests])
 
@@ -86,7 +86,7 @@ def project_fact_result(model: dict, request: dict, *, index: dict | None = None
             {'name':r.get('name'),'path':r.get('path'),'ref':r.get('ref'),'recordId':r.get('recordId')} for r in candidates]}]
         return result
     if view=='source':
-        if request['conditions'].get('legacySelector')=='members':
+        if request['conditions'].get('selector')=='members':
             parents={r['recordId'] for r in candidates}
             candidates=[r for r in records if r['kind'] in {'declaration','test_entry'} and parents.intersection(r['parentRecordIds'])]
         selected={r['recordId']:r for r in candidates}
@@ -215,7 +215,7 @@ def project_fact_result(model: dict, request: dict, *, index: dict | None = None
     def artifact_refs(value):
         if isinstance(value,dict):
             for key,child in value.items():
-                if key in {'artifactId','legacyPayloadArtifactId'} and isinstance(child,str):artifact_ids.add(child)
+                if key in {'artifactId'} and isinstance(child,str):artifact_ids.add(child)
                 else:artifact_refs(child)
         elif isinstance(value,list):
             for child in value:artifact_refs(child)
@@ -223,7 +223,7 @@ def project_fact_result(model: dict, request: dict, *, index: dict | None = None
     available_artifacts={a['artifactId'] for a in model.get('artifacts',[])}
     for aid in sorted(artifact_ids-available_artifacts):result['diagnostics'].append({'code':'ARTIFACT_REFERENCE_MISSING','artifactId':aid})
     result['artifacts']=[a for a in model.get('artifacts',[]) if a['artifactId'] in artifact_ids]
-    # 同一范围多次补证的诊断去重；不让历史覆盖数量扩大响应。
+    # 同一范围多次补证的诊断去重；不让重复覆盖数量扩大响应。
     result['diagnostics']=list({json.dumps(d,sort_keys=True,ensure_ascii=False):d for d in result['diagnostics']}.values())
     return _finalize_status(result)
 
@@ -269,7 +269,7 @@ def execute_fact_query(root: Path, request: dict | str, store=None, *, tool_runn
     if q['scopeId']=='default':q['scopeId']='project:'+hashlib.sha256(str(root).encode()).hexdigest()
     fingerprint=source_fingerprint(root);config=v2_configuration_digest();diagnostics=[]
     refresh_graph=tool_runner is not None and 'relations' in q['facets']
-    if q['conditions'].pop('legacyEntitySelector',False) and store is not None:
+    if q['conditions'].pop('entityIdSelector',False) and store is not None:
         try:
             prior=store.read_request(q['scopeId'],q,fingerprint,config)['model']
             matches=[e for e in (prior or {}).get('entities',[]) if e['ref']['identity']['localId']==q['target'].get('name')]
@@ -331,10 +331,10 @@ def execute_fact_query(root: Path, request: dict | str, store=None, *, tool_runn
         if plan['diagnostics']:
             diagnostics.extend(plan['diagnostics'])
         if plan['needs'] and not any(d['code']=='AMBIGUOUS_TARGET' for d in diagnostics):
-            paths=[] if q['conditions'].get('legacySelector')=='workspace-members' else plan['sourcePaths']
+            paths=[] if q['conditions'].get('selector')=='workspace-members' else plan['sourcePaths']
             if q['view']=='entity' and set(q['facets']).intersection({'tests','relations'}):
                 paths=[i['path'] for i in inventory_dicts if i['kind']=='file' and i['path'].endswith(('.py','.rs'))]
-            selector=q['conditions'].get('legacySelector')
+            selector=q['conditions'].get('selector')
             if selector in {'local-bindings','behavior-contracts','all-supported-facts'}:
                 scan=scan_project(root,inventory=tuple(inventory),source_paths=frozenset(paths),
                                   include_implementation=selector in {'local-bindings','all-supported-facts'})
@@ -344,7 +344,7 @@ def execute_fact_query(root: Path, request: dict | str, store=None, *, tool_runn
             plan['request']=q
             plan['registry']={key.rsplit(':',1)[-1]:e['ref'] for e in model['entities'] for key in e['sourceKeys'] if key.startswith('candidate:')}
             new=construct_requested_entities(root,scan,plan)
-            if q['conditions'].get('legacySelector')=='workspace-members' or (q['conditions'].get('legacySelector')=='all-supported-facts' and (root/'Cargo.toml').is_file()):
+            if q['conditions'].get('selector')=='workspace-members' or (q['conditions'].get('selector')=='all-supported-facts' and (root/'Cargo.toml').is_file()):
                 _attach_workspace_members(new,q,root)
             if 'relations' in q['facets'] and q['view']=='source' and tool_runner is None:
                 for coverage in new['sourceCoverage']:
@@ -365,7 +365,7 @@ def execute_fact_query(root: Path, request: dict | str, store=None, *, tool_runn
                 'artifactIds':[a['artifactId'] for a in new['artifacts']]})
             alg_count=sum('algorithm' in r for r in new['sourceRecords'])
             if source_fingerprint(root)!=fingerprint:raise ValueError('INPUT_CHANGED：查询期间输入发生变化')
-            from c2s_semantic_contract.validation import validate_semantic_entity_model_v2
+            from codesemantics_contract.validation import validate_semantic_entity_model_v2
             valid=validate_semantic_entity_model_v2(new)
             if not valid['valid']:raise ValueError('v2构造契约不合法：'+json.dumps(valid['diagnostics'],ensure_ascii=False))
             model=_merge_v2_documents(model,new) if model['sourceRecords'] or model['entities'] else new
@@ -475,7 +475,7 @@ def _attach_workspace_members(model,request,root):
             'parentRecordIds':parents,'relatedRecords':[],'evidenceIds':[ev['evidenceId']],
             'status':'obtained','value':{'observations':[observation]}})
     for cov in model['sourceCoverage']:
-        workspace_only=request['conditions'].get('legacySelector')=='workspace-members'
+        workspace_only=request['conditions'].get('selector')=='workspace-members'
         if workspace_only:cov['diagnostics']=[];cov['status']='obtained'
         if gap:
             cov['status']='not_acquired' if workspace_only else 'partial'

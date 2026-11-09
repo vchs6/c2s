@@ -1,6 +1,6 @@
 """规范请求保留来源视图和实体详情边界。"""
 import unittest
-from c2s_skill.fact_request import normalize_fact_request
+from codesemantics.fact_request import normalize_fact_request
 
 class FactRequestTests(unittest.TestCase):
     def test_self_detail_includes_all_own_attributes(self):
@@ -20,7 +20,7 @@ class FactRequestTests(unittest.TestCase):
             self.assertEqual('source',normalize_fact_request(selector)['view'])
 
     def test_fixed_chinese_request_has_source_view(self):
-        self.assertEqual('classes',normalize_fact_request('有哪些类')['conditions']['legacySelector'])
+        self.assertEqual('classes',normalize_fact_request('有哪些类')['conditions']['selector'])
     def test_reference_shape_matches_view_and_facets_are_strings(self):
         for q in [{'view':'entity','target':{'kind':'all','ref':{'recordId':'source'}}},
                   {'view':'source','target':{'kind':'all','ref':{'identity':{}}}},

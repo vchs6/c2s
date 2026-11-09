@@ -5,8 +5,8 @@ import tempfile
 import unittest
 from pathlib import Path
 from unittest.mock import patch
-from c2s_skill.fact_query import execute_fact_query
-from c2s_skill.capability_matrix import detect_available_tools,load_tool_matrix
+from codesemantics.fact_query import execute_fact_query
+from codesemantics.capability_matrix import detect_available_tools,load_tool_matrix
 
 class PublicReproducibilityTests(unittest.TestCase):
     def test_python_patch_version_is_not_a_tool_gate(self):
@@ -37,7 +37,7 @@ class PublicReproducibilityTests(unittest.TestCase):
                 with self.assertRaises(AssertionError):require_real_project(self,path)
 
     def test_each_required_dependency_version_affects_profile_without_optional_python_grammar(self):
-        from c2s_skill.acquisition import analysis_profile_digest
+        from codesemantics.acquisition import analysis_profile_digest
         import importlib.metadata
         def versions(rust):
             def version(name):

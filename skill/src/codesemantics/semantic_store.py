@@ -1,4 +1,4 @@
-"""V2语义档案的原子补证与持久查询；不提供旧档案接口。"""
+"""语义档案的原子补证与持久查询。"""
 from __future__ import annotations
 import hashlib
 import json
@@ -31,9 +31,9 @@ class SemanticEntityStore:
         if self.path.is_file():
             with open_sqlite(self.path.as_uri()+'?mode=ro',uri=True) as check:
                 tables={row[0] for row in check.execute("SELECT name FROM sqlite_master WHERE type='table'")}
-                legacy=bool(tables.intersection({'semantic_entity_archives','semantic_entity_registry','query_results','sessions','full_bundles','semantic_records'}))
-                if legacy and 'semantic_entity_v2_archives' not in tables:
-                    raise ValueError('UNSUPPORTED_ARCHIVE_PROFILE：产品只支持V2档案，旧文件保持原样')
+                incompatible=bool(tables.intersection({'semantic_entity_archives','semantic_entity_registry','query_results','sessions','full_bundles','semantic_records'}))
+                if incompatible and 'semantic_entity_v2_archives' not in tables:
+                    raise ValueError('UNSUPPORTED_ARCHIVE_PROFILE：产品只支持V2档案，输入文件保持原样')
         self.path.parent.mkdir(parents=True,exist_ok=True)
         with open_sqlite(self.path,timeout=30) as connection:
             connection.execute('PRAGMA foreign_keys=ON')
@@ -152,7 +152,7 @@ def _read_request_v2(store, scope_id, request, fingerprint, config):
     return {'model':model,'generation':row[0],'reusedFacets':sorted(reused),'diagnostics':[]}
 
 def _commit_request_v2(store, operation_id, document, request):
-    from c2s_semantic_contract.validation import validate_semantic_entity_model_v2
+    from codesemantics_contract.validation import validate_semantic_entity_model_v2
     document=json.loads(_json(document))
     if not operation_id or document.get('scopeId')!=request['scopeId']:
         raise ValueError('v2操作标识或范围不匹配')

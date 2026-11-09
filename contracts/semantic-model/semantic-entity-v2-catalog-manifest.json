@@ -2,8 +2,8 @@
   "version": "2.0.0",
   "profile": "semantic-entity-model-2",
   "digests": {
-    "semantic-entity-model-2.schema.json": "52bc17cba349ff0c9b9dc102d3ec5a49b3452f08f10f324b5a319a956168b77c",
-    "semantic-entity-types.json": "1f559a0393e97cc99dab086ee69a83494bf0f10f3fda3a6670981857eb5ca067",
-    "semantic-entity-predicates.json": "8ab0d57432df2a0c23c0e6f9a58996d55a4d35f8c137f5182ee9e4076d8b5b34"
+    "semantic-entity-model-2.schema.json": "1a74c784e5e514c6bcee4c1fca43534286fb51a375d4e50f1439ff483c2cf174",
+    "semantic-entity-types.json": "b5d0162091c30c1d89c72c60fc6425d849a03f932d8caedf94530f3d3db32faa",
+    "semantic-entity-predicates.json": "65d49f37295d4299322fc7d16f129d850c50148059dbfa5440069610289a5182"
   }
 }

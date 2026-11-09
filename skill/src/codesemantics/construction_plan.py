@@ -23,18 +23,18 @@ def matching_records(request: dict, records: list[dict]) -> list[dict]:
                 if ancestor.get('sourceConstruct',{}).get('syntaxKind')!='module':chain.insert(0,ancestor['name'])
                 parent=ancestor.get('sourceConstruct',{}).get('parentConstructId')
             if '.'.join(chain)!=owner:continue
-        legacy=request.get('conditions',{}).get('legacySelector')
-        if legacy=='classes' and syntax not in {'class_declaration','struct_declaration','enum_declaration','trait_declaration'}:continue
-        if legacy=='imports' and syntax!='import_declaration':continue
-        if legacy=='constants' and syntax not in {'assignment_binding','constant_declaration','static_declaration'}:continue
-        if legacy=='local-bindings' and syntax!='local_binding':continue
-        if legacy=='behavior-contracts' and syntax!='contract_documentation':continue
-        if legacy=='algorithm-structure' and not ('function' in syntax or 'method' in syntax):continue
-        if legacy=='all-declarations' and item.get('kind') not in {'declaration','test_entry'}:continue
-        if legacy=='definitions' and syntax not in {'class_declaration','struct_declaration','enum_declaration',
+        incompatible=request.get('conditions',{}).get('selector')
+        if incompatible=='classes' and syntax not in {'class_declaration','struct_declaration','enum_declaration','trait_declaration'}:continue
+        if incompatible=='imports' and syntax!='import_declaration':continue
+        if incompatible=='constants' and syntax not in {'assignment_binding','constant_declaration','static_declaration'}:continue
+        if incompatible=='local-bindings' and syntax!='local_binding':continue
+        if incompatible=='behavior-contracts' and syntax!='contract_documentation':continue
+        if incompatible=='algorithm-structure' and not ('function' in syntax or 'method' in syntax):continue
+        if incompatible=='all-declarations' and item.get('kind') not in {'declaration','test_entry'}:continue
+        if incompatible=='definitions' and syntax not in {'class_declaration','struct_declaration','enum_declaration',
             'trait_declaration','field_declaration','enum_variant','function_declaration','assignment_binding',
             'constant_declaration','static_declaration','type_alias_declaration','module','module_declaration','implementation_block'}:continue
-        if legacy=='workspace-members' and not any(v.get('nativeWorkspaceMember') for v in item.get('value',{}).get('observations',[])):continue
+        if incompatible=='workspace-members' and not any(v.get('nativeWorkspaceMember') for v in item.get('value',{}).get('observations',[])):continue
         out.append(item)
     return out
 

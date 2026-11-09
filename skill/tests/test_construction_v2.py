@@ -3,10 +3,10 @@ import tempfile
 import unittest
 from pathlib import Path
 from unittest.mock import patch
-from c2s_skill.acquisition import scan_project
-from c2s_skill.entity_construction import construct_requested_entities
-from c2s_skill.fact_request import normalize_fact_request
-from c2s_semantic_contract.validation import validate_semantic_entity_model_v2
+from codesemantics.acquisition import scan_project
+from codesemantics.entity_construction import construct_requested_entities
+from codesemantics.fact_request import normalize_fact_request
+from codesemantics_contract.validation import validate_semantic_entity_model_v2
 
 class ConstructionV2Tests(unittest.TestCase):
     def setUp(self):
@@ -32,15 +32,15 @@ class ConstructionV2Tests(unittest.TestCase):
         m=self.build('modules')
         self.assertTrue(any(r['kind']=='source_module' for r in m['sourceRecords']))
     def test_algorithm_not_run_for_attribute_request(self):
-        with patch('c2s_skill.algorithm.extract_python_algorithm',side_effect=AssertionError('无关算法')):
+        with patch('codesemantics.algorithm.extract_python_algorithm',side_effect=AssertionError('无关算法')):
             m=self.build({'view':'entity','target':{'kind':'DataEntity','name':'Record'},'facets':['attributes']})
         self.assertTrue(m['entities']);self.assertFalse(any('algorithm' in r for r in m['sourceRecords']))
     def test_attribute_unknown_domain_preserved(self):
         m=self.build({'view':'entity','target':{'kind':'DataEntity','name':'Record'},'detail':'self'})
         self.assertEqual('unknown',m['entities'][0]['attributes'][0]['valueRange']['kind'])
     def test_one_algorithm_not_other_functions(self):
-        from c2s_skill.algorithm import extract_python_algorithm
-        with patch('c2s_skill.algorithm.extract_python_algorithm',wraps=extract_python_algorithm) as lowering:
+        from codesemantics.algorithm import extract_python_algorithm
+        with patch('codesemantics.algorithm.extract_python_algorithm',wraps=extract_python_algorithm) as lowering:
             m=self.build('function:run')
         self.assertEqual(1,lowering.call_count)
         self.assertEqual('run',lowering.call_args.args[2])

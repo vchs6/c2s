@@ -4,10 +4,10 @@ import tempfile
 import unittest
 from pathlib import Path
 from unittest.mock import patch
-from c2s_skill.algorithm import extract_python_algorithm
-from c2s_skill.acquisition import _python_facts
-from c2s_skill.fact_query import execute_fact_query
-from c2s_skill.inventory import source_fingerprint
+from codesemantics.algorithm import extract_python_algorithm
+from codesemantics.acquisition import _python_facts
+from codesemantics.fact_query import execute_fact_query
+from codesemantics.inventory import source_fingerprint
 
 class CountingBytes(bytes):
     splits=0
@@ -39,7 +39,7 @@ class ReviewPerformanceTests(unittest.TestCase):
             r=execute_fact_query(root,{'view':'entity','target':{'kind':'Module'},'detail':'self'})
             self.assertEqual(['actual'],[i['name'] for i in r['items']])
     def test_members_selector_accepts_supported_chinese_and_english_forms(self):
-        from c2s_skill.request_selectors import normalize_request
+        from codesemantics.request_selectors import normalize_request
         self.assertEqual(normalize_request('类型A的成员有哪些'), normalize_request('members of 类型A'))
     def test_markdown_comments_do_not_open_fences_or_end_other_comments(self):
         samples = [
@@ -55,8 +55,8 @@ class ReviewPerformanceTests(unittest.TestCase):
                 self.assertEqual(['actual'], [i['name'] for i in r['items']])
     def test_targeted_projection_does_not_copy_unrelated_evidence_index(self):
         import tracemalloc
-        from c2s_skill.fact_query import prepare_fact_projection_index, project_fact_result
-        from c2s_skill.semantic_store import SemanticEntityStore
+        from codesemantics.fact_query import prepare_fact_projection_index, project_fact_result
+        from codesemantics.semantic_store import SemanticEntityStore
         with tempfile.TemporaryDirectory() as t:
             base = Path(t); root = base/'p'; root.mkdir()
             (root/'m.py').write_text('def run():\n return 1\n')

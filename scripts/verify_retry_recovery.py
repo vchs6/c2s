@@ -11,9 +11,9 @@ if not __debug__:
 
 ROOT = Path(__file__).resolve().parents[1]
 sys.path[:0] = [str(ROOT/'src'), str(ROOT/'skill/src')]
-from c2s_skill.fact_query import execute_fact_query, v2_configuration_digest
-from c2s_skill.semantic_store import SemanticEntityStore
-from c2s_skill.store import QueryResultCache
+from codesemantics.fact_query import execute_fact_query, v2_configuration_digest
+from codesemantics.semantic_store import SemanticEntityStore
+from codesemantics.store import QueryResultCache
 
 
 def verify(retries=128):

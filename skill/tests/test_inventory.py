@@ -3,7 +3,7 @@ import unittest
 from pathlib import Path
 from unittest.mock import patch
 
-from c2s_skill.inventory import inventory_tree
+from codesemantics.inventory import inventory_tree
 
 
 class InventoryTests(unittest.TestCase):

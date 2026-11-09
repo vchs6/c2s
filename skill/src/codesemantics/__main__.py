@@ -31,7 +31,7 @@ def _run_v2_cli(args, root):
         if not raw:raise ValueError("entities需要--select或结构化--request")
         if isinstance(raw,str) and raw.startswith(("entity:","expand:")):
             raw={"view":"entity","target":{"kind":"all","name":raw.split(":",1)[1]},
-                 "detail":"self","expandDepth":8 if raw.startswith("expand:") else 0,"conditions":{"legacyEntitySelector":True}}
+                 "detail":"self","expandDepth":8 if raw.startswith("expand:") else 0,"conditions":{"entityIdSelector":True}}
         elif raw in {"entities","all-entities","project"}:
             raw={"view":"entity","target":{"kind":"Project" if raw=="project" else "all"},
                  "facets":["organization","attributes"],"detail":"self" if raw=="project" else "list"}
@@ -57,7 +57,7 @@ def _run_v2_cli(args, root):
     return render_fact_result(result,args.format or "json"),0 if good else 2
 
 def main(argv: list[str] | None = None) -> int:
-    parser = argparse.ArgumentParser(prog="c2s-skill")
+    parser = argparse.ArgumentParser(prog="codesemantics")
     parser.add_argument("query", choices=["query", "algorithm", "entities"])
     parser.add_argument("--root", required=True, type=Path)
     query_args = parser.add_mutually_exclusive_group(required=False)
@@ -90,7 +90,7 @@ def main(argv: list[str] | None = None) -> int:
             sys.stdout.write(rendered)
         return status
     except (OSError, ValueError) as error:
-        print(f"c2s-skill: {error}", file=sys.stderr)
+        print(f"codesemantics: {error}", file=sys.stderr)
         return 64
 
 if __name__ == "__main__":

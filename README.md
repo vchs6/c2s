@@ -1,92 +1,51 @@
-# c2s — Code to Semantics
+# codesemantics
 
-当前产品仅提供V2公开接口，V1兼容路径已按ADR-0014移除。首次使用所需工具、其他Skill与代理安装责任见[使用说明](skill/使用说明.md)，CLI/API索引见[Skill说明](skill/README.md)，实施与独立审核见[移除V1交付核验](docs/development/reviews/semantic-facts/移除V1交付核验.md)。下面早期准备与规划文字保留为历史记录，不恢复旧接口。
+从Python/Rust项目源码、工程清单和说明材料提取可追溯的语义事实，查询源码组织、数据与计算实体、属性关系、测试关联、函数算法和伪代码。结果提供JSON或Markdown，保留证据、取得状态与分析缺口。
 
-按规格驱动开发的上游软件项目语义事实提取Skill项目。当前模型决策见[ADR-0013](docs/decisions/0013-非DDD语义事实模型.md)：语义实体、源码实现参考和证据构成事实模型，不采用DDD建模约束。已取得连续开发授权（ADR-0009）；依据ADR-0011，未验证的双向盲编写和私有验收隔离不再阻塞开发。隔离现状与报告边界见[readiness](docs/planning/program-2026-11-01/readiness.md)。
+## 安装
 
-现行实体模型依据ADR-0012及ADR-0013，E0–E4仅作为可选事实观察视角；历史五视角决定见[ADR-0001](docs/decisions/0001-five-semantic-layers.md)。已确认主规格见[事实模型](openspec/specs/semantic-fact-model/spec.md)和[查询响应](openspec/specs/semantic-fact-query/spec.md)，批准范围见[ADR-0002](docs/decisions/0002-confirmed-specification-baseline.md)。完整候选定义、证据和旧稿见[会话资料索引](docs/session/README.md)，不能将其全部视为已生效规格。
-
-当前确认的查询需求见[ADR-0007](docs/decisions/0007-confirmed-system-query-requirements.md)：返回符合请求的顶层完整事实、不递归展开、如实报告缺口，同时提供报告与结构数据。另见[分析范围](openspec/specs/semantic-analysis-scope/spec.md)、[按需补充](openspec/specs/lazy-semantic-fact-construction/spec.md)和[评价边界](openspec/specs/semantic-analysis-quality/spec.md)。系统需求确认不等于产品实施批准。
-
-独立交付要求见[ADR-0008](docs/decisions/0008-independent-delivery-and-milestones.md)及[里程碑索引](docs/planning/program-2026-11-01/milestones.md)：编码、审核、用例编写、测试和最终验证独立；基于真实项目的私有测试不向编码者开放。已授权准备后连续开发；托管公开边界探针已通过，真实双向编写入口及交接仍待验证。产品版本政策为0.b.c，未发布产品版本。
-
-## 开发环境
-
-Node.js 22.13+（22.x）或24+、npm、Git。固定工具：OpenSpec 1.16.0、Codex CLI 0.166.0、Superpowers 7.0.1（git子模块固定提交）。Node依赖仅为开发工具，不指定Skill的实现语言。
+解压codesemantics分发包，在包含install.py的目录执行。安装器使用Python标准库，默认准备独立环境和最小运行依赖：
 
 ```bash
-git clone --recurse-submodules https://github.com/vchs6/c2s.git
-cd c2s
-npm ci
-npm run setup:codex
-npm run check:artifacts
-npm run validate
+python3 install.py --assistant codex
+python3 install.py --assistant codearts
+python3 install.py --assistant atomcode --target /指定的技能目录/codesemantics
+python3 install.py --assistant qcode --target /指定的技能目录/codesemantics
 ```
 
-`setup:codex`通过Codex插件命令注册当前项目本地marketplace并安装官方上游Superpowers。它会在本机Codex用户配置中登记插件；不包含认证，不改变模型或提供商。已有托管/官方Superpowers时可使用该安装，避免重复启用多个来源；详见[工作流](docs/workflow/README.md)。初始化验证不能替代你本机新会话中的自动触发检查。
-
-## 工作流程
-
-在项目中启动Codex，遵循[AGENTS.md](AGENTS.md)。Superpowers负责分析、规划、执行与验证方法，OpenSpec管理变更和规格工件。终端示例：
+在源码仓库中使用同一安装程序的入口：
 
 ```bash
-npm run openspec -- list --specs
-npm run openspec -- list
-npm run openspec -- status --change initialize-sdd-ddd-workspace
+python3 scripts/install_codesemantics.py --assistant codex
 ```
 
-当前初始化变更是工具/文档工作，明确skip_specs，不虚构产品能力，也不自动archive。继续现有define-layered-semantic-fact-model；已确认需求先固化为主规格，候选公共定义经必要确认后另行实施，再开展获取器开发。
+Codex默认使用用户或项目根目录下的.agents/skills；设置CODEX_HOME时用户级使用该目录的skills子目录，可用--target覆盖；CodeArts参考其公开技能仓库的~/.codeartsdoer/skills与项目.codeartsdoer/skills。AtomCode、Qcode需要显式给出当前产品实际使用的目标目录，不将相似名称视为同一助手。安装结束后在助手中刷新/启用技能或重启会话。项目级安装使用--scope project并通过--project-dir指定实际项目目录；在解压目录运行时不要把解压目录误当作项目目录。
 
-## 目录
+产出文件和独立环境写入指定Skill目录；准备过程中使用临时目录和包管理器缓存，不修改助手认证或其他技能。目标已存在时默认拒绝覆盖；--replace仅替换完整性校验通过的本产品目录，准备环境失败会回滚。--no-runtime只部署文件，适合离线复制；运行前仍须准备依赖。--python可指定正式版Python3.12；当前解释器不满足时会查找python3.12或使用已安装的uv准备环境。
 
-- `openspec/`：正式规格和活动变更。
-- `docs/domain/`：原始草案与候选领域定义。
-- `docs/decisions/`：已确认决策及准确批准范围。
-- `docs/development/reviews/`：Battle结果和固定来源证据。
-- `docs/workflow/`：使用方式、Battle协议和历史配置包。
-- `docs/development/setup/`：初始化命令与验证记录。
-- `tools/superpowers/`：官方Superpowers源子模块，不在此实现产品。
+## 运行依赖
 
-仓库许可证为Apache-2.0；Superpowers子模块沿用其MIT许可证。
+已验证Linux x86_64与正式版Python3.12。最小依赖为jsonschema4.26.0、tree-sitter0.26.0、tree-sitter-rust0.24.2，Python安装环境自带ast/tomllib/sqlite3。不需要Node/npm、数据库服务或其他项目分析Skill。原生Rust workspace查询条件需要Cargo；仅做Rust静态解析不需要Rust工具链。
 
-## 规划议题与手动启动
+代理有终端、下载网络和写权限时可代为安装；用户不必逐包手工准备。这里的安装发生在代理可操作的执行环境，云工作区安装不等于个人电脑已安装。首次准备依赖需要下载网络，查询入口不自动联网安装。
 
-Issue仅登记议题；创建、编辑、评论、标签及定时任务不触发工作。请在会话显式指定规划目标，或在Actions手动选择单个Issue的plan/smoke；当前维护工具不提供apply，不根据评论令牌实施。见[持续规划模式](docs/workflow/planning-mode.md)与[手动工具](docs/workflow/issue-worker.md)。
+## 使用
 
-先完成架构、功能与非功能（含查询性能、跨语言/跨平台）的讨论、规格和整体审核，再另行明确批准产品开发。方案A已选择，但不是实施批准；Issue #3相关领域模型仍沿用现有变更，不另建重复模型。
-
-规划议题见[总计划 #4](https://github.com/vchs6/c2s/issues/4)与[仓库台账](docs/planning/agenda.md)；本次只创建事项，不自动启动讨论。
-
-当前规范按需阅读：领域基础见docs/domain/foundation.md，项目约束见docs/project/constraints.md，代理治理/决策/任务/仓库管理/CI分别在docs/workflow下；AGENTS仅作入口。
-
-## 平级公开开发准备（2026-11-03接续）
-
-当前会话使用原生子代理推进公开基础设施；不在受限宿主另启Codex CLI，不把Docker作为公开协作前提。完成既有`npm ci`后可运行：
+在任意目录，通过安装目标中的命令入口运行：
 
 ```bash
-python3 scripts/check_public_environment.py
+python3 /技能目录/codesemantics/scripts/check.py
+python3 /技能目录/codesemantics/scripts/codesemantics.py --help
+python3 /技能目录/codesemantics/scripts/codesemantics.py query \
+  --root /项目目录 --select modules --store /项目外/facts.sqlite --format json
 ```
 
-这是不联网、不安装、不调用模型/容器的公开工具自检；输出JSON和退出码只说明Python/Node/npm/Git/本地OpenSpec是否可用。Docker/Podman仅列命令存在性，缺失不使公开工具检查失败。原生模型可用性须由实际分派和返回另证；本脚本永远不宣布完整开发门禁通过。当前已验证宿主仅Linux，其他平台须另验。
+完整参数、结构化请求、算法、图输出、备份及状态解释见[使用说明](skill/使用说明.md)。Skill发现入口为[SKILL.md](skill/SKILL.md)。事实档案使用SQLite，JSON/Markdown为查询输出。
 
-私有用例作者、测试执行、最终验证及候选进程仍须具备独立有效权限和受控交接；共享会话、worktree或不同模型不能替代。现有runner可直接隔离候选程序，无需在其内再运行Codex。主规格/现有tasks保持权威；不要克隆私有suite到共享编码工作区。公开准备通过不授权绕过2.2/2.3，也不要求用户迁移仓库、升级GitLab或重复配置密钥。
+## 能力边界
 
-## 主代理准备角色独立Git仓库（公开实验）
+静态分析不证明全部业务意图、运行时等价、宏展开或完整调用绑定。未取得的事实显式报告缺口；伪代码是带来源映射的部分静态投影。安装目录部署测试与真实助手中的自动触发验证分别报告；其他系统和架构的查询运行未验证。
 
-```bash
-mkdir -p .local
-python3 scripts/prepare_role_repositories.py \
-  --source . --ref main --destination .local/my-role-repositories
-```
+## 分发完整性
 
-目标必须尚不存在。该入口不联网、不创建远端项目，从ref一次解析固定提交，仅同步角色白名单文件；创建coding/review/author/runner/verifier五个独立Git仓库，独立main/root commit、无源remote或对象共享，MANIFEST与ROLE_INPUT记录源SHA和内容摘要。不带入未提交工作区内容或源历史；author不接收candidate示例。输入只含公开契约和公开基础设施示例，生成仓库不提交回主仓库。
-
-它只负责主代理内容准备，不能收窄原生子代理现有文件、终端或连接器权限。首次使用须按本轮公开marker验证角色是否只能读取自身仓库；实际测试报告见`docs/development/reviews/independent-delivery/role-repositories-2026-11-03/`。权限未通过前，不在这些共享可读仓库创建隐藏用例/凭据，不放行产品编码。这里的本地仓库不冒充独立账号控制的远端私有项目或长期角色启动设施。
-
-## CI角色仓库边界演练
-
-现有`Source token and public role boundary diagnostic`工作流新增五角色matrix job，各自使用GitHub托管Ubuntu24.04。可信准备按该run提交创建公开角色快照，仅将所选仓库挂到受限worker的/repo；公开probe测试合法自身读写、其他role/宿主路径不可读写、socket/凭据不继承。脚本为`ci/acceptance/role_repository_probe.py`，只在配置齐全的可信CI宿主运行；它不是模型代理或任意candidate入口。
-
-该工作流仅显式dispatch或相关基础设施文件push触发，不因Issue/评论/定时启动开发。源token只在独立检查step访问GitHub API，不传worker；不调用模型、不创建实际隐藏suite、不授予worker Docker权限。阶段通过只说明本次CI边界，不会改变当前聊天原生子代理工具权限，也不放行完整五角色门禁。
-
-当前开发环境按[双向独立编写说明](docs/workflow/blind-development.md)组织：AI负责需判断的工作，CI固定执行构建与测试，普通检查不调用模型。正式角色入口与公开探针的验证范围分别报告。
+manifest.json记录文件清单与SHA-256；安装前核对清单、路径和摘要。该检查用于发现损坏，不是发行者签名。分发包只包含本Skill运行内容，安装器不会把工作区、凭据、缓存或开发材料复制到目标目录。

@@ -4,9 +4,9 @@ from unittest.mock import patch
 from pathlib import Path
 from tempfile import TemporaryDirectory
 
-from c2s_skill.capability_matrix import (ToolRun, describe_tools_used, load_tool_matrix, select_tools,
+from codesemantics.capability_matrix import (ToolRun, describe_tools_used, load_tool_matrix, select_tools,
                                          validate_matrix_evidence)
-from c2s_skill.fact_query import execute_fact_query
+from codesemantics.fact_query import execute_fact_query
 
 
 def provider(tool_id, provides, *, status="lit", evidence=True):
@@ -71,8 +71,8 @@ class CapabilitySelectionTests(unittest.TestCase):
         with TemporaryDirectory() as temporary:
             matrix = {"tools": [provider("installed-parser", ["declarations"])]}
 
-            installed_module = Path(temporary) / "site-packages" / "c2s_skill" / "capability_matrix.py"
-            with patch("c2s_skill.capability_matrix.__file__", str(installed_module)):
+            installed_module = Path(temporary) / "site-packages" / "codesemantics" / "capability_matrix.py"
+            with patch("codesemantics.capability_matrix.__file__", str(installed_module)):
                 selected = select_tools(["declarations"], matrix,
                     available_tools={"installed-parser"})
 

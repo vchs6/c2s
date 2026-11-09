@@ -8,29 +8,29 @@ import sqlite3
 import tempfile
 import unittest
 from pathlib import Path
-from c2s_skill.__main__ import main
-from c2s_skill.fact_query import execute_fact_query
-from c2s_skill.semantic_store import SemanticEntityStore
+from codesemantics.__main__ import main
+from codesemantics.fact_query import execute_fact_query
+from codesemantics.semantic_store import SemanticEntityStore
 
 class V2OnlyTests(unittest.TestCase):
     def test_cli_rejects_v1(self):
         with tempfile.TemporaryDirectory() as t, contextlib.redirect_stderr(io.StringIO()),contextlib.redirect_stdout(io.StringIO()):
             with self.assertRaises(SystemExit):main(['query','--root',t,'--select','functions','--model-profile','semantic-entity-model-1'])
     def test_old_runtime_symbols_removed(self):
-        removed={'c2s_skill.semantic_store':['SemanticFactStore','read_m1','commit_m1','read_bundle','query_bundle'],
-                 'c2s_skill.query':['query_project','query_from_scan','result_to_dict','result_to_markdown'],
-                 'c2s_skill.entity_construction':['construct_and_query_semantic_entities','add_workspace_observations'],
-                 'c2s_skill.semantic_entity_query':['query_entity_store','query_semantic_entities'],
-                 'c2s_skill.store':['FactStore'],
-                 'c2s_semantic_contract':['register_m1','validate_model','project_query_to_semantic_model']}
+        removed={'codesemantics.semantic_store':['SemanticFactStore','read_m1','commit_m1','read_bundle','query_bundle'],
+                 'codesemantics.query':['query_project','query_from_scan','result_to_dict','result_to_markdown'],
+                 'codesemantics.entity_construction':['construct_and_query_semantic_entities','add_workspace_observations'],
+                 'codesemantics.semantic_entity_query':['query_entity_store','query_semantic_entities'],
+                 'codesemantics.store':['FactStore'],
+                 'codesemantics_contract':['register_m1','validate_model','project_query_to_semantic_model']}
         for module,names in removed.items():
             loaded=importlib.import_module(module)
             for name in names:
                 with self.subTest(module=module,name=name):self.assertFalse(hasattr(loaded,name))
-        from c2s_skill.store import QueryResultCache
+        from codesemantics.store import QueryResultCache
         for name in ('save','load'):self.assertFalse(hasattr(QueryResultCache,name))
         for name in ('read','write','register','lookup'):self.assertFalse(hasattr(SemanticEntityStore,name))
-        with self.assertRaises(ModuleNotFoundError):importlib.import_module('c2s_skill.semantic_entity_migration')
+        with self.assertRaises(ModuleNotFoundError):importlib.import_module('codesemantics.semantic_entity_migration')
     def test_legacy_archive_rejected_without_mutation(self):
         with tempfile.TemporaryDirectory() as t:
             db=Path(t)/'old.sqlite'
@@ -52,7 +52,7 @@ class V2OnlyTests(unittest.TestCase):
                 self.assertFalse(c.execute("SELECT 1 FROM sqlite_master WHERE name='semantic_entity_archives'").fetchone())
 
     def test_explicit_v2_backup_roundtrip(self):
-        from c2s_skill.archive_backup import backup_entity_archive
+        from codesemantics.archive_backup import backup_entity_archive
         with tempfile.TemporaryDirectory() as t:
             root=Path(t)/'p';root.mkdir();(root/'m.py').write_text('def run():\n return 1\n')
             store=SemanticEntityStore(Path(t)/'facts.sqlite')
@@ -64,7 +64,7 @@ class V2OnlyTests(unittest.TestCase):
             self.assertEqual(original,restored.read_request(result['request']['scopeId'],result['request'],result['cost']['inputFingerprint'],result['cost']['configurationDigest']))
 
     def test_backup_missing_source_does_not_create_archive(self):
-        from c2s_skill.archive_backup import backup_entity_archive
+        from codesemantics.archive_backup import backup_entity_archive
         with tempfile.TemporaryDirectory() as t:
             source=Path(t)/'absent.sqlite';target=Path(t)/'backup.sqlite'
             with self.assertRaises(ValueError):backup_entity_archive(SemanticEntityStore(source),target)
@@ -84,8 +84,8 @@ class V2OnlyTests(unittest.TestCase):
             with sqlite3.connect(store.path) as c:self.assertEqual([('old',payload)],c.execute('SELECT * FROM semantic_entity_archives').fetchall())
 
     def test_legacy_cache_rejected_without_mutation(self):
-        from c2s_skill.store import QueryResultCache
-        from c2s_skill.fact_request import normalize_fact_request
+        from codesemantics.store import QueryResultCache
+        from codesemantics.fact_request import normalize_fact_request
         with tempfile.TemporaryDirectory() as t:
             root=Path(t)/'p';root.mkdir();db=Path(t)/'old-cache.sqlite'
             with sqlite3.connect(db) as c:c.execute('CREATE TABLE query_results(root TEXT,source_digest TEXT,selectors TEXT,result_json TEXT)')

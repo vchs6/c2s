@@ -2,7 +2,7 @@
 import tempfile
 import unittest
 from pathlib import Path
-from c2s_skill.codegraph_adapter import parse_codegraph_response
+from codesemantics.codegraph_adapter import parse_codegraph_response
 
 class CodeGraphAdapterTests(unittest.TestCase):
     def setUp(self):

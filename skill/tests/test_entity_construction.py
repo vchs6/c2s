@@ -10,7 +10,7 @@ ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT / "src"))
 sys.path.insert(0, str(ROOT / "skill" / "src"))
 
-from c2s_skill.entity_construction import construct_semantic_entity_candidates
+from codesemantics.entity_construction import construct_semantic_entity_candidates
 
 
 class SemanticEntityConstructionTests(unittest.TestCase):

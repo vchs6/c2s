@@ -1,87 +1,51 @@
-# c2s上游事实查询Skill
+# codesemantics
 
-首次使用请读[使用说明：本地工具、其他Skill与安装责任](使用说明.md)。当前查询链路不强制依赖其他项目分析Skill；本地依赖可由有终端、下载网络和写权限的代理代装，但CLI自身不会自动安装。当前产出物为仓库CLI/API，尚无宿主自动发现用的skill/SKILL.md清单。
+从Python/Rust项目源码、工程清单和说明材料提取可追溯的语义事实，查询源码组织、数据与计算实体、属性关系、测试关联、函数算法和伪代码。结果提供JSON或Markdown，保留证据、取得状态与分析缺口。
 
-当前仅公开V2协议：semantic-entity-model-2、semantic-fact-request-2及semantic-fact-result-2。按用户2026-11-09决定，V1、旧完整事实和M1运行接口、缓存接口及导入导出均已撤销，不提供兼容别名。历史Schema和报告仅供追溯。
+## 安装
 
-## 当前能力
-
-Python AST、Rust Tree-sitter提取来源目录、嵌套清单、模块、声明、实现机制、语义实体候选及属性关系；Cargo metadata提供原生工作空间成员；指定函数可查询算法、伪代码和静态缺口。来源组织与实体独立，无映射的来源模块仍可查询。推导主张有premiseIds/method及暂定状态，不将代码分析等同业务真值。
-
-请求按目标和facets补缺，不默认降低全仓算法。self详情包含自身已取得属性；expandDepth为0–8。JSON和Markdown来自同一结果；items是请求目标，sourceRecords、claims、evidence、coverage、diagnostics及persistence分别返回。调用关系、测试绑定、宏展开、动态行为或类型解析未取得时保留缺口。枚举只在同文件词法作用域唯一引用时提供有限值域，不按裸名称跨模块猜测。
-
-## 安装及自检
-
-已验证Linux x86_64、正式版Python3.12.x（>=3.12.0、<3.13.0）；基础查询不要求Node/npm。已验证补丁版本另见本次审核修复报告。Python包来自公开包索引，Rust工具链来自官方rust-lang.org；项目本地安装目录不随仓库提交。
+解压codesemantics分发包，在包含install.py的目录执行。安装器使用Python标准库，默认准备独立环境和最小运行依赖：
 
 ```bash
-python3.12 -m venv .local/analysis-venv
-.local/analysis-venv/bin/python -m pip install -r requirements-skill.txt
-PYTHONPATH=src:skill/src .local/analysis-venv/bin/python -m c2s_skill --help
+python3 install.py --assistant codex
+python3 install.py --assistant codearts
+python3 install.py --assistant atomcode --target /指定的技能目录/codesemantics
+python3 install.py --assistant qcode --target /指定的技能目录/codesemantics
 ```
 
-基础依赖：Python AST标准库、jsonschema 4.26.0、tree-sitter 0.26.0、tree-sitter-rust 0.24.2及TOML标准库。其他项目分析Skill目前没有必需项；Serena/GitNexus及配套建图Skill仍是候选，不要求用户安装。开发环境单独见仓库README，不作为本节运行前提。Rust/Cargo1.99.1用于本环境原生工作空间取证，安装和版本自检：
+在源码仓库中使用同一安装程序的入口：
 
 ```bash
-RUSTUP_HOME="$PWD/.local/rustup" CARGO_HOME="$PWD/.local/cargo" .local/cargo/bin/cargo --version
+python3 scripts/install_codesemantics.py --assistant codex
 ```
 
-对仓库本地安装的Cargo，执行工作空间查询时还需将CARGO指向实际二进制；示例：
+Codex默认使用用户或项目根目录下的.agents/skills；设置CODEX_HOME时用户级使用该目录的skills子目录，可用--target覆盖；CodeArts参考其公开技能仓库的~/.codeartsdoer/skills与项目.codeartsdoer/skills。AtomCode、Qcode需要显式给出当前产品实际使用的目标目录，不将相似名称视为同一助手。安装结束后在助手中刷新/启用技能或重启会话。项目级安装使用--scope project并通过--project-dir指定实际项目目录；在解压目录运行时不要把解压目录误当作项目目录。
+
+产出文件和独立环境写入指定Skill目录；准备过程中使用临时目录和包管理器缓存，不修改助手认证或其他技能。目标已存在时默认拒绝覆盖；--replace仅替换完整性校验通过的本产品目录，准备环境失败会回滚。--no-runtime只部署文件，适合离线复制；运行前仍须准备依赖。--python可指定正式版Python3.12；当前解释器不满足时会查找python3.12或使用已安装的uv准备环境。
+
+## 运行依赖
+
+已验证Linux x86_64与正式版Python3.12。最小依赖为jsonschema4.26.0、tree-sitter0.26.0、tree-sitter-rust0.24.2，Python安装环境自带ast/tomllib/sqlite3。不需要Node/npm、数据库服务或其他项目分析Skill。原生Rust workspace查询条件需要Cargo；仅做Rust静态解析不需要Rust工具链。
+
+代理有终端、下载网络和写权限时可代为安装；用户不必逐包手工准备。这里的安装发生在代理可操作的执行环境，云工作区安装不等于个人电脑已安装。首次准备依赖需要下载网络，查询入口不自动联网安装。
+
+## 使用
+
+在任意目录，通过安装目标中的命令入口运行：
 
 ```bash
-CARGO="$PWD/.local/cargo/bin/cargo" RUSTUP_HOME="$PWD/.local/rustup" CARGO_HOME="$PWD/.local/cargo" PYTHONPATH=src:skill/src .local/analysis-venv/bin/python -m c2s_skill query --root .local/real-projects/regex --select workspace-members --store /tmp/regex-v2.sqlite --format json
+python3 /技能目录/codesemantics/scripts/check.py
+python3 /技能目录/codesemantics/scripts/codesemantics.py --help
+python3 /技能目录/codesemantics/scripts/codesemantics.py query \
+  --root /项目目录 --select modules --store /项目外/facts.sqlite --format json
 ```
 
-Cargo使用--no-deps --offline，不证明构建通过。Code Review Graph2.3.9可选，通过--graph-output导入其结构化响应，保留原始输出及新鲜度缺口。CodeGraph1.6.2（Apache-2.0、npm开源项目）已验证files/query/callers/callees解析，但尚无净覆盖收益证明，保持candidate；均非默认依赖。工具矩阵与专用解析器决定可执行能力，不把导航Skill短文本当事实。
+完整参数、结构化请求、算法、图输出、备份及状态解释见[使用说明](使用说明.md)。Skill发现入口为[SKILL.md](SKILL.md)。事实档案使用SQLite，JSON/Markdown为查询输出。
 
-## 查询
+## 能力边界
 
-数据库、缓存、工具输出及报告应在分析项目目录之外：
+静态分析不证明全部业务意图、运行时等价、宏展开或完整调用绑定。未取得的事实显式报告缺口；伪代码是带来源映射的部分静态投影。安装目录部署测试与真实助手中的自动触发验证分别报告；其他系统和架构的查询运行未验证。
 
-```bash
-PYTHONPATH=src:skill/src .local/analysis-venv/bin/python -m c2s_skill query --root /path/to/project --select modules --store /tmp/project-v2.sqlite --format json
-PYTHONPATH=src:skill/src .local/analysis-venv/bin/python -m c2s_skill query --root /path/to/project --select function:Owner.run --store /tmp/project-v2.sqlite --format markdown
-PYTHONPATH=src:skill/src .local/analysis-venv/bin/python -m c2s_skill entities --root /path/to/project --request '{"target":{"kind":"DataEntity","name":"Record"},"detail":"self"}' --store /tmp/project-v2.sqlite --format json
-PYTHONPATH=src:skill/src .local/analysis-venv/bin/python -m c2s_skill algorithm --root /path/to/project --source src/parser.py --function parse --format json
-```
+## 分发完整性
 
-固定中文表单如“有哪些类”规范化为V2请求。entity:<localId>和expand:<localId>查询当前scope中已发布标识，歧义返回候选。--model-profile只接受semantic-entity-model-2，不能选择旧协议。--semantic-facts选择算法的实体视图，不生成旧semantic_fact_bundle。
-
-API：execute_fact_query/query_project_v2执行查询；query_entity_store_v2只投影当前档案，需提供scope、输入指纹与配置摘要；validate_semantic_entity_model_v2为公开模型校验器。旧query_project、SemanticFactStore、read/write旧实体API及semantic_entity_migration模块均已删除。
-
-## 持久化与备份
-
-同scope+固定输入+配置的事实原子补证，注册身份、证据、引用、覆盖及回执同事务保存；重复操作幂等，冲突拒绝。配置含实际产品源码与解析器/工具摘要，改变后不复用旧结果。缓存不能代替请求的事实存储，失败或retryable结果不缓存。纯旧档案返回UNSUPPORTED_ARCHIVE_PROFILE且文件不变；混合库仅访问V2，旧表不提供查询或改写。不会自动迁移、备份或删除V1。
-
-显式备份当前V2档案：
-
-```python
-from pathlib import Path
-from c2s_skill.semantic_store import SemanticEntityStore
-from c2s_skill.archive_backup import backup_entity_archive
-receipt = backup_entity_archive(SemanticEntityStore('/tmp/project-v2.sqlite'), Path('/tmp/project-v2-backup.sqlite'))
-```
-
-备份源必须存在、目标必须不存在；SQLite完整性和逐表回读一致后返回verified及摘要。恢复时先停写并保存当前库，将独立完整备份作为V2档案路径重新查询。Git历史和独立备份可用于运维回退；产品不提供V1恢复/转换接口。
-
-退出码0为本请求完整，2为存在事实缺口或保存失败，64为执行阶段无效请求；argparse非法参数返回2。查询不主动联网；显式缓存/档案/结果和备份写磁盘；原生Cargo仅离线元数据。
-
-## 验证边界
-
-固定Click和regex的逐项来源/实体/证据回读及先定向→全量→定向一致性由scripts/verify_source_fact_refactor.py执行，脚本从固定Git版本创建隔离副本并检查源树不变。最新结果见[公开审核修复核验](../docs/development/reviews/semantic-facts/公开审核修复核验.md)。全部已发布记录遍历不等于穷尽全部语义真值，未请求算法不展开。
-
-只验证了Linux的Python/Rust静态支持；其他语言、host/target、上游运行时等价及词元节省未验证。独立上下文只读代码审核与共享公开测试不是私有盲验收。
-
-## 公开复现与覆盖边界
-
-`npm test`同时运行顶层和Skill测试。干净检出先执行`python3 -m pip install -r requirements-skill.txt`；未取得外部项目时，真实项目用例明确跳过。需要完整集成时先执行`python3 scripts/prepare_real_projects.py`，再执行`C2S_REQUIRE_REAL_PROJECTS=1 npm test`；此模式缺夹具或Cargo直接失败。脚本按固定提交取得Click、regex和nlohmann-json，不覆盖已有修改，不把第三方副本提交到仓库。首次下载需联网；原生Cargo证据使用离线metadata，不证明编译成功。
-
-导入已有Code Review Graph输出只依赖本地已验证解析器，不要求安装可选图包；无法证明索引新鲜度仍报告缺口。最小依赖不包含该可选包或未使用的Python tree-sitter语法包。
-
-来源覆盖以请求涉及的已支持Python/Rust源码为范围；其他文件保留在完整目录盘点与内容指纹中，并在`outOfScopePaths`单列，不因此降低源码声明查询状态。文档仍可形成带证据的候选；这不表示文档已被完整语义解释。指纹流式读取所有可见文件，不默认排除node_modules/target。
-
-同范围重试更新有效覆盖、去重相同取得运行，独立操作回执仍保存审计历史。不能把有效模型不膨胀解释为审计数据库永不增长。投影发现悬空证据或工件引用会明确诊断，SQLite事务结束后显式关闭连接。
-
-图输出通过`--graph-output`显式提供时，每次都处理该新输入，不被旧响应缓存屏蔽；结构化工具失败可以重试。前提引用区分来源记录、主张和证据，仅补证明依赖；未知前提报告`PREMISE_REFERENCE_MISSING`。失败或取消的取证不会抹除先前已取得的partial覆盖。
-
-连续失败重试与恢复可用`python3 scripts/verify_retry_recovery.py --retries 128 --output /tmp/c2s-retry-verification.json`复现；只生成临时项目、外置SQLite及指定报告，不发送网络请求。实际环境、逐项修复、独立审核和远程CI回执见`docs/development/reviews/semantic-facts/公开审核修复核验.md`。
+manifest.json记录文件清单与SHA-256；安装前核对清单、路径和摘要。该检查用于发现损坏，不是发行者签名。分发包只包含本Skill运行内容，安装器不会把工作区、凭据、缓存或开发材料复制到目标目录。

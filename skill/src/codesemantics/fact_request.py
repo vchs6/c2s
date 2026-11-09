@@ -14,13 +14,13 @@ def normalize_fact_request(value: dict | str) -> dict:
             value={'view':'source','target':{'kind':'function','name':simple if separator else name},
                    'facets':['implementation','algorithm'],'detail':'self','conditions':{'qualifiedOwner':owner} if separator else {}}
         elif selector.startswith('members:'):
-            value={'view':'source','target':{'kind':'declaration','name':selector.split(':',1)[1]},'facets':['organization'],'conditions':{'legacySelector':'members'}}
+            value={'view':'source','target':{'kind':'declaration','name':selector.split(':',1)[1]},'facets':['organization'],'conditions':{'selector':'members'}}
         elif selector in {'project','workspace-members','classes','functions','definitions','all-declarations','all-supported-facts','modules','all-entities','imports','constants','local-bindings','behavior-contracts','algorithm-structure'}:
             kind={'project':'project','functions':'function','classes':'declaration','modules':'module','algorithm-structure':'function'}.get(selector,'all')
             value={'view':'entity' if selector=='all-entities' else 'source','target':{'kind':kind},
                    'facets':(['implementation','algorithm'] if selector in {'algorithm-structure','all-supported-facts'}
                              else ['implementation'] if selector in {'definitions','local-bindings','behavior-contracts'}
-                             else ['organization']),'conditions':{'legacySelector':selector}}
+                             else ['organization']),'conditions':{'selector':selector}}
         else:
             from .request_selectors import normalize_request
             mapped=normalize_request(selector)

@@ -1,4 +1,4 @@
-"""现行算法结构的文本投影和来源清单核对；不生成旧事实档案。"""
+"""现行算法结构的文本投影和来源清单核对；不生成其他事实档案。"""
 
 def project_algorithm(document: dict, algorithm_ref: dict) -> dict:
     """Render one structured algorithm without adding behavior beyond its records."""
@@ -8,7 +8,7 @@ def project_algorithm(document: dict, algorithm_ref: dict) -> dict:
     if len(candidates) != 1:
         raise ValueError("algorithm_ref must identify exactly one algorithm")
     algorithm = candidates[0]
-    from c2s_skill.algorithm import validate_algorithms
+    from codesemantics.algorithm import validate_algorithms
 
     diagnostics = validate_algorithms({"schema_version": document.get("schema_version"),
                                        "algorithms": [algorithm]})

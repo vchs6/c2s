@@ -3,7 +3,7 @@ import unittest
 import tempfile
 from pathlib import Path
 
-from c2s_skill.acquisition import parse_source, scan_project
+from codesemantics.acquisition import parse_source, scan_project
 
 
 class AcquisitionTests(unittest.TestCase):

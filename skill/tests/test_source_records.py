@@ -3,8 +3,8 @@ import tempfile
 import unittest
 from pathlib import Path
 from dataclasses import replace
-from c2s_skill.acquisition import scan_project
-from c2s_skill.source_records import collect_source_records
+from codesemantics.acquisition import scan_project
+from codesemantics.source_records import collect_source_records
 
 class SourceRecordsTests(unittest.TestCase):
     def setUp(self):

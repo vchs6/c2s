@@ -1,6 +1,7 @@
 """在固定Git副本上遍历v2已发布事实，并用独立语法盘点和字节证据对照。"""
 from __future__ import annotations
 import argparse
+import os
 import ast
 import hashlib
 import io
@@ -13,13 +14,14 @@ import tempfile
 import time
 
 ROOT=Path(__file__).resolve().parents[1]
-sys.path[:0]=[str(ROOT/'src'),str(ROOT/'skill/src')]
-from c2s_semantic_contract.validation import validate_semantic_entity_model_v2
-from c2s_skill.fact_query import (execute_fact_query,project_fact_result,prepare_fact_projection_index)
-from c2s_skill.fact_request import normalize_fact_request
-from c2s_skill.inventory import inventory_tree,source_fingerprint
-from c2s_skill.semantic_store import SemanticEntityStore
-from c2s_skill.algorithm import validate_algorithms
+RUNTIME_ROOT=Path(os.environ.get('CODESEMANTICS_RUNTIME_ROOT',str(ROOT))).resolve()
+sys.path[:0]=[str(RUNTIME_ROOT/'src'),str(RUNTIME_ROOT/'skill/src')]
+from codesemantics_contract.validation import validate_semantic_entity_model_v2
+from codesemantics.fact_query import (execute_fact_query,project_fact_result,prepare_fact_projection_index)
+from codesemantics.fact_request import normalize_fact_request
+from codesemantics.inventory import inventory_tree,source_fingerprint
+from codesemantics.semantic_store import SemanticEntityStore
+from codesemantics.algorithm import validate_algorithms
 
 
 def _native_declarations(root: Path, entries: list) -> tuple[set,list]:
@@ -110,7 +112,7 @@ def verify_published_model(model: dict, root: Path, *, expected_fingerprint: str
         if len(projected['items'])!=1 or projected['items'][0]['attributes']!=entity['attributes']:
             result['diagnostics'].append({'code':'ENTITY_QUERY_LOSS','entity':entity['ref']})
         if projected['items']:
-            from c2s_skill.semantic_store import _identity_key
+            from codesemantics.semantic_store import _identity_key
             key=_identity_key(entity['ref']);item=projected['items'][0]
             expected_claims=index['claims'].get(key,[])
             expected_relations=index['relations'].get(key,[])

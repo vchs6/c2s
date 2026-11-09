@@ -15,7 +15,7 @@ class QueryResultCache:
                 tables={r[0] for r in check.execute("SELECT name FROM sqlite_master WHERE type='table'")}
                 old={'query_results','semantic_entity_archives','semantic_entity_registry','sessions','full_bundles','semantic_records'}
                 if tables.intersection(old) and 'query_results_v2' not in tables:
-                    raise ValueError('UNSUPPORTED_CACHE_PROFILE：旧档案不能作为V2缓存，原文件保持不变')
+                    raise ValueError('UNSUPPORTED_CACHE_PROFILE：不支持的档案不能作为V2缓存，原文件保持不变')
         self.path.parent.mkdir(parents=True,exist_ok=True)
         with open_sqlite(self.path) as connection:
             connection.execute('CREATE TABLE IF NOT EXISTS query_results_v2(cache_key TEXT PRIMARY KEY,payload TEXT NOT NULL)')
@@ -34,7 +34,7 @@ class QueryResultCache:
 
     def save_v2(self, root, request, source_digest, profile_digest, result):
         key=self._v2_key(root,request,source_digest,profile_digest)
-        if result.get('profile')!='semantic-fact-result-2':raise ValueError('v2缓存不接受旧结果')
+        if result.get('profile')!='semantic-fact-result-2':raise ValueError('v2缓存不接受其他结果')
         with self._connect() as connection:
             connection.execute('CREATE TABLE IF NOT EXISTS query_results_v2(cache_key TEXT PRIMARY KEY,payload TEXT NOT NULL)')
             connection.execute('INSERT OR REPLACE INTO query_results_v2 VALUES(?,?)',

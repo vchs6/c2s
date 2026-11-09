@@ -6,12 +6,12 @@ import tempfile
 import unittest
 from pathlib import Path
 from unittest.mock import patch
-from c2s_skill.fact_query import execute_fact_query
-from c2s_skill.semantic_store import SemanticEntityStore
-from c2s_skill.store import QueryResultCache
-from c2s_skill.__main__ import main
+from codesemantics.fact_query import execute_fact_query
+from codesemantics.semantic_store import SemanticEntityStore
+from codesemantics.store import QueryResultCache
+from codesemantics.__main__ import main
 
-class NonDddReviewRegressions(unittest.TestCase):
+class FactIntegrityRegressions(unittest.TestCase):
     def setUp(self):
         self.temp=tempfile.TemporaryDirectory();self.addCleanup(self.temp.cleanup)
         base=Path(self.temp.name);self.root=base/'source';self.root.mkdir()
@@ -87,9 +87,9 @@ class NonDddReviewRegressions(unittest.TestCase):
 
     def test_value_range_can_be_completed_but_not_overwritten(self):
         from copy import deepcopy
-        from c2s_skill.fact_request import normalize_fact_request
-        from c2s_skill.acquisition import scan_project
-        from c2s_skill.entity_construction import construct_requested_entities
+        from codesemantics.fact_request import normalize_fact_request
+        from codesemantics.acquisition import scan_project
+        from codesemantics.entity_construction import construct_requested_entities
         (self.root/'m.rs').write_text('enum Color { Red, Blue }\nstruct Data { color: Color }\n')
         q=normalize_fact_request({'scopeId':'review','view':'entity','target':{'kind':'DataEntity','name':'Data'},'facets':['attributes'],'detail':'self'})
         full=construct_requested_entities(self.root,scan_project(self.root),{'request':q,'needs':[{'facet':'attributes'}]})
@@ -133,7 +133,7 @@ class NonDddReviewRegressions(unittest.TestCase):
 
     def test_algorithm_evidence_must_be_closed_before_commit(self):
         from copy import deepcopy
-        from c2s_semantic_contract import validate_semantic_entity_model_v2
+        from codesemantics_contract import validate_semantic_entity_model_v2
         (self.root/'m.py').write_text('def run(x):\n return x+1\n')
         result=execute_fact_query(self.root,{'view':'entity','target':{'kind':'ComputationEntity','name':'run'},'facets':['implementation','algorithm'],'detail':'self'},self.store)
         model=self.store.read_request(result['request']['scopeId'],result['request'],result['cost']['inputFingerprint'],result['cost']['configurationDigest'])['model']

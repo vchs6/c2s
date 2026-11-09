@@ -6,11 +6,11 @@ from pathlib import Path
 from copy import deepcopy
 sys.path.insert(0,str(Path(__file__).resolve().parents[2]/'scripts'))
 from verify_source_fact_refactor import verify_published_model
-from c2s_skill.fact_query import execute_fact_query, project_fact_result, prepare_fact_projection_index
-from c2s_skill.semantic_store import SemanticEntityStore
-from c2s_skill.acquisition import analysis_profile_digest
-from c2s_skill.inventory import source_fingerprint
-from c2s_skill.fact_request import normalize_fact_request
+from codesemantics.fact_query import execute_fact_query, project_fact_result, prepare_fact_projection_index
+from codesemantics.semantic_store import SemanticEntityStore
+from codesemantics.acquisition import analysis_profile_digest
+from codesemantics.inventory import source_fingerprint
+from codesemantics.fact_request import normalize_fact_request
 
 class RefactorVerifierTests(unittest.TestCase):
     def setUp(self):

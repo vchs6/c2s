@@ -14,7 +14,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parents[2] / "skill" / "src"))
 from _historical_validation import (_manifest_integrity, register_m1,
                                              semantic_model_catalogs, validate_model)
 from _historical_projection import project_query_to_m1
-from c2s_skill.inventory import source_fingerprint
+from codesemantics.inventory import source_fingerprint
 
 
 def empty_bundle():

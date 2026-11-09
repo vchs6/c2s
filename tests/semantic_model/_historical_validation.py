@@ -10,7 +10,7 @@ from uuid import uuid4
 
 from jsonschema import Draft202012Validator
 from jsonschema.exceptions import SchemaError
-from c2s_semantic_contract.conditions import classify_claim_overlap, condition_satisfiability, diagnose_conditional_cycles
+from codesemantics_contract.conditions import classify_claim_overlap, condition_satisfiability, diagnose_conditional_cycles
 
 
 _ROOT = Path(__file__).resolve().parents[2]

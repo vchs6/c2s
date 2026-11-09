@@ -1,7 +1,7 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "urn:c2s:semantic-algorithm:1.0.0",
-  "title": "C2S structured algorithm descriptions",
+  "$id": "urn:codesemantics:semantic-algorithm:1.0.0",
+  "title": "codesemantics structured algorithm descriptions",
   "type": "object",
   "additionalProperties": false,
   "required": ["schema_version", "algorithms"],

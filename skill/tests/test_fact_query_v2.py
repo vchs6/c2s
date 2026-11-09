@@ -5,12 +5,12 @@ import tempfile
 import unittest
 from pathlib import Path
 from unittest.mock import patch
-from c2s_skill.fact_query import execute_fact_query, project_fact_result, render_fact_result
-from c2s_skill.semantic_store import SemanticEntityStore
-from c2s_skill.store import QueryResultCache
-from c2s_skill.fact_request import normalize_fact_request
-from c2s_skill.inventory import source_fingerprint
-from c2s_skill.acquisition import analysis_profile_digest
+from codesemantics.fact_query import execute_fact_query, project_fact_result, render_fact_result
+from codesemantics.semantic_store import SemanticEntityStore
+from codesemantics.store import QueryResultCache
+from codesemantics.fact_request import normalize_fact_request
+from codesemantics.inventory import source_fingerprint
+from codesemantics.acquisition import analysis_profile_digest
 
 class FactQueryV2Tests(unittest.TestCase):
     def setUp(self):
@@ -21,7 +21,7 @@ class FactQueryV2Tests(unittest.TestCase):
     def test_stored_algorithm_query_no_reconstruction(self):
         first=execute_fact_query(self.root,'function:run',self.store)
         self.assertTrue(first['items']);self.assertTrue(any('pseudocode' in r for r in first['sourceRecords']))
-        with patch('c2s_skill.fact_query.scan_project',side_effect=AssertionError('重复解析')):
+        with patch('codesemantics.fact_query.scan_project',side_effect=AssertionError('重复解析')):
             second=execute_fact_query(self.root,'function:run',self.store)
         self.assertEqual(first['items'],second['items'])
         self.assertEqual('reused',second['persistence']['status'])
@@ -73,16 +73,16 @@ class FactQueryV2Tests(unittest.TestCase):
         self.assertIsNone(self.cache.load_v2(self.root,q,fp,'changed'))
         self.assertIsNone(self.cache.load_v2(self.root,q,'changed',cfg))
     def test_cold_organization_skips_implementation_fact_construction(self):
-        from c2s_skill.acquisition import _make_fact
+        from codesemantics.acquisition import _make_fact
         seen=[]
         def record(*args,**kw):seen.append(args[2]);return _make_fact(*args,**kw)
-        with patch('c2s_skill.acquisition._make_fact',side_effect=record):execute_fact_query(self.root,'modules',self.store)
+        with patch('codesemantics.acquisition._make_fact',side_effect=record):execute_fact_query(self.root,'modules',self.store)
         self.assertNotIn('algorithm_step',seen);self.assertNotIn('local_binding',seen)
 
     def test_persisted_result_cache_hit_preserves_valid_profile(self):
         first=execute_fact_query(self.root,'function:run',self.store,cache=self.cache)
         self.assertEqual('saved',first['persistence']['status'])
-        with patch('c2s_skill.fact_query.scan_project',side_effect=AssertionError('缓存命中不应解析')):
+        with patch('codesemantics.fact_query.scan_project',side_effect=AssertionError('缓存命中不应解析')):
             second=execute_fact_query(self.root,'function:run',self.store,cache=self.cache)
         self.assertEqual('cache_hit',second['persistence']['status'])
 
@@ -102,11 +102,11 @@ class FactQueryV2Tests(unittest.TestCase):
         self.assertTrue(any('pseudocode' in s for s in second['sourceRecords']))
 
     def test_public_archive_query_never_reconstructs(self):
-        from c2s_skill.semantic_entity_query import query_entity_store_v2
-        from c2s_skill.query import query_project_v2
+        from codesemantics.semantic_entity_query import query_entity_store_v2
+        from codesemantics.query import query_project_v2
         first=query_project_v2(self.root,'function:run',self.store)
         q=first['request'];fp=source_fingerprint(self.root);cfg=first['cost']['configurationDigest']
-        with patch('c2s_skill.fact_query.scan_project',side_effect=AssertionError('仓库查询不能重构')):
+        with patch('codesemantics.fact_query.scan_project',side_effect=AssertionError('仓库查询不能重构')):
             second=query_entity_store_v2(self.store,q,fp,cfg)
         self.assertEqual(first['items'],second['items'])
 
@@ -132,7 +132,7 @@ class FactQueryV2Tests(unittest.TestCase):
         self.assertTrue(any('pseudocode' in s for s in result['sourceRecords']))
 
     def test_workspace_members_use_native_metadata_not_all_declarations(self):
-        from c2s_skill.acquisition import Fact
+        from codesemantics.acquisition import Fact
         (self.root/'Cargo.toml').write_text('[workspace]\nmembers=["crates/*"]\n')
         member=self.root/'crates/a';member.mkdir(parents=True)
         (member/'Cargo.toml').write_text('[package]\nname="a"\nversion="0.1.0"\n')
@@ -140,7 +140,7 @@ class FactQueryV2Tests(unittest.TestCase):
             if raw_output is not None:raw_output.append({'metadata':{'packages':[{'name':'a'}]},'toolVersion':'test'})
             source=(root/'Cargo.toml').read_text()
             return [Fact('workspace:a','workspace_member','a','Cargo.toml',0,len(source.encode()),'E1','observation',source,'crates/a/Cargo.toml')],None
-        with patch('c2s_skill.fact_query.cargo_workspace_facts',side_effect=metadata) as cargo:
+        with patch('codesemantics.fact_query.cargo_workspace_facts',side_effect=metadata) as cargo:
             result=execute_fact_query(self.root,'workspace-members',self.store)
         self.assertEqual(['a'],[i['name'] for i in result['items']]);self.assertEqual(1,cargo.call_count)
         self.assertTrue(result['artifacts'])
@@ -166,7 +166,7 @@ class FactQueryV2Tests(unittest.TestCase):
         self.assertEqual(result['diagnostics'],result['coverage'][0]['diagnostics'])
 
     def test_archive_projection_does_not_invent_algorithm_coverage(self):
-        from c2s_skill.semantic_entity_query import query_entity_store_v2
+        from codesemantics.semantic_entity_query import query_entity_store_v2
         first=execute_fact_query(self.root,'modules',self.store)
         q=normalize_fact_request({'scopeId':first['request']['scopeId'],'view':'source',
             'target':{'kind':'function','name':'run'},'facets':['algorithm'],'detail':'self'})
@@ -195,7 +195,7 @@ class FactQueryV2Tests(unittest.TestCase):
         self.assertNotIn('local',[i['name'] for i in result['items']])
 
     def test_algorithm_schema_is_part_of_configuration(self):
-        from c2s_skill.fact_query import v2_configuration_digest
+        from codesemantics.fact_query import v2_configuration_digest
         original=Path.read_bytes
         first=v2_configuration_digest()
         def changed(path):

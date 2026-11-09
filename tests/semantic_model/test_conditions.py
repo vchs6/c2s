@@ -4,7 +4,7 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[2] / "src"))
 
-from c2s_semantic_contract.conditions import (classify_claim_overlap, condition_satisfiability,
+from codesemantics_contract.conditions import (classify_claim_overlap, condition_satisfiability,
                                              evaluate_condition,
                                              diagnose_conditional_cycles)
 

@@ -1,7 +1,7 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "urn:c2s:semantic-entity-model:2.0.0",
-  "title": "C2S上游来源与语义实体模型v2",
+  "$id": "urn:codesemantics:semantic-entity-model:2.0.0",
+  "title": "codesemantics上游来源与语义实体模型",
   "type": "object",
   "additionalProperties": false,
   "required": [
@@ -681,7 +681,7 @@
           "enum": [
             "direct_source",
             "derived_analysis",
-            "unclassified_legacy"
+            "artifact_observation"
           ]
         },
         "premiseIds": {
@@ -695,7 +695,7 @@
           "type": "string",
           "minLength": 1
         },
-        "legacyPayloadArtifactId": {
+        "artifactId": {
           "type": "string",
           "minLength": 1
         }
@@ -725,13 +725,13 @@
           "if": {
             "properties": {
               "origin": {
-                "const": "unclassified_legacy"
+                "const": "artifact_observation"
               }
             }
           },
           "then": {
             "required": [
-              "legacyPayloadArtifactId"
+              "artifactId"
             ]
           }
         }
@@ -962,7 +962,7 @@
                   "const": "1.0.0"
                 },
                 "format": {
-                  "const": "c2s-pseudocode-1"
+                  "const": "codesemantics-pseudocode-1"
                 },
                 "function": {
                   "type": "string"

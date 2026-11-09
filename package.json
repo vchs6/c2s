@@ -1,6 +1,6 @@
 {
-  "name": "c2s",
-  "version": "1.0.0",
+  "name": "codesemantics",
+  "version": "0.1.0",
   "description": "Development tooling for c2s semantic-fact extraction Skill",
   "scripts": {
     "openspec": "openspec",

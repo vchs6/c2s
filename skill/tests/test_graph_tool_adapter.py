@@ -2,8 +2,8 @@ import unittest
 from pathlib import Path
 from tempfile import TemporaryDirectory
 
-from c2s_skill.graph_tool_adapter import parse_code_review_graph_response
-from c2s_skill.capability_matrix import (ToolSelection, host_environment, load_tool_matrix,
+from codesemantics.graph_tool_adapter import parse_code_review_graph_response
+from codesemantics.capability_matrix import (ToolSelection, host_environment, load_tool_matrix,
                                          parse_selected_tool_output, select_tools)
 
 

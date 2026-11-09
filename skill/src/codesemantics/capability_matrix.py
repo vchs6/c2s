@@ -84,10 +84,11 @@ def detect_available_tools(matrix: dict[str, Any]) -> set[str]:
         runtime = tool.get("runtime", {})
         kind, name = runtime.get("kind"), runtime.get("name")
         if kind == "builtin-python" and isinstance(name, str):
-            version=tuple(int(part) for part in platform.python_version().split('.')[:3])
+            parsed=re.fullmatch(r'(\d+)\.(\d+)\.(\d+)',platform.python_version())
+            version=tuple(map(int,parsed.groups())) if parsed else ()
             minimum=tuple(map(int,runtime.get('python_min','3.12.0').split('.')))
             maximum=tuple(map(int,runtime.get('python_max_exclusive','3.13.0').split('.')))
-            found=importlib.util.find_spec(name) is not None and minimum<=version<maximum
+            found=importlib.util.find_spec(name) is not None and bool(parsed) and minimum<=version<maximum
         elif kind in {"python-module", "optional-python-module"} and isinstance(name, str):
             try:
                 found = importlib.util.find_spec(name) is not None
