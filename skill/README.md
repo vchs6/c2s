@@ -1,5 +1,7 @@
 # c2s上游事实查询Skill
 
+首次使用请读[使用说明：本地工具、其他Skill与安装责任](使用说明.md)。当前查询链路不强制依赖其他项目分析Skill；本地依赖可由有终端、下载网络和写权限的代理代装，但CLI自身不会自动安装。当前产出物为仓库CLI/API，尚无宿主自动发现用的skill/SKILL.md清单。
+
 当前仅公开V2协议：semantic-entity-model-2、semantic-fact-request-2及semantic-fact-result-2。按用户2026-11-09决定，V1、旧完整事实和M1运行接口、缓存接口及导入导出均已撤销，不提供兼容别名。历史Schema和报告仅供追溯。
 
 ## 当前能力
@@ -10,18 +12,15 @@ Python AST、Rust Tree-sitter提取来源目录、嵌套清单、模块、声明
 
 ## 安装及自检
 
-支持Linux、Python3.12.x（>=3.12.0、<3.13.0）、Node22.13+/24+。已验证补丁版本另见本次审核修复报告。Python包来自公开包索引，Rust工具链来自官方rust-lang.org；项目本地安装目录不随仓库提交。
+已验证Linux x86_64、正式版Python3.12.x（>=3.12.0、<3.13.0）；基础查询不要求Node/npm。已验证补丁版本另见本次审核修复报告。Python包来自公开包索引，Rust工具链来自官方rust-lang.org；项目本地安装目录不随仓库提交。
 
 ```bash
-uv venv .local/analysis-venv
-uv pip install --python .local/analysis-venv/bin/python -r requirements-skill.txt
-PYTHONPATH=src:skill/src .local/analysis-venv/bin/python -m unittest discover -s skill/tests -v
-npm test
-npm run validate
-npm run check:artifacts
+python3.12 -m venv .local/analysis-venv
+.local/analysis-venv/bin/python -m pip install -r requirements-skill.txt
+PYTHONPATH=src:skill/src .local/analysis-venv/bin/python -m c2s_skill --help
 ```
 
-基础依赖：Python AST标准库、jsonschema 4.26.0、tree-sitter 0.26.0、tree-sitter-rust 0.24.2及TOML标准库。开发工具为OpenSpec1.16.0、Codex0.166.0、Superpowers7.0.1，不是产品运行依赖。Rust/Cargo1.99.1用于本环境原生工作空间取证，安装和版本自检：
+基础依赖：Python AST标准库、jsonschema 4.26.0、tree-sitter 0.26.0、tree-sitter-rust 0.24.2及TOML标准库。其他项目分析Skill目前没有必需项；Serena/GitNexus及配套建图Skill仍是候选，不要求用户安装。开发环境单独见仓库README，不作为本节运行前提。Rust/Cargo1.99.1用于本环境原生工作空间取证，安装和版本自检：
 
 ```bash
 RUSTUP_HOME="$PWD/.local/rustup" CARGO_HOME="$PWD/.local/cargo" .local/cargo/bin/cargo --version
@@ -69,7 +68,7 @@ receipt = backup_entity_archive(SemanticEntityStore('/tmp/project-v2.sqlite'), P
 
 ## 验证边界
 
-固定Click和regex的逐项来源/实体/证据回读及先定向→全量→定向一致性由scripts/verify_source_fact_refactor.py执行，脚本从固定Git版本创建隔离副本并检查源树不变。最新结果见[移除V1交付核验](../docs/development/reviews/semantic-facts/移除V1交付核验.md)。全部已发布记录遍历不等于穷尽全部语义真值，未请求算法不展开。
+固定Click和regex的逐项来源/实体/证据回读及先定向→全量→定向一致性由scripts/verify_source_fact_refactor.py执行，脚本从固定Git版本创建隔离副本并检查源树不变。最新结果见[公开审核修复核验](../docs/development/reviews/semantic-facts/公开审核修复核验.md)。全部已发布记录遍历不等于穷尽全部语义真值，未请求算法不展开。
 
 只验证了Linux的Python/Rust静态支持；其他语言、host/target、上游运行时等价及词元节省未验证。独立上下文只读代码审核与共享公开测试不是私有盲验收。
 

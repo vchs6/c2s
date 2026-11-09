@@ -1,6 +1,6 @@
 # c2s — Code to Semantics
 
-当前产品仅提供V2公开接口，V1兼容路径已按ADR-0014移除。用法见[Skill说明](skill/README.md)，实施与独立审核见[移除V1交付核验](docs/development/reviews/semantic-facts/移除V1交付核验.md)。下面早期准备与规划文字保留为历史记录，不恢复旧接口。
+当前产品仅提供V2公开接口，V1兼容路径已按ADR-0014移除。首次使用所需工具、其他Skill与代理安装责任见[使用说明](skill/使用说明.md)，CLI/API索引见[Skill说明](skill/README.md)，实施与独立审核见[移除V1交付核验](docs/development/reviews/semantic-facts/移除V1交付核验.md)。下面早期准备与规划文字保留为历史记录，不恢复旧接口。
 
 按规格驱动开发的上游软件项目语义事实提取Skill项目。当前模型决策见[ADR-0013](docs/decisions/0013-非DDD语义事实模型.md)：语义实体、源码实现参考和证据构成事实模型，不采用DDD建模约束。已取得连续开发授权（ADR-0009）；依据ADR-0011，未验证的双向盲编写和私有验收隔离不再阻塞开发。隔离现状与报告边界见[readiness](docs/planning/program-2026-11-01/readiness.md)。
 
