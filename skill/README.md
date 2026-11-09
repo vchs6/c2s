@@ -27,6 +27,12 @@ npm run check:artifacts
 RUSTUP_HOME="$PWD/.local/rustup" CARGO_HOME="$PWD/.local/cargo" .local/cargo/bin/cargo --version
 ```
 
+对仓库本地安装的Cargo，执行工作空间查询时还需将CARGO指向实际二进制；示例：
+
+```bash
+CARGO="$PWD/.local/cargo/bin/cargo" RUSTUP_HOME="$PWD/.local/rustup" CARGO_HOME="$PWD/.local/cargo" PYTHONPATH=src:skill/src .local/analysis-venv/bin/python -m c2s_skill query --root .local/real-projects/regex --select workspace-members --store /tmp/regex-v2.sqlite --format json
+```
+
 Cargo使用--no-deps --offline，不证明构建通过。Code Review Graph2.3.9可选，通过--graph-output导入其结构化响应，保留原始输出及新鲜度缺口。CodeGraph1.6.2（Apache-2.0、npm开源项目）已验证files/query/callers/callees解析，但尚无净覆盖收益证明，保持candidate；均非默认依赖。工具矩阵与专用解析器决定可执行能力，不把导航Skill短文本当事实。
 
 ## 查询

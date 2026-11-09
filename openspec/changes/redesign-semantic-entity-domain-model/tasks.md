@@ -170,5 +170,5 @@
 本节替代此前保留兼容接口的要求，第10节作为历史交付证据保留。
 
 - [x] 11.1 **删除公开V1运行接口**（7项唯一接口/旧档案不变/显式V2备份测试通过；原先21项失败断言已转绿；当前Skill176项及npm133项均通过）。依据用户明确删除决定及2026-11-09设计。先新增test_v2_only.py：CLI拒绝旧profile、旧查询/仓储/缓存/转换/包导出不存在、纯旧档案拒绝且摘要不变；实跑RED。修改__main__/query/store/semantic_store/entity_construction/semantic_entity_query，删除semantic_entity_migration及过时脚本；提取内部共用校验。V2公开API、实体/来源/算法及显式备份不退化。定向命令：PYTHONPATH=src:skill/src .local/analysis-venv/bin/python -m unittest discover -s skill/tests -p 'test_v2_only.py' -v。通过后提交。
-- [ ] 11.2 **同步规格、测试和文档**。修订现行正式/变更规格及README、领域说明；历史报告保留并明确被替代。退休仅验证已移除接口的测试，列清去向；不得用放宽当前期望掩盖失败。运行npm test、npm run validate、npm run check:artifacts、Skill全套及固定Click/regex逐项回读，输出移除V1交付核验。通过后提交。
-- [ ] 11.3 **独立代码审核与交付**。新上下文审核者仅读最终项目，不继承实施会话、不派子代理；检查整个V2路径、公开接口残留、数据安全与覆盖，不仅看删除diff。记录具体问题及等级，实质问题以RED→GREEN修复并重跑受影响全集。所有检查通过后main推送和远程读回，不称私有盲验收，不自动归档。
+- [x] 11.2 **同步规格、测试和文档**（25个含旧接口的活动提案文件已标明ADR-0014替代，Skill184/184、npm133/133、严格23/23及原件4项通过，修正后Click/regex最终配置逐项回读均valid）。修订现行正式/变更规格及README、领域说明；历史报告保留并明确被替代。退休仅验证已移除接口的测试，列清去向；不得用放宽当前期望掩盖失败。运行npm test、npm run validate、npm run check:artifacts、Skill全套及固定Click/regex逐项回读，输出移除V1交付核验。通过后提交。
+- [x] 11.3 **独立代码审核与交付**（新上下文完整项目只读审核完成，0Critical/6Important/0Minor；六项真实RED→GREEN修复，重跑全套及固定真实项目通过；审核原结论与修复证明分开记录，不冒称二次批准）。新上下文审核者仅读最终项目，不继承实施会话、不派子代理；检查整个V2路径、公开接口残留、数据安全与覆盖，不仅看删除diff。记录具体问题及等级，实质问题以RED→GREEN修复并重跑受影响全集。所有检查通过后main推送和远程读回，不称私有盲验收，不自动归档。

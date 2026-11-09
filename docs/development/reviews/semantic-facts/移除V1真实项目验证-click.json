@@ -1,0 +1,243 @@
+{
+  "project": "click",
+  "commit": "2247b35ea1c47c727d7a06e51fa280e12a863ff6",
+  "inputFingerprint": "6b24a0656b225fec41c4c7e920633bc57e91436506a0dd018b3dbccd306dec50",
+  "environment": {
+    "host": "Linux-6.18.57-x86_64-with-glibc2.41",
+    "python": "3.12.14",
+    "treeSitter": "0.26.0",
+    "rustGrammar": "0.24.2",
+    "target": "未验证；不由host推定"
+  },
+  "sourceTreeUnchanged": true,
+  "verification": {
+    "valid": true,
+    "diagnostics": [],
+    "sourceDeclarationsVerified": 2078,
+    "semanticInterpretationComplete": false,
+    "sourceQueriesVerified": 7313,
+    "entityQueriesVerified": 2610,
+    "evidenceVerified": 11856,
+    "algorithmsVerified": 1,
+    "claimsVerified": 2610,
+    "relationsVerified": 2582,
+    "mappingsVerified": 4448,
+    "nativeParseGaps": [],
+    "baselineKinds": [
+      "Python类与函数",
+      "Rust函数/结构体/枚举/trait"
+    ],
+    "evidenceRecordsTraversed": 11858,
+    "diagnosticsTraversed": 3332,
+    "publishedCollections": {
+      "entities": 2610,
+      "sourceRecords": 7313,
+      "claims": 2610,
+      "relations": 2582,
+      "evidence": 11858,
+      "coverage": 2612,
+      "sourceCoverage": 4,
+      "acquisitionRuns": 8,
+      "artifacts": 0
+    },
+    "analysisGapCount": 3332
+  },
+  "requests": [
+    {
+      "request": {
+        "profile": "semantic-fact-request-2",
+        "scopeId": "verification:click:2247b35ea1c47c727d7a06e51fa280e12a863ff6",
+        "view": "source",
+        "target": {
+          "kind": "all"
+        },
+        "facets": [
+          "organization"
+        ],
+        "detail": "list",
+        "expandDepth": 0,
+        "conditions": {}
+      },
+      "first": {
+        "parsedFiles": 91,
+        "algorithmFunctions": 0,
+        "elapsedSeconds": 13.116888522999943,
+        "llmTokens": null,
+        "llmStatus": "not_used",
+        "inputFingerprint": "6b24a0656b225fec41c4c7e920633bc57e91436506a0dd018b3dbccd306dec50",
+        "configurationDigest": "cda1e7d8b4a71c90c48cb3be47488b68dab5b75ea7522bec11f0889712df4aa4"
+      },
+      "repeat": {
+        "parsedFiles": 0,
+        "algorithmFunctions": 0,
+        "elapsedSeconds": 0.3507511049999721,
+        "llmTokens": null,
+        "llmStatus": "not_used",
+        "inputFingerprint": "6b24a0656b225fec41c4c7e920633bc57e91436506a0dd018b3dbccd306dec50",
+        "configurationDigest": "cda1e7d8b4a71c90c48cb3be47488b68dab5b75ea7522bec11f0889712df4aa4"
+      },
+      "sameFactsAndGaps": true,
+      "firstPersistence": {
+        "status": "saved",
+        "generation": 1
+      },
+      "repeatPersistence": {
+        "status": "reused"
+      },
+      "itemCount": 7313
+    },
+    {
+      "request": {
+        "profile": "semantic-fact-request-2",
+        "scopeId": "verification:click:2247b35ea1c47c727d7a06e51fa280e12a863ff6",
+        "view": "entity",
+        "target": {
+          "kind": "DataEntity",
+          "name": "URL",
+          "path": "examples/validation/validation.py"
+        },
+        "facets": [
+          "attributes"
+        ],
+        "detail": "self",
+        "expandDepth": 0,
+        "conditions": {}
+      },
+      "first": {
+        "parsedFiles": 91,
+        "algorithmFunctions": 0,
+        "elapsedSeconds": 14.47352439899987,
+        "llmTokens": null,
+        "llmStatus": "not_used",
+        "inputFingerprint": "6b24a0656b225fec41c4c7e920633bc57e91436506a0dd018b3dbccd306dec50",
+        "configurationDigest": "cda1e7d8b4a71c90c48cb3be47488b68dab5b75ea7522bec11f0889712df4aa4"
+      },
+      "repeat": {
+        "parsedFiles": 0,
+        "algorithmFunctions": 0,
+        "elapsedSeconds": 0.16598832099998617,
+        "llmTokens": null,
+        "llmStatus": "not_used",
+        "inputFingerprint": "6b24a0656b225fec41c4c7e920633bc57e91436506a0dd018b3dbccd306dec50",
+        "configurationDigest": "cda1e7d8b4a71c90c48cb3be47488b68dab5b75ea7522bec11f0889712df4aa4"
+      },
+      "sameFactsAndGaps": true,
+      "firstPersistence": {
+        "status": "saved",
+        "generation": 2
+      },
+      "repeatPersistence": {
+        "status": "reused"
+      },
+      "itemCount": 1
+    },
+    {
+      "request": {
+        "profile": "semantic-fact-request-2",
+        "scopeId": "verification:click:2247b35ea1c47c727d7a06e51fa280e12a863ff6",
+        "view": "entity",
+        "target": {
+          "kind": "all"
+        },
+        "facets": [
+          "attributes",
+          "implementation",
+          "relations",
+          "tests"
+        ],
+        "detail": "list",
+        "expandDepth": 0,
+        "conditions": {}
+      },
+      "first": {
+        "parsedFiles": 0,
+        "algorithmFunctions": 0,
+        "elapsedSeconds": 74.22196895499997,
+        "llmTokens": null,
+        "llmStatus": "not_used",
+        "inputFingerprint": "6b24a0656b225fec41c4c7e920633bc57e91436506a0dd018b3dbccd306dec50",
+        "configurationDigest": "cda1e7d8b4a71c90c48cb3be47488b68dab5b75ea7522bec11f0889712df4aa4"
+      },
+      "repeat": {
+        "parsedFiles": 0,
+        "algorithmFunctions": 0,
+        "elapsedSeconds": 0.6286497090000012,
+        "llmTokens": null,
+        "llmStatus": "not_used",
+        "inputFingerprint": "6b24a0656b225fec41c4c7e920633bc57e91436506a0dd018b3dbccd306dec50",
+        "configurationDigest": "cda1e7d8b4a71c90c48cb3be47488b68dab5b75ea7522bec11f0889712df4aa4"
+      },
+      "sameFactsAndGaps": true,
+      "firstPersistence": {
+        "status": "saved",
+        "generation": 3
+      },
+      "repeatPersistence": {
+        "status": "reused"
+      },
+      "itemCount": 2610
+    },
+    {
+      "request": {
+        "profile": "semantic-fact-request-2",
+        "scopeId": "verification:click:2247b35ea1c47c727d7a06e51fa280e12a863ff6",
+        "view": "entity",
+        "target": {
+          "kind": "ComputationEntity",
+          "name": "_unpack_args",
+          "path": "src/click/parser.py"
+        },
+        "facets": [
+          "algorithm",
+          "attributes",
+          "implementation"
+        ],
+        "detail": "self",
+        "expandDepth": 0,
+        "conditions": {}
+      },
+      "first": {
+        "parsedFiles": 0,
+        "algorithmFunctions": 1,
+        "elapsedSeconds": 19.139484311999922,
+        "llmTokens": null,
+        "llmStatus": "not_used",
+        "inputFingerprint": "6b24a0656b225fec41c4c7e920633bc57e91436506a0dd018b3dbccd306dec50",
+        "configurationDigest": "cda1e7d8b4a71c90c48cb3be47488b68dab5b75ea7522bec11f0889712df4aa4"
+      },
+      "repeat": {
+        "parsedFiles": 0,
+        "algorithmFunctions": 0,
+        "elapsedSeconds": 0.4236548210001274,
+        "llmTokens": null,
+        "llmStatus": "not_used",
+        "inputFingerprint": "6b24a0656b225fec41c4c7e920633bc57e91436506a0dd018b3dbccd306dec50",
+        "configurationDigest": "cda1e7d8b4a71c90c48cb3be47488b68dab5b75ea7522bec11f0889712df4aa4"
+      },
+      "sameFactsAndGaps": true,
+      "firstPersistence": {
+        "status": "saved",
+        "generation": 4
+      },
+      "repeatPersistence": {
+        "status": "reused"
+      },
+      "itemCount": 1
+    }
+  ],
+  "queryOrderChecks": [
+    {
+      "target": {
+        "kind": "DataEntity",
+        "name": "URL",
+        "path": "examples/validation/validation.py"
+      },
+      "sameAttributes": true,
+      "targetedBeforeBroader": true,
+      "afterBroaderParsedFiles": 0
+    }
+  ],
+  "databaseBytes": 34910208,
+  "llmUsage": "未使用；不宣称词元节省",
+  "coverageScope": "全部已发布来源/实体/证据/关系和显式请求算法；未请求算法未展开，语义解释不视为已证明完整。"
+}
