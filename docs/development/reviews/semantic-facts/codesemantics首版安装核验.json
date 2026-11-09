@@ -1,0 +1,82 @@
+{
+  "queries": [
+    {
+      "case": "Python模块",
+      "exitCode": 0,
+      "complete": true,
+      "diagnostics": []
+    },
+    {
+      "case": "已有图输出",
+      "exitCode": 2,
+      "complete": false,
+      "diagnostics": [
+        {
+          "code": "ALGORITHM_STATIC_PARTIAL",
+          "recordId": "84b0feadaaf5a394b27ea1d8eb3a63a2254187a513b281a9852ee0e40278ec7c"
+        },
+        {
+          "artifactId": "09f3bf16fe8408c409432488aece2d9edf286b7ebae0a83bc1d7b586ceb49a7f",
+          "code": "GRAPH_INDEX_FRESHNESS_UNVERIFIED",
+          "message": "The response does not attest that its graph index matches the current project sources."
+        },
+        {
+          "artifactId": "09f3bf16fe8408c409432488aece2d9edf286b7ebae0a83bc1d7b586ceb49a7f",
+          "code": "GRAPH_TOOL_EVIDENCE",
+          "evidenceIds": [
+            "c73e4eb8084526929502d332758fb7f48b69b2aa662863ef24b6361e33a07b21"
+          ]
+        }
+      ]
+    },
+    {
+      "case": "Rust函数",
+      "exitCode": 0,
+      "complete": true,
+      "diagnostics": []
+    },
+    {
+      "case": "缺Cargo工作区",
+      "exitCode": 2,
+      "complete": false,
+      "diagnostics": [
+        {
+          "code": "WORKSPACE_NOT_ACQUIRED",
+          "message": "TOOL_UNAVAILABLE:cargo",
+          "retryable": true
+        },
+        {
+          "code": "TARGET_NOT_ACQUIRED"
+        }
+      ]
+    }
+  ],
+  "deployments": [
+    {
+      "assistant": "codex",
+      "fileDeployment": true,
+      "hostActivationVerified": false
+    },
+    {
+      "assistant": "codearts",
+      "fileDeployment": true,
+      "hostActivationVerified": false
+    },
+    {
+      "assistant": "atomcode",
+      "fileDeployment": true,
+      "hostActivationVerified": false
+    },
+    {
+      "assistant": "qcode",
+      "fileDeployment": true,
+      "hostActivationVerified": false
+    }
+  ],
+  "bytecodeRedeployment": true,
+  "runtimeConfigurationDigest": "35ea441880e9bcd33a6df5444adf258dec51f44db9b619d888091dc1700a0558",
+  "realProjectRuntimeMatches": true,
+  "archiveEntries": 43,
+  "archiveSha256": "1f6acc0ce26303ae06ea650b247b6deff028c5f91ae5def19f303e19f43da95a",
+  "payloadScanViolations": []
+}
