@@ -14,11 +14,11 @@ from unittest.mock import patch
 ROOT = Path(__file__).resolve().parents[2]
 sys.path.insert(0, str(ROOT / "src"))
 
-from c2s_semantic_contract.validation import (
+from _historical_validation import (
     _validate_semantic_entity_catalogs,
     validate_semantic_entity_model,
 )
-import c2s_semantic_contract.validation as validation_module
+import _historical_validation as validation_module
 
 
 def entity_ref(local_id: str, kind: str = "DataEntity") -> dict:

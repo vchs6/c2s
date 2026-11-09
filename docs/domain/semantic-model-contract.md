@@ -1,40 +1,13 @@
-# 语义模型契约说明
+# 语义模型公共契约
 
-## 状态与范围
+依据ADR-0013和ADR-0014，产品仅公开semantic-entity-model-2及请求/结果V2。公开校验器validate_semantic_entity_model_v2不接受V1；内部共用实体结构不变量不作为旧模型校验接口导出。
 
-当前领域模型以`semantic-entity-model-2`为默认权威profile，v1保留显式兼容接口，包含语义实体、实体属性、类型化关系、主张、证据、覆盖、源码构造、实现映射和测试验证映射。项目及其语义模块也按实体表达；E0–E4保留为事实观察视角，不是实体类别或身份组成部分。
+语义实体、属性、类型化关系、来源构造、实现/测试映射、主张、证据、取得运行及覆盖共同表达可追溯上游事实。sourceRecords独立于实体；derived_analysis保留premiseIds/method；legacy_payload仅是已有V2数据可能包含的历史工件，不构成V1导入/导出服务。实体身份不按名称/路径自动合并，源码声明不自动证明业务边界或运行时行为。
 
-`m1-project-discovery-1`继续作为独立的窄范围项目/workspace发现profile。`semantic-fact-model-1`现为旧完整档案只读兼容格式和迁移输入；运行时`commit_bundle`拒绝新写入，`read_bundle`/`query_bundle`保留旧档案读取能力。默认CLI查询和算法档案新写入均转向`semantic-entity-model-2`，M1接口不变。实现与切换验证记录见`openspec/changes/redesign-semantic-entity-domain-model/tasks.md`及同目录实体模型验证报告。
+规范请求包含scope、view、target、facets、detail及expandDepth；self隐含自身全部已取得属性，子实体按显式深度展开。来源与实体覆盖独立；缺口、冲突、未展开和持久化状态不能混为一谈。JSON/Markdown共用同一结果，纯档案查询不重建来源。
 
-既有`project_query_to_semantic_model`把Python/Rust分析器当时支持的事实投影到旧`semantic-fact-model-1`档案。固定Click和regex检出曾分别产生23,779与54,313条旧事实；这些数量只表示该分析器的支持范围，不表示项目全部语义。Cargo元数据不可用时仍有明确缺口。旧校验可检查结构、引用和声明的不变量，不能证明源码解释为真、完整还原E0–E4内容或运行时行为正确。
+SQLite按scope+输入指纹+分析配置隔离，注册、事实/证据合并、引用、覆盖及回执原子提交。仅V2公开存取；纯旧库明确拒绝且不改写，混合库不访问旧载荷。缓存不能掩盖保存失败，retryable不满足复用。显式完整备份见archive_backup模块，不自动迁移或恢复V1。
 
-## 身份术语
+历史Schema、目录摘要及旧报告留作追溯；测试侧冻结辅助只校验历史原件，产品不导出。当前算法自有schema_version=1.0.0与已撤销实体V1是不同契约。
 
-`SemanticEntityRef`标识可独立引用的语义实体，身份由authority、domainId和localId组成，kind使用类型目录约束。实体身份不包含路径、名称、层号、提交、内容摘要或工具节点ID。注册表的sourceKey只用于将新的来源证据关联到已登记实体；冲突时报告诊断，不按名称或路径猜测。
-
-`SourceConstruct`拥有独立于实体的源码身份，保存语言、语法种类、源码位置、声明形状和源码包含关系。`SourceDeclaration`是旧M1 profile的主体类别；不能仅凭该旧身份将声明提升为语义实体。软件包、workspace成员、目录和源码模块也不自动成为领域项目、模块或能力。
-
-## 校验与证据边界
-
-`contracts/semantic-model/`中的实体模式和目录规定结构化记录；`src/c2s_semantic_contract/validation.py`负责实体身份、属性、关系端点、源码映射、证据和覆盖等局部一致性检查。Skill构造器应保留分析输入指纹、来源摘要和原始获取元数据，空结果不得转换成全称否定主张。契约有效不等于来源判断为真；覆盖仅对实际提交的输入、请求和分析配置有效。共享工作区测试是公开实现证据，不构成独立验收。
-
-当前方法与目标依据ADR-0013：不采用DDD；语义实体是事实查询模型，源码构造是独立实现参考。历史原件和旧决策保留来源记录，不作为恢复DDD约束的依据。
-
-## v2公共协议与执行路径
-
-已新增semantic-entity-model-2的封闭Schema与`validate_semantic_entity_model_v2`：来源组织、直接/推导/旧载荷未分类主张、取得运行及来源覆盖分别校验；v1引用和实体规则继续复用。请求/结果v2 Schema已建立，来源记录不能冒实体引用，未分类旧主张必须保留原载荷工件。默认运行路径已接入v2。
-
-v2请求经normalize_fact_request规范化，entity/self隐含自身attributes；同名候选不自动选择。plan_fact_request只计划请求缺少的描述面，未定位函数先建立声明索引；工具能力未覆盖时保留TOOL_UNAVAILABLE。该接口由默认CLI、查询API和档案投影器共同使用。
-
-## v1到v2兼容转换
-
-`import_entity_v1`验证原档案后保留实体ref/证据和完整legacy_payload工件。无法确证来源类型的旧主张使用unclassified_legacy，不能满足当前请求覆盖；来源组织只从既有sourceMappings保守转换。`export_entity_v1`返回document及逐字段/集合losses，导出不删除v2内容。`backup_entity_archive`使用SQLite在线备份和逐表回读，备份路径必须不存在，失败不改旧档案。转换API本身不切换默认；本轮默认切换与备份/回滚实证见`docs/development/reviews/semantic-facts/非DDD重构交付核验.md`。
-
-
-## 细粒度覆盖与兼容边界
-
-规范请求按scope、view、target、facets及conditions确定范围，实体self隐含自身全部已取得属性。来源记录身份绑定固定输入及来源键，语义实体身份仍由注册表保存；同名跨模块不合并，未解析类型引用保持未知。sourceCoverage与实体coverage独立；派生主张须带premiseIds/method，旧未分类主张须带原始载荷工件，不满足新覆盖。
-
-新写入按scope+输入指纹+分析配置保存到v2独立表，补证、注册、引用校验、覆盖和回执在同一事务提交。v2允许未知值域由有证据的确定值域补齐，确定值域冲突拒绝；v1原有合并规则保持。取得运行记录实际解析器/工具版本和证据/工件引用。保存失败的结果不能通过缓存伪装成保存成功；缓存命中在要求存储时仍验证目标档案及覆盖。语法解析不会替代未执行的关系后端或测试目标解析。
-
-首次向含v1实体数据的数据库写v2时，先生成经逐表回读验证的唯一备份。M1独立接口、旧完整档案读取、v1显式兼容保留；默认v2不覆盖旧载荷。所有语义解释、算法及测试关系仍以其证据状态表述，不把结构或往返检查当作运行时正确性证明。
+约束和最终实跑、测试退休清单及独立审核见docs/development/reviews/semantic-facts/移除V1交付核验.md。共享开发验证不能声称私有盲验收，结构合法不能声称语义解释完整或运行时等价。

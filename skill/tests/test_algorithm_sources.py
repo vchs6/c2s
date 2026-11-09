@@ -4,7 +4,7 @@ import unittest
 from pathlib import Path
 
 from c2s_skill.algorithm import _index_rust_functions, extract_python_algorithm, extract_rust_algorithm
-from c2s_semantic_contract.projection import check_source_coverage, project_algorithm
+from c2s_semantic_contract.algorithm_projection import check_source_coverage, project_algorithm
 
 
 ROOT = Path(__file__).resolve().parents[2]

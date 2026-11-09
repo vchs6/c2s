@@ -18,7 +18,7 @@
       "status": "lit",
       "validation": {
         "tests": [
-          "skill/tests/test_query.py"
+          "skill/tests/test_fact_query_v2.py"
         ],
         "evidence": [
           "docs/development/reviews/issues/10/acquisition-survey-2026-11-02/m1-native-interface.md"
@@ -69,7 +69,7 @@
       "validation": {
         "tests": [
           "skill/tests/test_acquisition.py",
-          "skill/tests/test_query.py"
+          "skill/tests/test_fact_query_v2.py"
         ],
         "evidence": [
           "docs/development/reviews/issues/10/acquisition-survey-2026-11-02/m1-native-interface.md"

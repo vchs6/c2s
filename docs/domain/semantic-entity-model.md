@@ -76,3 +76,8 @@ Cargo workspace package 成员属于项目的E1构建观察：可以作为Projec
 ## 2026-11-08非DDD版本接续
 
 当前默认为`semantic-entity-model-2`，请求/结果为`semantic-fact-request-2`和`semantic-fact-result-2`；独立来源记录、来源分类与细粒度覆盖按ADR-0013保存。v1只作为显式协议兼容；默认新写入仅进v2表，旧档案/M1保留。来源目录/模块不依赖语义映射而存在。切换及回滚证据见`docs/development/reviews/semantic-facts/非DDD重构交付核验.md`，历史迁移章节不代表当前待办。
+
+
+## 2026-11-09接口删除接续
+
+ADR-0014依据用户最新决定撤销旧V1/M1/完整事实运行兼容接口。上述保留旧接口、导入/导出和默认切换章节仅是历史过程；当前仅V2公开存取，历史原件保留、不提供兼容服务，详见现行semantic-model-contract.md及移除V1交付核验。

@@ -59,7 +59,7 @@ class ModelV2Tests(unittest.TestCase):
         self.assertTrue(validate_semantic_entity_model_v2(m)['valid'])
 
     def test_v1_still_valid(self):
-        from c2s_semantic_contract.validation import validate_semantic_entity_model
+        from _historical_validation import validate_semantic_entity_model
         self.assertTrue(validate_semantic_entity_model(valid_entity_model())['valid'])
 
     def test_source_path_escape_and_duplicate_ids_rejected(self):

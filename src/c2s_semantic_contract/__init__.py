@@ -1,7 +1,4 @@
-"""Versioned public contracts for language-independent semantic facts."""
+"""语言无关语义事实的V2公开契约。"""
+from .validation import validate_semantic_entity_model_v2
 
-from .validation import register_m1, semantic_model_catalogs, validate_model
-from .projection import project_algorithm_to_semantic_model, project_query_to_semantic_model
-
-__all__ = ["register_m1", "semantic_model_catalogs", "validate_model",
-           "project_algorithm_to_semantic_model", "project_query_to_semantic_model"]
+__all__ = ["validate_semantic_entity_model_v2"]

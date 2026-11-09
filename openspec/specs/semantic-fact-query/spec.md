@@ -113,3 +113,15 @@
 #### Scenario: 同一次查询供用户与Skill消费
 - **WHEN** 查询得到实体属性和直接关系但另有无法取得的值域或实现映射
 - **THEN** 可读报告和结构数据都保留相同事实与缺口
+
+
+### Requirement: 唯一V2公开运行协议
+系统 SHALL 仅提供semantic-entity-model-2、semantic-fact-request-2和semantic-fact-result-2的公开运行接口；MUST NOT 保留V1/旧完整事实/M1的兼容查询、仓储、缓存或导入导出入口。历史契约原件仅供追溯，不构成服务承诺。算法自有结构版本不得与实体V1协议混淆。
+
+#### Scenario: 显式请求旧模型
+- **WHEN** 用户指定旧profile或调用已撤销的旧API
+- **THEN** 命令行明确拒绝旧profile，旧API不再导出，不得暗中转换或继续执行旧路径
+
+#### Scenario: 使用历史数据库
+- **WHEN** 请求访问纯旧档案或含旧表的V2档案
+- **THEN** 纯旧档案明确不支持且不改写文件，混合档案仅访问V2，不读取或改写旧载荷

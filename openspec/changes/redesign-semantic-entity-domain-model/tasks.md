@@ -164,3 +164,11 @@
   - 执行步骤：先新增上述失败测试并运行取得真实失败；再实现所列最小接口；运行定向命令并检查退出码；补齐对应文档与产物，自审差异后提交。不得仅新增与实现逐行同构的断言。
   - 定向命令：`npm test && npm run validate && npm run check:artifacts`。
   - 通过/失败与证据：另运行PYTHONPATH=src:skill/src .local/analysis-venv/bin/python -m unittest discover -s skill/tests -v；仅全部前置有证据才切换，失败维持旧默认；不自动发行、归档或删除兼容数据。 每项绑定提交、输入版本、命令与实跑结果，失败保留未完成，不用历史测试数代替新测试。
+
+## 11. 用户决定移除V1（2026-11-09）
+
+本节替代此前保留兼容接口的要求，第10节作为历史交付证据保留。
+
+- [x] 11.1 **删除公开V1运行接口**（7项唯一接口/旧档案不变/显式V2备份测试通过；原先21项失败断言已转绿；当前Skill176项及npm133项均通过）。依据用户明确删除决定及2026-11-09设计。先新增test_v2_only.py：CLI拒绝旧profile、旧查询/仓储/缓存/转换/包导出不存在、纯旧档案拒绝且摘要不变；实跑RED。修改__main__/query/store/semantic_store/entity_construction/semantic_entity_query，删除semantic_entity_migration及过时脚本；提取内部共用校验。V2公开API、实体/来源/算法及显式备份不退化。定向命令：PYTHONPATH=src:skill/src .local/analysis-venv/bin/python -m unittest discover -s skill/tests -p 'test_v2_only.py' -v。通过后提交。
+- [ ] 11.2 **同步规格、测试和文档**。修订现行正式/变更规格及README、领域说明；历史报告保留并明确被替代。退休仅验证已移除接口的测试，列清去向；不得用放宽当前期望掩盖失败。运行npm test、npm run validate、npm run check:artifacts、Skill全套及固定Click/regex逐项回读，输出移除V1交付核验。通过后提交。
+- [ ] 11.3 **独立代码审核与交付**。新上下文审核者仅读最终项目，不继承实施会话、不派子代理；检查整个V2路径、公开接口残留、数据安全与覆盖，不仅看删除diff。记录具体问题及等级，实质问题以RED→GREEN修复并重跑受影响全集。所有检查通过后main推送和远程读回，不称私有盲验收，不自动归档。

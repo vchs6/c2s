@@ -6,7 +6,7 @@ from tempfile import TemporaryDirectory
 
 from c2s_skill.capability_matrix import (ToolRun, describe_tools_used, load_tool_matrix, select_tools,
                                          validate_matrix_evidence)
-from c2s_skill.query import query_project
+from c2s_skill.fact_query import execute_fact_query
 
 
 def provider(tool_id, provides, *, status="lit", evidence=True):
@@ -108,10 +108,10 @@ class CapabilitySelectionTests(unittest.TestCase):
             root = Path(temporary)
             (root / "main.py").write_text("class Answer:\n    pass\n", encoding="utf-8")
 
-            result = query_project(root, ["classes"])
+            result = execute_fact_query(root, "classes")
 
-            self.assertEqual([fact.name for fact in result.facts], ["Answer"])
-            self.assertEqual(result.tools_used, ("python-ast",))
+            self.assertEqual([fact["name"] for fact in result["items"]], ["Answer"])
+            self.assertTrue(all(i["sourceConstruct"]["parserId"]=="python-ast" for i in result["items"]))
 
 
 if __name__ == "__main__":

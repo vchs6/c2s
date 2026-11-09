@@ -22,7 +22,7 @@ def normalize_fact_request(value: dict | str) -> dict:
                              else ['implementation'] if selector in {'definitions','local-bindings','behavior-contracts'}
                              else ['organization']),'conditions':{'legacySelector':selector}}
         else:
-            from .query import normalize_request
+            from .request_selectors import normalize_request
             mapped=normalize_request(selector)
             if len(mapped)==1 and not mapped[0].startswith('unrecognized:') and mapped[0]!=selector:
                 return normalize_fact_request(mapped[0])

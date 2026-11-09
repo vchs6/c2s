@@ -11,9 +11,9 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).resolve().parents[2] / "src"))
 sys.path.insert(0, str(Path(__file__).resolve().parents[2] / "skill" / "src"))
 
-from c2s_semantic_contract.validation import (_manifest_integrity, register_m1,
+from _historical_validation import (_manifest_integrity, register_m1,
                                              semantic_model_catalogs, validate_model)
-from c2s_semantic_contract.projection import project_query_to_m1
+from _historical_projection import project_query_to_m1
 from c2s_skill.inventory import source_fingerprint
 
 
@@ -102,8 +102,8 @@ class M1IdentityTests(unittest.TestCase):
             metadata_output = json.dumps({"packages": [{"name": "crate"}]})
             cargo_metadata = subprocess.CompletedProcess([], 0, metadata_output, "")
             cargo_version = subprocess.CompletedProcess([], 0, "cargo 1.0.0\n", "")
-            with patch("c2s_semantic_contract.projection.shutil.which", return_value="/fake/cargo"), \
-                    patch("c2s_semantic_contract.projection.subprocess.run",
+            with patch("_historical_projection.shutil.which", return_value="/fake/cargo"), \
+                    patch("_historical_projection.subprocess.run",
                           side_effect=[cargo_metadata, cargo_version]):
                 projection = project_query_to_m1(query_result)
 
