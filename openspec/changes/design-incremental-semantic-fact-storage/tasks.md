@@ -1,5 +1,7 @@
 # Tasks
 
+现行接口接续（2026-11-09，ADR-0014）：本文件M1/V1及旧完整事实运行接口为历史规划/交付记录，当前公开运行协议仅V2，不再提供兼容查询、仓储或转换。通用能力要求继续适用；新实施不得恢复旧API。唯一删除与审核任务见`openspec/changes/redesign-semantic-entity-domain-model/tasks.md`第11节。
+
 ## 现行范围说明
 
 现行范围说明：本表M1任务只覆盖`m1-project-discovery-1`。实体profile的完整存储、复用和迁移由`redesign-semantic-entity-domain-model`任务管理，M1或旧完整profile结果不得被当作实体档案切换已完成。

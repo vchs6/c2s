@@ -132,8 +132,50 @@ def _markdown_candidates(root: Path, scan: ProjectScan, candidates: list[dict], 
                             "evidenceId": evidence_id})
 
 
+def _rust_test_calls(text: str) -> tuple[set[str],set[str],bool]:
+    """只从函数体语法节点取得调用；断言宏参数仅作表达式解析，不展开宏。"""
+    from tree_sitter import Language,Parser
+    import tree_sitter_rust
+    parser=Parser(Language(tree_sitter_rust.language()))
+    names=set();signals=set();unresolved=False
+    assertion_macros={'assert','assert_eq','assert_ne','assert_matches','assert_contains'}
+    def inspect(node,source,depth=0):
+        nonlocal unresolved
+        if node.type in {'string_literal','raw_string_literal','char_literal','line_comment','block_comment'}:return
+        if node.type=='function_item':
+            body=node.child_by_field_name('body')
+            if body is not None:inspect(body,source,depth)
+            return
+        if node.type=='call_expression':
+            callee=node.child_by_field_name('function')
+            while callee is not None and callee.type=='generic_function':
+                callee=callee.child_by_field_name('function') or callee.named_children[0]
+            if callee is not None:
+                name=callee.child_by_field_name('name') or callee.child_by_field_name('field') or callee
+                if name.type in {'identifier','field_identifier','scoped_identifier'}:
+                    names.add(source[name.start_byte:name.end_byte].decode().rsplit('::',1)[-1])
+        if node.type=='macro_invocation':
+            macro=node.child_by_field_name('macro')
+            macro_name=source[macro.start_byte:macro.end_byte].decode().rsplit('::',1)[-1] if macro is not None else ''
+            tokens=next((c for c in node.named_children if c.type=='token_tree'),None)
+            if macro_name in assertion_macros and tokens is not None and depth<4:
+                signals.add(macro_name)
+                fragment=b'fn __c2s_probe(){ ('+source[tokens.start_byte+1:tokens.end_byte-1]+b'); }'
+                tree=parser.parse(fragment)
+                if tree.root_node.has_error:unresolved=True
+                else:inspect(tree.root_node,fragment,depth+1)
+            else:unresolved=True
+            return
+        for child in node.named_children:inspect(child,source,depth)
+    source=text.encode();tree=parser.parse(source)
+    if tree.root_node.has_error:unresolved=True
+    inspect(tree.root_node,source)
+    return names,signals,unresolved
+
+
 def construct_semantic_entity_candidates(root: Path, scan: ProjectScan | None = None,
-                                         *, include_documentation: bool = True) -> dict:
+                                         *, include_documentation: bool = True,
+                                         reference_constructs: tuple[SourceConstruct,...] | None = None) -> dict:
     """Create provisional semantic candidates with source, documentation and type evidence.
 
     Candidate IDs identify only this construction result. Persistent EntityIds are
@@ -147,6 +189,10 @@ def construct_semantic_entity_candidates(root: Path, scan: ProjectScan | None = 
         raise ValueError("项目源码在扫描后发生变化；请重新扫描后再构造语义候选")
 
     constructs = [construct for parsed in scan.files for construct in parsed.constructs]
+    reference_by_name={}
+    for item in (constructs if reference_constructs is None else reference_constructs):
+        if item.syntax_kind=="function_declaration" and not item.opaque:
+            reference_by_name.setdefault(item.name,set()).add(item.construct_id)
     evidence: dict[str, dict] = {}
     candidates: list[dict] = []
     mappings: list[dict] = []
@@ -273,6 +319,7 @@ def construct_semantic_entity_candidates(root: Path, scan: ProjectScan | None = 
         evidence[record["evidenceId"]] = record
         called_names: set[str] = set()
         assertion_signals: set[str] = set()
+        unresolved_calls=False
         if construct.language == "python":
             try:
                 tree = ast.parse(construct.text)
@@ -288,8 +335,7 @@ def construct_semantic_entity_candidates(root: Path, scan: ProjectScan | None = 
             if re.search(r"\b(?:pytest\.)?raises\s*\(", construct.text):
                 assertion_signals.add("raises")
         else:
-            called_names.update(re.findall(r"\b([A-Za-z_][A-Za-z0-9_]*)\s*\(", construct.text))
-            assertion_signals.update(re.findall(r"\b(assert(?:_eq|_ne|_matches|_contains)?)!", construct.text))
+            called_names,assertion_signals,unresolved_calls=_rust_test_calls(construct.text)
         candidate_id = _digest(f"candidate\0TestEntity\0{construct.construct_id}")
         candidates.append({"candidateId": candidate_id, "kind": "TestEntity", "name": construct.name,
             "description": "由测试函数声明提出的独立测试实体候选。",
@@ -300,7 +346,8 @@ def construct_semantic_entity_candidates(root: Path, scan: ProjectScan | None = 
         mappings.append({"candidateId": candidate_id, "sourceConstructId": construct.construct_id,
                          "role": "test_entry"})
         matches = [item for name in called_names for item in computation_candidates_by_name.get(name, [])]
-        if len({item["candidateId"] for item in matches}) == 1:
+        reference_matches={cid for name in called_names for cid in reference_by_name.get(name,set())}
+        if not unresolved_calls and len(reference_matches)==1 and len({item["candidateId"] for item in matches}) == 1:
             target = matches[0]
             relation_candidates.append({"predicate": "verified_by", "subjectCandidateId": target["candidateId"],
                 "targetCandidateId": candidate_id, "epistemicStatus": "provisional",
@@ -442,7 +489,8 @@ def construct_requested_entities(root: Path, scan: ProjectScan, plan: dict) -> d
                 f for f in file.facts if f.kind not in {'algorithm_step','local_binding','behavior_contract'})))
         narrow_scan=replace(scan,files=tuple(parsed))
         constructed=construct_semantic_entity_candidates(root,narrow_scan,
-            include_documentation=target['kind'] in {'Project','Module','Capability','all'})
+            include_documentation=target['kind'] in {'Project','Module','Capability','all'},
+            reference_constructs=tuple(c for file in scan.files for c in file.constructs))
         candidates=[c for c in constructed['candidates'] if (target['kind']=='all' or c['kind']==target['kind'])
                     and (not target.get('name') or c['name']==target['name'])]
         if target.get('ref'):

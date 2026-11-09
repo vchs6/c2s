@@ -82,3 +82,14 @@ class V2OnlyTests(unittest.TestCase):
             result=execute_fact_query(root,'modules',store)
             self.assertEqual('semantic-fact-result-2',result['profile'])
             with sqlite3.connect(store.path) as c:self.assertEqual([('old',payload)],c.execute('SELECT * FROM semantic_entity_archives').fetchall())
+
+    def test_legacy_cache_rejected_without_mutation(self):
+        from c2s_skill.store import QueryResultCache
+        from c2s_skill.fact_request import normalize_fact_request
+        with tempfile.TemporaryDirectory() as t:
+            root=Path(t)/'p';root.mkdir();db=Path(t)/'old-cache.sqlite'
+            with sqlite3.connect(db) as c:c.execute('CREATE TABLE query_results(root TEXT,source_digest TEXT,selectors TEXT,result_json TEXT)')
+            before=hashlib.sha256(db.read_bytes()).hexdigest()
+            with self.assertRaisesRegex(ValueError,'UNSUPPORTED_CACHE_PROFILE'):
+                QueryResultCache(db).load_v2(root,normalize_fact_request('modules'),'x','y')
+            self.assertEqual(before,hashlib.sha256(db.read_bytes()).hexdigest())

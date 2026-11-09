@@ -26,6 +26,7 @@ def v2_configuration_digest() -> str:
     module_root=Path(__file__).resolve().parent
     files=sorted(module_root.glob('*.py'))
     files+=sorted((module_root.parents[1]/'contracts').glob('*2.schema.json'))
+    files+=[module_root.parents[1]/'contracts/semantic-algorithm.schema.json']
     repo=module_root.parents[2]
     files+=sorted((repo/'contracts/semantic-model').glob('*.json'))
     files+=[repo/'src/c2s_semantic_contract/validation.py']

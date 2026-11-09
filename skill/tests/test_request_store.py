@@ -62,5 +62,5 @@ class RequestStoreTests(unittest.TestCase):
             conn.execute("CREATE TRIGGER reject_v2 BEFORE INSERT ON semantic_entity_v2_archives BEGIN SELECT RAISE(ABORT,'failure injection'); END")
         with self.assertRaises(sqlite3.Error):self.store.commit_request('fail',m,q)
         with self.store._connect() as conn:
-            self.assertEqual(0,conn.execute('SELECT COUNT(*) FROM semantic_entity_registry').fetchone()[0])
+            self.assertEqual(0,conn.execute('SELECT COUNT(*) FROM semantic_entity_v2_registry').fetchone()[0])
             self.assertEqual(0,conn.execute('SELECT COUNT(*) FROM semantic_entity_v2_operations').fetchone()[0])

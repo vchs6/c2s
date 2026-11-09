@@ -193,3 +193,13 @@ class FactQueryV2Tests(unittest.TestCase):
         result=execute_fact_query(self.root,'members:Record',self.store)
         self.assertEqual({'key','get'},{i['name'] for i in result['items']})
         self.assertNotIn('local',[i['name'] for i in result['items']])
+
+    def test_algorithm_schema_is_part_of_configuration(self):
+        from c2s_skill.fact_query import v2_configuration_digest
+        original=Path.read_bytes
+        first=v2_configuration_digest()
+        def changed(path):
+            value=original(path)
+            return value+b' ' if path.name=='semantic-algorithm.schema.json' else value
+        with patch.object(Path,'read_bytes',changed):
+            self.assertNotEqual(first,v2_configuration_digest())

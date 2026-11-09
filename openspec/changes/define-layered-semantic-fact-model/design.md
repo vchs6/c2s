@@ -1,5 +1,7 @@
 # Design
 
+现行接口接续（2026-11-09，ADR-0014）：本文件M1/V1及旧完整事实运行接口为历史规划/交付记录，当前公开运行协议仅V2，不再提供兼容查询、仓储或转换。通用能力要求继续适用；新实施不得恢复旧API。唯一删除与审核任务见`openspec/changes/redesign-semantic-entity-domain-model/tasks.md`第11节。
+
 ## 当前领域模型基准
 
 当前领域模型基准：本提案历史形成的E0–E4主组织轴已由ADR-0012替代。以下仍有效的模型规则须解释为目录、条件、引用、来源和证据约束，不能推出实体类型或业务边界；现行语义实体契约与映射要求见`redesign-semantic-entity-domain-model`。

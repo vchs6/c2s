@@ -1,5 +1,7 @@
 # Design
 
+现行接口接续（2026-11-09，ADR-0014）：本文件M1/V1及旧完整事实运行接口为历史规划/交付记录，当前公开运行协议仅V2，不再提供兼容查询、仓储或转换。通用能力要求继续适用；新实施不得恢复旧API。唯一删除与审核任务见`openspec/changes/redesign-semantic-entity-domain-model/tasks.md`第11节。
+
 ## 当前领域模型基准
 
 当前领域模型基准：本提案定义的M1增量写入继续服务于`m1-project-discovery-1`，其identity不替代语义实体identity。实体档案增量依据语义实体注册身份及其主张、证据、适用条件和覆盖处理，详见`redesign-semantic-entity-domain-model`；本提案的旧M1实现记录不表示实体档案已切换。

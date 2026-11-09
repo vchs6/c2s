@@ -2,6 +2,8 @@
 
 ## 当前非DDD重构里程碑
 
+2026-11-09接续：V1公开接口已按用户决定撤销；原里程碑中的兼容承诺不再适用。删除和独立审核状态唯一见原变更第11节，未以历史32/32冒称新增任务完成。
+
 唯一任务：`openspec/changes/redesign-semantic-entity-domain-model/tasks.md`第10节。旧里程碑仅保留历史，不作为本轮通过依据。本轮M1–M5公开开发验收已通过，逐项状态仅维护在唯一任务，提交/命令/真实项目及限制见`docs/development/reviews/semantic-facts/非DDD重构交付核验.md`。
 
 | 里程碑 | 任务 | 通过门禁 |

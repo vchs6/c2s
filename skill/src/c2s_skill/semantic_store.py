@@ -28,13 +28,13 @@ class SemanticEntityStore:
         if self.path.is_file():
             with sqlite3.connect(self.path.as_uri()+'?mode=ro',uri=True) as check:
                 tables={row[0] for row in check.execute("SELECT name FROM sqlite_master WHERE type='table'")}
-                legacy=bool(tables.intersection({'semantic_entity_archives','sessions','full_bundles','semantic_records'}))
+                legacy=bool(tables.intersection({'semantic_entity_archives','semantic_entity_registry','query_results','sessions','full_bundles','semantic_records'}))
                 if legacy and 'semantic_entity_v2_archives' not in tables:
                     raise ValueError('UNSUPPORTED_ARCHIVE_PROFILE：产品只支持V2档案，旧文件保持原样')
         self.path.parent.mkdir(parents=True,exist_ok=True)
         connection=sqlite3.connect(self.path,timeout=30)
         connection.execute('PRAGMA foreign_keys=ON')
-        connection.execute("""CREATE TABLE IF NOT EXISTS semantic_entity_registry(
+        connection.execute("""CREATE TABLE IF NOT EXISTS semantic_entity_v2_registry(
             scope_id TEXT NOT NULL, source_key TEXT NOT NULL, identity_key TEXT NOT NULL,
             kind TEXT NOT NULL, payload TEXT NOT NULL,
             PRIMARY KEY(scope_id,source_key), UNIQUE(scope_id,identity_key))""")
@@ -182,13 +182,13 @@ def _commit_request_v2(store, operation_id, document, request):
             for key in entity['sourceKeys']:
                 if not key.startswith('candidate:'):continue
                 identity_key=_json(entity['ref']['identity'])
-                existing=connection.execute('SELECT identity_key,kind FROM semantic_entity_registry WHERE scope_id=? AND source_key=?',
+                existing=connection.execute('SELECT identity_key,kind FROM semantic_entity_v2_registry WHERE scope_id=? AND source_key=?',
                                             (scope,key)).fetchone()
                 if existing and (existing[0]!=identity_key or existing[1]!=entity['ref']['kind']):
                     raise ValueError('注册身份冲突，不能按名字或路径合并')
                 if not existing:
                     payload={'ref':entity['ref'],'sourceKey':key,'name':entity['name'],'evidenceIds':[]}
-                    connection.execute('INSERT INTO semantic_entity_registry VALUES(?,?,?,?,?)',
+                    connection.execute('INSERT INTO semantic_entity_v2_registry VALUES(?,?,?,?,?)',
                         (scope,key,identity_key,entity['ref']['kind'],_json(payload)))
         generation=row[0]+1 if row else 1
         connection.execute('INSERT OR REPLACE INTO semantic_entity_v2_archives VALUES(?,?,?,?,?)',

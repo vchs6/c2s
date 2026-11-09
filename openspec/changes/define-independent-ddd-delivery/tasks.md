@@ -1,5 +1,7 @@
 # Independent DDD Delivery Implementation Plan
 
+现行接口接续（2026-11-09，ADR-0014）：本文件M1/V1及旧完整事实运行接口为历史规划/交付记录，当前公开运行协议仅V2，不再提供兼容查询、仓储或转换。通用能力要求继续适用；新实施不得恢复旧API。唯一删除与审核任务见`openspec/changes/redesign-semantic-entity-domain-model/tasks.md`第11节。
+
 > **For agentic workers:** 后续获批执行时使用superpowers:subagent-driven-development或superpowers:executing-plans，并遵守本设计五角色隔离；默认编码者写测试的示例不适用。本文件只拥有交付治理任务，各产品任务仍唯一归属原change。
 
 **Goal:** 固化独立交付约束与里程碑，准备有证据的连续执行门禁。

@@ -116,3 +116,62 @@ class NonDddReviewRegressions(unittest.TestCase):
         model=self.store.read_request(result['request']['scopeId'],result['request'],result['cost']['inputFingerprint'],result['cost']['configurationDigest'])['model']
         tools=[t for run in model['acquisitionRuns'] for t in run['tools']]
         self.assertTrue(any(t.get('version') and t.get('name')=='python-ast' for t in tools))
+
+    def test_targeted_tests_keep_all_call_candidates_before_deciding_uniqueness(self):
+        (self.root/'m.py').write_text('def a():\n return 1\ndef b():\n return 2\ndef test_both():\n assert a()+b()==3\n')
+        target=self.query('ComputationEntity','a',['tests'])
+        self.assertFalse(any(r['predicate']=='verified_by' for item in target['items'] for r in item.get('relations',[])))
+        self.assertIn('TEST_TARGET_UNRESOLVED',[d['code'] for d in target['diagnostics']])
+        full=self.query('all',None,['tests'])
+        original=next(i for i in full['items'] if i['name']=='a')
+        self.assertFalse(any(r['predicate']=='verified_by' for r in original.get('relations',[])))
+
+    def test_enum_members_are_not_returned_as_classes(self):
+        (self.root/'m.py').write_text('from enum import Enum\nclass Color(Enum):\n RED=1\n BLUE=2\n')
+        result=execute_fact_query(self.root,'classes',self.store)
+        self.assertEqual(['Color'],[i['name'] for i in result['items']])
+
+    def test_algorithm_evidence_must_be_closed_before_commit(self):
+        from copy import deepcopy
+        from c2s_semantic_contract import validate_semantic_entity_model_v2
+        (self.root/'m.py').write_text('def run(x):\n return x+1\n')
+        result=execute_fact_query(self.root,{'view':'entity','target':{'kind':'ComputationEntity','name':'run'},'facets':['implementation','algorithm'],'detail':'self'},self.store)
+        model=self.store.read_request(result['request']['scopeId'],result['request'],result['cost']['inputFingerprint'],result['cost']['configurationDigest'])['model']
+        for location in ('algorithm','step','pseudocode','view_algorithm','view_pseudocode','structure','pseudocode_type'):
+            broken=deepcopy(model);record=next(r for r in broken['sourceRecords'] if 'algorithm' in r)
+            if location=='algorithm':record['algorithm']['evidence_refs'].append('missing:evidence')
+            elif location=='step':record['algorithm']['body']['steps'][0]['evidence_refs'].append('missing:evidence')
+            elif location=='pseudocode':record['pseudocode']['evidence_refs'].append('missing:evidence')
+            elif location=='structure':record['algorithm']['body'].pop('steps')
+            elif location=='pseudocode_type':record['pseudocode']['evidence_refs']='missing:evidence'
+            else:
+                view=next(m['implementationView'] for m in broken['sourceMappings'] if 'implementationView' in m)
+                view['algorithm' if location=='view_algorithm' else 'pseudocode']['evidence_refs'].append('missing:evidence')
+            with self.subTest(location=location):
+                self.assertFalse(validate_semantic_entity_model_v2(broken)['valid'])
+                with self.assertRaises(ValueError):self.store.commit_request('broken-'+location,broken,result['request'])
+
+    def test_mixed_legacy_registry_cannot_override_v2_identity(self):
+        import sqlite3
+        (self.root/'m.py').write_text('def run():\n return 1\n')
+        execute_fact_query(self.root,'modules',self.store)
+        expected=execute_fact_query(self.root,{'view':'entity','target':{'kind':'ComputationEntity','name':'run'},'detail':'self'},None)
+        key=next(k for k in expected['items'][0]['sourceKeys'] if k.startswith('candidate:'))
+        with sqlite3.connect(self.store.path) as c:
+            c.execute('CREATE TABLE IF NOT EXISTS semantic_entity_registry(scope_id TEXT,source_key TEXT,identity_key TEXT,kind TEXT,payload TEXT,PRIMARY KEY(scope_id,source_key))')
+            c.execute('INSERT INTO semantic_entity_registry VALUES(?,?,?,?,?)',(expected['request']['scopeId'],key,'{"old":"identity"}','ComputationEntity','{"old":"payload"}'))
+        result=self.query('ComputationEntity','run',['attributes'])
+        self.assertEqual('saved',result['persistence']['status'])
+        with sqlite3.connect(self.store.path) as c:
+            self.assertEqual([('{"old":"identity"}','{"old":"payload"}')],c.execute('SELECT identity_key,payload FROM semantic_entity_registry').fetchall())
+
+    def test_rust_test_declaration_is_not_a_call(self):
+        (self.root/'m.rs').write_text('fn run_rust() -> i32 { 1 }\n#[test]\nfn test_run_rust() { assert_eq!(run_rust(),1); }\n')
+        result=self.query()
+        run=next(i for i in result['items'] if i['name']=='run_rust')
+        self.assertTrue(any(r['predicate']=='verified_by' for r in run['relations']))
+
+    def test_rust_assertion_only_test_does_not_verify_itself(self):
+        (self.root/'m.rs').write_text('#[test]\nfn test_true() { assert!(true); }\n')
+        result=self.query()
+        self.assertFalse(any(r['predicate']=='verified_by' for item in result['items'] for r in item['relations']))

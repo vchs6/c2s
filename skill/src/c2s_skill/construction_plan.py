@@ -24,7 +24,7 @@ def matching_records(request: dict, records: list[dict]) -> list[dict]:
                 parent=ancestor.get('sourceConstruct',{}).get('parentConstructId')
             if '.'.join(chain)!=owner:continue
         legacy=request.get('conditions',{}).get('legacySelector')
-        if legacy=='classes' and not any(x in syntax for x in ('class','struct','enum','trait')):continue
+        if legacy=='classes' and syntax not in {'class_declaration','struct_declaration','enum_declaration','trait_declaration'}:continue
         if legacy=='imports' and syntax!='import_declaration':continue
         if legacy=='constants' and syntax not in {'assignment_binding','constant_declaration','static_declaration'}:continue
         if legacy=='local-bindings' and syntax!='local_binding':continue

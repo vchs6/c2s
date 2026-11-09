@@ -1,5 +1,7 @@
 # Design
 
+现行接口接续（2026-11-09，ADR-0014）：本文件M1/V1及旧完整事实运行接口为历史规划/交付记录，当前公开运行协议仅V2，不再提供兼容查询、仓储或转换。通用能力要求继续适用；新实施不得恢复旧API。唯一删除与审核任务见`openspec/changes/redesign-semantic-entity-domain-model/tasks.md`第11节。
+
 ## 当前领域模型基准
 
 当前兼容边界：本提案建成的`semantic-fact-model-1`仓储保留为旧档案兼容实现及迁移输入；实体档案成为唯一权威写入、旧档案只读的切换尚待`redesign-semantic-entity-domain-model`的6.2/6.3完成，不在此宣称已执行。

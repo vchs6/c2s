@@ -323,6 +323,36 @@ def validate_semantic_entity_model_v2(document: object) -> dict:
         refs = set(record['parentRecordIds']) | {x['recordId'] for x in record['relatedRecords']}
         if refs - sources or set(record['evidenceIds']) - evidence:
             fail('V2_SOURCE_REFERENCE', record['recordId'])
+    algorithm_schema=json.loads((_ROOT/'skill/contracts/semantic-algorithm.schema.json').read_text())
+    algorithm_validator=Draft202012Validator(algorithm_schema)
+    def check_evidence_refs(value,path):
+        if isinstance(value,dict):
+            for key,child in value.items():
+                child_path=path+'/'+key
+                if key in {'evidence_refs','evidenceIds','evidenceRefs'}:
+                    if not isinstance(child,list):
+                        errors.append({'code':'V2_ALGORITHM_EVIDENCE_REFERENCE','path':child_path,'message':'证据引用必须是数组'})
+                        continue
+                    for index,eid in enumerate(child):
+                        if not isinstance(eid,str) or eid not in evidence:
+                            errors.append({'code':'V2_ALGORITHM_EVIDENCE_REFERENCE','path':child_path+'/'+str(index),
+                                           'message':'算法或伪代码引用了未登记证据'})
+                elif key=='evidenceId' and isinstance(child,str) and child not in evidence:
+                    errors.append({'code':'V2_ALGORITHM_EVIDENCE_REFERENCE','path':child_path,'message':'未登记的算法证据'})
+                else:check_evidence_refs(child,child_path)
+        elif isinstance(value,list):
+            for index,child in enumerate(value):check_evidence_refs(child,path+'/'+str(index))
+    def check_implementation(value,path):
+        if 'algorithm' in value:
+            wrapped={'schema_version':'1.0.0','algorithms':[value['algorithm']]}
+            for error in algorithm_validator.iter_errors(wrapped):
+                errors.append({'code':'V2_ALGORITHM_STRUCTURE','path':path+'/algorithm','message':error.message})
+            check_evidence_refs(value['algorithm'],path+'/algorithm')
+        if 'pseudocode' in value:check_evidence_refs(value['pseudocode'],path+'/pseudocode')
+    for index,record in enumerate(document['sourceRecords']):
+        check_implementation(record,'/sourceRecords/'+str(index))
+    for index,mapping in enumerate(document.get('sourceMappings',[])):
+        if 'implementationView' in mapping:check_implementation(mapping['implementationView'],'/sourceMappings/'+str(index)+'/implementationView')
     for claim in document['claims']:
         if claim['origin'] == 'derived_analysis' and set(claim['premiseIds']) - (sources | evidence | claims):
             fail('V2_PREMISE_REFERENCE', claim['claimId'])

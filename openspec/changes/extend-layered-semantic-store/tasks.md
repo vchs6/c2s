@@ -1,5 +1,7 @@
 ## 1. Full-profile normalization and canonicalization
 
+现行接口接续（2026-11-09，ADR-0014）：本文件M1/V1及旧完整事实运行接口为历史规划/交付记录，当前公开运行协议仅V2，不再提供兼容查询、仓储或转换。通用能力要求继续适用；新实施不得恢复旧API。唯一删除与审核任务见`openspec/changes/redesign-semantic-entity-domain-model/tasks.md`第11节。
+
 ## 现行范围说明
 
 现行范围说明：原任务交付的`semantic-fact-model-1`属于旧档案能力；实体重构的6.2/6.3完成前，不将其描述成已只读或已迁移。旧档案可作为兼容和导出对象。
