@@ -1,3 +1,4 @@
+from real_project_support import require_real_project
 import unittest
 import tempfile
 from pathlib import Path
@@ -189,8 +190,7 @@ class AcquisitionTests(unittest.TestCase):
 
     def test_real_click_project_has_parse_coverage_for_every_python_source(self):
         root = Path(__file__).resolve().parents[2] / ".local/real-projects/click"
-        if not (root / ".git").exists():
-            self.skipTest("pinned click project is unavailable")
+        require_real_project(self,root)
         report = scan_project(root)
         python_files = [path for path in root.rglob("*.py") if ".git" not in path.parts]
         self.assertEqual(report.source_files, len(python_files))
@@ -199,8 +199,7 @@ class AcquisitionTests(unittest.TestCase):
 
     def test_real_regex_project_has_parse_coverage_for_every_rust_source(self):
         root = Path(__file__).resolve().parents[2] / ".local/real-projects/regex"
-        if not (root / ".git").exists():
-            self.skipTest("pinned regex project is unavailable")
+        require_real_project(self,root)
         report = scan_project(root)
         rust_files = [path for path in root.rglob("*.rs") if ".git" not in path.parts]
         self.assertEqual(report.source_files, len(rust_files))

@@ -61,7 +61,11 @@ def source_fingerprint(root: Path) -> str:
         digest.update(b"\0" + entry.kind.encode("ascii") + b"\0" + entry.state.encode("ascii") + b"\0")
         if entry.kind == "file":
             try:
-                digest.update(hashlib.sha256(path.read_bytes()).hexdigest().encode("ascii"))
+                file_digest = hashlib.sha256()
+                with path.open("rb") as handle:
+                    for chunk in iter(lambda: handle.read(1024 * 1024), b""):
+                        file_digest.update(chunk)
+                digest.update(file_digest.hexdigest().encode("ascii"))
             except OSError as error:
                 digest.update(f"READ_ERROR:{type(error).__name__}".encode("ascii"))
         elif entry.kind == "symlink":

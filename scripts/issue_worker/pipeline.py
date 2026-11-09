@@ -1,3 +1,4 @@
+import datetime
 """Queue selection and patch checks shared by runner and trusted publisher."""
 import json
 import re
@@ -86,15 +87,21 @@ def effective_state(state, comments):
     for comment in comments:
         if comment.get('user', {}).get('login') != 'github-actions[bot]':
             continue
-        match = re.search(r'<!-- c2s-state: (.+?) -->', comment.get('body', ''))
-        if not match:
+        body = comment.get('body', '')
+        if comment.get('user', {}).get('type') != 'Bot' or not body.startswith('<!-- c2s-worker -->'):
             continue
-        try:
-            fallback = json.loads(match.group(1))
-        except (ValueError, TypeError):
+        from .state_codec import decode_state
+        if body.count('<!-- c2s-state-v1: ') != 1:
+            continue
+        fallback = decode_state('<!-- c2s-state-v1: ' + body.split('<!-- c2s-state-v1: ', 1)[1])
+        if fallback is None:
             continue
         if fallback.get('status') == 'blocked' and fallback.get('reason') == 'publication-failed':
-            if not state or fallback.get('updated_at', '') > state.get('updated_at', ''):
+            try:
+                newer = not state or datetime.datetime.fromisoformat(fallback['updated_at']).timestamp() > datetime.datetime.fromisoformat(state['updated_at']).timestamp()
+            except (ValueError, TypeError, KeyError):
+                newer = False
+            if newer:
                 state = fallback
     return state
 

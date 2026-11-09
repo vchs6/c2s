@@ -1,3 +1,4 @@
+from real_project_support import require_real_project
 import unittest
 import json
 from pathlib import Path
@@ -159,6 +160,7 @@ class AlgorithmContractTests(unittest.TestCase):
 
     def test_real_regex_function_is_lowered_with_rust_syntax_evidence(self):
         root = Path(__file__).resolve().parents[2] / ".local/real-projects/regex"
+        require_real_project(self,root)
         path = root / "regex-automata/src/nfa/thompson/backtrack.rs"
         algorithm = extract_rust_algorithm(path.read_bytes(), "regex-automata/src/nfa/thompson/backtrack.rs",
                                            "min_visited_capacity")["algorithm"]
@@ -170,6 +172,7 @@ class AlgorithmContractTests(unittest.TestCase):
 
     def test_real_click_function_is_lowered_with_source_checked_step_spans(self):
         root = Path(__file__).resolve().parents[2] / ".local/real-projects/click"
+        require_real_project(self,root)
         path = root / "examples/naval/naval.py"
         algorithm = extract_python_algorithm(path.read_bytes(), "examples/naval/naval.py", "ship_move")["algorithm"]
         self.assertEqual(validate_algorithms({"schema_version": "1.0.0", "algorithms": [algorithm]}), [])

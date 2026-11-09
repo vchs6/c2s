@@ -1,5 +1,6 @@
 """SQLite档案的显式完整备份，不导入或导出旧模型。"""
 from pathlib import Path
+from .sqlite_lifecycle import open_sqlite
 
 def backup_entity_archive(store, destination: Path) -> dict:
     """使用SQLite在线备份及逐表回读，不覆盖既有文件。"""
@@ -13,7 +14,7 @@ def backup_entity_archive(store, destination: Path) -> dict:
     destination.parent.mkdir(parents=True,exist_ok=True)
     fd=os.open(destination,os.O_CREAT|os.O_EXCL|os.O_WRONLY,0o600);os.close(fd)
     try:
-        with store._connect() as source, sqlite3.connect(destination) as target:
+        with store._connect() as source, open_sqlite(destination) as target:
             source.execute('BEGIN')
             source.backup(target)
             if target.execute('PRAGMA integrity_check').fetchone()[0]!='ok':raise ValueError('备份完整性检查失败')

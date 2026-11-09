@@ -46,7 +46,7 @@ def main():
     python_version = sys.version_info[:3]
     checks = {
         "python": {
-            "status": "ok" if python_version >= (3, 11, 0) else "unsupported_version",
+            "status": "ok" if (3, 12, 0) <= python_version < (3, 13, 0) else "unsupported_version",
             "version": ".".join(map(str, python_version)),
         }
     }

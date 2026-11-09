@@ -179,6 +179,8 @@ def project_fact_result(model: dict, request: dict, *, index: dict | None = None
         elif isinstance(value,list):
             for child in value:evidence_refs(child)
     evidence_refs(result['items']);evidence_refs(result['sourceRecords']);evidence_refs(result['claims']);evidence_refs(result['diagnostics'])
+    for eid in sorted(wanted-set(index['evidenceById'])):
+        result['diagnostics'].append({'code':'EVIDENCE_REFERENCE_MISSING','evidenceId':eid})
     result['evidence']=[index['evidenceById'][eid] for eid in sorted(wanted) if eid in index['evidenceById']]
     artifact_ids=set()
     def artifact_refs(value):
@@ -189,6 +191,8 @@ def project_fact_result(model: dict, request: dict, *, index: dict | None = None
         elif isinstance(value,list):
             for child in value:artifact_refs(child)
     artifact_refs(result)
+    available_artifacts={a['artifactId'] for a in model.get('artifacts',[])}
+    for aid in sorted(artifact_ids-available_artifacts):result['diagnostics'].append({'code':'ARTIFACT_REFERENCE_MISSING','artifactId':aid})
     result['artifacts']=[a for a in model.get('artifacts',[]) if a['artifactId'] in artifact_ids]
     # 同一范围多次补证的诊断去重；不让历史覆盖数量扩大响应。
     result['diagnostics']=list({json.dumps(d,sort_keys=True,ensure_ascii=False):d for d in result['diagnostics']}.values())
@@ -373,7 +377,7 @@ def _attach_graph_result(model, request, root, runner):
     from .capability_matrix import load_tool_matrix,select_tools,detect_available_tools,host_environment,parse_selected_tool_output
     matrix=load_tool_matrix()
     selection=select_tools(['calls.cross_file.candidates'],matrix,
-        available_tools=detect_available_tools(matrix),environment=host_environment())
+        available_tools={'code-review-graph'},environment=host_environment())
     diagnostics=[]
     if not selection.complete:
         diagnostics.append({'code':'GRAPH_TOOL_UNAVAILABLE','retryable':True})

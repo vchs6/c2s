@@ -10,11 +10,11 @@ Python AST、Rust Tree-sitter提取来源目录、嵌套清单、模块、声明
 
 ## 安装及自检
 
-开发环境为Linux、Python3.12.14、Node22.13+/24+。Python包来自公开包索引，Rust工具链来自官方rust-lang.org；项目本地安装目录不随仓库提交。
+支持Linux、Python3.12.x（>=3.12.0、<3.13.0）、Node22.13+/24+。已验证补丁版本另见本次审核修复报告。Python包来自公开包索引，Rust工具链来自官方rust-lang.org；项目本地安装目录不随仓库提交。
 
 ```bash
 uv venv .local/analysis-venv
-uv pip install --python .local/analysis-venv/bin/python jsonschema==4.26.0 tree-sitter==0.26.0 tree-sitter-rust==0.24.2
+uv pip install --python .local/analysis-venv/bin/python -r requirements-skill.txt
 PYTHONPATH=src:skill/src .local/analysis-venv/bin/python -m unittest discover -s skill/tests -v
 npm test
 npm run validate
@@ -72,3 +72,13 @@ receipt = backup_entity_archive(SemanticEntityStore('/tmp/project-v2.sqlite'), P
 固定Click和regex的逐项来源/实体/证据回读及先定向→全量→定向一致性由scripts/verify_source_fact_refactor.py执行，脚本从固定Git版本创建隔离副本并检查源树不变。最新结果见[移除V1交付核验](../docs/development/reviews/semantic-facts/移除V1交付核验.md)。全部已发布记录遍历不等于穷尽全部语义真值，未请求算法不展开。
 
 只验证了Linux的Python/Rust静态支持；其他语言、host/target、上游运行时等价及词元节省未验证。独立上下文只读代码审核与共享公开测试不是私有盲验收。
+
+## 公开复现与覆盖边界
+
+`npm test`同时运行顶层和Skill测试。干净检出先执行`python3 -m pip install -r requirements-skill.txt`；未取得外部项目时，真实项目用例明确跳过。需要完整集成时先执行`python3 scripts/prepare_real_projects.py`，再执行`C2S_REQUIRE_REAL_PROJECTS=1 npm test`；此模式缺夹具或Cargo直接失败。脚本按固定提交取得Click、regex和nlohmann-json，不覆盖已有修改，不把第三方副本提交到仓库。首次下载需联网；原生Cargo证据使用离线metadata，不证明编译成功。
+
+导入已有Code Review Graph输出只依赖本地已验证解析器，不要求安装可选图包；无法证明索引新鲜度仍报告缺口。最小依赖不包含该可选包或未使用的Python tree-sitter语法包。
+
+来源覆盖以请求涉及的已支持Python/Rust源码为范围；其他文件保留在完整目录盘点与内容指纹中，并在`outOfScopePaths`单列，不因此降低源码声明查询状态。文档仍可形成带证据的候选；这不表示文档已被完整语义解释。指纹流式读取所有可见文件，不默认排除node_modules/target。
+
+同范围重试更新有效覆盖、去重相同取得运行，独立操作回执仍保存审计历史。不能把有效模型不膨胀解释为审计数据库永不增长。投影发现悬空证据或工件引用会明确诊断，SQLite事务结束后显式关闭连接。

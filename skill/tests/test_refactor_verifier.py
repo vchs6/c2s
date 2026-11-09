@@ -70,17 +70,25 @@ class RefactorVerifierTests(unittest.TestCase):
         subprocess.run(['git','add','.'],cwd=self.root,check=True)
         subprocess.run(['git','-c','user.name=公开验证','-c','user.email=test@example.invalid','commit','-qm','固定公开夹具'],cwd=self.root,check=True)
         commit=subprocess.check_output(['git','rev-parse','HEAD'],cwd=self.root,text=True).strip()
-        import os
+        import os,shutil
         from unittest.mock import patch
         import verify_source_fact_refactor as verifier
         cargo=Path(__file__).resolve().parents[2]/'.local/cargo/bin/cargo'
-        if not cargo.is_file():self.skipTest('此原生工作空间顺序回归需要本地Cargo')
+        local_cargo=cargo.is_file()
+        if not local_cargo:
+            configured=os.environ.get('CARGO') or shutil.which('cargo')
+            if not configured:
+                if os.environ.get('C2S_REQUIRE_REAL_PROJECTS')=='1':self.fail('强制集成需要Cargo')
+                self.skipTest('此原生工作空间顺序回归需要Cargo')
+            cargo=Path(configured)
         original=verifier.execute_fact_query;calls=[]
         def bounded(*args,**kwargs):
             calls.append(args[1])
             if len(calls)>12:raise RuntimeError('验证器重复插入请求导致无界循环')
             return original(*args,**kwargs)
-        with patch.dict(os.environ,{'CARGO':str(cargo),'RUSTUP_HOME':str(cargo.parents[2]/'rustup'),'CARGO_HOME':str(cargo.parents[1])}), patch.object(verifier,'execute_fact_query',side_effect=bounded):
+        cargo_env={'CARGO':str(cargo)}
+        if local_cargo:cargo_env.update({'RUSTUP_HOME':str(cargo.parents[2]/'rustup'),'CARGO_HOME':str(cargo.parents[1])})
+        with patch.dict(os.environ,cargo_env), patch.object(verifier,'execute_fact_query',side_effect=bounded):
             result=run_verification(self.root,commit,Path(self.tmp.name)/'ordered.sqlite',[])
         self.assertTrue(result['queryOrderChecks'])
         self.assertTrue(all(check['sameAttributes'] for check in result['queryOrderChecks']))

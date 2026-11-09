@@ -18,7 +18,8 @@ def main():
                 'docs/decisions/0001-five-semantic-layers.md']
     for name in required:
         if not (root / name).is_file():
-            raise ValueError('Missing: ' + name)
+            hint = '; 请执行 git submodule update --init --recursive' if name.startswith('tools/superpowers/') else ''
+            raise ValueError('Missing: ' + name + hint)
     plugin = json.loads((root / 'tools/superpowers/.codex-plugin/plugin.json').read_text())
     if plugin['version'] != '7.0.1':
         raise ValueError('Unexpected Superpowers version')

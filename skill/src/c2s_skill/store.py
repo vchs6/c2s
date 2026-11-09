@@ -1,22 +1,25 @@
 """仅缓存V2结果，缓存不是语义事实仓库。"""
 import json
 import sqlite3
+from contextlib import contextmanager
+from .sqlite_lifecycle import open_sqlite
 from pathlib import Path
 
 class QueryResultCache:
     def __init__(self, path: Path):
         self.path = path.resolve()
-    def _connect(self) -> sqlite3.Connection:
+    @contextmanager
+    def _connect(self):
         if self.path.is_file():
-            with sqlite3.connect(self.path.as_uri()+'?mode=ro',uri=True) as check:
+            with open_sqlite(self.path.as_uri()+'?mode=ro',uri=True) as check:
                 tables={r[0] for r in check.execute("SELECT name FROM sqlite_master WHERE type='table'")}
                 old={'query_results','semantic_entity_archives','semantic_entity_registry','sessions','full_bundles','semantic_records'}
                 if tables.intersection(old) and 'query_results_v2' not in tables:
                     raise ValueError('UNSUPPORTED_CACHE_PROFILE：旧档案不能作为V2缓存，原文件保持不变')
         self.path.parent.mkdir(parents=True,exist_ok=True)
-        connection=sqlite3.connect(self.path)
-        connection.execute('CREATE TABLE IF NOT EXISTS query_results_v2(cache_key TEXT PRIMARY KEY,payload TEXT NOT NULL)')
-        return connection
+        with open_sqlite(self.path) as connection:
+            connection.execute('CREATE TABLE IF NOT EXISTS query_results_v2(cache_key TEXT PRIMARY KEY,payload TEXT NOT NULL)')
+            yield connection
     def validate_root(self, root: Path) -> None:
         root = root.resolve(strict=True)
         if self.path == root or root in self.path.parents:

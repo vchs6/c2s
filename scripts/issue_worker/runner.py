@@ -10,13 +10,24 @@ RUNTIME = Path('.issue-runtime')
 AGENT = RUNTIME / 'agent'
 
 
+def check_environment():
+    """测试只继承明确需要的环境，不继承未来添加的凭证。"""
+    allowed = {'PATH', 'HOME', 'LANG', 'LC_ALL', 'TZ', 'TMPDIR', 'TMP', 'TEMP',
+               'CARGO', 'CARGO_HOME', 'RUSTUP_HOME', 'RUSTUP_TOOLCHAIN', 'C2S_REQUIRE_REAL_PROJECTS'}
+    env = {key: value for key, value in os.environ.items() if key in allowed}
+    root = Path(__file__).resolve().parents[2]
+    env['PYTHONPATH'] = os.pathsep.join(str(root / part) for part in ('src', 'skill/src'))
+    env['OPENSPEC_TELEMETRY'] = '0'
+    return env
+
+
 def checks():
     results = []
-    for command in (['python3', '-m', 'unittest', 'discover', '-s', 'tests', '-v'],
+    for command in (['python3', 'scripts/run_public_tests.py'],
                     ['python3', 'scripts/verify_artifacts.py'],
                     ['npm', 'run', 'validate'], ['git', 'diff', '--cached', '--check']):
         result = subprocess.run(command, capture_output=True, text=True, timeout=300,
-                                env={key: value for key, value in os.environ.items() if key not in {'OPENAI_API_KEY', 'GH_TOKEN', 'GITHUB_TOKEN'}})
+                                env=check_environment())
         results.append(dict(command=command, code=result.returncode, output=(result.stdout+result.stderr)[-30000:]))
     return results
 

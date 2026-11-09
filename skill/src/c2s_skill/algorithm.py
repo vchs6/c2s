@@ -11,6 +11,7 @@ import hashlib
 import json
 import re
 from collections import Counter
+from .source_spans import line_offsets, node_span
 from pathlib import Path
 
 from jsonschema import Draft202012Validator
@@ -28,14 +29,19 @@ def _diagnostic(code: str, path: str, message: str) -> dict[str, str]:
 
 
 def _source_offset(source: bytes, node: ast.AST) -> tuple[int, int]:
-    lines = source.splitlines(keepends=True)
-    start = sum(len(line) for line in lines[:node.lineno - 1]) + node.col_offset
-    end = sum(len(line) for line in lines[:node.end_lineno - 1]) + node.end_col_offset
-    return start, end
+    offsets = getattr(node, "_c2s_line_offsets", None)
+    return node_span(node, offsets if offsets is not None else line_offsets(source))
+
+
+def _attach_line_offsets(tree, source):
+    offsets = line_offsets(source)
+    for node in ast.walk(tree):
+        node._c2s_line_offsets = offsets
 
 
 def _index_python_functions(source: bytes) -> tuple[ast.Module, dict[ast.AST, ast.AST], dict[int, ast.AST]]:
     tree = ast.parse(source)
+    _attach_line_offsets(tree, source)
     parents = {child: parent for parent in ast.walk(tree) for child in ast.iter_child_nodes(parent)}
     functions = {_source_offset(source, node)[0]: node for node in ast.walk(tree)
                   if isinstance(node, (ast.FunctionDef, ast.AsyncFunctionDef)) }
@@ -65,6 +71,8 @@ def extract_python_algorithm(source: bytes, path: str, function_name: str,
         tree = _tree if _tree is not None else ast.parse(source, filename=path)
     except SyntaxError as error:
         raise ValueError(f"invalid Python syntax in {path}:{error.lineno}: {error.msg}") from error
+    if not hasattr(tree, "_c2s_line_offsets"):
+        _attach_line_offsets(tree, source)
     parents = _parents if _parents is not None else {
         child: parent for parent in ast.walk(tree) for child in ast.iter_child_nodes(parent)}
 
@@ -95,6 +103,7 @@ def extract_python_algorithm(source: bytes, path: str, function_name: str,
         f"{path}\0{qualified_name(function)}\0{function_start}".encode()).hexdigest()
     regions = [{"region_id": "r0", "parent_region_id": None}]
     steps: list[dict] = []
+    step_kinds = {}
     control_edges: list[dict] = []
     evidence_refs = {function_evidence}
     omissions = [{"reason": "Local read/write and value-flow relationships are not derived by this syntax slice.",
@@ -177,6 +186,7 @@ def extract_python_algorithm(source: bytes, path: str, function_name: str,
                          "unknowns": ["operation semantics", "control effects"],
                          "boundary": {"inputs": [], "outputs": [], "effects": ["unknown"]}})
         steps.append(step)
+        step_kinds[step_id] = kind
         branches: list[tuple[str, str, dict]] = []
 
         if isinstance(node, ast.If):
@@ -202,8 +212,7 @@ def extract_python_algorithm(source: bytes, path: str, function_name: str,
             condition = {"kind": "expression", "expression": source[condition_start:condition_end].decode()}
             if body_first:
                 control_edges.append({"from_step": step_id, "to_step": body_first, "kind": "loop_body", "condition": condition})
-            body_last_kind = next((step["kind"] for step in reversed(steps)
-                                   if step["step_id"] == body_last), "")
+            body_last_kind = step_kinds.get(body_last, "")
             if body_last and body_last_kind not in {"return", "raise", "opaque"}:
                 control_edges.append({"from_step": body_last, "to_step": step_id, "kind": "continue",
                                       "condition": {"kind": "unknown", "reason": "normal loop continuation"}})
@@ -251,7 +260,7 @@ def extract_python_algorithm(source: bytes, path: str, function_name: str,
                 control_edges.append({"from_step": previous, "to_step": step_id, "kind": "next",
                                       "condition": {"kind": "true"}})
             previous = step_id
-            previous_kind = next(step["kind"] for step in reversed(steps) if step["step_id"] == step_id)
+            previous_kind = step_kinds[step_id]
             pending_edges = branches
         return first, previous
 
@@ -353,6 +362,7 @@ def extract_rust_algorithm(source: bytes, path: str, function_name: str,
         f"{path}\0{function_name}\0{function.start_byte}".encode()).hexdigest()
     regions = [{"region_id": "r0", "parent_region_id": None}]
     steps: list[dict] = []
+    step_kinds = {}
     control_edges: list[dict] = []
     evidence_refs = {function_evidence}
     outcomes = []
@@ -443,6 +453,7 @@ def extract_rust_algorithm(source: bytes, path: str, function_name: str,
                          "unknowns": ["expanded operation", "control or call effect"],
                          "boundary": {"inputs": [], "outputs": [], "effects": ["unknown"]}})
         steps.append(step)
+        step_kinds[step_id] = kind
         pending: list[tuple[str, str, dict]] = []
         if node.type == "if_expression":
             condition_node = node.child_by_field_name("condition")
@@ -474,8 +485,7 @@ def extract_rust_algorithm(source: bytes, path: str, function_name: str,
                 if first:
                     control_edges.append({"from_step": step_id, "to_step": first, "kind": "loop_body",
                                           "condition": condition})
-                last_kind = next((step["kind"] for step in reversed(steps)
-                                  if step["step_id"] == last), "")
+                last_kind = step_kinds.get(last, "")
                 if last and last_kind not in {"return", "opaque"}:
                     control_edges.append({"from_step": last, "to_step": step_id, "kind": "continue",
                                           "condition": {"kind": "unknown", "reason": "normal loop continuation"}})

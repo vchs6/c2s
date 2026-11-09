@@ -71,15 +71,32 @@ def _markdown_candidates(root: Path, scan: ProjectScan, candidates: list[dict], 
             continue
         byte_offset = 0
         active_kind = None
-        active_level = 0
+        fence = None
+        in_comment = False
         for line in text.splitlines(keepends=True):
+            original_line = line
+            fence_match = re.match(r"^ {0,3}(`{3,}|~{3,})(.*)$", line)
+            if fence is not None or fence_match:
+                if fence is None:
+                    fence = fence_match.group(1)
+                elif (fence_match and fence_match.group(1)[0] == fence[0]
+                      and len(fence_match.group(1)) >= len(fence)
+                      and not fence_match.group(2).strip()):
+                    fence = None
+                byte_offset += len(original_line.encode("utf-8"))
+                continue
+            if in_comment or "<!--" in line:
+                if not in_comment:
+                    in_comment = True
+                if "-->" in line:
+                    in_comment = False
+                byte_offset += len(original_line.encode("utf-8"))
+                continue
             heading = re.match(r"^(#{1,6})\s+(.+?)\s*#*\s*(?:\r?\n)?$", line)
             if heading:
-                level = len(heading.group(1))
                 title = heading.group(2).strip().rstrip(":").casefold()
                 active_kind = ("Module" if title in _MODULE_HEADINGS else
                                "Capability" if title in _CAPABILITY_HEADINGS else None)
-                active_level = level
             elif line.lstrip().startswith("#"):
                 active_kind = None
             elif active_kind and line.strip() and not line.lstrip().startswith(("<!--", "```")):

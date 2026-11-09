@@ -79,6 +79,8 @@ def validate_result(result, phase, checks):
         return {'status': 'blocked', 'reason': 'validation-failed'}
     if not isinstance(result, dict) or not isinstance(result.get('summary'), str):
         return {'status': 'blocked', 'reason': 'invalid-agent-result'}
+    if result.get('reason') is not None and (not isinstance(result['reason'], str) or len(result['reason']) > 4096):
+        return {'status': 'blocked', 'reason': 'invalid-agent-result'}
     expected = 'awaiting-decision' if phase == 'plan' else 'completed'
     if result.get('status') not in {expected, 'blocked'}:
         return {'status': 'blocked', 'reason': 'invalid-agent-status'}

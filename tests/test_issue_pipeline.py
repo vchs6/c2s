@@ -73,10 +73,13 @@ class PipelineTests(unittest.TestCase):
             (change/'new-spec.md').write_text('new requirement')
             self.assertNotEqual(before, plan_digest(root, paths))
     def test_failed_publish_guard_survives_unwritable_main(self):
-        state = dict(input_hash='hash', status='blocked', reason='publication-failed', updated_at='2026-11-01T02:00:00')
-        comment = dict(user=dict(login='github-actions[bot]', type='Bot'), body='<!-- c2s-worker -->\n<!-- c2s-state: '+json.dumps(state)+' -->')
+        from scripts.issue_worker.state_codec import encode_state
+        state = dict(input_hash='a'*64, status='blocked', reason='publication-failed',
+                     phase='plan', kind='feature', run_url='https://github.com/example/repo/actions/runs/1',
+                     updated_at='2026-11-01T02:00:00+00:00')
+        comment = dict(user=dict(login='github-actions[bot]', type='Bot'), body='<!-- c2s-worker -->\n'+encode_state(state))
         self.assertEqual(effective_state(None, [comment]), state)
-        self.assertEqual(effective_state(dict(status='awaiting-decision', updated_at='2026-11-01T01:00:00'), [comment]), state)
+        self.assertEqual(effective_state(dict(status='awaiting-decision', updated_at='2026-11-01T01:00:00+00:00'), [comment]), state)
         comment['user'] = dict(login='stranger', type='User')
         self.assertIsNone(effective_state(None, [comment]))
 

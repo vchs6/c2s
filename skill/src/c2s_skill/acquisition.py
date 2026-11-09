@@ -15,6 +15,7 @@ import subprocess
 from dataclasses import dataclass, replace
 from pathlib import Path
 
+from .source_spans import line_offsets, node_span
 from .inventory import InventoryEntry, inventory_tree, source_fingerprint
 
 
@@ -88,11 +89,12 @@ def analysis_profile_digest() -> str:
                                            text=True, timeout=3, check=True).stdout.strip()
         except (subprocess.CalledProcessError, OSError, subprocess.TimeoutExpired):
             cargo_version = "unavailable_or_failed"
-    try:
-        dependencies = {name: importlib.metadata.version(name)
-                        for name in ("tree-sitter", "tree-sitter-python", "tree-sitter-rust")}
-    except importlib.metadata.PackageNotFoundError as error:
-        dependencies = {"missing": error.name or "unknown"}
+    dependencies = {}
+    for name in ("tree-sitter", "tree-sitter-rust", "jsonschema"):
+        try:
+            dependencies[name] = importlib.metadata.version(name)
+        except importlib.metadata.PackageNotFoundError:
+            dependencies[name] = "unavailable"
     matrix_path = Path(__file__).resolve().parents[2] / "contracts" / "tool-capabilities.json"
     matrix_digest = hashlib.sha256(matrix_path.read_bytes()).hexdigest() if matrix_path.is_file() else "unavailable"
     profile = {"analyzer": "c2s-semantic-facts/0.7.0", "python": platform.python_version(),
@@ -193,6 +195,7 @@ def cargo_workspace_facts(root: Path, *, raw_output: list[dict] | None = None) -
 
 def _python_facts(path: str, source: bytes, tree: ast.AST, *, include_implementation: bool = True) -> list[Fact]:
     facts: list[Fact] = []
+    offsets = line_offsets(source)
     parents = {child: parent for parent in ast.walk(tree) for child in ast.iter_child_nodes(parent)}
 
     def scope_name(node, include_node: bool = False) -> str | None:
@@ -219,9 +222,7 @@ def _python_facts(path: str, source: bytes, tree: ast.AST, *, include_implementa
         return []
 
     def byte_span(node) -> tuple[int, int]:
-        lines = source.splitlines(keepends=True)
-        start = sum(len(line) for line in lines[:node.lineno - 1]) + node.col_offset
-        end = sum(len(line) for line in lines[:node.end_lineno - 1]) + node.end_col_offset
+        start, end = node_span(node, offsets)
         return start, end
     for node in ast.walk(tree):
         kind = None
@@ -239,24 +240,18 @@ def _python_facts(path: str, source: bytes, tree: ast.AST, *, include_implementa
                 name = ",".join(names)
         if kind and name:
             # AST columns are UTF-8 byte offsets, matching the public evidence contract.
-            lines = source.splitlines(keepends=True)
-            start = sum(len(line) for line in lines[:node.lineno - 1]) + node.col_offset
-            end = sum(len(line) for line in lines[:node.end_lineno - 1]) + node.end_col_offset
+            start, end = node_span(node, offsets)
             owner = scope_name(node)
             facts.append(_make_fact(path, source, kind, name, start, end, owner))
         if isinstance(node, (ast.ClassDef, ast.FunctionDef, ast.AsyncFunctionDef)) and node.body:
             first = node.body[0]
             if isinstance(first, ast.Expr) and isinstance(first.value, ast.Constant) and isinstance(first.value.value, str):
                 doc = first.value
-                lines = source.splitlines(keepends=True)
-                start = sum(len(line) for line in lines[:doc.lineno - 1]) + doc.col_offset
-                end = sum(len(line) for line in lines[:doc.end_lineno - 1]) + doc.end_col_offset
+                start, end = node_span(doc, offsets)
                 facts.append(_make_fact(path, source, "behavior_contract", node.name, start, end,
                                         scope_name(node)))
         if include_implementation and isinstance(node, algorithm_nodes):
-            lines = source.splitlines(keepends=True)
-            start = sum(len(line) for line in lines[:node.lineno - 1]) + node.col_offset
-            end = sum(len(line) for line in lines[:node.end_lineno - 1]) + node.end_col_offset
+            start, end = node_span(node, offsets)
             ancestor = parents.get(node)
             owner = None
             in_callable_body = True
@@ -342,11 +337,10 @@ def _python_source_constructs(path: str, source: bytes, tree: ast.AST) -> tuple[
                                 in {"Enum", "IntEnum", "StrEnum", "Flag", "IntFlag"}
                                 for base in node.bases)}
     parser_id, parser_version = _construct_parser_version("python")
-    lines = source.splitlines(keepends=True)
+    offsets = line_offsets(source)
 
     def byte_span(node) -> tuple[int, int]:
-        return (sum(len(line) for line in lines[:node.lineno - 1]) + node.col_offset,
-                sum(len(line) for line in lines[:node.end_lineno - 1]) + node.end_col_offset)
+        return node_span(node, offsets)
 
     candidates: list[tuple[ast.AST | None, str, str, int, int, bool, str | None]] = [
         (None, "module", Path(path).name, 0, len(source), False, None)]

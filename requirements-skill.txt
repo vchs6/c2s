@@ -1,0 +1,4 @@
+# 最小产品和公开测试依赖；可选图工具不在此列。
+jsonschema==4.26.0
+tree-sitter==0.26.0
+tree-sitter-rust==0.24.2

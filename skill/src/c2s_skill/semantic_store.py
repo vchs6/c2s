@@ -3,6 +3,8 @@ from __future__ import annotations
 import hashlib
 import json
 import sqlite3
+from contextlib import contextmanager
+from .sqlite_lifecycle import open_sqlite
 from pathlib import Path
 from typing import Any
 
@@ -24,22 +26,23 @@ class SemanticEntityStore:
         root = Path(root).resolve(strict=True)
         if self.path == root or root in self.path.parents:
             raise ValueError("semantic entity store must be outside the analyzed project")
-    def _connect(self) -> sqlite3.Connection:
+    @contextmanager
+    def _connect(self):
         if self.path.is_file():
-            with sqlite3.connect(self.path.as_uri()+'?mode=ro',uri=True) as check:
+            with open_sqlite(self.path.as_uri()+'?mode=ro',uri=True) as check:
                 tables={row[0] for row in check.execute("SELECT name FROM sqlite_master WHERE type='table'")}
                 legacy=bool(tables.intersection({'semantic_entity_archives','semantic_entity_registry','query_results','sessions','full_bundles','semantic_records'}))
                 if legacy and 'semantic_entity_v2_archives' not in tables:
                     raise ValueError('UNSUPPORTED_ARCHIVE_PROFILE：产品只支持V2档案，旧文件保持原样')
         self.path.parent.mkdir(parents=True,exist_ok=True)
-        connection=sqlite3.connect(self.path,timeout=30)
-        connection.execute('PRAGMA foreign_keys=ON')
-        connection.execute("""CREATE TABLE IF NOT EXISTS semantic_entity_v2_registry(
-            scope_id TEXT NOT NULL, source_key TEXT NOT NULL, identity_key TEXT NOT NULL,
-            kind TEXT NOT NULL, payload TEXT NOT NULL,
-            PRIMARY KEY(scope_id,source_key), UNIQUE(scope_id,identity_key))""")
-        _v2_tables(connection)
-        return connection
+        with open_sqlite(self.path,timeout=30) as connection:
+            connection.execute('PRAGMA foreign_keys=ON')
+            connection.execute("""CREATE TABLE IF NOT EXISTS semantic_entity_v2_registry(
+                scope_id TEXT NOT NULL, source_key TEXT NOT NULL, identity_key TEXT NOT NULL,
+                kind TEXT NOT NULL, payload TEXT NOT NULL,
+                PRIMARY KEY(scope_id,source_key), UNIQUE(scope_id,identity_key))""")
+            _v2_tables(connection)
+            yield connection
     def read_request(self, scope_id: str, request: dict, input_fingerprint: str,
                      configuration_digest: str) -> dict:
         return _read_request_v2(self, scope_id, request, input_fingerprint, configuration_digest)
@@ -104,6 +107,12 @@ def _merge_v2_documents(old: dict, new: dict) -> dict:
             if rid not in records:records[rid]=item;continue
             previous=records[rid]
             if previous==item:continue
+            if collection in {'sourceCoverage','coverage'}:
+                fields=('inputFingerprint','configurationDigest','view','target','facets','conditions') if collection=='sourceCoverage' else ('entity','selector','inputFingerprint','analyzerVersion')
+                if any(previous.get(f)!=item.get(f) for f in fields):raise ValueError('覆盖身份冲突：'+rid)
+                if previous['status']=='obtained' and item['status'] in {'not_acquired','unsupported'}:continue
+                records[rid]=item
+                continue
             if collection=='entities':
                 records[rid]=_merge_entity_record(previous,item,allow_refinement=True);continue
             if collection in {'claims','relations','sourceRecords','sourceMappings'}:
@@ -157,14 +166,19 @@ def _commit_request_v2(store, operation_id, document, request):
     if any(run['status'] in {'cancelled','failed'} for run in document['acquisitionRuns']):
         for cov in document['sourceCoverage']:
             cov['status']='not_acquired';cov['diagnostics'].append({'code':'ACQUISITION_UNFINISHED','retryable':True})
-    for collection in ('coverage','sourceCoverage'):
-        for cov in document[collection]:cov['coverageId']+=':'+_sha(operation_id.encode())[:16]
-    run_id='operation:'+operation_id
-    document['acquisitionRuns'].append({'runId':run_id,'inputFingerprint':fp,'configurationDigest':cfg,
-        'status':'partial' if any(c['status']!='obtained' for c in document['sourceCoverage']) else 'completed',
-        'tools':[],'sourceRecordIds':[x['recordId'] for x in document['sourceRecords']],
-        'evidenceIds':[x['evidenceId'] for x in document['evidence']],
-        'artifactIds':[x['artifactId'] for x in document['artifacts']]})
+    if not document['acquisitionRuns']:
+        document['acquisitionRuns'].append({'runId':'pending','inputFingerprint':fp,'configurationDigest':cfg,
+            'status':'partial' if any(c['status']!='obtained' for c in document['sourceCoverage']) else 'completed',
+            'tools':[],'sourceRecordIds':[x['recordId'] for x in document['sourceRecords']],
+            'evidenceIds':[x['evidenceId'] for x in document['evidence']],'artifactIds':[x['artifactId'] for x in document['artifacts']]})
+    runs={}
+    for run in document['acquisitionRuns']:
+        value={key:value for key,value in run.items() if key!='runId'}
+        for key in ('sourceRecordIds','evidenceIds','artifactIds'):value[key]=sorted(set(value[key]))
+        value['tools']=sorted(value['tools'],key=_json)
+        rid='acquisition:'+_sha(_json(value).encode())
+        runs[rid]={'runId':rid,**value}
+    document['acquisitionRuns']=list(runs.values())
     with store._connect() as connection:
         _v2_tables(connection)
         connection.execute('BEGIN IMMEDIATE')

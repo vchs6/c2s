@@ -1,31 +1,80 @@
-name: Validate project baseline
+name: 公开单元与固定项目集成验证
 on: [push, pull_request]
 jobs:
   validate:
+    strategy:
+      matrix:
+        python: ["3.12.5", "3.12"]
     runs-on: ubuntu-latest
     permissions:
       contents: read
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
         with:
           submodules: recursive
-      - uses: actions/setup-node@v4
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
         with:
           node-version: '22'
           cache: npm
-      - uses: actions/setup-python@v5
+      - uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065 # v5
         with:
-          python-version: '3.12'
+          python-version: ${{ matrix.python }}
       - run: npm ci
       - name: Check public development tools without nested Codex
         run: python3 scripts/check_public_environment.py
       - name: Prepare public role repositories without claiming isolation
         run: python3 scripts/prepare_role_repositories.py --source . --ref "$GITHUB_SHA" --destination "$RUNNER_TEMP/c2s-role-repositories"
       - name: 安装公开契约校验依赖
-        run: python3 -m pip install -r requirements-semantic-model.txt
+        run: python3 -m pip install -r requirements-skill.txt
       - run: npm test
       - run: npm run check:artifacts
       - run: npm run validate
         env:
           OPENSPEC_TELEMETRY: '0'
       - run: git diff --check
+
+  integration:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    env:
+      C2S_REQUIRE_REAL_PROJECTS: '1'
+      RUSTUP_TOOLCHAIN: '1.99.1'
+      OPENSPEC_TELEMETRY: '0'
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        with:
+          submodules: recursive
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
+        with:
+          node-version: '22'
+          cache: npm
+      - uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065 # v5
+        with:
+          python-version: '3.12'
+      - run: npm ci
+      - run: python3 -m pip install -r requirements-skill.txt
+      - run: rustup toolchain install 1.99.1 --profile minimal
+      - name: 重建并验证固定公开项目
+        run: python3 scripts/prepare_real_projects.py
+      - name: 强制集成模式不得跳过夹具或Cargo
+        run: npm test
+      - name: 遍历Click已发布事实、关联、证据与请求算法
+        run: >-
+          python3 scripts/verify_source_fact_refactor.py
+          --project .local/real-projects/click
+          --expected-commit 2247b35ea1c47c727d7a06e51fa280e12a863ff6
+          --store "$RUNNER_TEMP/click.sqlite" --output "$RUNNER_TEMP/click-verification.json"
+          --algorithm src/click/parser.py::_unpack_args
+      - name: 遍历regex已发布事实、关联、证据与请求算法
+        run: >-
+          python3 scripts/verify_source_fact_refactor.py
+          --project .local/real-projects/regex
+          --expected-commit 94ac45b2a6e7b1c30927feb5b66c5ded5b7ad447
+          --store "$RUNNER_TEMP/regex.sqlite" --output "$RUNNER_TEMP/regex-verification.json"
+          --algorithm regex-syntax/src/hir/interval.rs::canonicalize
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: 固定项目事实遍历报告
+          path: ${{ runner.temp }}/*-verification.json
+          if-no-files-found: error

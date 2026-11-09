@@ -1,3 +1,4 @@
+from real_project_support import require_real_project
 import json
 import subprocess
 import unittest
@@ -14,8 +15,7 @@ FIXTURE = json.loads((Path(__file__).parent / "fixtures/algorithm-source-checkli
 class RealSourceChecklistTests(unittest.TestCase):
     def _verify_source(self, case):
         project = ROOT / case["project"]
-        if not project.is_dir():
-            self.skipTest(f"fixed project checkout unavailable: {case['project']}")
+        require_real_project(self,project)
         revision = subprocess.run(["git", "-C", str(project), "rev-parse", "HEAD"], check=True,
                                   capture_output=True, text=True).stdout.strip()
         self.assertEqual(revision, case["commit"])

@@ -20,6 +20,7 @@ def collect_source_records(root: Path, scan: ProjectScan, request: dict) -> dict
         raise ValueError('INPUT_CHANGED：来源扫描输入不匹配')
     scope=request.get('scopeId','project:'+stable_id(str(root)))
     records={}; evidence={}; diagnostics=[]
+    observation_keys = {}
     def record(kind,path,name,start=0,end=0,slot='',ev=None,construct=None,value=None,status='obtained'):
         key=stable_id([scope,scan.source_digest,kind,path,start,end,slot])
         if key not in records:
@@ -41,7 +42,10 @@ def collect_source_records(root: Path, scan: ProjectScan, request: dict) -> dict
                 **({'parentConstructId':construct.parent_id} if construct.parent_id else {})})
         if value is not None:
             observations=item.setdefault('value',{'observations':[]})['observations']
-            if value not in observations:
+            signature = json.dumps(value, ensure_ascii=False, sort_keys=True, separators=(",", ":"))
+            seen = observation_keys.setdefault(key, set())
+            if signature not in seen:
+                seen.add(signature)
                 if observations:diagnostics.append({'code':'TOOL_DISAGREEMENT','recordId':key})
                 observations.append(value)
         return item
@@ -123,14 +127,20 @@ def collect_source_records(root: Path, scan: ProjectScan, request: dict) -> dict
         parent=str(Path(item['path']).parent)
         if item['path']!='.' and parent in directory_ids:item['parentRecordIds']=[directory_ids[parent]]
     processed=[f.path for f in scan.files if f.parse_complete]
-    unprocessed=[e.path for e in scan.inventory if e.kind=='file' and e.path not in processed
-                 and Path(e.path).name not in {'Cargo.toml','pyproject.toml'}]
+    supported=[e.path for e in scan.inventory if e.kind=='file' and Path(e.path).suffix in {'.py','.rs'}]
+    target=request.get('target',{})
+    if target.get('path'):required=[p for p in supported if p==target['path']]
+    elif target.get('name') or target.get('ref'):required=[f.path for f in scan.files]
+    else:required=supported
+    unprocessed=[p for p in required if p not in processed]
+    out_of_scope=[e.path for e in scan.inventory if e.kind=='file' and e.path not in supported
+                  and Path(e.path).name not in {'Cargo.toml','pyproject.toml'}]
     for f in scan.files:
         diagnostics.extend({'code':'SOURCE_PARSE_GAP','path':f.path,'message':d} for d in f.diagnostics)
     cov={'coverageId':stable_id([scope,scan.source_digest,request]),'inputFingerprint':scan.source_digest,
          'configurationDigest':analysis_profile_digest(),'view':'source','target':request.get('target',{'kind':'all'}),
          'facets':request.get('facets',['organization']),'conditions':request.get('conditions',{}),
          'status':'partial' if unprocessed or diagnostics else 'obtained',
-         'processedPaths':processed,'unprocessedPaths':unprocessed,'diagnostics':diagnostics}
+         'processedPaths':processed,'unprocessedPaths':unprocessed,'outOfScopePaths':out_of_scope,'diagnostics':diagnostics}
     return {'sourceRecords':list(records.values()),'evidence':list(evidence.values()),
             'sourceCoverage':[cov],'diagnostics':diagnostics}

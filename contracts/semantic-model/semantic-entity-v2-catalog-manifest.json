@@ -2,7 +2,7 @@
   "version": "2.0.0",
   "profile": "semantic-entity-model-2",
   "digests": {
-    "semantic-entity-model-2.schema.json": "7e87fbc1a416f8ab455d55f2fe91200e01f49c003d7ff2001f82910de9290d90",
+    "semantic-entity-model-2.schema.json": "52bc17cba349ff0c9b9dc102d3ec5a49b3452f08f10f324b5a319a956168b77c",
     "semantic-entity-types.json": "1f559a0393e97cc99dab086ee69a83494bf0f10f3fda3a6670981857eb5ca067",
     "semantic-entity-predicates.json": "8ab0d57432df2a0c23c0e6f9a58996d55a4d35f8c137f5182ee9e4076d8b5b34"
   }
