@@ -45,7 +45,7 @@ def validate_bundle(root,allow_environment=False):
     total=0
     for name,digest in files.items():
         _relative(name)
-        if name=='manifest.json' or name.split('/')[0]=='.venv':raise ValueError('清单包含保留路径')
+        if name=='manifest.json' or name.split('/')[0]=='.venv' or '__pycache__' in PurePosixPath(name).parts:raise ValueError('清单包含保留路径')
         if not isinstance(digest,str) or len(digest)!=64 or any(c not in '0123456789abcdef' for c in digest):raise ValueError('文件摘要无效')
         path=root/name
         for parent in [path,*path.parents]:
@@ -64,7 +64,8 @@ def validate_bundle(root,allow_environment=False):
         for directory in list(dirs):
             path=Path(parent)/directory
             if path.is_symlink():raise ValueError('分发目录不接受符号链接')
-            if relative==Path('.') and directory=='.venv' and allow_environment:dirs.remove(directory)
+            generated=(relative==Path('.') and directory=='.venv') or directory=='__pycache__'
+            if generated and allow_environment:dirs.remove(directory)
         for name in names:actual.add((Path(parent)/name).relative_to(root).as_posix())
     if actual!=expected:raise ValueError('分发存在未登记文件')
     return manifest

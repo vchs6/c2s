@@ -133,3 +133,15 @@ class DistributionTests(unittest.TestCase):
         self.assertEqual('必须保留',(target/'user-file.txt').read_text())
         backups=list(self.base.glob('.codesemantics-backup-*'))
         self.assertEqual(1,len(backups));self.assertTrue((backups[0]/'SKILL.md').is_file())
+
+    def test_api_generated_bytecode_does_not_block_clean_redeployment(self):
+        bundle=self.bundle();_,install,validate,_=self.api();target=self.base/'installed';install(bundle,target)
+        environment=dict(os.environ);environment.pop('PYTHONDONTWRITEBYTECODE',None)
+        paths=[str(target/'runtime/src'),str(target/'runtime/skill/src')]
+        code='import sys;sys.dont_write_bytecode=False;sys.path[:0]='+repr(paths)+';import codesemantics.fact_query'
+        result=subprocess.run([sys.executable,'-c',code],capture_output=True,text=True,env=environment)
+        self.assertEqual(0,result.returncode,result.stderr)
+        self.assertTrue(list(target.rglob('__pycache__')))
+        validate(target,allow_environment=True)
+        copied=self.base/'copied';install(target,copied)
+        self.assertEqual([],list(copied.rglob('__pycache__')))

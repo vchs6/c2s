@@ -1,7 +1,7 @@
 {
   "name": "codesemantics",
   "version": "0.1.0",
-  "description": "Development tooling for c2s semantic-fact extraction Skill",
+  "description": "codesemantics语义事实提取Skill的开发工具",
   "scripts": {
     "openspec": "openspec",
     "validate": "openspec validate --all --strict --no-interactive",
